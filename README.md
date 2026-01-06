@@ -21,7 +21,7 @@ AutoOS is a WinUI3 application focused on automation to improve performance whil
 - Easily update GPU driver with one click
 - Toggle XHCI Interrupt Moderation without having to restart
 - Toggle between service states with configured functionality
-- Apply all hidden BIOS Settings (500+) in one click
+- Apply all hidden BIOS Settings (600+) in one click
 - Automatically import Epic Games and Steam titles from old install
 - Custom Game Launcher supporting (Epic Games, Steam, Riot Games, Eden, Citron, Ryujinx)
 - Stop processes when running your game to stop all unnecessary services and executables
@@ -36,21 +36,15 @@ AutoOS is a WinUI3 application focused on automation to improve performance whil
 
 **Step 1:** Before installing, please join my [Discord Server](https://discord.gg/bZU4dMMWpg) to receive installation support and stay informed about future updates or changes.
 
-**Step 2:** Download the latest Windows 23H2 ISO from [here](https://nightly.link/tinodin/uup-dump-get-windows-iso/workflows/23H2/main/23H2.zip). Other ISOs are currently not supported. 
+**Step 2:** Download the latest Windows 23H2 ISO from [here](https://drive.google.com/drive/folders/1ZxTVzvKROzOQ_o4bzUvv0PY86HL0JiuY?usp=sharing). Other ISOs are currently not supported. 
 
-If your download speed is slower than usual, use 1VPN and set it to USA West. Then restart the download:
-- [1VPN for Chromium Based Browsers](https://chromewebstore.google.com/detail/free-vpn-proxy-1vpn/akcocjjpkmlniicdeemdceeajlmoabhg) 
-- [1VPN for Firefox Based Browsers](https://addons.mozilla.org/en-US/firefox/addon/1vpn/)
-
-**Step 3:** Extract the downloaded zip file.
-
-**Step 4:** Go to the Drivers / Support page or your Mainboard / PC and download your LAN, Wi-Fi and Bluetooth driver (No Audio, Chipset, or anything else). On prebuilts and laptops you may also need the disk driver (Intel Rapid Storage Technology Driver) otherwise you may get a bluescreen. 
+**Step 3:** Go to the Drivers / Support page or your Mainboard / PC and download your LAN, Wi-Fi and Bluetooth driver (No Audio, Chipset, or anything else). On prebuilts and laptops you may also need the disk driver (Intel Rapid Storage Technology Driver) otherwise you may get a bluescreen. 
 
 Extract all `.zip` files (for `.exe` files, there may be an extract option in the setup, otherwise use 7-Zip, NanaZip, or WinRAR to extract them) and move all extracted folders into one folder.
 
-**Step 5:** Open PowerShell **as Administrator**.
+**Step 4:** Open PowerShell **as Administrator**.
 
-**Step 6:** Paste this into the PowerShell window to download and run the deployment script.
+**Step 5:** Paste this into the PowerShell window to download and run the deployment script.
 
 ```ps1
 $PSDefaultParameterValues['Invoke-WebRequest:UseBasicParsing'] = $true
@@ -60,11 +54,11 @@ irm https://raw.githubusercontent.com/tinodin/AutoOS/master/deploy.ps1 | iex
 
 If you get any errors during the script, its most likely because your current operating system has disabled services that are required. Make sure to you use a default installation of windows to run the script.
 
-**Step 7:** Once the script finished, restart your computer and boot into the default option. Make sure to `keep your ethernet cable connected` or `connect to your WiFi in the setup`. Then wait for Windows to finish installing.
+**Step 6:** Once the script finished, restart your computer and boot into the default option. Make sure to `keep your ethernet cable connected` or `connect to your WiFi in the setup`. Then wait for Windows to finish installing.
 
-**Step 8:** Once finished, wait for AutoOS to open up (On slower systems this may take a minute).
+**Step 7:** Once finished, wait for AutoOS to open up (On slower systems this may take a minute).
 
-**Step 9:** Select your settings and click "Install AutoOS". This process will take around 30 minutes.
+**Step 8:** Select your settings and click "Install AutoOS". This process will take around 30 minutes.
 
 If you want to delete your old Windows partition and merge the unallocated space with the AutoOS partition, use [Minitool Partition Wizard Free](https://cdn2.minitool.com/?p=pw&e=pw-free) (decline each offer in the installer). Then use the `Delete` function on the old Windows partition and the `Extend` function on the AutoOS partition and max out the slider. Click appy and restart. Make sure to delete `Minitool Partition Wizard Free` again after you are done.
 
