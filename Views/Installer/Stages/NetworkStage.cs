@@ -10,7 +10,6 @@ public static class NetworkStage
     public static async Task Run()
     {
         WindowHandle = WindowNative.GetWindowHandle(App.MainWindow);
-        bool? AppleMusic = PreparingStage.AppleMusic;
         bool? WOL = PreparingStage.WOL;
         bool? Wifi = PreparingStage.Wifi;
         bool? TxIntDelay = PreparingStage.TxIntDelay;
@@ -22,18 +21,14 @@ public static class NetworkStage
 
         var actions = new List<(string Title, Func<Task> Action, Func<bool> Condition)>
         {
-            // set static ip
-            ("Setting a static ip", async () => await ProcessActions.RunBatchScript("static.bat", ""), null),
-            ("Setting a static ip", async () => await ProcessActions.Sleep(500), null),
-
-            // check connection
-            ("Waiting for internet connection to reestablish", async () => await ProcessActions.RunConnectionCheck(), null),
-
             // disable protocols
-            ("Disabling unnecessary protocols", async () => await ProcessActions.RunPowerShell(@"& { Get-NetAdapterBinding | Where-Object { $_.Enabled -eq $true -and $_.ComponentID -notin 'ms_tcpip', 'ms_tcpip6', 'ms_pacer' } | ForEach-Object { Disable-NetAdapterBinding -Name $_.InterfaceAlias -ComponentID $_.ComponentID } }"), null),
+            ("Disabling unnecessary protocols", async () => await ProcessActions.RunPowerShell(@"& { Get-NetAdapterBinding | Where-Object { $_.Enabled -eq $true -and $_.ComponentID -in 'ms_msclient','ms_server','ms_implat','ms_lldp','ms_lltdio','ms_rspndr' } | ForEach-Object { Disable-NetAdapterBinding -Name $_.InterfaceAlias -ComponentID $_.ComponentID } }"), null),
 
-            // disable netbios over tcp
-            ("Disabling NetBIOS over TCP", async () => await ProcessActions.RunNsudo("CurrentUser", @"cmd /c for %a in (NetbiosOptions) do for /f ""delims="" %b in ('reg query HKLM\SYSTEM\CurrentControlSet\Services\NetBT\Parameters\Interfaces /s /f %a ^| findstr HKEY') do reg add ""%b"" /v %a /t REG_DWORD /d 2 /f"), null),
+            // disable netbios over tcp/ip
+            ("Disabling NetBIOS over TCP/IP", async () => await ProcessActions.RunPowerShell(@"Get-ChildItem 'HKLM:\SYSTEM\CurrentControlSet\Services\NetBT\Parameters\Interfaces' | ForEach-Object { Set-ItemProperty -Path $_.PSPath -Name 'NetbiosOptions' -Value 2 -Type DWord -Force }"), null),
+
+            // disable lmhosts lookup
+            ("Disabling LMHOSTS lookup", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\NetBT\Parameters"" /v ""EnableLMHOSTS"" /t REG_DWORD /d 0 /f"), null),
 
             // adjust ethernet adapter advanced settings
             ("Adjusting Ethernet adapter advanced settings", async () => await ProcessActions.RunPowerShellScript("ethernet.ps1", ""), null),
@@ -50,8 +45,8 @@ public static class NetworkStage
             // disable power management settings
             ("Disabling power management settings", async () => await ProcessActions.RunPowerShellScript("networkpowermanagement.ps1", ""), null),
 
-            // configure wake-on-lan
-            ("Configuring Wake-On-Lan (WOL)", async () => await ProcessActions.RunPowerShellScript("wol.ps1", ""), () => WOL == true),
+            // enabling wake-on-lan
+            ("Enabling Wake-On-Lan (WOL)", async () => await ProcessActions.RunPowerShellScript("wol.ps1", ""), () => WOL == true),
 
              // set txintdelay to 0
             ("Setting TxIntDelay to 0", async () => await ProcessActions.RunPowerShellScript("txintdelay.ps1", ""), () => TxIntDelay == true),
@@ -59,42 +54,18 @@ public static class NetworkStage
             // disable nagles algorithm
             ("Disabling Nagles Algorithm", async () => await ProcessActions.RunPowerShell(@"Get-NetAdapter | ForEach-Object { New-ItemProperty -Path ""HKLM:\System\CurrentControlSet\Services\Tcpip\Parameters\Interfaces\$($_.InterfaceGuid)"" -Name ""TcpAckFrequency"" -PropertyType DWord -Value 1 -Force; New-ItemProperty -Path ""HKLM:\System\CurrentControlSet\Services\Tcpip\Parameters\Interfaces\$($_.InterfaceGuid)"" -Name ""TcpDelAckTicks"" -PropertyType DWord -Value 0 -Force; New-ItemProperty -Path ""HKLM:\System\CurrentControlSet\Services\Tcpip\Parameters\Interfaces\$($_.InterfaceGuid)"" -Name ""TCPNoDelay"" -PropertyType DWord -Value 1 -Force }"), null),
 
-            // configure tcp/ip settings
-            ("Disabling RSS", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"netsh int tcp set global rss=disabled"), null),
-            ("Enabling task offload", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"netsh int ip set global taskoffload=enabled"), null),
-            ("Enabling WinSock autotuning", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"netsh winsock set autotuning on"), null),
-            ("Disabling RSC", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"netsh int tcp set global rsc=disabled"), null),
-            ("Setting neighbor cache limit", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"netsh int ip set global neighborcachelimit=4096"), null),
-            ("Setting route cache limit", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"netsh int ip set global routecachelimit=4096"), null),
-            ("Disabling source routing behavior", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"netsh int ip set global sourceroutingbehavior=drop"), null),
-            ("Disabling DHCP media sense", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"netsh int ip set global dhcpmediasense=disabled"), null),
-            ("Disabling media sense event log", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"netsh int ip set global mediasenseeventlog=disabled"), null),
-            ("Enabling DCA", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"netsh int tcp set global dca=enabled"), null),
-            ("Disabling ECN Capability", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"netsh int tcp set global ecncapability=disabled"), null),
-            ("Disabling NetDMA", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"netsh int tcp set global netdma=enabled"), null),
-            ("Disabling Non-SACK RTT resiliency", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"netsh int tcp set global nonsackrttresiliency=disabled"), null),
-            ("Disabling TCP timestamps", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"netsh int tcp set global timestamps=disabled"), null),
-            ("Disabling TCP heuristics", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"netsh int tcp set heuristics disabled"), null),
-            ("Disabling WSH heuristics", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"netsh int tcp set heuristics wsh=disabled"), null),
-            ("Disabling Memory Pressure Protection (MPP)", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"netsh int tcp set security mpp=disabled"), null),
-            ("Disabling security profiles", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"netsh int tcp set security profiles=disabled"), null),
-            ("Setting initial RTO to 2000", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"netsh int tcp set global initialRto=2000"), null),
-            ("Setting max SYN retransmissions", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"netsh int tcp set global maxsynretransmissions=2"), null),
-            ("Setting congestion provider to BBR2", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"netsh int tcp set supplemental internet congestionprovider=bbr2"), null),
-            ("Disabling large MTU", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"netsh int ipv4 set gl loopbacklargemtu=disable"), null),
-            ("Disabling large MTU", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"netsh int ipv6 set gl loopbacklargemtu=disable"), null),
-            ("Disabling teredo", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"netsh int teredo set state disabled"), null),
-            ("Disabling ISATAP", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"netsh int isatap set state disabled"), null),
-            ("Disabling 6to4", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"netsh int 6to4 set state disabled"), null),
-            ("Disabling chimney offload", async () => await ProcessActions.RunPowerShell(@"Set-NetOffloadGlobalSetting -Chimney Disabled"), null),
-            ("Disabling packet coalescing filter", async () => await ProcessActions.RunPowerShell(@"Set-NetOffloadGlobalSetting -PacketCoalescingFilter Disabled"), null),
-            ("Disabling windows forced scaling", async () => await ProcessActions.RunPowerShell(@"Set-NetTCPSetting -SettingName ""*"" -ForceWS Disabled"), null),
-
-            // enable qos policies outside of domain networks
-            ("Enabling QoS Policies outside of domain networks", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Tcpip\QoS"" /v ""Do not use NLA"" /t REG_SZ /d 1 /f"), null),
+            // set "congestion control provider" to "bbr2"
+            (@"Setting ""Congestion Control Provider"" to ""BBR2""", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"netsh int tcp set supplemental internet congestionprovider=bbr2"), null),
             
-            // disable lmhosts lookup
-            ("Disabling LMHOSTS lookup", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\NetBT\Parameters"" /v ""EnableLMHOSTS"" /t REG_DWORD /d 0 /f"), null),
+            // disable loopback large mtu
+            (@"Disabling ""Loopback Large Mtu"" for IPv4", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"netsh int ipv4 set gl loopbacklargemtu=disable"), null),
+            (@"Disabling ""Loopback Large Mtu"" for IPv6", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"netsh int ipv6 set gl loopbacklargemtu=disable"), null),
+
+            // disable "receive side scaling" (rss)
+            (@"Disabling ""Receive Side Scaling"" (RSS)", async () => await ProcessActions.RunPowerShell(@"Set-NetOffloadGlobalSetting -ReceiveSideScaling Disabled"), null),
+            
+            // disable "packet coalescing filter"
+            (@"Disabling ""Packet Coalescing Filter""", async () => await ProcessActions.RunPowerShell(@"Set-NetOffloadGlobalSetting -PacketCoalescingFilter Disabled"), null),
 
             // log advanced network settings
             ("Logging advanced network settings", async () => await ProcessActions.LogAdvancedNetworkSettings(), null),

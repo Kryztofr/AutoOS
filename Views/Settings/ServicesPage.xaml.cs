@@ -158,7 +158,7 @@ public sealed partial class ServicesPage : Page
     private void GetWIFIState()
     {
         // define services and drivers
-        var services = new[] { "WlanSvc", "Dhcp", "Netman", "NetSetupSvc", "NlaSvc", "Wcmsvc", "WinHttpAutoProxySvc" };
+        var services = new[] { "WlanSvc", "Netman", "NetSetupSvc", "NlaSvc", "Wcmsvc", "WinHttpAutoProxySvc" };
         var drivers = new[] { "# tdx", "# vwififlt", "# Netwtw10", "# Netwtw14" };
 
         // check state
@@ -192,7 +192,7 @@ public sealed partial class ServicesPage : Page
         var lines = await File.ReadAllLinesAsync(list);
 
         // define services and drivers
-        var services = new[] { "WlanSvc", "Dhcp", "Netman", "NetSetupSvc", "NlaSvc", "Wcmsvc", "WinHttpAutoProxySvc" };
+        var services = new[] { "WlanSvc", "Netman", "NetSetupSvc", "NlaSvc", "Wcmsvc", "WinHttpAutoProxySvc" };
         var drivers = new[] { "tdx", "vwififlt", "Netwtw10", "Netwtw14" };
 
         // make changes
@@ -222,7 +222,7 @@ public sealed partial class ServicesPage : Page
             // declare services and drivers
             var groups = new[]
             {
-                (new[] { "WlanSvc", "Dhcp", "Wcmsvc" }, 2),
+                (new[] { "WlanSvc", "Wcmsvc" }, 2),
                 (new[] { "NlaSvc", "WinHttpAutoProxySvc", "Netwtw10", "Netwtw14" }, 3),
                 (new[] { "tdx", "vwififlt"}, 1)
             };
