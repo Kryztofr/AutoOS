@@ -113,7 +113,10 @@ public class DeviceSettingsService
 
         var (minThread, maxThread) = (selectedThreads.Min(), selectedThreads.Max());
 
+        classKey.SetValue("*RSS", "0", RegistryValueKind.String);
+        classKey.SetValue("*RssBaseProcGroup", "0", RegistryValueKind.String);
         classKey.SetValue("*RssBaseProcNumber", minThread.ToString(), RegistryValueKind.String);
+        classKey.SetValue("*RssMaxProcGroup", "0", RegistryValueKind.String);
         classKey.SetValue("*RssMaxProcNumber", maxThread.ToString(), RegistryValueKind.String);
     }
 

@@ -4,12 +4,12 @@ using Downloader;
 using Microsoft.UI.Text;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.Win32;
+using System.Diagnostics;
 using System.Management;
 using System.Net;
 using System.Text;
 using System.Text.Json;
 using Windows.Storage;
-using System.Diagnostics;
 
 namespace AutoOS.Views.Settings
 {
@@ -80,29 +80,39 @@ namespace AutoOS.Views.Settings
                 }
 
                 await Update();
-                StatusText.Text = "Update complete.";
-                ProgressBar.Foreground = new SolidColorBrush((Windows.UI.Color)Application.Current.Resources["SystemFillColorSuccess"]);
-                localSettings.Values["Version"] = currentVersion;
-                #if !DEBUG
-                    await LogDiscordUser();
-                    StatusText.Text = "Restarting in 3...";
-                    await Task.Delay(1000);
-                    StatusText.Text = "Restarting in 2...";
-                    await Task.Delay(1000);
-                    StatusText.Text = "Restarting in 1...";
-                    await Task.Delay(1000);
-                    StatusText.Text = "Restarting...";
-                    await Task.Delay(750);
 
-                    ProcessStartInfo processStartInfo = new()
-                    {
-                        FileName = "cmd.exe",
-                        Arguments = $"/c shutdown /r /t 0",
-                        UseShellExecute = false,
-                        CreateNoWindow = true,
-                    };
-                    Process.Start(processStartInfo);
-            #endif
+                bool originalServicesState = localSettings.Values["originalServicesState"] is bool b && b;
+
+                if (originalServicesState == false)
+                {
+                    StatusText.Text = "Update will resume after a restart.";
+                }
+                else
+                {
+                    StatusText.Text = "Update complete.";
+                    localSettings.Values["Version"] = currentVersion;
+                    await LogDiscordUser();
+                }
+
+                ProgressBar.Foreground = new SolidColorBrush((Windows.UI.Color)Application.Current.Resources["SystemFillColorSuccess"]);
+                await Task.Delay(1500);
+                StatusText.Text = "Restarting in 3...";
+                await Task.Delay(1000);
+                StatusText.Text = "Restarting in 2...";
+                await Task.Delay(1000);
+                StatusText.Text = "Restarting in 1...";
+                await Task.Delay(1000);
+                StatusText.Text = "Restarting...";
+                await Task.Delay(750);
+
+                ProcessStartInfo processStartInfo = new()
+                {
+                    FileName = "cmd.exe",
+                    Arguments = $"/c shutdown /r /t 0",
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                };
+                Process.Start(processStartInfo);
             }
         }
 
@@ -133,7 +143,18 @@ namespace AutoOS.Views.Settings
 
             string previousTitle = string.Empty;
             bool servicesState = (int)(Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Services\Beep")?.GetValue("Start", 0) ?? 0) == 1;
-            bool NVIDIA = false;
+            if (!localSettings.Values.ContainsKey("originalServicesState"))
+            {
+                localSettings.Values["originalServicesState"] = servicesState;
+            }
+            bool originalServicesState = localSettings.Values["originalServicesState"] is bool b && b;
+            string list = Path.Combine(PathHelper.GetAppDataFolderPath(), "Service-list-builder", "lists.ini");
+            bool listExists = File.Exists(list);
+            string nsudoPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Applications", "NSudo", "NSudoLC.exe");
+            string storedVersion = localSettings.Values["Version"] as string;
+            bool INTEL = false;
+            bool AMD = false;
+            InIHelper iniHelper = new InIHelper(Path.Combine(Path.GetTempPath(), "obs-studio", "basic", "profiles", "Untitled", "basic.ini"));
 
             using (var searcher = new ManagementObjectSearcher("SELECT * FROM Win32_VideoController"))
             {
@@ -144,53 +165,95 @@ namespace AutoOS.Views.Settings
 
                     if (name != null)
                     {
-                        if (name.Contains("NVIDIA", StringComparison.OrdinalIgnoreCase))
+                        if (name.Contains("AMD", StringComparison.OrdinalIgnoreCase) || name.Contains("Radeon", StringComparison.OrdinalIgnoreCase))
                         {
-                            NVIDIA = true;
+                            AMD = true;
+                        }
+                        if (name.Contains("Intel", StringComparison.OrdinalIgnoreCase))
+                        {
+                            INTEL = true;
                         }
                     }
                 }
             }
+
             var actions = new List<(string Title, Func<Task> Action, Func<bool> Condition)>
             {
+                // enable services & drivers
+                ("Enabling Services & Drivers", async () => await Process.Start(new ProcessStartInfo { FileName = nsudoPath, Arguments = $"-U:T -P:E -Wait -ShowWindowMode:Hide \"{Path.Combine(PathHelper.GetAppDataFolderPath(), "Service-list-builder", "build", Directory.GetDirectories(Path.Combine(PathHelper.GetAppDataFolderPath(), "Service-list-builder", "build")).OrderByDescending(d => Directory.GetLastWriteTime(d)).FirstOrDefault()?.Split('\\').Last(), "Services-Enable.bat")}\"", CreateNoWindow = true }).WaitForExitAsync(), () => servicesState == false),
+
+                // enable "do not preserve zone information in file attachments"
+                (@"Enabling ""Do not preserve zone information in file attachments""", async () => await ProcessActions.RunNsudo("CurrentUser", @"reg add ""HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Attachments"" /v SaveZoneInformation /t REG_DWORD /d 1 /f"), () => servicesState == true),
+
                 // set "inclusion list for moderate risk file types"" policy to ".bat;.cmd;.vbs;.ps1;.reg;.js;.exe;.msi;"
-                (@"Setting ""Inclusion list for moderate risk file types"" policy to "".bat;.cmd;.vbs;.ps1;.reg;.js;.exe;.msi;""", async () => await ProcessActions.RunNsudo("CurrentUser", @"reg add ""HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Policies\Associations"" /v ModRiskFileTypes /t REG_SZ /d "".bat;.cmd;.vbs;.reg;.js;.exe;.msi;"" /f"), null),
+                (@"Setting ""Inclusion list for moderate risk file types"" policy to "".bat;.cmd;.vbs;.ps1;.reg;.js;.exe;.msi;""", async () => await ProcessActions.RunNsudo("CurrentUser", @"reg add ""HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Policies\Associations"" /v ModRiskFileTypes /t REG_SZ /d "".bat;.cmd;.vbs;.reg;.js;.exe;.msi;"" /f"), () => servicesState == true),
 
-                // reset hosts file
-                ("Resetting hosts file", async () => await Task.Run(() => File.Copy(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Scripts", "hosts"), @"C:\Windows\System32\drivers\etc\hosts", true)), null),
-                ("Resetting hosts file", async () => await ProcessActions.RunNsudo("CurrentUser", @"ipconfig /flushdns"), null),
+                // set execution policy to unrestricted
+                ("Setting execution policy to unrestricted", async () => await ProcessActions.RunPowerShell("Set-ExecutionPolicy Unrestricted -Force"), () => servicesState == true),
 
-                // import optimized nvidia profile
-                ("Importing optimized NVIDIA profile", async () => await ProcessActions.ImportProfile("BaseProfile.nip"),  () => NVIDIA == true),
+                // switch high performance power plan
+                ("Switching to the high performance power plan", async () => await ProcessActions.RunNsudo("CurrentUser", @"powercfg /setactive 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c"), () => servicesState == true),
 
-                // disable audio idle states
-                ("Disabling audio idle states", async () => await ProcessActions.RunPowerShellScript("audioidlestates.ps1", ""), null),
+                // adjust powerplan
+                (@"Setting ""Processor idle demote threshold"" to 1", async () => await ProcessActions.RunNsudo("CurrentUser", @"powercfg /setacvalueindex scheme_current 54533251-82be-4824-96c1-47b60b740d00 4b92d758-5a24-4851-a470-815d78aee119 1"), null),
+                (@"Setting ""Processor idle demote threshold"" to 1", async () => await ProcessActions.RunNsudo("CurrentUser", @"powercfg /setdcvalueindex scheme_current 54533251-82be-4824-96c1-47b60b740d00 4b92d758-5a24-4851-a470-815d78aee119 1"), null),
+                (@"Disabling ""Processor performance autonomous mode""", async () => await ProcessActions.RunNsudo("CurrentUser", @"powercfg /setacvalueindex scheme_current 54533251-82be-4824-96c1-47b60b740d00 8baa4a8a-14c6-4451-8e8b-14bdbd197537 0"), null),
+                (@"Disabling ""Processor performance autonomous mode""", async () => await ProcessActions.RunNsudo("CurrentUser", @"powercfg /setdcvalueindex scheme_current 54533251-82be-4824-96c1-47b60b740d00 8baa4a8a-14c6-4451-8e8b-14bdbd197537 0"), null),
+                (@"Setting ""Processor performance increase threshold"" to 1", async () => await ProcessActions.RunNsudo("CurrentUser", @"powercfg /setacvalueindex scheme_current 54533251-82be-4824-96c1-47b60b740d00 06cadf0e-64ed-448a-8927-ce7bf90eb35d 1"), null),
+                (@"Setting ""Processor performance increase threshold for Processor Power Efficiency Class 1"" to 1", async () => await ProcessActions.RunNsudo("CurrentUser", @"powercfg /setacvalueindex scheme_current 54533251-82be-4824-96c1-47b60b740d00 06cadf0e-64ed-448a-8927-ce7bf90eb35e 1"), null),
 
-                // disable "archive apps"
-                (@"Disabling ""Archive apps""", async () => await ProcessActions.RunPowerShell(@"New-Item -Path ""HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\InstallService\Stubification\$([System.Security.Principal.WindowsIdentity]::GetCurrent().User.Value)"" -Force | Out-Null; New-ItemProperty -Path ""HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\InstallService\Stubification\$([System.Security.Principal.WindowsIdentity]::GetCurrent().User.Value)"" -Name EnableAppOffloading -PropertyType DWord -Value 0 -Force"), null),
+                // save powerplan
+                ("Saving the power plan configuration", async () => await ProcessActions.RunNsudo("CurrentUser", @"powercfg /setactive scheme_current"), () => servicesState == true),
 
-                // enable "gameinputsvc"
-                (@"Enabling ""GameInputSvc""", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\GameInputSvc"" /v ""Start"" /t REG_DWORD /d 3 /f"), () => servicesState == true),
+                // enable some drivers
+                ("Enabling some drivers", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\dam"" /v Start /t REG_DWORD /d 1 /f"), () => servicesState == true),
+                ("Enabling some drivers", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\NetBT"" /v Start /t REG_DWORD /d 1 /f"), () => servicesState == true),
+                ("Enabling some drivers", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\tcpipreg"" /v Start /t REG_DWORD /d 2 /f"), () => servicesState == true),
 
-                // disable settings sync
-                (@"Enabling ""Do not sync Apps"" policy", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\SettingSync"" /v DisableAppSyncSettingSync /t REG_DWORD /d 2 /f"), null),
-                (@"Enabling ""Do not sync Apps"" policy", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\SettingSync"" /v DisableAppSyncSettingSyncUserOverride /t REG_DWORD /d 1 /f"), null),
-                (@"Enabling ""Do not sync accessibility settings"" policy", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\SettingSync"" /v DisableAccessibilitySettingSync /t REG_DWORD /d 2 /f"), null),
-                (@"Enabling ""Do not sync accessibility settings"" policy", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\SettingSync"" /v DisableAccessibilitySettingSyncUserOverride /t REG_DWORD /d 1 /f"), null),
-                (@"Enabling ""Do not sync language preferences settings"" policy", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\SettingSync"" /v DisableLanguageSettingSync /t REG_DWORD /d 2 /f"), null),
-                (@"Enabling ""Do not sync language preferences settings"" policy", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\SettingSync"" /v DisableLanguageSettingSyncUserOverride /t REG_DWORD /d 1 /f"), null),
+                // download obs studio
+                ("Downloading OBS Studio Settings", async () => await RunDownload("https://www.dl.dropboxusercontent.com/scl/fi/gkhuws75qnckr63lnfbzn/obs-studio.zip?rlkey=6ziow6s1a85a7s5snrdi7v1x2&st=db3yzo4m&dl=0", Path.GetTempPath(), "obs-studio.zip"), null),
 
-                // remove bcdedit values
-                ("Removing bcdedit values", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"bcdedit /deletevalue debug"), null),
-                ("Removing bcdedit values", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"bcdedit /deletevalue isolatedcontext"), null),
-                ("Removing bcdedit values", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"bcdedit /deletevalue bootems"), null),
-                ("Removing bcdedit values", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"bcdedit /deletevalue disableelamdrivers"), null),
-                ("Removing bcdedit values", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"bcdedit /deletevalue tpmbootentropy"), null),
-                ("Removing bcdedit values", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"bcdedit /deletevalue vsmlaunchtype"), null),
-                ("Removing bcdedit values", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"bcdedit /deletevalue vm"), null),
+                // update obs studio settings
+                ("Updating OBS Studio Settings", async () => await ProcessActions.RunExtract(Path.Combine(Path.GetTempPath(), "obs-studio.zip"), Path.Combine(Path.GetTempPath(), "obs-studio")), null),
+                ("Updating OBS Studio Settings", async () => iniHelper.AddValue("Encoder", "obs_qsv11_v2", "AdvOut"), () => INTEL == true),
+                ("Updating OBS Studio Settings", async () => iniHelper.AddValue("RecEncoder", "obs_qsv11_hevc", "AdvOut"), () => INTEL == true),
+                ("Updating OBS Studio Settings", async () => iniHelper.AddValue("Encoder", "h265_texture_amf", "AdvOut"), () => AMD == true),
+                ("Updating OBS Studio Settings", async () => iniHelper.AddValue("RecEncoder", "h265_texture_amf", "AdvOut"), () => AMD == true),
+                ("Updating OBS Studio Settings", async () => await ProcessActions.RunNsudo("CurrentUser", @"cmd /c xcopy ""%TEMP%\obs-studio\*"" ""%APPDATA%\obs-studio\"" /s /y /i"), null),
 
-                // disable thread dpcs
-                ("Disabling Thread DPCs", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\Session Manager\kernel"" /v ThreadDpcEnable /t REG_DWORD /f /d 0"), null),
+                // remove static ip
+                ("Removing static ip", async () => await ProcessActions.RunPowerShell(@"Get-NetIPInterface -AddressFamily IPv4 | ForEach-Object { netsh interface ipv4 set address name=\""$($_.InterfaceAlias)\"" source=dhcp; netsh interface ipv4 set dnsservers name=\""$($_.InterfaceAlias)\"" source=dhcp }"), () => servicesState == true),
+
+                // adjust ethernet adapter advanced settings
+                ("Adjusting Ethernet adapter advanced settings", async () => await ProcessActions.RunPowerShellScript("ethernet.ps1", ""), () => servicesState == true),
+
+                // enable "receive segment coalescing"
+                (@"Enabling ""Receive Segment Coalescing""", async () => await ProcessActions.RunPowerShell(@"Set-NetOffloadGlobalSetting -ReceiveSegmentCoalescing Enabled"), () => servicesState == true),
+
+                // reset/remove unnecessary tcp/ip settings
+                ("Resetting neighbor cache limit", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"netsh int ip set global neighborcachelimit=256"), () => servicesState == true),
+                ("Resetting source routing behavior", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"netsh int ip set global sourceroutingbehavior=dontforward"), () => servicesState == true),
+                ("Resetting DHCP media sense", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"netsh int ip set global dhcpmediasense=enabled"), () => servicesState == true),
+                ("Resetting TCP timestamps", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"netsh int tcp set global timestamps=allowed"), () => servicesState == true),
+                ("Resetting Memory Pressure Protection (MPP)", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"netsh int tcp set security mpp=enabled"), () => servicesState == true),
+                ("Resetting security profiles", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"netsh int tcp set security profiles=enabled"), () => servicesState == true),
+                ("Resetting max SYN retransmissions", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"netsh int tcp set global maxsynretransmissions=4"), () => servicesState == true),
+                ("Resetting initial RTO", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"netsh int tcp set global initialRto=1000"), () => servicesState == true),
+                ("Resetting ISATAP", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"netsh int isatap set state default"), () => servicesState == true),
+                ("Resetting 6to4", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"netsh int 6to4 set state default"), () => servicesState == true),
+
+                // disable qos policies outside of domain networks
+                ("Disabling QoS Policies outside of domain networks", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg delete ""HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Tcpip\QoS"" /f"), () => servicesState == true),
+
+                // update lists.ini
+                ("Updating lists.ini", async () => { var l = (await File.ReadAllLinesAsync(list)).ToList(); l.Insert(14, "Dhcp"); l.RemoveAt(49); await File.WriteAllLinesAsync(list, l); }, () => servicesState == true && listExists == true && storedVersion == "1.2.0.0"),
+                ("Updating lists.ini", async () => { var l = (await File.ReadAllLinesAsync(list)).ToList(); l.Insert(15, "Dhcp"); l.RemoveAt(50); await File.WriteAllLinesAsync(list, l); }, () => servicesState == true && listExists == true && storedVersion != "1.2.0.0"),
+
+                // build service list
+                ("Building service list", async () => await Process.Start(new ProcessStartInfo { FileName = nsudoPath, Arguments = $@"-U:T -P:E -Wait -ShowWindowMode:Hide ""{Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Applications", "Service-list-builder", "service-list-builder.exe")}"" --config ""{Path.Combine(PathHelper.GetAppDataFolderPath(), "Service-list-builder", "lists.ini")}"" --disable-service-warning --output-dir ""{Path.Combine(PathHelper.GetAppDataFolderPath(), "Service-list-builder", "build")}""", CreateNoWindow = true }).WaitForExitAsync(), () => servicesState == true && listExists == true),
+
+                // disable services & drivers
+                ("Disabling Services & Drivers", async () => await Process.Start(new ProcessStartInfo { FileName = nsudoPath, Arguments = $"-U:T -P:E -Wait -ShowWindowMode:Hide \"{Path.Combine(PathHelper.GetAppDataFolderPath(), "Service-list-builder", "build", Directory.GetDirectories(Path.Combine(PathHelper.GetAppDataFolderPath(), "Service-list-builder", "build")).OrderByDescending(d => Directory.GetLastWriteTime(d)).FirstOrDefault()?.Split('\\').Last(), "Services-Disable.bat")}\"", CreateNoWindow = true }).WaitForExitAsync(), () => originalServicesState == false && servicesState == true),
             };
 
             var filteredActions = actions.Where(a => a.Condition == null || a.Condition.Invoke()).ToList();

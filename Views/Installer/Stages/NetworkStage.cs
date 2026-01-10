@@ -52,7 +52,7 @@ public static class NetworkStage
             ("Setting TxIntDelay to 0", async () => await ProcessActions.RunPowerShellScript("txintdelay.ps1", ""), () => TxIntDelay == true),
 
             // disable nagles algorithm
-            ("Disabling Nagles Algorithm", async () => await ProcessActions.RunPowerShell(@"Get-NetAdapter | ForEach-Object { New-ItemProperty -Path ""HKLM:\System\CurrentControlSet\Services\Tcpip\Parameters\Interfaces\$($_.InterfaceGuid)"" -Name ""TcpAckFrequency"" -PropertyType DWord -Value 1 -Force; New-ItemProperty -Path ""HKLM:\System\CurrentControlSet\Services\Tcpip\Parameters\Interfaces\$($_.InterfaceGuid)"" -Name ""TcpDelAckTicks"" -PropertyType DWord -Value 0 -Force; New-ItemProperty -Path ""HKLM:\System\CurrentControlSet\Services\Tcpip\Parameters\Interfaces\$($_.InterfaceGuid)"" -Name ""TCPNoDelay"" -PropertyType DWord -Value 1 -Force }"), null),
+            ("Disabling Nagles Algorithm", async () => await ProcessActions.RunPowerShell(@"Get-NetAdapter | ForEach-Object { New-ItemProperty -Path ""HKLM:\System\CurrentControlSet\Services\Tcpip\Parameters\Interfaces\$($_.InterfaceGuid)"" -Name ""TcpAckFrequency"" -PropertyType DWord -Value 1 -Force; New-ItemProperty -Path ""HKLM:\System\CurrentControlSet\Services\Tcpip\Parameters\Interfaces\$($_.InterfaceGuid)"" -Name ""TcpDelAckTicks"" -PropertyType DWord -Value 0 -Force }"), null),
 
             // set "congestion control provider" to "bbr2"
             (@"Setting ""Congestion Control Provider"" to ""BBR2""", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"netsh int tcp set supplemental internet congestionprovider=bbr2"), null),

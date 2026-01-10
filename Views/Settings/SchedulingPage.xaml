@@ -46,17 +46,17 @@
                                       ColumnSpacing="12">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="3*"
-                                                          MinWidth="440" />
+                                                          MinWidth="400" />
                                         <ColumnDefinition Width="*"
-                                                          MinWidth="70" />
+                                                          MinWidth="60" />
                                         <ColumnDefinition Width="*"
-                                                          MinWidth="70" />
+                                                          MinWidth="60" />
                                         <ColumnDefinition Width="*"
-                                                          MinWidth="100" />
+                                                          MinWidth="90" />
                                         <ColumnDefinition Width="*"
-                                                          MinWidth="100" />
+                                                          MinWidth="90" />
                                         <ColumnDefinition Width="*"
-                                                          MinWidth="110" />
+                                                          MinWidth="90" />
                                         <ColumnDefinition Width="*"
                                                           MinWidth="120" />
                                     </Grid.ColumnDefinitions>
@@ -114,17 +114,17 @@
                                                                     <Grid ColumnSpacing="12">
                                                                         <Grid.ColumnDefinitions>
                                                                             <ColumnDefinition Width="3*"
-                                                                                              MinWidth="440" />
+                                                                                              MinWidth="400" />
                                                                             <ColumnDefinition Width="*"
-                                                                                              MinWidth="70" />
+                                                                                              MinWidth="60" />
                                                                             <ColumnDefinition Width="*"
-                                                                                              MinWidth="70" />
+                                                                                              MinWidth="60" />
                                                                             <ColumnDefinition Width="*"
-                                                                                              MinWidth="100" />
+                                                                                              MinWidth="90" />
                                                                             <ColumnDefinition Width="*"
-                                                                                              MinWidth="100" />
+                                                                                              MinWidth="90" />
                                                                             <ColumnDefinition Width="*"
-                                                                                              MinWidth="110" />
+                                                                                              MinWidth="90" />
                                                                             <ColumnDefinition Width="*"
                                                                                               MinWidth="120" />
                                                                         </Grid.ColumnDefinitions>
