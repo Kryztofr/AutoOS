@@ -27,6 +27,16 @@ Get-NetAdapter | Where-Object { $_.PhysicalMediaType -eq "802.3" } | ForEach-Obj
         Set-NetAdapterAdvancedProperty -Name $adapterName -DisplayName "Jumbo Packet" -DisplayValue "Disabled"
     }
 
+    # JumboPacket
+    if ($adapterProperties | Where-Object { $_.DisplayName -eq "JumboPacket" }) {
+        Set-NetAdapterAdvancedProperty -Name $adapterName -DisplayName "JumboPacket" -DisplayValue "Disabled"
+    }
+
+    # Large Send Offload Version 1
+    if ($adapterProperties | Where-Object { $_.DisplayName -eq "Large Send Offload Version 1" }) {
+        Set-NetAdapterAdvancedProperty -Name $adapterName -DisplayName "Large Send Offload Version 1" -DisplayValue "Enabled"
+    }
+
     # Large Send Offload V2 (IPv4)
     if ($adapterProperties | Where-Object { $_.DisplayName -eq "Large Send Offload V2 (IPv4)" }) {
         Set-NetAdapterAdvancedProperty -Name $adapterName -DisplayName "Large Send Offload V2 (IPv4)" -DisplayValue "Enabled"
@@ -74,12 +84,12 @@ Get-NetAdapter | Where-Object { $_.PhysicalMediaType -eq "802.3" } | ForEach-Obj
 
     # Receive Segment Coalescing (IPv4)
     if ($adapterProperties | Where-Object { $_.DisplayName -eq "Recv Segment Coalescing (IPv4)" }) {
-        Set-NetAdapterAdvancedProperty -Name $adapterName -DisplayName "Recv Segment Coalescing (IPv4)" -DisplayValue "Disabled"
+        Set-NetAdapterAdvancedProperty -Name $adapterName -DisplayName "Recv Segment Coalescing (IPv4)" -DisplayValue "Enabled"
     }
 
     # Receive Segment Coalescing (IPv6)
     if ($adapterProperties | Where-Object { $_.DisplayName -eq "Recv Segment Coalescing (IPv6)" }) {
-        Set-NetAdapterAdvancedProperty -Name $adapterName -DisplayName "Recv Segment Coalescing (IPv6)" -DisplayValue "Disabled"
+        Set-NetAdapterAdvancedProperty -Name $adapterName -DisplayName "Recv Segment Coalescing (IPv6)" -DisplayValue "Enabled"
     }
 
     # Receive Buffers
@@ -98,6 +108,11 @@ Get-NetAdapter | Where-Object { $_.PhysicalMediaType -eq "802.3" } | ForEach-Obj
     # Selective Suspend
     if ($adapterProperties | Where-Object { $_.DisplayName -eq "Selective Suspend" }) {
         Set-NetAdapterAdvancedProperty -Name $adapterName -DisplayName "Selective Suspend" -DisplayValue "Disabled"
+    }
+
+    # SelectiveSuspend
+    if ($adapterProperties | Where-Object { $_.DisplayName -eq "SelectiveSuspend" }) {
+        Set-NetAdapterAdvancedProperty -Name $adapterName -DisplayName "SelectiveSuspend" -DisplayValue "Disabled"
     }
 
     # Speed & Duplex
@@ -133,6 +148,21 @@ Get-NetAdapter | Where-Object { $_.PhysicalMediaType -eq "802.3" } | ForEach-Obj
         Set-NetAdapterAdvancedProperty -Name $adapterName -DisplayName "UDP Checksum Offload (IPv4)" -DisplayValue "Rx & Tx Enabled"
     }
 
+    # UDP Checksum Offload (IPv6)
+    if ($adapterProperties | Where-Object { $_.DisplayName -eq "UDP Checksum Offload (IPv6)" }) {
+        Set-NetAdapterAdvancedProperty -Name $adapterName -DisplayName "UDP Checksum Offload (IPv6)" -DisplayValue "Rx & Tx Enabled"
+    }
+
+    # TCP/UDP Checksum Offload (IPv4)
+    if ($adapterProperties | Where-Object { $_.DisplayName -eq "TCP/UDP Checksum Offload (IPv4)" }) {
+        Set-NetAdapterAdvancedProperty -Name $adapterName -DisplayName "TCP/UDP Checksum Offload (IPv4)" -DisplayValue "Rx & Tx Enabled"
+    }
+
+    # TCP/UDP Checksum Offload (IPv6)
+    if ($adapterProperties | Where-Object { $_.DisplayName -eq "TCP/UDP Checksum Offload (IPv6)" }) {
+        Set-NetAdapterAdvancedProperty -Name $adapterName -DisplayName "TCP/UDP Checksum Offload (IPv6)" -DisplayValue "Rx & Tx Enabled"
+    }
+
     # Wake on Magic Packet
     if ($adapterProperties | Where-Object { $_.DisplayName -eq "Wake on Magic Packet" }) {
         Set-NetAdapterAdvancedProperty -Name $adapterName -DisplayName "Wake on Magic Packet" -DisplayValue "Disabled"
@@ -153,9 +183,19 @@ Get-NetAdapter | Where-Object { $_.PhysicalMediaType -eq "802.3" } | ForEach-Obj
         Set-NetAdapterAdvancedProperty -Name $adapterName -DisplayName "DMA Coalescing" -DisplayValue "Disabled"
     }
 
+    # Energy Efficient Ethernet
+    if ($adapterProperties | Where-Object { $_.DisplayName -eq "Energy Efficient Ethernet" }) {
+        Set-NetAdapterAdvancedProperty -Name $adapterName -DisplayName "Energy Efficient Ethernet" -DisplayValue "Disabled"
+    }
+
     # Energy-Efficient Ethernet
     if ($adapterProperties | Where-Object { $_.DisplayName -eq "Energy-Efficient Ethernet" }) {
         Set-NetAdapterAdvancedProperty -Name $adapterName -DisplayName "Energy-Efficient Ethernet" -DisplayValue "Disabled"
+    }
+
+    # Enable PME
+    if ($adapterProperties | Where-Object { $_.DisplayName -eq "Enable PME" }) {
+        Set-NetAdapterAdvancedProperty -Name $adapterName -DisplayName "Enable PME" -DisplayValue "Disabled"
     }
 
     # Advanced EEE
@@ -213,9 +253,19 @@ Get-NetAdapter | Where-Object { $_.PhysicalMediaType -eq "802.3" } | ForEach-Obj
         Set-NetAdapterAdvancedProperty -Name $adapterName -DisplayName "Wait for Link" -DisplayValue "Off"
     }
 
+    # Wake on Link
+    if ($adapterProperties | Where-Object { $_.DisplayName -eq "Wake on Link" }) {
+        Set-NetAdapterAdvancedProperty -Name $adapterName -DisplayName "Wake on Link" -DisplayValue "Disabled"
+    }
+
     # Wake on Link Settings
     if ($adapterProperties | Where-Object { $_.DisplayName -eq "Wake on Link Settings" }) {
         Set-NetAdapterAdvancedProperty -Name $adapterName -DisplayName "Wake on Link Settings" -DisplayValue "Disabled"
+    }
+
+    # Wake on Ping
+    if ($adapterProperties | Where-Object { $_.DisplayName -eq "Wake on Ping" }) {
+        Set-NetAdapterAdvancedProperty -Name $adapterName -DisplayName "Wake on Ping" -DisplayValue "Disabled"
     }
 
     # Shutdown Wake-On-Lan
@@ -223,7 +273,7 @@ Get-NetAdapter | Where-Object { $_.PhysicalMediaType -eq "802.3" } | ForEach-Obj
         Set-NetAdapterAdvancedProperty -Name $adapterName -DisplayName "Shutdown Wake-On-Lan" -DisplayValue "Disabled"
     }
 
-    # WOL & Shutdown Wake-On-Lan
+    # WOL & Shutdown Link Speed
     if ($adapterProperties | Where-Object { $_.DisplayName -eq "WOL & Shutdown Link Speed" }) {
         Set-NetAdapterAdvancedProperty -Name $adapterName -DisplayName "WOL & Shutdown Link Speed" -DisplayValue "Not Speed Down"
     }
@@ -251,5 +301,10 @@ Get-NetAdapter | Where-Object { $_.PhysicalMediaType -eq "802.3" } | ForEach-Obj
     # Wake from power off state
     if ($adapterProperties | Where-Object { $_.DisplayName -eq "Wake from power off state" }) {
         Set-NetAdapterAdvancedProperty -Name $adapterName -DisplayName "Wake from power off state" -DisplayValue "Disabled"
+    }
+
+    # WOL Link Power Saving
+    if ($adapterProperties | Where-Object { $_.DisplayName -eq "WOL Link Power Saving" }) {
+        Set-NetAdapterAdvancedProperty -Name $adapterName -DisplayName "WOL Link Power Saving" -DisplayValue "Disabled"
     }
 }

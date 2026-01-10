@@ -22,7 +22,7 @@ Get-WmiObject -Class Win32_PnPEntity | Where-Object { $_.PNPDeviceID -like "HID*
 
 # Disable allow the computer to turn off this device to save power for usb controllers
 $deviceWakeEnable = Get-WmiObject -Namespace "root\wmi" -Class MSPower_DeviceEnable 
-Get-WmiObject -Class Win32_USBController | Where-Object { $_.PNPDeviceID -like "PCI\VEN_*" } | ForEach-Object {
+Get-WmiObject -Class Win32_USBController | Where-Object { $_.PNPDeviceID -ne $null } | ForEach-Object {
     $pnpDeviceId = $_.PNPDeviceID
     $matchingWakeDevice = $deviceWakeEnable | Where-Object { $_.InstanceName -like "*$pnpDeviceId*" -and $_.Enable -eq $true }
     foreach ($device in $matchingWakeDevice) {

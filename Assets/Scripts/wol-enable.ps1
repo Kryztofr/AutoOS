@@ -35,7 +35,7 @@ Get-NetAdapter | Where-Object { $_.PhysicalMediaType -eq "802.3" } | ForEach-Obj
 
 # Enable allow the computer to turn off this device to save power
 $deviceWakeEnable = Get-WmiObject -Namespace "root\wmi" -Class MSPower_DeviceEnable
-Get-WmiObject -Class Win32_NetworkAdapter | Where-Object { $_.PNPDeviceID -like "PCI\VEN_*" } | ForEach-Object {
+Get-WmiObject -Class Win32_NetworkAdapter | Where-Object { $_.PNPDeviceID -ne $null } | ForEach-Object {
     $pnpDeviceId = $_.PNPDeviceID
     $regPath = "HKLM:\SYSTEM\CurrentControlSet\Enum\$pnpDeviceId"
     $driver = (Get-ItemProperty -Path $regPath -Name "Driver" -ErrorAction SilentlyContinue).Driver
@@ -52,7 +52,7 @@ Get-WmiObject -Class Win32_NetworkAdapter | Where-Object { $_.PNPDeviceID -like 
 
 # Enable allow this device to wake the computer
 $deviceWakeEnable = Get-WmiObject -Namespace "root\wmi" -Class MSPower_DeviceWakeEnable
-Get-WmiObject -Class Win32_NetworkAdapter | Where-Object { $_.PNPDeviceID -like "PCI\VEN_*" } | ForEach-Object {
+Get-WmiObject -Class Win32_NetworkAdapter | Where-Object { $_.PNPDeviceID -ne $null } | ForEach-Object {
     $pnpDeviceId = $_.PNPDeviceID
     $regPath = "HKLM:\SYSTEM\CurrentControlSet\Enum\$pnpDeviceId"
     $driver = (Get-ItemProperty -Path $regPath -Name "Driver" -ErrorAction SilentlyContinue).Driver
@@ -69,7 +69,7 @@ Get-WmiObject -Class Win32_NetworkAdapter | Where-Object { $_.PNPDeviceID -like 
 
 # Enable only allow a magic packet to wake the computer
 $deviceWakeOnMagicPacketOnly = Get-WmiObject -Namespace "root\wmi" -Class MSNdis_DeviceWakeOnMagicPacketOnly
-Get-WmiObject -Class Win32_NetworkAdapter | Where-Object { $_.PNPDeviceID -like "PCI\VEN_*" } | ForEach-Object {
+Get-WmiObject -Class Win32_NetworkAdapter | Where-Object { $_.PNPDeviceID -ne $null } | ForEach-Object {
     $pnpDeviceId = $_.PNPDeviceID
     $regPath = "HKLM:\SYSTEM\CurrentControlSet\Enum\$pnpDeviceId"
     $driver = (Get-ItemProperty -Path $regPath -Name "Driver" -ErrorAction SilentlyContinue).Driver
