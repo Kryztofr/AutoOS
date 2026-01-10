@@ -77,7 +77,7 @@ namespace AutoOS.Views.Settings
 
                 }
 
-                await Update();
+                //await Update();
 
                 StatusText.Text = "Update complete.";
                 localSettings.Values["Version"] = currentVersion;
