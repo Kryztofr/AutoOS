@@ -19,20 +19,23 @@ public static class MemoryManagementStage
 
         var actions = new List<(string Title, Func<Task> Action, Func<bool> Condition)>
         {
-            // disable application launch prefetching
-            ("Disabling application launch prefetching", async () => await ProcessActions.RunPowerShell(@"Disable-MMAgent -ApplicationLaunchPrefetching"), () => SSD == true),
+            // disable superfetch
+            ("Disabling Superfetch", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"cmd /c reg add ""HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\SysMain"" /v ""Start"" /t REG_DWORD /d 4 /f & sc stop SysMain"), () => SSD == true),
+            
+            // disable "applicationlaunchprefetching"
+            (@"Disabling ""ApplicationLaunchPrefetching""", async () => await ProcessActions.RunPowerShell(@"Disable-MMAgent -ApplicationLaunchPrefetching"), () => SSD == true),
 
-            // disable application pre launch
-            ("Disabling application pre launch", async () => await ProcessActions.RunPowerShell(@"Disable-MMAgent -ApplicationPreLaunch"), () => SSD == true),
+            // disable "applicationprelaunch"
+            (@"Disabling ""ApplicationPreLaunch""", async () => await ProcessActions.RunPowerShell(@"Disable-MMAgent -ApplicationPreLaunch"), () => SSD == true),
 
-            // disable memory compression
-            ("Disabling memory compression", async () => await ProcessActions.RunPowerShell(@"Disable-MMAgent -MemoryCompression"), null),
+            // disable "memorycompression"
+            (@"Disabling ""MemoryCompression""", async () => await ProcessActions.RunPowerShell(@"Disable-MMAgent -MemoryCompression"), null),
 
-            // disable operation apu
-            ("Disabling operation api", async () => await ProcessActions.RunPowerShell(@"Disable-MMAgent -OperationAPI"), null),
+            // disable "operationapi"
+            (@"Disabling ""OperationAPI""", async () => await ProcessActions.RunPowerShell(@"Disable-MMAgent -OperationAPI"), null),
 
-            // disable page combining
-            ("Disabling page combining", async () => await ProcessActions.RunPowerShell(@"Disable-MMAgent -PageCombining"), null),
+            // disable "pagecombining"
+            (@"Disabling ""PageCombining""", async () => await ProcessActions.RunPowerShell(@"Disable-MMAgent -PageCombining"), null),
         };
 
         var filteredActions = actions.Where(a => a.Condition == null || a.Condition.Invoke()).ToList();

@@ -20,7 +20,6 @@ public static class PreparingStage
     public static bool? SSD;
     public static bool? Wifi;
     public static bool? Bluetooth;
-    public static bool? Rename;
 
     public static bool? WindowsDefender;
     public static bool? UserAccountControl;

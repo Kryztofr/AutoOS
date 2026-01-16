@@ -24,11 +24,11 @@ public static class NetworkStage
             // disable protocols
             ("Disabling unnecessary protocols", async () => await ProcessActions.RunPowerShell(@"& { Get-NetAdapterBinding | Where-Object { $_.Enabled -eq $true -and $_.ComponentID -in 'ms_msclient','ms_server','ms_implat','ms_lldp','ms_lltdio','ms_rspndr' } | ForEach-Object { Disable-NetAdapterBinding -Name $_.InterfaceAlias -ComponentID $_.ComponentID } }"), null),
 
-            // disable netbios over tcp/ip
-            ("Disabling NetBIOS over TCP/IP", async () => await ProcessActions.RunPowerShell(@"Get-ChildItem 'HKLM:\SYSTEM\CurrentControlSet\Services\NetBT\Parameters\Interfaces' | ForEach-Object { Set-ItemProperty -Path $_.PSPath -Name 'NetbiosOptions' -Value 2 -Type DWord -Force }"), null),
+            // advanced tcp/ip settings -> wins
+            (@"Setting NetBIOS setting to ""Disable NetBIOS over TCP/IP""", async () => await ProcessActions.RunPowerShell(@"Get-ChildItem 'HKLM:\SYSTEM\CurrentControlSet\Services\NetBT\Parameters\Interfaces' | ForEach-Object { Set-ItemProperty -Path $_.PSPath -Name 'NetbiosOptions' -Value 2 -Type DWord -Force }"), null),
 
-            // disable lmhosts lookup
-            ("Disabling LMHOSTS lookup", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\NetBT\Parameters"" /v ""EnableLMHOSTS"" /t REG_DWORD /d 0 /f"), null),
+            // advanced tcp/ip settings -> wins
+            (@"Disabling ""Enable LMHOSTS lookup""", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\NetBT\Parameters"" /v ""EnableLMHOSTS"" /t REG_DWORD /d 0 /f"), null),
 
             // adjust ethernet adapter advanced settings
             ("Adjusting Ethernet adapter advanced settings", async () => await ProcessActions.RunPowerShellScript("ethernet.ps1", ""), null),
@@ -50,9 +50,6 @@ public static class NetworkStage
 
              // set txintdelay to 0
             ("Setting TxIntDelay to 0", async () => await ProcessActions.RunPowerShellScript("txintdelay.ps1", ""), () => TxIntDelay == true),
-
-            // disable nagles algorithm
-            ("Disabling Nagles Algorithm", async () => await ProcessActions.RunPowerShell(@"Get-NetAdapter | ForEach-Object { New-ItemProperty -Path ""HKLM:\System\CurrentControlSet\Services\Tcpip\Parameters\Interfaces\$($_.InterfaceGuid)"" -Name ""TcpAckFrequency"" -PropertyType DWord -Value 1 -Force; New-ItemProperty -Path ""HKLM:\System\CurrentControlSet\Services\Tcpip\Parameters\Interfaces\$($_.InterfaceGuid)"" -Name ""TcpDelAckTicks"" -PropertyType DWord -Value 0 -Force }"), null),
 
             // set "congestion control provider" to "bbr2"
             (@"Setting ""Congestion Control Provider"" to ""BBR2""", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"netsh int tcp set supplemental internet congestionprovider=bbr2"), null),

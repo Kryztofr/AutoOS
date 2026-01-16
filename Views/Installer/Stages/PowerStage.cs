@@ -11,6 +11,7 @@ public static class PowerStage
     {
         WindowHandle = WindowNative.GetWindowHandle(App.MainWindow);
         bool? Desktop = PreparingStage.Desktop;
+        int? PCores = PreparingStage.PCores;
         bool? IdleStates = PreparingStage.IdleStates;
 
         InstallPage.Status.Text = "Configuring Powerplans...";
@@ -48,8 +49,8 @@ public static class PowerStage
             (@"Setting ""Execution Required power request timeout"" to 0", async () => await ProcessActions.RunNsudo("CurrentUser", @"powercfg /setacvalueindex scheme_current 2e601130-5351-4d9d-8e04-252966bad054 3166bc41-7e98-4e03-b34e-ec0f5f2b218e 0"), null),
            
             // interrupt steering settings
-            (@"Setting ""Interrupt Steering Mode"" to ""Any processor""", async () => await ProcessActions.RunNsudo("CurrentUser", @"powercfg /setacvalueindex scheme_current 48672f38-7a9a-4bb2-8bf8-3d85be19de4e 2bfc24f9-5ea2-4801-8213-3dbae01aa39d 1"), null),
-            (@"Setting ""Interrupt Steering Mode"" to ""Any processor""", async () => await ProcessActions.RunNsudo("CurrentUser", @"powercfg /setdcvalueindex scheme_current 48672f38-7a9a-4bb2-8bf8-3d85be19de4e 2bfc24f9-5ea2-4801-8213-3dbae01aa39d 1"), null),
+            (@"Setting ""Interrupt Steering Mode"" to ""Any processor""", async () => await ProcessActions.RunNsudo("CurrentUser", @"powercfg /setacvalueindex scheme_current 48672f38-7a9a-4bb2-8bf8-3d85be19de4e 2bfc24f9-5ea2-4801-8213-3dbae01aa39d 1"), () => PCores >= 4),
+            (@"Setting ""Interrupt Steering Mode"" to ""Any processor""", async () => await ProcessActions.RunNsudo("CurrentUser", @"powercfg /setdcvalueindex scheme_current 48672f38-7a9a-4bb2-8bf8-3d85be19de4e 2bfc24f9-5ea2-4801-8213-3dbae01aa39d 1"), () => PCores >= 4),
             (@"Setting ""Target Load"" to 0", async () => await ProcessActions.RunNsudo("CurrentUser", @"powercfg /setacvalueindex scheme_current 48672f38-7a9a-4bb2-8bf8-3d85be19de4e 73cde64d-d720-4bb2-a860-c755afe77ef2 0"), null),
             (@"Setting ""Unparked time trigger"" to 0", async () => await ProcessActions.RunNsudo("CurrentUser", @"powercfg /setacvalueindex scheme_current 48672f38-7a9a-4bb2-8bf8-3d85be19de4e d6ba4903-386f-4c2c-8adb-5c21b3328d25 0"), null),
             
@@ -133,9 +134,6 @@ public static class PowerStage
             ("Disabling hibernation", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Power"" /v HibernateEnabled /t REG_DWORD /d 0 /f"), null),
             ("Disabling hibernation", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\Power"" /v HiberbootEnabled /t REG_DWORD /d 0 /f"), null),
             ("Disabling hibernation", async () => await ProcessActions.RunNsudo("CurrentUser", @"powercfg /h off"), null),
-
-            // disable timer coalescing
-            ("Disabling timer coalescing", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\Power"" /v ""CoalescingTimerInterval"" /t REG_DWORD /d 0 /f"), null),
         };
 
         var filteredActions = actions.Where(a => a.Condition == null || a.Condition.Invoke()).ToList();

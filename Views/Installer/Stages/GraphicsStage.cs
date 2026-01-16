@@ -106,11 +106,9 @@ public static class GraphicsStage
             ("Installing the NVIDIA driver", async () => await ProcessActions.Sleep(3000), () => NVIDIA_GTX16_RTX50 == true  || NVIDIA_GTX900_GTX10 == true),
             ("Installing the NVIDIA driver", async () => await ProcessActions.RefreshUI(), () => NVIDIA_GTX16_RTX50 == true  || NVIDIA_GTX900_GTX10 == true),
 
-            // enable hardware accelerated gpu scheduling (hags)
-            ("Enabling Hardware-accelerated GPU scheduling (HAGS)", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\GraphicsDrivers"" /v ""HwSchMode"" /t REG_DWORD /d 2 /f"), null),
-
-            // enable optimizations for windowed games
-            ("Enabling optimizations for windowed games", async () => await ProcessActions.RunNsudo("CurrentUser", @"reg add ""HKEY_CURRENT_USER\Software\Microsoft\DirectX\UserGpuPreferences"" /v ""DirectXUserGlobalSettings"" /t REG_SZ /d ""SwapEffectUpgradeEnable=1;"" /f"), null),
+            // system -> display -> graphics -> default graphics settings
+            (@"Enabling ""Hardware-accelerated GPU scheduling"" (HAGS)", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\GraphicsDrivers"" /v ""HwSchMode"" /t REG_DWORD /d 2 /f"), null),
+            (@"Enabling ""Optimizations for windowed games""", async () => await ProcessActions.RunNsudo("CurrentUser", @"reg add ""HKEY_CURRENT_USER\Software\Microsoft\DirectX\UserGpuPreferences"" /v ""DirectXUserGlobalSettings"" /t REG_SZ /d ""SwapEffectUpgradeEnable=1;"" /f"), null),
 
             // apply custom resolution utility (cru) profile
             ("Importing Custom Resolution Utility (CRU) profile", async () => await ProcessActions.Sleep(1500), () => CRU == true),

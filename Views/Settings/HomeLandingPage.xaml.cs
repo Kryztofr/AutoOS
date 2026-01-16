@@ -1,15 +1,14 @@
-﻿using AutoOS.Views.Installer.Actions;
-using CommunityToolkit.WinUI.Controls;
+﻿using CommunityToolkit.WinUI.Controls;
 using Downloader;
 using Microsoft.UI.Text;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.Win32;
-using System.Diagnostics;
 using System.Management;
 using System.Net;
 using System.Text;
 using System.Text.Json;
 using Windows.Storage;
+using AutoOS.Views.Installer.Actions;
 
 namespace AutoOS.Views.Settings
 {
@@ -31,9 +30,9 @@ namespace AutoOS.Views.Settings
         public HomeLandingPage()
         {
             InitializeComponent();
-#if !DEBUG
-            Loaded += GetChangeLog;
-#endif
+            #if !DEBUG
+                Loaded += GetChangeLog;
+            #endif
         }
 
         private async void GetChangeLog(object sender, RoutedEventArgs e)
@@ -81,39 +80,9 @@ namespace AutoOS.Views.Settings
 
                 await Update();
 
-                bool originalServicesState = localSettings.Values["originalServicesState"] is bool b && b;
-
-                if (originalServicesState == false)
-                {
-                    StatusText.Text = "Update will resume after a restart.";
-                    localSettings.Values["originalServicesState"] = true;
-                }
-                else
-                {
-                    StatusText.Text = "Update complete.";
-                    localSettings.Values["Version"] = currentVersion;
-                    await LogDiscordUser();
-                }
-
-                ProgressBar.Foreground = new SolidColorBrush((Windows.UI.Color)Application.Current.Resources["SystemFillColorSuccess"]);
-                await Task.Delay(1500);
-                StatusText.Text = "Restarting in 3...";
-                await Task.Delay(1000);
-                StatusText.Text = "Restarting in 2...";
-                await Task.Delay(1000);
-                StatusText.Text = "Restarting in 1...";
-                await Task.Delay(1000);
-                StatusText.Text = "Restarting...";
-                await Task.Delay(750);
-
-                ProcessStartInfo processStartInfo = new()
-                {
-                    FileName = "cmd.exe",
-                    Arguments = $"/c shutdown /r /t 0",
-                    UseShellExecute = false,
-                    CreateNoWindow = true,
-                };
-                Process.Start(processStartInfo);
+                StatusText.Text = "Update complete.";
+                localSettings.Values["Version"] = currentVersion;
+                await LogDiscordUser();
             }
         }
 
@@ -143,19 +112,8 @@ namespace AutoOS.Views.Settings
             _ = updater.ShowAsync();
 
             string previousTitle = string.Empty;
-            bool servicesState = (int)(Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Services\Beep")?.GetValue("Start", 0) ?? 0) == 1;
-            if (!localSettings.Values.ContainsKey("originalServicesState"))
-            {
-                localSettings.Values["originalServicesState"] = servicesState;
-            }
-            bool originalServicesState = localSettings.Values["originalServicesState"] is bool b && b;
-            string list = Path.Combine(PathHelper.GetAppDataFolderPath(), "Service-list-builder", "lists.ini");
-            bool listExists = File.Exists(list);
-            string nsudoPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Applications", "NSudo", "NSudoLC.exe");
-            string storedVersion = localSettings.Values["Version"] as string;
-            bool INTEL = false;
-            bool AMD = false;
-            InIHelper iniHelper = new InIHelper(Path.Combine(Path.GetTempPath(), "obs-studio", "basic", "profiles", "Untitled", "basic.ini"));
+            bool Discord = Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Discord"));
+            bool NVIDIA = false;
 
             using (var searcher = new ManagementObjectSearcher("SELECT * FROM Win32_VideoController"))
             {
@@ -166,13 +124,9 @@ namespace AutoOS.Views.Settings
 
                     if (name != null)
                     {
-                        if (name.Contains("AMD", StringComparison.OrdinalIgnoreCase) || name.Contains("Radeon", StringComparison.OrdinalIgnoreCase))
+                        if (name.Contains("NVIDIA", StringComparison.OrdinalIgnoreCase))
                         {
-                            AMD = true;
-                        }
-                        if (name.Contains("Intel", StringComparison.OrdinalIgnoreCase))
-                        {
-                            INTEL = true;
+                            NVIDIA = true;
                         }
                     }
                 }
@@ -180,81 +134,147 @@ namespace AutoOS.Views.Settings
 
             var actions = new List<(string Title, Func<Task> Action, Func<bool> Condition)>
             {
-                // enable services & drivers
-                ("Enabling Services & Drivers", async () => await Process.Start(new ProcessStartInfo { FileName = nsudoPath, Arguments = $"-U:T -P:E -Wait -ShowWindowMode:Hide \"{Path.Combine(PathHelper.GetAppDataFolderPath(), "Service-list-builder", "build", Directory.GetDirectories(Path.Combine(PathHelper.GetAppDataFolderPath(), "Service-list-builder", "build")).OrderByDescending(d => Directory.GetLastWriteTime(d)).FirstOrDefault()?.Split('\\').Last(), "Services-Enable.bat")}\"", CreateNoWindow = true }).WaitForExitAsync(), () => servicesState == false),
+                // revert microsoft edge settings
+                ("Reverting Microsoft Edge settings", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge"" /v AutofillCreditCardEnabled /f"), null),
+                ("Reverting Microsoft Edge settings", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge"" /v EdgeCollectionsEnabled /f"), null),
+                ("Reverting Microsoft Edge settings", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge"" /v ShowMicrosoftRewards /f"), null),
+                ("Reverting Microsoft Edge settings", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge"" /v PersonalizationReportingEnabled /f"), null),
+                ("Reverting Microsoft Edge settings", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge"" /v ShowRecommendationsEnabled /f"), null),
+                ("Reverting Microsoft Edge settings", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge"" /v WebWidgetAllowed /f"), null),
+                ("Reverting Microsoft Edge settings", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge"" /v MathSolverEnabled /f"), null),
+                ("Reverting Microsoft Edge settings", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge"" /v BackgroundModeEnabled /f"), null),
+                ("Reverting Microsoft Edge settings", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge"" /v InAppSupportEnabled /f"), null),
+                ("Reverting Microsoft Edge settings", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge"" /v StartupBoostEnabled /f"), null),
+                ("Reverting Microsoft Edge settings", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge"" /v NewTabPageSearchBox /t REG_SZ /d ""redirect"" /f"), null),
+                ("Reverting Microsoft Edge settings", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge"" /v TyposquattingCheckerEnabled /f"), null),
+                ("Reverting Microsoft Edge settings", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge"" /v SiteSafetyServicesEnabled /f"), null),
+                ("Reverting Microsoft Edge settings", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge"" /v AlternateErrorPagesEnabled /f"), null),
+                ("Reverting Microsoft Edge settings", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge"" /v AutofillAddressEnabled /f"), null),
+                ("Reverting Microsoft Edge settings", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge"" /v PaymentMethodQueryEnabled /f"), null),
+                ("Reverting Microsoft Edge settings", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge"" /v PromotionalTabsEnabled /f"), null),
+                ("Reverting Microsoft Edge settings", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge"" /v VisualSearchEnabled /f"), null),
+                ("Reverting Microsoft Edge settings", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge"" /v AutoImportAtFirstRun /f"), null),
+                ("Reverting Microsoft Edge settings", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge"" /v BlockExternalExtensions /f"), null),
+                ("Reverting Microsoft Edge settings", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge"" /v FamilySafetySettingsEnabled /f"), null),
+                ("Reverting Microsoft Edge settings", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge"" /v PasswordGeneratorEnabled /f"), null),
+                ("Reverting Microsoft Edge settings", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge"" /v PasswordManagerEnabled /f"), null),
+                ("Reverting Microsoft Edge settings", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge"" /v PasswordMonitorAllowed /f"), null),
+                ("Reverting Microsoft Edge settings", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge"" /v ResolveNavigationErrorsUseWebService /f"), null),
+                ("Reverting Microsoft Edge settings", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge"" /v EdgeFollowEnabled /f"), null),
+                ("Reverting Microsoft Edge settings", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge"" /v AllowGamesMenu /f"), null),
+                ("Reverting Microsoft Edge settings", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge"" /v BlockThirdPartyCookies /f"), null),
+                ("Reverting Microsoft Edge settings", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge"" /v DefaultNotificationsSetting /t REG_DWORD /d 2 /f"), null),
+                ("Reverting Microsoft Edge settings", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge"" /v DefaultGeolocationSetting /t REG_DWORD /d 2 /f"), null),
+                ("Reverting Microsoft Edge settings", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge"" /v AccessibilityImageLabelsEnabled /f"), null),
+                ("Reverting Microsoft Edge settings", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge"" /v QuickSearchShowMiniMenu /f"), null),
+                ("Reverting Microsoft Edge settings", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge"" /v HubsSidebarEnabled /f"), null),
+                ("Reverting Microsoft Edge settings", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge"" /v MicrosoftEdgeInsiderPromotionEnabled /f"), null),
+                ("Reverting Microsoft Edge settings", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge"" /v WindowOcclusionEnabled /f"), null),
+                ("Reverting Microsoft Edge settings", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge"" /v SpotlightExperiencesAndRecommendationsEnabled /f"), null),
+                ("Reverting Microsoft Edge settings", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge"" /v NewTabPageAppLauncherEnabled /f"), null),
+                ("Reverting Microsoft Edge settings", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge"" /v AddressBarMicrosoftSearchInBingProviderEnabled /f"), null),
+                ("Reverting Microsoft Edge settings", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge"" /v SearchInSidebarEnabled /f"), null),
+                ("Reverting Microsoft Edge settings", async () => await ProcessActions.RunNsudo("CurrentUser", @"reg delete ""HKEY_CURRENT_USER\Software\Policies\Microsoft\Windows\EdgeUI"" /v DisableHelpSticker /f"), null),
+                ("Reverting Microsoft Edge settings", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg delete ""HKEY_LOCAL_MACHINE\Software\Policies\Microsoft\Windows\EdgeUI"" /v DisableHelpSticker /f"), null),
 
-                // enable "do not preserve zone information in file attachments"
-                (@"Enabling ""Do not preserve zone information in file attachments""", async () => await ProcessActions.RunNsudo("CurrentUser", @"reg add ""HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Attachments"" /v SaveZoneInformation /t REG_DWORD /d 1 /f"), () => servicesState == true),
+                // revert nagles algorithm
+                ("Reverting Nagles Algorithm", async () => await ProcessActions.RunPowerShell(@"Get-NetAdapter | ForEach-Object { Remove-ItemProperty -Path ""HKLM:\System\CurrentControlSet\Services\Tcpip\Parameters\Interfaces\$($_.InterfaceGuid)"" -Name ""TcpAckFrequency"" -ErrorAction SilentlyContinue; Remove-ItemProperty -Path ""HKLM:\System\CurrentControlSet\Services\Tcpip\Parameters\Interfaces\$($_.InterfaceGuid)"" -Name ""TcpDelAckTicks"" -ErrorAction SilentlyContinue; Remove-ItemProperty -Path ""HKLM:\System\CurrentControlSet\Services\Tcpip\Parameters\Interfaces\$($_.InterfaceGuid)"" -Name ""TCPNoDelay"" -ErrorAction SilentlyContinue }"), null),
+                
+                // revert timer coalescing
+                ("Reverting timer coalescing", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg delete ""HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\Power"" /v ""CoalescingTimerInterval"" /f"), null),
 
-                // set "inclusion list for moderate risk file types"" policy to ".bat;.cmd;.vbs;.ps1;.reg;.js;.exe;.msi;"
-                (@"Setting ""Inclusion list for moderate risk file types"" policy to "".bat;.cmd;.vbs;.ps1;.reg;.js;.exe;.msi;""", async () => await ProcessActions.RunNsudo("CurrentUser", @"reg add ""HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Policies\Associations"" /v ModRiskFileTypes /t REG_SZ /d "".bat;.cmd;.vbs;.reg;.js;.exe;.msi;"" /f"), () => servicesState == true),
+                // revert "sign-in and lock last interactive user automatically after a restart" policy
+                (@"Reverting ""Sign-in and lock last interactive user automatically after a restart"" policy", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System"" /v DisableAutomaticRestartSignOn /f"), null),
 
-                // set execution policy to unrestricted
-                ("Setting execution policy to unrestricted", async () => await ProcessActions.RunPowerShell("Set-ExecutionPolicy Unrestricted -Force"), () => servicesState == true),
+                // revert automatic maintenance
+                ("Reverting automatic maintenance", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\Maintenance"" /v MaintenanceDisabled /f"), null),
+                (@"Reverting ""Configure Scheduled Maintenance Behavior"" policy", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\ScheduledDiagnostics"" /f"), null),
 
-                // switch high performance power plan
-                ("Switching to the high performance power plan", async () => await ProcessActions.RunNsudo("CurrentUser", @"powercfg /setactive 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c"), () => servicesState == true),
+                // revert game bar
+                ("Reverting GameBar", async () => await ProcessActions.RunNsudo("CurrentUser", @"reg delete ""HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\GameDVR"" /v ""AppCaptureEnabled"" /f"), null),
+                ("Reverting GameBar", async () => await ProcessActions.RunNsudo("CurrentUser", @"reg add ""HKEY_CURRENT_USER\System\GameConfigStore"" /v ""GameDVR_Enabled"" /t REG_DWORD /d 1 /f"), null),
 
-                // adjust powerplan
-                (@"Setting ""Processor idle demote threshold"" to 1", async () => await ProcessActions.RunNsudo("CurrentUser", @"powercfg /setacvalueindex scheme_current 54533251-82be-4824-96c1-47b60b740d00 4b92d758-5a24-4851-a470-815d78aee119 1"), null),
-                (@"Setting ""Processor idle demote threshold"" to 1", async () => await ProcessActions.RunNsudo("CurrentUser", @"powercfg /setdcvalueindex scheme_current 54533251-82be-4824-96c1-47b60b740d00 4b92d758-5a24-4851-a470-815d78aee119 1"), null),
-                (@"Disabling ""Processor performance autonomous mode""", async () => await ProcessActions.RunNsudo("CurrentUser", @"powercfg /setacvalueindex scheme_current 54533251-82be-4824-96c1-47b60b740d00 8baa4a8a-14c6-4451-8e8b-14bdbd197537 0"), null),
-                (@"Disabling ""Processor performance autonomous mode""", async () => await ProcessActions.RunNsudo("CurrentUser", @"powercfg /setdcvalueindex scheme_current 54533251-82be-4824-96c1-47b60b740d00 8baa4a8a-14c6-4451-8e8b-14bdbd197537 0"), null),
-                (@"Setting ""Processor performance increase threshold"" to 1", async () => await ProcessActions.RunNsudo("CurrentUser", @"powercfg /setacvalueindex scheme_current 54533251-82be-4824-96c1-47b60b740d00 06cadf0e-64ed-448a-8927-ce7bf90eb35d 1"), null),
-                (@"Setting ""Processor performance increase threshold for Processor Power Efficiency Class 1"" to 1", async () => await ProcessActions.RunNsudo("CurrentUser", @"powercfg /setacvalueindex scheme_current 54533251-82be-4824-96c1-47b60b740d00 06cadf0e-64ed-448a-8927-ce7bf90eb35e 1"), null),
+                // configure presentation modes
+                ("Reverting presentation modes", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_CURRENT_USER\SYSTEM\GameConfigStore"" /v ""GameDVR_HonorUserFSEBehaviorMode"" /t REG_DWORD /d 0 /f"), null),
+                ("Reverting presentation modes", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_CURRENT_USER\SYSTEM\GameConfigStore"" /v ""GameDVR_DXGIHonorFSEWindowsCompatible"" /t REG_DWORD /d 0 /f"), null),
+                ("Reverting presentation modes", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg delete ""HKEY_CURRENT_USER\SYSTEM\GameConfigStore"" /v ""GameDVR_FSEBehavior"" /f"), null),
+                ("Reverting presentation modes", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\Dwm"" /v ""OverlayTestMode"" /f"), null),
 
-                // save powerplan
-                ("Saving the power plan configuration", async () => await ProcessActions.RunNsudo("CurrentUser", @"powercfg /setactive scheme_current"), () => servicesState == true),
+                // revert shortcut text creation
+                ("Reverting shortcut text creation", async () => await ProcessActions.RunNsudo("CurrentUser", @"reg delete ""HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer"" /v link /f"), null),
 
-                // enable some drivers
-                ("Enabling some drivers", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\dam"" /v Start /t REG_DWORD /d 1 /f"), () => servicesState == true),
-                ("Enabling some drivers", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\NetBT"" /v Start /t REG_DWORD /d 1 /f"), () => servicesState == true),
-                ("Enabling some drivers", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\tcpipreg"" /v Start /t REG_DWORD /d 2 /f"), () => servicesState == true),
+                // revert Wi-Fi auto-connect policy
+                (@"Reverting ""Allow Windows to automatically connect to suggested open hotspots, to networks shared by contacts, and to hotspots offering paid services"" policy", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\WcmSvc\wifinetworkmanager\config"" /v AutoConnectAllowedOEM /f"), null),
+                ("Reverting WiFi telemetry", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\PolicyManager\default\WiFi\AllowWiFiHotSpotReporting"" /v value /f"), null),
+                ("Reverting WiFi telemetry", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\PolicyManager\default\WiFi\AllowAutoConnectToWiFiSenseHotspots"" /v value /f"), null),
 
-                // download obs studio
-                ("Downloading OBS Studio Settings", async () => await RunDownload("https://www.dl.dropboxusercontent.com/scl/fi/gkhuws75qnckr63lnfbzn/obs-studio.zip?rlkey=6ziow6s1a85a7s5snrdi7v1x2&st=db3yzo4m&dl=0", Path.GetTempPath(), "obs-studio.zip"), null),
+                // revert disabling unnecessary services
+                ("Reverting disabling unnecessary services", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\diagnosticshub.standardcollector.service"" /v Start /t REG_DWORD /d 3 /f"), null),
+                ("Reverting disabling unnecessary services", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\DPS"" /v Start /t REG_DWORD /d 2 /f"), null),
+                ("Reverting disabling unnecessary services", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\FontCache3.0.0.0"" /v ""Start"" /t REG_DWORD /d 3 /f"), null),
+                ("Reverting disabling unnecessary services", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\PcaSvc"" /v Start /t REG_DWORD /d 2 /f"), null),
+                ("Reverting disabling unnecessary services", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\WdiServiceHost"" /v Start /t REG_DWORD /d 3 /f"), null),
+                ("Reverting disabling unnecessary services", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\WdiSystemHost"" /v Start /t REG_DWORD /d 3 /f"), null),
+                ("Reverting disabling unnecessary services", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Wecsvc"" /v Start /t REG_DWORD /d 3 /f"), null),
+                ("Reverting disabling unnecessary services", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\WerSvc"" /v Start /t REG_DWORD /d 3 /f"), null),
+                ("Reverting disabling unnecessary services", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\wisvc"" /v Start /t REG_DWORD /d 3 /f"), null),
 
-                // update obs studio settings
-                ("Updating OBS Studio Settings", async () => await ProcessActions.RunExtract(Path.Combine(Path.GetTempPath(), "obs-studio.zip"), Path.Combine(Path.GetTempPath(), "obs-studio")), null),
-                ("Updating OBS Studio Settings", async () => iniHelper.AddValue("Encoder", "obs_qsv11_v2", "AdvOut"), () => INTEL == true),
-                ("Updating OBS Studio Settings", async () => iniHelper.AddValue("RecEncoder", "obs_qsv11_hevc", "AdvOut"), () => INTEL == true),
-                ("Updating OBS Studio Settings", async () => iniHelper.AddValue("Encoder", "h265_texture_amf", "AdvOut"), () => AMD == true),
-                ("Updating OBS Studio Settings", async () => iniHelper.AddValue("RecEncoder", "h265_texture_amf", "AdvOut"), () => AMD == true),
-                ("Updating OBS Studio Settings", async () => await ProcessActions.RunNsudo("CurrentUser", @"cmd /c xcopy ""%TEMP%\obs-studio\*"" ""%APPDATA%\obs-studio\"" /s /y /i"), null),
+                // revert potentially unwanted windows programs
+                ("Reverting potentially unwanted windows programs", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\AggregatorHost.exe"" /f"), null),
+                ("Reverting potentially unwanted windows programs", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\BCILauncher.exe"" /f"), null),
+                ("Reverting potentially unwanted windows programs", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\BGAUpsell.exe"" /f"), null),
+                ("Reverting potentially unwanted windows programs", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\BingChatInstaller.exe"" /f"), null),
+                ("Reverting potentially unwanted windows programs", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\CompatTelRunner.exe"" /f"), null),
+                ("Reverting potentially unwanted windows programs", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\DeviceCensus.exe"" /f"), null),
+                ("Reverting potentially unwanted windows programs", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\FeatureLoader.exe"" /f"), null),
 
-                // remove static ip
-                ("Removing static ip", async () => await ProcessActions.RunPowerShell(@"Get-NetIPInterface -AddressFamily IPv4 | ForEach-Object { netsh interface ipv4 set address name=\""$($_.InterfaceAlias)\"" source=dhcp; netsh interface ipv4 set dnsservers name=\""$($_.InterfaceAlias)\"" source=dhcp }"), () => servicesState == true),
+                // revert "disable diagnostic data viewer" policy
+                (@"Reverting ""Disable diagnostic data viewer"" policy", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\DataCollection"" /v DisableDiagnosticDataViewer /f"), null),
 
-                // adjust ethernet adapter advanced settings
-                ("Adjusting Ethernet adapter advanced settings", async () => await ProcessActions.RunPowerShellScript("ethernet.ps1", ""), () => servicesState == true),
+                // revert app access to account info
+                ("Reverting disabling app access to account info", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy"" /f"), null),
 
-                // enable "receive segment coalescing"
-                (@"Enabling ""Receive Segment Coalescing""", async () => await ProcessActions.RunPowerShell(@"Set-NetOffloadGlobalSetting -ReceiveSegmentCoalescing Enabled"), () => servicesState == true),
+                // remove autoplay policy
+                (@"Reverting ""Disallow Autoplay for non-volume devices"" policy", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\Explorer"" /v NoAutoplayfornonVolume /f"), null),
+                
+                // revert disk space checks
+                ("Reverting disk space checks", async () => await ProcessActions.RunNsudo("CurrentUser", @"reg delete ""HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer"" /v NoLowDiskSpaceChecks /f"), null),
+                ("Reverting disk space checks", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager"" /v BootExecute /t REG_MULTI_SZ /d ""autocheck autochk *"" /f"), null),
+                ("Reverting disk space checks", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Dfrg\BootOptimizeFunction"" /v Enable /f"), null),
+                ("Reverting disk space checks", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\OptimalLayout"" /v EnableAutoLayout /f"), null),
+                
+                // bluetooth & devices -> autoplay
+                (@"Disabling ""Use AutoPlay for all media and devices""", async () => await ProcessActions.RunNsudo("CurrentUser", @"reg add ""HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\AutoplayHandlers"" /v DisableAutoplay /t REG_DWORD /d 1 /f"), null),
 
-                // reset/remove unnecessary tcp/ip settings
-                ("Resetting neighbor cache limit", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"netsh int ip set global neighborcachelimit=256"), () => servicesState == true),
-                ("Resetting source routing behavior", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"netsh int ip set global sourceroutingbehavior=dontforward"), () => servicesState == true),
-                ("Resetting DHCP media sense", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"netsh int ip set global dhcpmediasense=enabled"), () => servicesState == true),
-                ("Resetting TCP timestamps", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"netsh int tcp set global timestamps=allowed"), () => servicesState == true),
-                ("Resetting Memory Pressure Protection (MPP)", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"netsh int tcp set security mpp=enabled"), () => servicesState == true),
-                ("Resetting security profiles", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"netsh int tcp set security profiles=enabled"), () => servicesState == true),
-                ("Resetting max SYN retransmissions", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"netsh int tcp set global maxsynretransmissions=4"), () => servicesState == true),
-                ("Resetting initial RTO", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"netsh int tcp set global initialRto=1000"), () => servicesState == true),
-                ("Resetting ISATAP", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"netsh int isatap set state default"), () => servicesState == true),
-                ("Resetting 6to4", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"netsh int 6to4 set state default"), () => servicesState == true),
+                // set "turn off autoplay" policy to "all drives"
+                (@"Setting ""Turn off Autoplay"" policy to ""All drives""", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer"" /v NoDriveTypeAutoRun /t REG_DWORD /d 255 /f"), null),
 
-                // disable qos policies outside of domain networks
-                ("Disabling QoS Policies outside of domain networks", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg delete ""HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Tcpip\QoS"" /f"), () => servicesState == true),
+                // revert save your work prompt
+                ("Reverting save your work prompt", async () => await ProcessActions.RunNsudo("CurrentUser", @"reg delete ""HKEY_CURRENT_USER\Control Panel\Desktop"" /v AutoEndTasks /f"), null),
+                ("Reverting save your work prompt", async () => await ProcessActions.RunNsudo("CurrentUser", @"reg delete ""HKEY_USERS\.DEFAULT\Control Panel\Desktop"" /v AutoEndTasks /f"), null),
 
-                // update lists.ini
-                ("Updating lists.ini", async () => { var l = (await File.ReadAllLinesAsync(list)).ToList(); l.Insert(14, "Dhcp"); l.RemoveAt(49); await File.WriteAllLinesAsync(list, l); }, () => servicesState == true && listExists == true && storedVersion == "1.2.0.0"),
-                ("Updating lists.ini", async () => { var l = (await File.ReadAllLinesAsync(list)).ToList(); l.Insert(15, "Dhcp"); l.RemoveAt(50); await File.WriteAllLinesAsync(list, l); }, () => servicesState == true && listExists == true && storedVersion != "1.2.0.0"),
+                // revert delay to end tasks on shutdown screen
+                ("Reverting delay to end tasks on shutdown screen", async () => await ProcessActions.RunNsudo("CurrentUser", @"reg delete ""HKEY_CURRENT_USER\Control Panel\Desktop"" /v HungAppTimeout /f"), null),
+                ("Reverting delay to end tasks on shutdown screen", async () => await ProcessActions.RunNsudo("CurrentUser", @"reg delete ""HKEY_USERS\.DEFAULT\Control Panel\Desktop"" /v HungAppTimeout /f"), null),
+                ("Reverting delay to end tasks on shutdown screen", async () => await ProcessActions.RunNsudo("CurrentUser", @"reg delete ""HKEY_CURRENT_USER\Control Panel\Desktop"" /v WaitToKillAppTimeout /f"), null),
+                ("Reverting delay to end tasks on shutdown screen", async () => await ProcessActions.RunNsudo("CurrentUser", @"reg delete ""HKEY_USERS\.DEFAULT\Control Panel\Desktop"" /v WaitToKillAppTimeout /f"), null),
 
-                // build service list
-                ("Building service list", async () => await Process.Start(new ProcessStartInfo { FileName = nsudoPath, Arguments = $@"-U:T -P:E -Wait -ShowWindowMode:Hide ""{Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Applications", "Service-list-builder", "service-list-builder.exe")}"" --config ""{Path.Combine(PathHelper.GetAppDataFolderPath(), "Service-list-builder", "lists.ini")}"" --disable-service-warning --output-dir ""{Path.Combine(PathHelper.GetAppDataFolderPath(), "Service-list-builder", "build")}""", CreateNoWindow = true }).WaitForExitAsync(), () => servicesState == true && listExists == true),
+                // revert delay for low-level hooks
+                ("Reverting delay for low-level hooks", async () => await ProcessActions.RunNsudo("CurrentUser", @"reg delete ""HKEY_CURRENT_USER\Control Panel\Desktop"" /v LowLevelHooksTimeout /f"), null),
+                ("Reverting delay for low-level hooks", async () => await ProcessActions.RunNsudo("CurrentUser", @"reg delete ""HKEY_USERS\.DEFAULT\Control Panel\Desktop"" /v LowLevelHooksTimeout /f"), null),
 
-                // disable services & drivers
-                ("Disabling Services & Drivers", async () => await Process.Start(new ProcessStartInfo { FileName = nsudoPath, Arguments = $"-U:T -P:E -Wait -ShowWindowMode:Hide \"{Path.Combine(PathHelper.GetAppDataFolderPath(), "Service-list-builder", "build", Directory.GetDirectories(Path.Combine(PathHelper.GetAppDataFolderPath(), "Service-list-builder", "build")).OrderByDescending(d => Directory.GetLastWriteTime(d)).FirstOrDefault()?.Split('\\').Last(), "Services-Disable.bat")}\"", CreateNoWindow = true }).WaitForExitAsync(), () => originalServicesState == false && servicesState == true),
+                // revert delay to end services on shutdown
+                ("Reverting delay to end services on shutdown", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control"" /v WaitToKillServiceTimeout /t REG_SZ /d 5000 /f"), null),
+
+                // update vencord plugins
+                ("Update Vencord Plugins", async () => await ProcessActions.Sleep(1000), () => Discord == true),
+                ("Update Vencord Plugins", async () => await Task.Run(() => File.Copy(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Scripts", "settings.json"), Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Vencord", "settings", "settings.json"), true)), () => Discord == true),
+                
+                // set "win32priorityseparation" to 0x18/24
+                (@"Setting ""Win32PrioritySeparation"" to 0x18/24", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\PriorityControl"" /v Win32PrioritySeparation /t REG_DWORD /d 24 /f"), null),
+
+                // import optimized nvidia profile
+                ("Importing optimized NVIDIA profile", async () => await ProcessActions.ImportProfile("BaseProfile.nip"), () => NVIDIA == true),
             };
 
             var filteredActions = actions.Where(a => a.Condition == null || a.Condition.Invoke()).ToList();
@@ -316,7 +336,7 @@ namespace AutoOS.Views.Settings
                 ProgressBar.Value += incrementPerTitle;
             }
 
-            //updater.IsPrimaryButtonEnabled = true;
+            updater.IsPrimaryButtonEnabled = true;
         }
 
         public async Task RunDownload(string url, string path, string file = null)

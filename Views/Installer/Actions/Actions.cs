@@ -931,6 +931,45 @@ public static class ProcessActions
                 }
             }
         }
+
+        // launch epic games to get new token
+        await Task.Run(() => Process.Start(new ProcessStartInfo(EpicGamesHelper.EpicGamesPath) { WindowStyle = ProcessWindowStyle.Hidden }));
+
+        // wait for token to get used
+        while (true)
+        {
+            await Task.Delay(100);
+
+            if (!EpicGamesHelper.ValidateData(EpicGamesHelper.ActiveEpicGamesAccountPath))
+            {
+                await UpdateInvalidEpicGamesToken();
+                return;
+            }
+
+            if (EpicGamesHelper.GetAccountData(EpicGamesHelper.ActiveEpicGamesAccountPath).TokenUseCount == 1)
+                break;
+        }
+
+        // wait for new token
+        while (true)
+        {
+            await Task.Delay(100);
+
+            if (!EpicGamesHelper.ValidateData(EpicGamesHelper.ActiveEpicGamesAccountPath))
+            {
+                await UpdateInvalidEpicGamesToken();
+                return;
+            }
+
+            if (EpicGamesHelper.GetAccountData(EpicGamesHelper.ActiveEpicGamesAccountPath).TokenUseCount == 0)
+                break;
+        }
+
+        // close epic games launcher
+        EpicGamesHelper.CloseEpicGames();
+
+        // update the backed up config
+        File.Copy(EpicGamesHelper.ActiveEpicGamesAccountPath, Path.Combine(EpicGamesHelper.EpicGamesAccountDir, EpicGamesHelper.GetAccountData(EpicGamesHelper.ActiveEpicGamesAccountPath).AccountId, "GameUserSettings.ini"), true);
     }
 
     public static async Task SteamLogin()

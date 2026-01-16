@@ -263,6 +263,11 @@ Get-NetAdapter | Where-Object { $_.PhysicalMediaType -eq "802.3" } | ForEach-Obj
         Set-NetAdapterAdvancedProperty -Name $adapterName -DisplayName "Wake on Link Settings" -DisplayValue "Disabled"
     }
 
+    # Wake On Link Up
+    if ($adapterProperties | Where-Object { $_.DisplayName -eq "Wake On Link Up" }) {
+        Set-NetAdapterAdvancedProperty -Name $adapterName -DisplayName "Wake On Link Up" -DisplayValue "Disabled"
+    }
+
     # Wake on Ping
     if ($adapterProperties | Where-Object { $_.DisplayName -eq "Wake on Ping" }) {
         Set-NetAdapterAdvancedProperty -Name $adapterName -DisplayName "Wake on Ping" -DisplayValue "Disabled"

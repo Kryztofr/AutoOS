@@ -17,8 +17,8 @@ public static class RuntimesStage
 
         var actions = new List<(string Title, Func<Task> Action, Func<bool> Condition)>
         {
-            // download the latest visual c++ redistributable
-            ("Downloading the latest Visual C++ Redistributable", async () => await ProcessActions.RunDownload("https://kutt.it/vcpp", Path.GetTempPath(), "VisualCppRedist_AIO_x86_x64.exe"), null),
+            // download the visual c++ redistributable
+            ("Downloading the Visual C++ Redistributable", async () => await ProcessActions.RunDownload("https://github.com/abbodi1406/vcredist/releases/latest/download/VisualCppRedist_AIO_x86_x64.exe", Path.GetTempPath(), "VisualCppRedist_AIO_x86_x64.exe"), null),
 
             // install visual c++ redistributable
             ("Installing the Visual C++ Redistributable", async () => await ProcessActions.RunNsudo("CurrentUser", @"""%TEMP%\VisualCppRedist_AIO_x86_x64.exe"" /ai /gm2"), null),

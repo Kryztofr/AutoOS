@@ -72,7 +72,7 @@
             "enabled": false
         },
         "BetterGifPicker": {
-            "enabled": true
+            "enabled": false
         },
         "BetterNotesBox": {
             "enabled": false
