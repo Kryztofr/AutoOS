@@ -1626,12 +1626,12 @@ public partial class HeaderCarousel : ItemsControl
         {
             foreach (var process in Process.GetProcessesByName(name))
             {
-                try { process.Kill(); process.WaitForExit(); } catch { }
-            }
-
-            foreach (var process in Process.GetProcessesByName(name))
-            {
-                try { process.Kill(); process.WaitForExit(); } catch { }
+                try
+                { 
+                    process.Kill(); 
+                    process.WaitForExit(); 
+                } 
+                catch { }
             }
         }
 
@@ -1711,65 +1711,74 @@ public partial class HeaderCarousel : ItemsControl
         }
     }
 
-    private void RestartProcesses_Click(object sender, RoutedEventArgs e)
+    private async void RestartProcesses_Click(object sender, RoutedEventArgs e)
     {
-        // restart services
-        var serviceNames = new[]
+        await Task.Run(() =>
         {
-            "AudioEndpointBuilder",
-            "AppXSvc",
-            "Appinfo",
-            "CaptureService",
-            "cbdhsvc",
-            "ClipSvc",
-            "CryptSvc",
-            "DevicesFlowUserSvc",
-            "DeviceAssociationService",
-            "Dhcp",
-            "DispBrokerDesktopSvc",
-            //"Dnscache",
-            "DoSvc",
-            "gpsvc",
-            "InstallService",
-            "KeyIso",
-            "LicenseManager",
-            "lfsvc",
-            "msiserver",
-            "Netman",
-            "NetSetupSvc",
-            "netprofm",
-            "NgcCtnrSvc",
-            "NgcSvc",
-            "nsi",
-            "ProfSvc",
-            "StateRepository",
-            //"TextInputManagementService",
-            "TrustedInstaller",
-            "UdkUserSvc",
-            "UserManager",
-            "WFDSConMgrSvc",
-            "Windhawk",
-            "WinHttpAutoProxySvc",
-            "Winmgmt",
-            "Wcmsvc"
-        };
+            // launch explorer
+            Process.Start("explorer.exe");
 
-        foreach (var serviceName in serviceNames)
-        {
-            try
+            // start windhawk service
+            using var windhawkService = new ServiceController("Windhawk");
+            if (windhawkService.Status == ServiceControllerStatus.Stopped)
             {
-                using var sc = new ServiceController(serviceName);
-                if (sc.Status == ServiceControllerStatus.Stopped)
-                {
-                    sc.Start();
-                    sc.WaitForStatus(ServiceControllerStatus.Running, TimeSpan.FromSeconds(10));
-                }
+                windhawkService.Start();
             }
-            catch { }
-        }
 
-        // launch explorer
-        Process.Start("explorer.exe");
+            // restart services
+            var serviceNames = new[]
+            {
+                "AudioEndpointBuilder",
+                "AppXSvc",
+                "Appinfo",
+                "CaptureService",
+                "cbdhsvc",
+                "ClipSvc",
+                "CryptSvc",
+                "DevicesFlowUserSvc",
+                "DeviceAssociationService",
+                "Dhcp",
+                "DispBrokerDesktopSvc",
+                //"Dnscache",
+                "DoSvc",
+                "gpsvc",
+                "InstallService",
+                "KeyIso",
+                "LicenseManager",
+                "lfsvc",
+                "msiserver",
+                "Netman",
+                "NetSetupSvc",
+                "netprofm",
+                "NgcCtnrSvc",
+                "NgcSvc",
+                "nsi",
+                "ProfSvc",
+                "StateRepository",
+                //"TextInputManagementService",
+                "TrustedInstaller",
+                "UdkUserSvc",
+                "UserManager",
+                "WFDSConMgrSvc",
+                "WinHttpAutoProxySvc",
+                "Winmgmt",
+                "Wcmsvc"
+            };
+
+            foreach (var serviceName in serviceNames)
+            {
+                try
+                {
+                    using var sc = new ServiceController(serviceName);
+
+                    if (sc.Status == ServiceControllerStatus.Stopped)
+                    {
+                        sc.Start();
+                    }
+                }
+                catch { }
+            }
+        });
     }
 
     private DispatcherTimer gameWatcherTimer;

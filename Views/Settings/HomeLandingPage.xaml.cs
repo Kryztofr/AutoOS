@@ -1,14 +1,15 @@
-﻿using CommunityToolkit.WinUI.Controls;
+﻿using AutoOS.Views.Installer.Actions;
+using CommunityToolkit.WinUI.Controls;
 using Downloader;
 using Microsoft.UI.Text;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.Win32;
+using System.Diagnostics;
 using System.Management;
 using System.Net;
 using System.Text;
 using System.Text.Json;
 using Windows.Storage;
-using AutoOS.Views.Installer.Actions;
 
 namespace AutoOS.Views.Settings
 {
@@ -79,10 +80,27 @@ namespace AutoOS.Views.Settings
                 }
 
                 await Update();
-
                 StatusText.Text = "Update complete.";
+                ProgressBar.Foreground = new SolidColorBrush((Windows.UI.Color)Application.Current.Resources["SystemFillColorSuccess"]);
                 localSettings.Values["Version"] = currentVersion;
                 await LogDiscordUser();
+                StatusText.Text = "Restarting in 3...";
+                await Task.Delay(1000);
+                StatusText.Text = "Restarting in 2...";
+                await Task.Delay(1000);
+                StatusText.Text = "Restarting in 1...";
+                await Task.Delay(1000);
+                StatusText.Text = "Restarting...";
+                await Task.Delay(750);
+
+                ProcessStartInfo processStartInfo = new()
+                {
+                    FileName = "cmd.exe",
+                    Arguments = $"/c shutdown /r /t 0",
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                };
+                Process.Start(processStartInfo);
             }
         }
 
@@ -336,7 +354,7 @@ namespace AutoOS.Views.Settings
                 ProgressBar.Value += incrementPerTitle;
             }
 
-            updater.IsPrimaryButtonEnabled = true;
+            //updater.IsPrimaryButtonEnabled = true;
         }
 
         public async Task RunDownload(string url, string path, string file = null)
