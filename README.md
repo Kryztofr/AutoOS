@@ -36,7 +36,7 @@ AutoOS is a WinUI3 application focused on automation to improve performance whil
 
 **Step 1:** Before installing, please join my [Discord Server](https://discord.gg/bZU4dMMWpg) to receive installation support and stay informed about future updates or changes.
 
-**Step 2:** Download the latest Windows 23H2 ISO file from [here](https://drive.google.com/drive/folders/1ZxTVzvKROzOQ_o4bzUvv0PY86HL0JiuY?usp=sharing) (You have to use a Chromium based browser like Edge, Chrome, Brave, etc.). Other ISOs are currently not supported. 
+**Step 2:** Download the latest Windows 23H2 ISO file from [here](https://drive.google.com/drive/folders/1ZxTVzvKROzOQ_o4bzUvv0PY86HL0JiuY?usp=sharing). Other ISOs are currently not supported. 
 
 **Step 3:** Go to the Drivers / Support page or your Mainboard / PC and download your LAN, Wi-Fi and Bluetooth driver (No Audio, Chipset, or anything else). On prebuilts and laptops you may also need the disk driver (Intel Rapid Storage Technology Driver) otherwise you may get a bluescreen. 
 
