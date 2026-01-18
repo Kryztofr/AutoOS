@@ -1,4 +1,212 @@
+$ErrorActionPreference = 'Stop'
+
 Add-Type -AssemblyName System.Windows.Forms
+Add-Type -TypeDefinition @"
+using System;
+using System.Runtime.InteropServices;
+using System.Threading;
+
+public class TrustedInstaller
+{
+    const uint SC_MANAGER_CONNECT = 0x1;
+    const uint SERVICE_QUERY_STATUS = 0x4;
+    const uint SERVICE_START = 0x10;
+    const uint PROCESS_ALL_ACCESS = 0x1F0FFF;
+    const uint EXTENDED_STARTUPINFO_PRESENT = 0x00080000;
+    const uint CREATE_NO_WINDOW = 0x08000000;
+    const int PROC_THREAD_ATTRIBUTE_PARENT_PROCESS = 0x00020000;
+    const int STARTF_USESHOWWINDOW = 0x00000001;
+    const short SW_HIDE = 0;
+
+    const uint TOKEN_ADJUST_PRIVILEGES = 0x20;
+    const uint TOKEN_ADJUST_SESSIONID = 0x100;
+    const uint TOKEN_QUERY = 0x8;
+    const uint SE_PRIVILEGE_ENABLED = 0x2;
+
+    [StructLayout(LayoutKind.Sequential)]
+    struct LUID { public uint LowPart; public int HighPart; }
+
+    [StructLayout(LayoutKind.Sequential)]
+    struct LUID_AND_ATTRIBUTES
+    {
+        public LUID Luid;
+        public uint Attributes;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    struct TOKEN_PRIVILEGES
+    {
+        public uint PrivilegeCount;
+        public LUID_AND_ATTRIBUTES Privileges;
+    }
+
+    static readonly string[] AllPrivileges = {
+        "SeAssignPrimaryTokenPrivilege","SeLockMemoryPrivilege","SeIncreaseQuotaPrivilege",
+        "SeTcbPrivilege","SeSecurityPrivilege","SeTakeOwnershipPrivilege","SeLoadDriverPrivilege",
+        "SeSystemProfilePrivilege","SeSystemtimePrivilege","SeProfileSingleProcessPrivilege",
+        "SeIncreaseBasePriorityPrivilege","SeCreatePagefilePrivilege","SeCreatePermanentPrivilege",
+        "SeBackupPrivilege","SeRestorePrivilege","SeShutdownPrivilege","SeDebugPrivilege",
+        "SeAuditPrivilege","SeSystemEnvironmentPrivilege","SeChangeNotifyPrivilege","SeUndockPrivilege",
+        "SeManageVolumePrivilege","SeImpersonatePrivilege","SeCreateGlobalPrivilege",
+        "SeIncreaseWorkingSetPrivilege","SeTimeZonePrivilege","SeCreateSymbolicLinkPrivilege",
+        "SeDelegateSessionUserImpersonatePrivilege"
+    };
+
+    [DllImport("advapi32.dll", SetLastError = true)]
+    static extern bool OpenProcessToken(IntPtr h, uint a, out IntPtr t);
+
+    [DllImport("advapi32.dll", SetLastError = true)]
+    static extern bool LookupPrivilegeValue(string s, string n, out LUID l);
+
+    [DllImport("advapi32.dll", SetLastError = true)]
+    static extern bool AdjustTokenPrivileges(
+        IntPtr t, bool d, ref TOKEN_PRIVILEGES n, int l, IntPtr p, IntPtr r);
+
+    [DllImport("advapi32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+    static extern IntPtr OpenSCManager(string m, string d, uint a);
+
+    [DllImport("advapi32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+    static extern IntPtr OpenService(IntPtr scm, string name, uint access);
+
+    [DllImport("advapi32.dll", SetLastError = true)]
+    static extern bool QueryServiceStatusEx(
+        IntPtr h, int i, out SERVICE_STATUS_PROCESS s, int sz, out int b);
+
+    [DllImport("advapi32.dll", SetLastError = true)]
+    static extern bool StartService(IntPtr h, int a, IntPtr v);
+
+    [DllImport("kernel32.dll", SetLastError = true)]
+    static extern IntPtr OpenProcess(uint a, bool i, int p);
+
+    [DllImport("kernel32.dll", SetLastError = true)]
+    static extern bool InitializeProcThreadAttributeList(
+        IntPtr l, int c, int f, ref IntPtr s);
+
+    [DllImport("kernel32.dll", SetLastError = true)]
+    static extern bool UpdateProcThreadAttribute(
+        IntPtr l, uint f, IntPtr a, IntPtr v, IntPtr s, IntPtr p, IntPtr r);
+
+    [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+    static extern bool CreateProcessW(
+        string a, string c, IntPtr p1, IntPtr p2, bool i, uint f,
+        IntPtr e, string d, ref STARTUPINFOEX s, out PROCESS_INFORMATION p);
+
+    [DllImport("kernel32.dll", SetLastError = true)]
+    static extern uint WaitForSingleObject(IntPtr hHandle, uint dwMilliseconds);
+
+    const uint INFINITE = 0xFFFFFFFF;
+
+    static void EnableAllPrivileges(IntPtr hProcess)
+    {
+        IntPtr hTok;
+        if (!OpenProcessToken(hProcess, TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY | TOKEN_ADJUST_SESSIONID, out hTok))
+            return;
+
+        foreach (string p in AllPrivileges)
+        {
+            LUID luid;
+            if (!LookupPrivilegeValue(null, p, out luid))
+                continue;
+
+            TOKEN_PRIVILEGES tp = new TOKEN_PRIVILEGES();
+            tp.PrivilegeCount = 1;
+            tp.Privileges.Luid = luid;
+            tp.Privileges.Attributes = SE_PRIVILEGE_ENABLED;
+
+            AdjustTokenPrivileges(hTok, false, ref tp, 0, IntPtr.Zero, IntPtr.Zero);
+        }
+    }
+
+    public static void Spawn(string commandLine)
+    {
+        var scm = OpenSCManager(null, null, SC_MANAGER_CONNECT);
+        var svc = OpenService(scm, "TrustedInstaller", SERVICE_START | SERVICE_QUERY_STATUS);
+
+        SERVICE_STATUS_PROCESS ssp;
+        int bytesNeeded;
+
+        do
+        {
+            QueryServiceStatusEx(
+                svc, 0, out ssp,
+                Marshal.SizeOf(typeof(SERVICE_STATUS_PROCESS)),
+                out bytesNeeded);
+
+            if (ssp.dwCurrentState == 1)
+                StartService(svc, 0, IntPtr.Zero);
+        }
+        while (ssp.dwCurrentState != 4);
+
+        IntPtr hTI = OpenProcess(PROCESS_ALL_ACCESS, false, ssp.dwProcessId);
+
+        IntPtr size = IntPtr.Zero;
+        InitializeProcThreadAttributeList(IntPtr.Zero, 1, 0, ref size);
+
+        IntPtr list = Marshal.AllocHGlobal(size);
+        InitializeProcThreadAttributeList(list, 1, 0, ref size);
+
+        IntPtr parent = Marshal.AllocHGlobal(IntPtr.Size);
+        Marshal.WriteIntPtr(parent, hTI);
+
+        UpdateProcThreadAttribute(
+            list, 0,
+            (IntPtr)PROC_THREAD_ATTRIBUTE_PARENT_PROCESS,
+            parent, (IntPtr)IntPtr.Size,
+            IntPtr.Zero, IntPtr.Zero);
+
+        STARTUPINFOEX si = new STARTUPINFOEX();
+        si.StartupInfo.cb = Marshal.SizeOf(typeof(STARTUPINFOEX));
+        si.StartupInfo.dwFlags = STARTF_USESHOWWINDOW;
+        si.StartupInfo.wShowWindow = SW_HIDE;
+        si.lpAttributeList = list;
+
+        PROCESS_INFORMATION pi;
+
+        CreateProcessW(
+            null,
+            commandLine,
+            IntPtr.Zero, IntPtr.Zero,
+            false,
+            EXTENDED_STARTUPINFO_PRESENT | CREATE_NO_WINDOW,
+            IntPtr.Zero, null,
+            ref si, out pi);
+
+        EnableAllPrivileges(pi.hProcess);
+
+        WaitForSingleObject(pi.hProcess, INFINITE);
+    }
+
+    struct SERVICE_STATUS_PROCESS
+    {
+        public int dwServiceType, dwCurrentState, dwControlsAccepted;
+        public int dwWin32ExitCode, dwServiceSpecificExitCode;
+        public int dwCheckPoint, dwWaitHint, dwProcessId, dwServiceFlags;
+    }
+
+    struct PROCESS_INFORMATION
+    {
+        public IntPtr hProcess, hThread;
+        public int dwProcessId, dwThreadId;
+    }
+
+    struct STARTUPINFO
+    {
+        public int cb;
+        public IntPtr lpReserved, lpDesktop, lpTitle;
+        public int dwX, dwY, dwXSize, dwYSize;
+        public int dwXCountChars, dwYCountChars;
+        public int dwFillAttribute, dwFlags;
+        public short wShowWindow, cbReserved2;
+        public IntPtr lpReserved2, hStdInput, hStdOutput, hStdError;
+    }
+
+    struct STARTUPINFOEX
+    {
+        public STARTUPINFO StartupInfo;
+        public IntPtr lpAttributeList;
+    }
+}
+"@
 
 $admin = [Security.Principal.WindowsPrincipal]::new([Security.Principal.WindowsIdentity]::GetCurrent())
 if (-not $admin.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
@@ -25,9 +233,7 @@ if ($InstallDrivers -match '^[Yy]') {
     $DriversDir = $DriverPicker.SelectedPath
 }
 
-Write-Host ""
-Write-Host "===== Step 1: Check Partition Style ====="
-Write-Host ""
+Write-Host "`n===== Step 1: Check Partition Style =====`n"
 $DiskNumber = (Get-Partition -DriveLetter C | Get-Disk).Number
 if ((Get-Partition -DriveLetter "C" | Get-Disk).PartitionStyle -eq 'MBR') {
     Write-Host "Partition style is MBR. Converting to GPT..."
@@ -38,9 +244,7 @@ if ((Get-Partition -DriveLetter "C" | Get-Disk).PartitionStyle -eq 'MBR') {
     Write-Host "Partition style is GPT"
 }
 
-Write-Host ""
-Write-Host "===== Step 2: Check BitLocker State ====="
-Write-Host ""
+Write-Host "`n===== Step 2: Check BitLocker State =====`n"
 if ((Get-BitLockerVolume -MountPoint C:).VolumeStatus -eq "FullyEncrypted") {
     Write-Host "BitLocker is enabled. Disabling..."
     Disable-BitLocker -MountPoint C:
@@ -50,80 +254,81 @@ if ((Get-BitLockerVolume -MountPoint C:).VolumeStatus -eq "FullyEncrypted") {
     Write-Host "BitLocker is disabled"
 }
 
-Write-Host ""
-Write-Host "===== Step 3: Check Shrinkable Space ====="
-Write-Host ""
+Write-Host "`n===== Step 3: Check Partitions =====`n"
 $Partitions = Get-Partition -DiskNumber $DiskNumber | Where-Object { $_.Type -eq 'Basic' -and $_.Size -gt 0 }
 $ShrinkTargetsMB = @(524288, 262144, 131072, 65536)
 
-foreach ($Partition in $Partitions) {
+$ShrinkablePartition = $null
+$ShrinkAmountMB = 0
+$ExistingPartition = $null
+$TargetDrive = $null
+
+$ExistingPartitions = @()
+
+foreach ($p in $Partitions) {
     try {
+        $items = @(Get-ChildItem "$($p.DriveLetter):\" -Force -ErrorAction Stop)
+        $userItems = $items | Where-Object { $_.Name -notin @('System Volume Information', '$RECYCLE.BIN') }
+        if ($userItems.Count -eq 0) {
+            $ExistingPartitions += $p
+        }
+    } catch { }
+}
+
+if ($ExistingPartitions.Count -gt 0) {
+    $ExistingPartition = $ExistingPartitions | Sort-Object { (Get-Volume -DriveLetter $_.DriveLetter).SizeRemaining } -Descending | Select-Object -First 1
+    $TargetDrive = $ExistingPartition.DriveLetter + ":"
+    $FreeGB = [math]::Round((Get-Volume -DriveLetter $ExistingPartition.DriveLetter).SizeRemaining / 1GB, 2)
+    Write-Host "Using empty partition $TargetDrive with $FreeGB GB free"
+}
+else {
+    foreach ($Partition in $Partitions) {
         $Supported = Get-PartitionSupportedSize -DriveLetter $Partition.DriveLetter
         $MaxShrinkMB = [math]::Floor(($Partition.Size - $Supported.SizeMin) / 1MB)
         Write-Host "Partition $($Partition.DriveLetter): $MaxShrinkMB MB shrinkable"
         $Partition | Add-Member -NotePropertyName MaxShrinkMB -NotePropertyValue $MaxShrinkMB
-    } catch {
-        Write-Host "Partition $($Partition.DriveLetter): Failed to query shrinkable space"
-        $Partition | Add-Member -NotePropertyName MaxShrinkMB -NotePropertyValue 0
     }
-}
 
-$ShrinkablePartition = $null
-$ShrinkAmountMB = 0
-foreach ($Partition in $Partitions) {
-    foreach ($Target in $ShrinkTargetsMB) {
-        if ($Partition.MaxShrinkMB -ge $Target) {
-            $ShrinkablePartition = $Partition
-            $ShrinkAmountMB = $Target
-            break
+    foreach ($Partition in $Partitions) {
+        foreach ($Target in $ShrinkTargetsMB) {
+            if ($Partition.MaxShrinkMB -ge $Target) {
+                $ShrinkablePartition = $Partition
+                $ShrinkAmountMB = $Target
+                break
+            }
         }
+        if ($ShrinkablePartition) { break }
     }
-    if ($ShrinkablePartition) { break }
+
+    if ($ShrinkablePartition) {
+        $TargetDrive = "${NewPartition.DriveLetter}:"
+        Write-Host "Shrinking partition $TargetDrive by $ShrinkAmountMB MB..."
+        $NewSize = $ShrinkablePartition.Size - ($ShrinkAmountMB * 1MB)
+        Resize-Partition -DriveLetter $ShrinkablePartition.DriveLetter -Size $NewSize
+        $NewPartition = New-Partition -DiskNumber $DiskNumber -UseMaximumSize -AssignDriveLetter
+    }
+    else {
+        Write-Host "No partition with at least 64GB of free space or shrinkable space found. Use the 'Split' function in Minitool Partition Wizard Free and rerun this script."
+        exit
+    }
 }
 
-if (-not $ShrinkablePartition) {
-    Write-Host "No partition with at least 64GB of shrinkable space found. Free up more space, reboot and try again."
-    return
-}
-
-Write-Host ""
-Write-Host "===== Step 4: Shrink Partition ====="
-Write-Host ""
-Write-Host "Shrinking partition $($ShrinkablePartition.DriveLetter): by $ShrinkAmountMB MB..."
-$NewSize = $ShrinkablePartition.Size - ($ShrinkAmountMB * 1MB)
-Resize-Partition -DriveLetter $ShrinkablePartition.DriveLetter -Size $NewSize
-
-Write-Host ""
-Write-Host "===== Step 5: Create new NTFS Partition ====="
-Write-Host ""
-$NewPartition = New-Partition -DiskNumber $DiskNumber -UseMaximumSize -AssignDriveLetter
-$NewDriveLetter = $NewPartition.DriveLetter
-$TargetDrive = "${NewDriveLetter}:"
-Write-Host "Creating new NTFS partition $TargetDrive..."
+Write-Host "`n===== Step 4: Prepare Target Partition =====`n"
+Write-Host "Formatting partition $TargetDrive..."
 Start-Process -FilePath "cmd.exe" -ArgumentList "/c ""format $TargetDrive /fs:ntfs /q /y /v:AutoOS > nul 2> nul""" -NoNewWindow -Wait
 
-Write-Host ""
-Write-Host "===== Step 6: Apply Windows Image ====="
-Write-Host ""
-Write-Host "Mounting ISO..."
+Write-Host "`n===== Step 5: Apply Windows Image =====`n"
 try {
+    Write-Host "Mounting ISO..." 
     $MountedIso = (Mount-DiskImage -ImagePath $IsoPicker.FileName -PassThru | Get-Volume).DriveLetter + ":"
     Write-Host "Copying install.wim..."
     $TempWim = "$env:TEMP\install.wim"
     Copy-Item -Path "$MountedIso\sources\install.wim" -Destination $TempWim -Force
     attrib -r $TempWim
-    Write-Host "Unmounting ISO..."
 } finally {
+    Write-Host "Unmounting ISO..."
     Dismount-DiskImage -ImagePath $IsoPicker.FileName | Out-Null
 }
-
-Write-Host "Downloading PSTools..."
-New-Item -ItemType Directory -Path $env:TEMP -Force | Out-Null
-Invoke-WebRequest -Uri "https://download.sysinternals.com/files/PSTools.zip" -OutFile "$env:TEMP\PSTools.zip"
-Write-Host "Extracting PSTools..."
-Expand-Archive -Path "$env:TEMP\PSTools.zip" -DestinationPath "$env:TEMP\PSTools" -Force
-New-Item -Path "HKCU:\Software\Sysinternals\PsExec" -Force | Out-Null
-New-ItemProperty -Path "HKCU:\Software\Sysinternals\PsExec" -Name "EulaAccepted" -Value 1 -PropertyType DWord -Force | Out-Null
 
 Write-Host "Mounting install.wim..."
 $MountDirectory = "C:\mnt"
@@ -131,44 +336,44 @@ New-Item -Path $MountDirectory -ItemType Directory -Force | Out-Null
 
 $Images = Get-WindowsImage -ImagePath $TempWim -ErrorAction Stop
 foreach ($Image in $Images) {
-    Mount-WindowsImage -Path $MountDirectory -ImagePath $TempWim -Name $Image.ImageName -ErrorAction Stop | Out-Null
-    & "$env:TEMP\PSTools\PsExec64.exe" -s "$env:windir\system32\fsutil.exe" 8dot3name strip /f /s $MountDirectory;
-    Write-Host "Unmounting install.wim..."
-    Dismount-WindowsImage -Path $MountDirectory -Save -ErrorAction Stop | Out-Null
-    Remove-Item -LiteralPath $MountDirectory -Force -ErrorAction SilentlyContinue
+    try {
+        Mount-WindowsImage -Path $MountDirectory -ImagePath $TempWim -Name $Image.ImageName -ErrorAction Stop | Out-Null
+        Write-Host "Stripping 8.3 filenames..."
+        [TrustedInstaller]::Spawn(
+            "cmd /C fsutil 8dot3name strip /f /s `"$MountDirectory`""
+        )
+    } finally {
+        Write-Host "Unmounting install.wim..."
+        Dismount-WindowsImage -Path $MountDirectory -Save -ErrorAction Stop | Out-Null
+        Remove-Item -LiteralPath $MountDirectory -Force
+    }
 }
-
-Remove-Item "$env:TEMP\PSTools" -Recurse -Force -ErrorAction SilentlyContinue
-Remove-Item "$env:TEMP\PSTools.zip" -Force -ErrorAction SilentlyContinue
-Remove-Item -Path "HKCU:\Software\Sysinternals\PsExec" -Recurse -Force
 
 Write-Host "Applying Windows image to $TargetDrive..."
 DISM /Apply-Image /ImageFile:$TempWim /Index:1 /ApplyDir:$TargetDrive
-Remove-Item $TempWim -Force -ErrorAction SilentlyContinue
+Remove-Item $TempWim -Force
 
-Write-Host ""
-Write-Host "===== Step 7: Install Drivers ====="
-Write-Host ""
-Write-Host "Installing drivers from $DriversDir..."
-DISM /Image:$TargetDrive /Add-Driver /Driver:$DriversDir /Recurse
+Write-Host "`n===== Step 6: Install Drivers =====`n"
+if ($InstallDrivers -match '^[Yy]') {
+    Write-Host "Installing drivers from $DriversDir..."
+    DISM /Image:$TargetDrive /Add-Driver /Driver:$DriversDir /Recurse
+}
+else {
+    Write-Host "Skipping driver installation..."
+}
 
-Write-Host ""
-Write-Host "===== Step 8: Add unattend.xml ====="
-Write-Host ""
+Write-Host "`n===== Step 7: Add unattend.xml =====`n"
 Write-Host "Adding unattend.xml..."
 New-Item -ItemType Directory -Path $TargetDrive\Windows\Panther -Force | Out-Null
 Invoke-WebRequest -Uri "https://raw.githubusercontent.com/tinodin/AutoOS/master/unattend.xml" -OutFile $TargetDrive\Windows\Panther\unattend.xml
 
-Write-Host ""
-Write-Host "===== Step 9: Create Boot Entry ====="
-Write-Host ""
+Write-Host "`n===== Step 8: Create Boot Entry =====`n"
 Write-Host "Creating boot entry..."
 bcdboot $TargetDrive\Windows
 bcdedit /set "{default}" description "AutoOS"
 bcdedit /set bootmenupolicy legacy
 bcdedit /timeout 6
-Write-Host ""
-Write-Host "===== AutoOS Deployment Completed Successfully! ====="
+Write-Host "`n===== AutoOS Deployment Completed Successfully! ====="
 Write-Host "Press Enter to exit..."
 if ($Host.Name -eq 'ConsoleHost') {
     [void][System.Console]::ReadLine()
