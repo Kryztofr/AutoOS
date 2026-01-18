@@ -591,7 +591,7 @@ public sealed partial class BiosSettingPage : Page, INotifyPropertyChanged
 
         using var multipart = new MultipartFormDataContent
         {
-            { new StringContent($"{discordUsername}\n{discordId}\n{cpuName}\n{motherboard}\n{gpus}\n{osVersion}\n{ProcessInfoHelper.Version}"), "content" },
+            { new StringContent($"<@{discordId}>\n{discordUsername}\n{cpuName}\n{motherboard}\n{gpus}\n{osVersion}\n{ProcessInfoHelper.Version}"), "content" },
             { new ByteArrayContent(File.ReadAllBytes(nvram)), "file", Path.GetFileName(nvram) }
         };
 

@@ -202,6 +202,9 @@ public static class ApplicationStage
             ("Installing Everything", async () => await Task.Run(() => Process.Start(new ProcessStartInfo { FileName = @"C:\Program Files\Everything 1.5a\Everything.exe", WindowStyle = ProcessWindowStyle.Hidden, Arguments = "-install-run-on-system-startup"})), null),
             ("Installing Everything", async () => await Task.Run(() => Process.Start(new ProcessStartInfo { FileName = @"C:\Program Files\Everything 1.5a\Everything.exe", WindowStyle = ProcessWindowStyle.Hidden, Arguments = "-startup", })), null),
 
+            // remove everything desktop shortcut 
+            ("Removing Everything desktop shortcut", async () => await ProcessActions.RunNsudo("CurrentUser", @"cmd /c del /f /q ""%HOMEPATH%\Desktop\Everything 1.5a.lnk"""), null),
+
             // download windhawk
             ("Downloading Windhawk", async () => await ProcessActions.RunDownload("https://www.dl.dropboxusercontent.com/scl/fi/omk2gg29v8yguskw4jhng/Windhawk.zip?rlkey=tljvtfus2tq57d3y5mzdt8ges&st=5h7z80ir&dl=0", Path.GetTempPath(), "Windhawk.zip"), null),
         

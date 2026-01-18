@@ -43,18 +43,21 @@ public sealed partial class GraphicsPage : Page
                     if (name.Contains("NVIDIA", StringComparison.OrdinalIgnoreCase))
                     {
                         Nvidia_SettingsGroup.Visibility = Visibility.Visible;
+                        Nvidia_SettingsGroup.Header = name;
                         Nvidia_SettingsGroup.Description = "Current Version: " + (await Task.Run(() => Process.Start(new ProcessStartInfo("nvidia-smi", "--query-gpu=driver_version --format=csv,noheader") { CreateNoWindow = true, RedirectStandardOutput = true })?.StandardOutput.ReadToEndAsync()))?.Trim();
                         NvidiaUpdateCheck.IsChecked = true;
                     }
                     if (name.Contains("AMD", StringComparison.OrdinalIgnoreCase) || name.Contains("Radeon", StringComparison.OrdinalIgnoreCase))
                     {
                         Amd_SettingsGroup.Visibility = Visibility.Visible;
+                        Amd_SettingsGroup.Header = name;
                         Amd_SettingsGroup.Description = $"Current Version: {AmdHelper.GetCurrentVersion()}";
                         AmdUpdateCheck.IsChecked = true;
                     }
                     if (name.Contains("Intel", StringComparison.OrdinalIgnoreCase))
                     {
                         Intel_SettingsGroup.Visibility = Visibility.Visible;
+                        Intel_SettingsGroup.Header = name;
                         Intel_SettingsGroup.Description = "Current Version: " + (version?.Split('.')[2] + "." + version?.Split('.')[3]);
                         IntelUpdateCheck.IsChecked = true;
                     }

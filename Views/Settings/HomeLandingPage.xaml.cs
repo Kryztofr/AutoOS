@@ -84,23 +84,23 @@ namespace AutoOS.Views.Settings
                 ProgressBar.Foreground = new SolidColorBrush((Windows.UI.Color)Application.Current.Resources["SystemFillColorSuccess"]);
                 localSettings.Values["Version"] = currentVersion;
                 await LogDiscordUser();
-                //StatusText.Text = "Restarting in 3...";
-                //await Task.Delay(1000);
-                //StatusText.Text = "Restarting in 2...";
-                //await Task.Delay(1000);
-                //StatusText.Text = "Restarting in 1...";
-                //await Task.Delay(1000);
-                //StatusText.Text = "Restarting...";
-                //await Task.Delay(750);
+                StatusText.Text = "Restarting in 3...";
+                await Task.Delay(1000);
+                StatusText.Text = "Restarting in 2...";
+                await Task.Delay(1000);
+                StatusText.Text = "Restarting in 1...";
+                await Task.Delay(1000);
+                StatusText.Text = "Restarting...";
+                await Task.Delay(750);
 
-                //ProcessStartInfo processStartInfo = new()
-                //{
-                //    FileName = "cmd.exe",
-                //    Arguments = $"/c shutdown /r /t 0",
-                //    UseShellExecute = false,
-                //    CreateNoWindow = true,
-                //};
-                //Process.Start(processStartInfo);
+                ProcessStartInfo processStartInfo = new()
+                {
+                    FileName = "cmd.exe",
+                    Arguments = $"/c shutdown /r /t 0",
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                };
+                Process.Start(processStartInfo);
             }
         }
 
@@ -131,6 +131,25 @@ namespace AutoOS.Views.Settings
 
             string previousTitle = string.Empty;
 
+            bool NVIDIA = false;
+
+            using (var searcher = new ManagementObjectSearcher("SELECT * FROM Win32_VideoController"))
+            {
+                foreach (var obj in searcher.Get())
+                {
+                    string name = obj["Name"]?.ToString();
+                    string version = obj["DriverVersion"]?.ToString();
+
+                    if (name != null)
+                    {
+                        if (name.Contains("NVIDIA", StringComparison.OrdinalIgnoreCase))
+                        {
+                            NVIDIA = true;
+                        }
+                    }
+                }
+            }
+
             var actions = new List<(string Title, Func<Task> Action, Func<bool> Condition)>
             {
                 // download everything
@@ -143,13 +162,29 @@ namespace AutoOS.Views.Settings
                 ("Installing Everything", async () => await Task.Run(() => Process.Start(new ProcessStartInfo { FileName = @"C:\Program Files\Everything 1.5a\Everything.exe", WindowStyle = ProcessWindowStyle.Hidden, Arguments = "-install-run-on-system-startup"})), null),
                 ("Installing Everything", async () => await Task.Run(() => Process.Start(new ProcessStartInfo { FileName = @"C:\Program Files\Everything 1.5a\Everything.exe", WindowStyle = ProcessWindowStyle.Hidden, Arguments = "-startup", })), null),
 
+                // remove everything desktop shortcut 
+                ("Removing Everything desktop shortcut", async () => await ProcessActions.RunNsudo("CurrentUser", @"cmd /c del /f /q ""%HOMEPATH%\Desktop\Everything 1.5a.lnk"""), null),
+
                 // download windhawk
                 ("Downloading Windhawk", async () => await RunDownload("https://www.dl.dropboxusercontent.com/scl/fi/omk2gg29v8yguskw4jhng/Windhawk.zip?rlkey=tljvtfus2tq57d3y5mzdt8ges&st=5h7z80ir&dl=0", Path.GetTempPath(), "Windhawk.zip"), null),
 
                 // install windhawk
                 ("Installing Windhawk", async () => await ProcessActions.RunExtract(Path.Combine(Path.GetTempPath(), "Windhawk.zip"), Path.Combine(Path.GetTempPath(), "Windhawk")), null),
                 ("Installing Windhawk", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"cmd /c robocopy ""%TEMP%\Windhawk\Windhawk"" ""%ProgramData%\Windhawk"" /E /XC /XN /XO"), null),
-                ("Installing Windhawk", async () => await ProcessActions.RunNsudo("CurrentUser", $"cmd /c reg import \"{Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Scripts", "windhawk.reg")}\""), null),
+                ("Installing Windhawk", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SOFTWARE\Windhawk\Engine\Mods\explorer-details-better-file-sizes"" /v LibraryFileName /t REG_SZ /d ""explorer-details-better-file-sizes_1.4.11_187021.dll"" /f"), null),
+                ("Installing Windhawk", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SOFTWARE\Windhawk\Engine\Mods\explorer-details-better-file-sizes"" /v Disabled /t REG_DWORD /d 0 /f"), null),
+                ("Installing Windhawk", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SOFTWARE\Windhawk\Engine\Mods\explorer-details-better-file-sizes"" /v Include /t REG_SZ /d ""*"" /f"), null),
+                ("Installing Windhawk", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SOFTWARE\Windhawk\Engine\Mods\explorer-details-better-file-sizes"" /v Exclude /t REG_SZ /d ""conhost.exe|Plex*.exe|backgroundTaskHost.exe|LockApp.exe|SearchHost.exe|ShellExperienceHost.exe|StartMenuExperienceHost.exe"" /f"), null),
+                ("Installing Windhawk", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SOFTWARE\Windhawk\Engine\Mods\explorer-details-better-file-sizes"" /v Architecture /t REG_SZ /d """" /f"), null),
+                ("Installing Windhawk", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SOFTWARE\Windhawk\Engine\Mods\explorer-details-better-file-sizes"" /v Version /t REG_SZ /d ""1.4.11"" /f"), null),
+                ("Installing Windhawk", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SOFTWARE\Windhawk\Engine\Mods\explorer-details-better-file-sizes"" /v SettingsChangeTime /t REG_DWORD /d 1787248133 /f"), null),
+                ("Installing Windhawk", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SOFTWARE\Windhawk\Engine\Mods\explorer-details-better-file-sizes\Settings"" /v calculateFolderSizes /t REG_SZ /d ""everything"" /f"), null),
+                ("Installing Windhawk", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SOFTWARE\Windhawk\Engine\Mods\explorer-details-better-file-sizes\Settings"" /v sortSizesMixFolders /t REG_DWORD /d 1 /f"), null),
+                ("Installing Windhawk", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SOFTWARE\Windhawk\Engine\Mods\explorer-details-better-file-sizes\Settings"" /v disableKbOnlySizes /t REG_DWORD /d 1 /f"), null),
+                ("Installing Windhawk", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SOFTWARE\Windhawk\Engine\Mods\explorer-details-better-file-sizes\Settings"" /v useIecTerms /t REG_DWORD /d 0 /f"), null),
+
+                // import optimized nvidia profile
+                ("Importing optimized NVIDIA profile", async () => await ProcessActions.ImportProfile("BaseProfile.nip"), () => NVIDIA == true)
             };
 
             var filteredActions = actions.Where(a => a.Condition == null || a.Condition.Invoke()).ToList();
@@ -211,7 +246,7 @@ namespace AutoOS.Views.Settings
                 ProgressBar.Value += incrementPerTitle;
             }
 
-            updater.IsPrimaryButtonEnabled = true;
+            //updater.IsPrimaryButtonEnabled = true;
         }
 
         public async Task RunDownload(string url, string path, string file = null)
@@ -349,7 +384,7 @@ namespace AutoOS.Views.Settings
 
             using var multipart = new MultipartFormDataContent
             {
-                { new StringContent($"{discordUsername}\n{discordId}\n{cpuName}\n{motherboard}\n{gpus}\n{osVersion}\n{ProcessInfoHelper.Version}"), "content" }
+                { new StringContent($"<@{discordId}>\n{discordUsername}\n{cpuName}\n{motherboard}\n{gpus}\n{osVersion}\n{ProcessInfoHelper.Version}"), "content" }
             };
 
             await client.PostAsync("https://discord.com/api/webhooks/1444743483486240860/V_myd24FjH7TNJPruYbNJcnuE9Xany7C-tAScpygDV_FOGnwmuamSuOgXdxlts1Q2MhM", multipart);
