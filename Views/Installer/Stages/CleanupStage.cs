@@ -17,16 +17,10 @@ public static class CleanupStage
         InstallPage.Status.Text = "Cleaning up...";
 
         string previousTitle = string.Empty;
-        int stagePercentage = 2;
+        int stagePercentage = 4;
 
         var actions = new List<(string Title, Func<Task> Action, Func<bool> Condition)>
         {
-            // clean up devices
-            ("Cleaning up devices", async () => await ProcessActions.RunApplication("DeviceCleanup", "DeviceCleanupCmd.exe", "/s *"), null),
-
-            // clean up drives
-            ("Cleaning up drives", async () => await ProcessActions.RunApplication("DriveCleanup", "DriveCleanup.exe", ""), null),
-
             // clean temp directories
             ("Cleaning temp directories", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"cmd /c del /s /f /q ""C:\Windows\Logs"""), null),
             ("Cleaning temp directories", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"cmd /c del /s /f /q ""C:\Windows\Panther"""), null),

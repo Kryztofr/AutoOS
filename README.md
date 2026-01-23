@@ -457,29 +457,3 @@ IMPLIED. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY CLAIM, DAMAGES, OR
 OTHER LIABILITY IN CONNECTION WITH THE USE OF THE SOFTWARE.
 ```
 - Source: [Custom Resolution Utility (CRU)](https://monitortests.com/custom-resolution-utility)
-
-9. **DeviceCleanup**
-```
-Allowed:
-- usage in any environment, including commercial
-- include in software products, including commercial
-- include on CD/DVD of computer magazines
-
-Not allowed:
-- modify any of the files
-- offer for download by means of a "downloader" software
-```
-- Source: [DeviceCleanup](https://www.uwe-sieber.de/misc_tools.html#devicecleanup)
-
-10. **DriveCleanup**
-```
-Allowed:
-- usage in any environment, including commercial
-- include in software products, including commercial
-- include on CD/DVD of computer magazines
-
-Not allowed:
-- modify any of the files
-- offer for download by means of a "downloader" software
-```
-- Source: [DriveCleanup](https://www.uwe-sieber.de/drivetools.html#drivecleanup)

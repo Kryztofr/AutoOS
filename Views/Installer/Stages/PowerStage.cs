@@ -12,7 +12,7 @@ public static class PowerStage
         WindowHandle = WindowNative.GetWindowHandle(App.MainWindow);
         bool? Desktop = PreparingStage.Desktop;
         int? PCores = PreparingStage.PCores;
-        bool? IdleStates = PreparingStage.IdleStates;
+        bool? HyperThreading = PreparingStage.HyperThreading;
 
         InstallPage.Status.Text = "Configuring Powerplans...";
 
@@ -21,10 +21,8 @@ public static class PowerStage
 
         var actions = new List<(string Title, Func<Task> Action, Func<bool> Condition)>
         {
-            // power plan
-            ("Switching to the high performance power plan", async () => await ProcessActions.RunNsudo("CurrentUser", @"powercfg /setactive 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c"), null),
-            ("Deleting balanced power scheme", async () => await ProcessActions.RunNsudo("CurrentUser", @"powercfg /delete 381b4222-f694-41f0-9685-ff5bb260df2e"), () => Desktop == true),
-            ("Deleting power saver scheme", async () => await ProcessActions.RunNsudo("CurrentUser", @"powercfg /delete a1841308-3541-4fab-bc81-f71556f20b4a"), () => Desktop == true),
+            // activate "high performance" powerplan
+            (@"Activating ""High Performance"" powerplan", async () => await ProcessActions.RunNsudo("CurrentUser", @"powercfg /setactive 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c"), null),
 
             // hard disk
             (@"Disabling ""NVMe NOPPME""", async () => await ProcessActions.RunNsudo("CurrentUser", @"powercfg /setacvalueindex scheme_current 0012ee47-9041-4b5d-9b77-535fba8b1442 fc7372b6-ab2d-43ee-8797-15e9841f2cca 0"), null),
@@ -78,7 +76,7 @@ public static class PowerStage
             (@"Setting ""Processor autonomous activity window"" to 0", async () => await ProcessActions.RunNsudo("CurrentUser", @"powercfg /setdcvalueindex scheme_current 54533251-82be-4824-96c1-47b60b740d00 cfeda3d0-7697-4566-a922-a9086cd49dfa 0"), null),
             (@"Setting ""Processor idle demote threshold"" to 1", async () => await ProcessActions.RunNsudo("CurrentUser", @"powercfg /setacvalueindex scheme_current 54533251-82be-4824-96c1-47b60b740d00 4b92d758-5a24-4851-a470-815d78aee119 1"), null),
             (@"Setting ""Processor idle demote threshold"" to 1", async () => await ProcessActions.RunNsudo("CurrentUser", @"powercfg /setdcvalueindex scheme_current 54533251-82be-4824-96c1-47b60b740d00 4b92d758-5a24-4851-a470-815d78aee119 1"), null),
-            (@"Setting ""Processor idle disable"" to ""Disable idle""", async () => await ProcessActions.RunNsudo("CurrentUser", @"powercfg /setacvalueindex scheme_current sub_processor 5d76a2ca-e8c0-402f-a133-2158492d58ad 1"), () => IdleStates == false),
+            (@"Setting ""Processor idle disable"" to ""Disable idle""", async () => await ProcessActions.RunNsudo("CurrentUser", @"powercfg /setacvalueindex scheme_current sub_processor 5d76a2ca-e8c0-402f-a133-2158492d58ad 1"), () => HyperThreading == false),
             (@"Setting ""Processor idle promote threshold"" to 0", async () => await ProcessActions.RunNsudo("CurrentUser", @"powercfg /setacvalueindex scheme_current 54533251-82be-4824-96c1-47b60b740d00 7b224883-b3cc-4d79-819f-8374152cbe7c 0"), null),
             (@"Setting ""Processor idle promote threshold"" to 0", async () => await ProcessActions.RunNsudo("CurrentUser", @"powercfg /setdcvalueindex scheme_current 54533251-82be-4824-96c1-47b60b740d00 7b224883-b3cc-4d79-819f-8374152cbe7c 0"), null),
             (@"Setting ""Processor idle time check"" to 200000", async () => await ProcessActions.RunNsudo("CurrentUser", @"powercfg /setacvalueindex scheme_current 54533251-82be-4824-96c1-47b60b740d00 c4581c31-89ab-4597-8e2b-9c9cab440e6b 200000"), null),
@@ -127,8 +125,8 @@ public static class PowerStage
             (@"Disabling ""Critical battery notification""", async () => await ProcessActions.RunNsudo("CurrentUser", @"powercfg /setacvalueindex scheme_current e73a048d-bf27-4f12-9731-8b2076e8891f 5dbb7c9f-38e9-40d2-9749-4f8a0e9f640f 0"), null),
             (@"Disabling ""Low battery notification""", async () => await ProcessActions.RunNsudo("CurrentUser", @"powercfg /setacvalueindex scheme_current e73a048d-bf27-4f12-9731-8b2076e8891f bcded951-187b-4d05-bccc-f7e51960c258 0"), null),
 
-            // save power plan
-            ("Saving the power plan configuration", async () => await ProcessActions.RunNsudo("CurrentUser", @"powercfg /setactive scheme_current"), null),
+            // apply changes
+            ("Applying changes", async () => await ProcessActions.RunNsudo("CurrentUser", @"powercfg /setactive scheme_current"), null),
 
             // disable hibernation
             ("Disabling hibernation", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Power"" /v HibernateEnabled /t REG_DWORD /d 0 /f"), null),

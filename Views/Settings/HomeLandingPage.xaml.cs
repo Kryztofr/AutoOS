@@ -239,6 +239,18 @@ namespace AutoOS.Views.Settings
                 (@"Reverting ""Allow Diagnostic Data"" policy", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Policies\DataCollection"" /v AllowTelemetry /t REG_DWORD /d 1 /f"), null),
                 (@"Reverting ""Allow Diagnostic Data"" policy", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\PolicyManager\default\System\AllowTelemetry"" /v value /f"), null),
                 (@"Reverting ""Allow Diagnostic Data"" policy", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\CPSS\DevicePolicy\AllowTelemetry"" /t DefaultValue /f"), null),
+
+                // revert sleep study
+                ("Reverting sleep study", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"wevtutil sl Microsoft-Windows-SleepStudy/Diagnostic /e:true"), null),
+                ("Reverting sleep study", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"wevtutil sl Microsoft-Windows-Kernel-Processor-Power/Diagnostic /e:true"), null),
+                ("Reverting sleep study", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"wevtutil sl Microsoft-Windows-UserModePowerService/Diagnostic /e:true"), null),
+                ("Reverting sleep study", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg delete ""HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\Power"" /v ""SleepStudyDisabled"" /f"), null),
+                ("Reverting sleep study", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\Power"" /v ""SleepStudyDeviceAccountingLevel"" /t REG_DWORD /d 4 /f"), null),
+                ("Reverting sleep study", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg delete ""HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Power"" /v ""SleepstudyAccountingEnabled"" /f"), null),
+                ("Reverting sleep study", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg delete ""HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Wdf"" /v ""WdfGlobalSleepStudyDisabled"" /f"), null),
+
+                // enable event trace sessions (ets)
+                ("Enabling Event Trace Sessions (ETS)", async () => await ProcessActions.RunNsudo("TrustedInstaller", $"cmd /c reg import \"{Path.Combine(PathHelper.GetAppDataFolderPath(), "EventTraceSessions", "ets-enable.reg")}\""), null),
             };
 
             var filteredActions = actions.Where(a => a.Condition == null || a.Condition.Invoke()).ToList();

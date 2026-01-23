@@ -87,9 +87,6 @@ public sealed partial class DiskCleanupPage : Page
 
     private async void RunDiskCleanup_Checked(object sender, RoutedEventArgs e)
     {
-        // clean up drives
-        await ProcessActions.RunApplication("DriveCleanup", "DriveCleanup.exe", "");
-
         // clean temp directories
         await ProcessActions.RunNsudo("TrustedInstaller", @"cmd /c del /s /f /q ""C:\Windows\Logs""");
         await ProcessActions.RunNsudo("TrustedInstaller", @"cmd /c del /s /f /q ""C:\Windows\Panther""");

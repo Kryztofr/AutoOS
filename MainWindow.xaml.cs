@@ -73,7 +73,6 @@ namespace AutoOS.Views
             "GraphicsPage",
             "DevicesPage",
             "InternetPage",
-            "PowerPage",
             "SecurityPage"
         ];
 

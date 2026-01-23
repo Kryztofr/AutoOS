@@ -66,13 +66,6 @@
           "HideItem": true
         },
         {
-          "UniqueId": "AutoOS.Views.Installer.PowerPage",
-          "Title": "Energy & Power",
-          "Subtitle": "Energy & Power",
-          "ImagePath": "ms-appx:///Assets/Fluent/Power.png",
-          "HideItem": true
-        },
-        {
           "UniqueId": "AutoOS.Views.Installer.SecurityPage",
           "Title": "Windows Security",
           "Subtitle": "Windows Security",

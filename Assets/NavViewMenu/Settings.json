@@ -66,13 +66,6 @@
           "HideItem": true
         },
         {
-          "UniqueId": "AutoOS.Views.Settings.LoggingPage",
-          "Title": "Tracking & Logging",
-          "Subtitle": "Tracking & Logging",
-          "ImagePath": "ms-appx:///Assets/Fluent/Logging.png",
-          "HideItem": true
-        },
-        {
           "UniqueId": "AutoOS.Views.Settings.BiosSettingPage",
           "Title": "BIOS Settings",
           "Subtitle": "BIOS Settings",

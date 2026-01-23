@@ -58,12 +58,6 @@ public static class DeviceStage
             // disable reserved storage
             ("Disabling reserved storage", async () => await ProcessActions.RunPowerShell(@"DISM /Online /Set-ReservedStorageState /State:Disabled"), null),
 
-            // clean up devices
-            ("Cleaning up devices", async () => await ProcessActions.RunApplication("DeviceCleanup", "DeviceCleanupCmd.exe", "/s *"), null),
-
-            // clean up drives
-            ("Cleaning up drives", async () => await ProcessActions.RunApplication("DriveCleanup", "DriveCleanup.exe", ""), null),
-
             // disable bluetooth services and drivers
             ("Disabling Bluetooth services and drivers", async () => await ProcessActions.DisableBluetoothServicesAndDrivers(), () => Bluetooth == false)
         };

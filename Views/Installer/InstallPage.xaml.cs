@@ -58,7 +58,6 @@ public sealed partial class InstallPage : Page
         await GamesStage.Run();
         await SchedulingStage.Run();
         await ServicesStage.Run();
-        await EventTraceSessionsStage.Run();
         await CleanupStage.Run();
     }
 }

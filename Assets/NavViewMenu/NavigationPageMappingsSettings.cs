@@ -11,7 +11,6 @@ public partial class NavigationPageMappingsSettings
         {"AutoOS.Views.Settings.InternetPage", typeof(AutoOS.Views.Settings.InternetPage)},
         {"AutoOS.Views.Settings.PowerPage", typeof(AutoOS.Views.Settings.PowerPage)},
         {"AutoOS.Views.Settings.ServicesPage", typeof(AutoOS.Views.Settings.ServicesPage)},
-        {"AutoOS.Views.Settings.LoggingPage", typeof(AutoOS.Views.Settings.LoggingPage)},
         {"AutoOS.Views.Settings.BiosSettingPage", typeof(AutoOS.Views.Settings.BiosSettingPage)},
         {"AutoOS.Views.Settings.DiskCleanupPage", typeof(AutoOS.Views.Settings.DiskCleanupPage)},
         {"AutoOS.Views.Settings.SecurityPage", typeof(AutoOS.Views.Settings.SecurityPage)},
