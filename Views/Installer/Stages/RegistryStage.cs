@@ -242,16 +242,6 @@ public static class RegistryStage
             // disable messages to cloud services
             (@"Disabling ""Allow Message Service Cloud Sync"" policy", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\Software\Policies\Microsoft\Windows\Messaging"" /v AllowMessageSync /t REG_DWORD /d 0 /f"), null),
 
-            // disable "allow diagnostic data" policy
-            (@"Disabling ""Allow Diagnostic Data"" policy", async () => await ProcessActions.RunNsudo("CurrentUser", @"reg add ""HKEY_CURRENT_USER\Software\Policies\Microsoft\Windows\DataCollection"" /v ""AllowTelemetry"" /t REG_DWORD /d 0 /f"), null),
-            (@"Disabling ""Allow Diagnostic Data"" policy", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\DataCollection"" /v AllowTelemetry /t REG_DWORD /d 0 /f"), null),
-            (@"Disabling ""Allow Diagnostic Data"" policy", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\DataCollection"" /v AllowTelemetry /t REG_DWORD /d 0 /f"), null),
-            (@"Disabling ""Allow Diagnostic Data"" policy", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Policies\DataCollection"" /v AllowTelemetry /t REG_DWORD /d 0 /f"), null),
-            (@"Disabling ""Allow Diagnostic Data"" policy", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\DataCollection"" /v MaxTelemetryAllowed /t REG_DWORD /d 1 /f"), null),
-            (@"Disabling ""Allow Diagnostic Data"" policy", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Policies\DataCollection"" /v MaxTelemetryAllowed /t REG_DWORD /d 1 /f"), null),
-            (@"Disabling ""Allow Diagnostic Data"" policy", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\PolicyManager\default\System\AllowTelemetry"" /v value /t REG_DWORD /d 0 /f"), null),
-            (@"Disabling ""Allow Diagnostic Data"" policy", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\CPSS\DevicePolicy\AllowTelemetry"" /t DefaultValue /d 0 /f"), null),
-
             // disable "allow online tips" policy
             (@"Disabling ""Allow Online Tips"" policy", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer"" /v AllowOnlineTips /t REG_DWORD /d 0 /f"), null),
 

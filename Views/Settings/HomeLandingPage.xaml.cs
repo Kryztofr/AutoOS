@@ -231,6 +231,14 @@ namespace AutoOS.Views.Settings
 
                 // disable multimedia class scheduler service (mmcss)
                 ("Disabling Multimedia Class Scheduler Service (MMCSS)", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\MMCSS"" /v Start /t REG_DWORD /d 4 /f"), () => NetAdapterCx == true),
+            
+                // revert "allow diagnostic data" policy
+                (@"Reverting ""Allow Diagnostic Data"" policy", async () => await ProcessActions.RunNsudo("CurrentUser", @"reg delete ""HKEY_CURRENT_USER\Software\Policies\Microsoft\Windows\DataCollection"" /v ""AllowTelemetry"" /f"), null),
+                (@"Reverting ""Allow Diagnostic Data"" policy", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\DataCollection"" /v AllowTelemetry /f"), null),
+                (@"Reverting ""Allow Diagnostic Data"" policy", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\DataCollection"" /v AllowTelemetry /t REG_DWORD /d 1 /f"), null),
+                (@"Reverting ""Allow Diagnostic Data"" policy", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Policies\DataCollection"" /v AllowTelemetry /t REG_DWORD /d 1 /f"), null),
+                (@"Reverting ""Allow Diagnostic Data"" policy", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\PolicyManager\default\System\AllowTelemetry"" /v value /f"), null),
+                (@"Reverting ""Allow Diagnostic Data"" policy", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\CPSS\DevicePolicy\AllowTelemetry"" /t DefaultValue /f"), null),
             };
 
             var filteredActions = actions.Where(a => a.Condition == null || a.Condition.Invoke()).ToList();
