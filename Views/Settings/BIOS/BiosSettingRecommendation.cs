@@ -689,7 +689,7 @@ public static class BiosSettingRecommendationsList
         new BiosSettingRecommendation { SetupQuestion = "Core C6 State", Type = "Option", RecommendedOption = "Disabled" },
         new BiosSettingRecommendation { SetupQuestion = "Core Tuning Config", Type = "Option", RecommendedOption = "Level 2" },
         new BiosSettingRecommendation { SetupQuestion = "Core Watchdog Timer Enable", Type = "Option", RecommendedOption = "Disabled" },
-        new BiosSettingRecommendation { SetupQuestion = "Core tunings Configuration for gaming", Type = "Option", RecommendedOption = "Legacy" },
+        new BiosSettingRecommendation { SetupQuestion = "Core tunings Configuration for gaming", Type = "Option", RecommendedOption = "Level 2" },
         new BiosSettingRecommendation { SetupQuestion = "Curve Optimizer", Type = "Option", RecommendedOption = "All Cores" },
         new BiosSettingRecommendation { SetupQuestion = "Customized Precision Boost Overdrive Scalar", Type = "Option", RecommendedOption = "2X" },
         new BiosSettingRecommendation { SetupQuestion = "D3 Cold Support", Type = "Option", RecommendedOption = "Disabled" },

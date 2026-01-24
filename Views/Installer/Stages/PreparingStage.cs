@@ -15,44 +15,16 @@ namespace AutoOS.Views.Installer.Stages;
 public static class PreparingStage
 {
     public static IntPtr WindowHandle { get; private set; }
-    public static bool? Desktop;
 
     public static bool? SSD;
-    public static bool? Wifi;
-    public static bool? Bluetooth;
 
-    public static bool? WindowsDefender;
-    public static bool? UserAccountControl;
-    public static bool? DEP;
-    public static bool? MemoryIntegrity;
-    public static bool? INTELCPU;
-    public static bool? AMDCPU;
-    public static bool? SpectreMeltdownMitigations;
-    public static bool? ProcessMitigations;
+    public static string ScheduleMode;
+    public static string LightTime;
+    public static string DarkTime;
 
     public static bool? LegacyContextMenu;
-    public static bool? ShowMyTaskbarOnAllDisplays;
     public static bool? AlwaysShowTrayIcons;
     public static bool? TaskbarAlignment;
-
-    public static bool? WOL;
-    public static bool? NetAdapterCx;
-    public static bool? TxIntDelay;
-
-    public static bool? HID;
-    public static bool? IMOD;
-
-    public static bool? Intel_6th;
-    public static bool? Intel_7th_10th;
-    public static bool? Intel_11th_14th;
-    public static bool? Intel_Arc;
-    public static bool? NVIDIA_GTX900_GTX10;
-    public static bool? NVIDIA_GTX16_RTX50;
-    public static bool? AMD_RX5000_RX9000;
-    public static bool? HDCP;
-    public static bool? HDMIDPAudio;
-    public static bool? MSI;
-    public static bool? CRU;
 
     public static bool? Chrome;
     public static bool? Thorium;
@@ -74,10 +46,6 @@ public static class PreparingStage
     public static bool? iCloud;
     public static bool? Bitwarden;
     public static bool? OnePassword;
-
-    public static string ScheduleMode;
-    public static string LightTime;
-    public static string DarkTime;
 
     public static bool? Word;
     public static bool? Excel;
@@ -116,6 +84,31 @@ public static class PreparingStage
     public static bool? RockstarGamesLauncher;
     public static bool? FiveM;
     public static bool? FACEIT;
+
+    public static bool? Intel_6th;
+    public static bool? Intel_7th_10th;
+    public static bool? Intel_11th_14th;
+    public static bool? Intel_Arc;
+    public static bool? NVIDIA_GTX900_GTX10;
+    public static bool? NVIDIA_GTX16_RTX50;
+    public static bool? AMD_RX5000_RX9000;
+    public static bool? HDCP;
+    public static bool? HDMIDPAudio;
+    public static bool? MSI;
+    public static bool? CRU;
+
+    public static bool? Wifi;
+    public static bool? TxIntDelay;
+    public static bool? NetAdapterCx;
+
+    public static bool? INTELCPU;
+    public static bool? AMDCPU;
+    public static bool? WindowsDefender;
+    public static bool? UserAccountControl;
+    public static bool? DEP;
+    public static bool? MemoryIntegrity;
+    public static bool? SpectreMeltdownMitigations;
+    public static bool? ProcessMitigations;
 
     public static int? PCores;
     public static bool? HyperThreading;
@@ -160,33 +153,13 @@ public static class PreparingStage
                 SSD = true;
             }
 
-            Wifi = (localSettings.Values["WiFi"]?.ToString() == "1");
-            Bluetooth = (localSettings.Values["Bluetooth"]?.ToString() == "1");
-            WindowsDefender = (localSettings.Values["WindowsDefender"]?.ToString() == "1");
-            UserAccountControl = (localSettings.Values["UserAccountControl"]?.ToString() == "1");
-            DEP = (localSettings.Values["DataExecutionPrevention"]?.ToString() == "1");
-            MemoryIntegrity = (localSettings.Values["MemoryIntegrity"]?.ToString() == "1");
-            SpectreMeltdownMitigations = (localSettings.Values["SpectreMeltdownMitigations"]?.ToString() == "1");
-            ProcessMitigations = (localSettings.Values["ProcessMitigations"]?.ToString() == "1");
+            ScheduleMode = localSettings.Values["ScheduleMode"]?.ToString();
+            LightTime = localSettings.Values["LightTime"]?.ToString();
+            DarkTime = localSettings.Values["DarkTime"]?.ToString();
+
             LegacyContextMenu = (localSettings.Values["LegacyContextMenu"]?.ToString() == "1");
             AlwaysShowTrayIcons = (localSettings.Values["AlwaysShowTrayIcons"]?.ToString() == "1");
             TaskbarAlignment = (localSettings.Values["TaskbarAlignment"]?.ToString() == "Left");
-            WOL = (localSettings.Values["WakeOnLan"]?.ToString() == "1");
-            HID = (localSettings.Values["HumanInterfaceDevices"]?.ToString() == "1");
-            IMOD = (localSettings.Values["XhciInterruptModeration"]?.ToString() == "1");
-
-            Intel_6th = (localSettings.Values["GpuBrand"]?.ToString().Contains("Intel® 6th Gen Processor Graphics") ?? false);
-            Intel_7th_10th = (localSettings.Values["GpuBrand"]?.ToString().Contains("Intel® 7th-10th Gen Processor Graphics") ?? false);
-            Intel_11th_14th = (localSettings.Values["GpuBrand"]?.ToString().Contains("Intel® 11th-14th Gen Processor Graphics") ?? false);
-            Intel_Arc = (localSettings.Values["GpuBrand"]?.ToString().Contains("Intel® Arc™ Graphics") ?? false);
-            NVIDIA_GTX900_GTX10 = (localSettings.Values["GpuBrand"]?.ToString().Contains("NVIDIA GeForce GTX™ 900 - 10 series") ?? false);
-            NVIDIA_GTX16_RTX50 = (localSettings.Values["GpuBrand"]?.ToString().Contains("NVIDIA GeForce GTX™ 16 - RTX™ 50 series") ?? false);
-            AMD_RX5000_RX9000 = (localSettings.Values["GpuBrand"]?.ToString().Contains("AMD Radeon™ RX 5000 - 9000 series") ?? false);
-
-            HDCP = (localSettings.Values["HighDefinitionContentProtection"]?.ToString() == "1");
-            HDMIDPAudio = (localSettings.Values["HighDefinitionMultimediaInterface/DisplayPortAudio"]?.ToString() == "1");
-            MSI = (localSettings.Values["MsiProfile"] != null);
-            CRU = (localSettings.Values["CruProfile"] != null);
 
             Chrome = (localSettings.Values["Browsers"]?.ToString().Contains("Chrome") ?? false);
             Thorium = (localSettings.Values["Browsers"]?.ToString().Contains("Thorium") ?? false);
@@ -208,10 +181,6 @@ public static class PreparingStage
             iCloud = (localSettings.Values["Extensions"]?.ToString().Contains("iCloud Passwords") ?? false);
             Bitwarden = (localSettings.Values["Extensions"]?.ToString().Contains("Bitwarden") ?? false);
             OnePassword = (localSettings.Values["Extensions"]?.ToString().Contains("1Password") ?? false);
-
-            ScheduleMode = localSettings.Values["ScheduleMode"]?.ToString();
-            LightTime = localSettings.Values["LightTime"]?.ToString();
-            DarkTime = localSettings.Values["DarkTime"]?.ToString();
 
             Word = (localSettings.Values["Office"]?.ToString().Contains("Word") ?? false);
             Excel = (localSettings.Values["Office"]?.ToString().Contains("Excel") ?? false);
@@ -249,11 +218,30 @@ public static class PreparingStage
             FiveM = (localSettings.Values["Launchers"]?.ToString().Contains("FiveM") ?? false);
             FACEIT = (localSettings.Values["Launchers"]?.ToString().Contains("FACEIT") ?? false);
 
+            Intel_6th = (localSettings.Values["GpuBrand"]?.ToString().Contains("Intel® 6th Gen Processor Graphics") ?? false);
+            Intel_7th_10th = (localSettings.Values["GpuBrand"]?.ToString().Contains("Intel® 7th-10th Gen Processor Graphics") ?? false);
+            Intel_11th_14th = (localSettings.Values["GpuBrand"]?.ToString().Contains("Intel® 11th-14th Gen Processor Graphics") ?? false);
+            Intel_Arc = (localSettings.Values["GpuBrand"]?.ToString().Contains("Intel® Arc™ Graphics") ?? false);
+            NVIDIA_GTX900_GTX10 = (localSettings.Values["GpuBrand"]?.ToString().Contains("NVIDIA GeForce GTX™ 900 - 10 series") ?? false);
+            NVIDIA_GTX16_RTX50 = (localSettings.Values["GpuBrand"]?.ToString().Contains("NVIDIA GeForce GTX™ 16 - RTX™ 50 series") ?? false);
+            AMD_RX5000_RX9000 = (localSettings.Values["GpuBrand"]?.ToString().Contains("AMD Radeon™ RX 5000 - 9000 series") ?? false);
+
+            HDCP = (localSettings.Values["HighDefinitionContentProtection"]?.ToString() == "1");
+            HDMIDPAudio = (localSettings.Values["HighDefinitionMultimediaInterface/DisplayPortAudio"]?.ToString() == "1");
+            MSI = (localSettings.Values["MsiProfile"] != null);
+            CRU = (localSettings.Values["CruProfile"] != null);
+
+            WindowsDefender = (localSettings.Values["WindowsDefender"]?.ToString() == "1");
+            UserAccountControl = (localSettings.Values["UserAccountControl"]?.ToString() == "1");
+            DEP = (localSettings.Values["DataExecutionPrevention"]?.ToString() == "1");
+            MemoryIntegrity = (localSettings.Values["MemoryIntegrity"]?.ToString() == "1");
+            SpectreMeltdownMitigations = (localSettings.Values["SpectreMeltdownMitigations"]?.ToString() == "1");
+            ProcessMitigations = (localSettings.Values["ProcessMitigations"]?.ToString() == "1");
+
             var cpuSetsInfo = CpuDetectionService.GetCpuSets();
             var (pCores, eCores) = CpuDetectionService.GroupCpuSetsByEfficiencyClass(cpuSetsInfo);
             PCores = pCores.Count;
             HyperThreading = cpuSetsInfo.HyperThreading;
-
 
             EpicGamesAccount = DriveInfo.GetDrives()
                 .Where(d => d.DriveType == DriveType.Fixed && d.Name != @"C:\")
@@ -309,35 +297,74 @@ public static class PreparingStage
                 })
                 .FirstOrDefault(false);
 
-            Desktop = new ManagementObjectSearcher("SELECT * FROM Win32_SystemEnclosure")
-                .Get()
-                .Cast<ManagementObject>()
-                .Any(obj => ((ushort[])obj["ChassisTypes"])?.Any(type => new ushort[] { 3, 4, 5, 6, 7, 15, 16, 17 }.Contains(type)) == true);
+            var adapters = new ManagementObjectSearcher("SELECT * FROM Win32_NetworkAdapter").Get().Cast<ManagementObject>().ToList();
+            var activeAdapters = new ManagementObjectSearcher("SELECT * FROM Win32_NetworkAdapter").Get().Cast<ManagementObject>().Where(a => (ushort?)a["NetConnectionStatus"] == 2).ToList();
 
-            var adapters = new ManagementObjectSearcher("SELECT * FROM Win32_NetworkAdapter WHERE AdapterTypeID = 0").Get().Cast<ManagementObject>().ToList();
+            foreach (var adapter in adapters)
+            {
+                string pnpDeviceId = adapter["PNPDeviceID"]?.ToString();
+                if (string.IsNullOrEmpty(pnpDeviceId))
+                    continue;
 
-            var mainAdapter = adapters.FirstOrDefault(a => (ushort?)a["NetConnectionStatus"] == 2) ?? adapters.First();
-            string pnpDeviceId = mainAdapter["PNPDeviceID"]?.ToString();
+                using var key = Registry.LocalMachine.OpenSubKey($@"SYSTEM\CurrentControlSet\Enum\{pnpDeviceId}");
+                string driver = key?.GetValue("Driver") as string;
+                using var classKey = Registry.LocalMachine.OpenSubKey($@"SYSTEM\CurrentControlSet\Control\Class\{driver}");
 
-            using var key = Registry.LocalMachine.OpenSubKey($@"SYSTEM\CurrentControlSet\Enum\{pnpDeviceId}");
-            string driver = key?.GetValue("Driver") as string;
-            using var classKey = Registry.LocalMachine.OpenSubKey($@"SYSTEM\CurrentControlSet\Control\Class\{driver}");
-            using var ndiKey = classKey?.OpenSubKey("Ndi");
-            string serviceName = ndiKey?.GetValue("Service")?.ToString()?.TrimEnd('.');
-            using var serviceKey = Registry.LocalMachine.OpenSubKey($@"SYSTEM\CurrentControlSet\Services\{serviceName}");
-            string imagePath = serviceKey?.GetValue("ImagePath") as string;
+                var physicalMediaType = classKey?.GetValue("*PhysicalMediaType")?.ToString();
 
-            string systemRoot = Environment.GetEnvironmentVariable("SystemRoot")!;
-            string resolved = Environment.ExpandEnvironmentVariables(imagePath.StartsWith(@"\??\") ? imagePath[4..] : imagePath);
+                if (physicalMediaType == "9")
+                {
+                    Wifi = true;
+                    break;
+                }
+            }
 
-            resolved = resolved.StartsWith(@"\SystemRoot", StringComparison.OrdinalIgnoreCase)
-                ? resolved.Replace(@"\SystemRoot", systemRoot, StringComparison.OrdinalIgnoreCase)
-                : resolved.StartsWith("System32", StringComparison.OrdinalIgnoreCase)
-                    ? Path.Combine(systemRoot, resolved)
-                    : resolved;
+            foreach (var adapter in adapters)
+            {
+                string pnpDeviceId = adapter["PNPDeviceID"]?.ToString();
+                if (string.IsNullOrEmpty(pnpDeviceId))
+                    continue;
 
-            NetAdapterCx = Encoding.ASCII.GetString(File.ReadAllBytes(resolved)).Contains("NetAdapter", StringComparison.OrdinalIgnoreCase);
-            TxIntDelay = classKey?.GetValue("TxIntDelay") != null;
+                using var key = Registry.LocalMachine.OpenSubKey($@"SYSTEM\CurrentControlSet\Enum\{pnpDeviceId}");
+                string driver = key?.GetValue("Driver") as string;
+                using var classKey = Registry.LocalMachine.OpenSubKey($@"SYSTEM\CurrentControlSet\Control\Class\{driver}");
+
+                if (classKey?.GetValue("TxIntDelay") != null)
+                {
+                    TxIntDelay = true;
+                    break;
+                }
+            }
+
+            foreach (var adapter in activeAdapters)
+            {
+                string pnpDeviceId = adapter["PNPDeviceID"]?.ToString();
+                if (string.IsNullOrEmpty(pnpDeviceId))
+                    continue;
+
+                using var key = Registry.LocalMachine.OpenSubKey($@"SYSTEM\CurrentControlSet\Enum\{pnpDeviceId}");
+                string driver = key?.GetValue("Driver") as string;
+                using var classKey = Registry.LocalMachine.OpenSubKey($@"SYSTEM\CurrentControlSet\Control\Class\{driver}");
+                using var ndiKey = classKey?.OpenSubKey("Ndi");
+                string serviceName = ndiKey?.GetValue("Service")?.ToString()?.TrimEnd('.');
+                using var serviceKey = Registry.LocalMachine.OpenSubKey($@"SYSTEM\CurrentControlSet\Services\{serviceName}");
+                string imagePath = serviceKey?.GetValue("ImagePath") as string;
+
+                string systemRoot = Environment.GetEnvironmentVariable("SystemRoot")!;
+                string resolved = Environment.ExpandEnvironmentVariables(imagePath.StartsWith(@"\??\") ? imagePath[4..] : imagePath);
+
+                resolved = resolved.StartsWith(@"\SystemRoot", StringComparison.OrdinalIgnoreCase)
+                    ? resolved.Replace(@"\SystemRoot", systemRoot, StringComparison.OrdinalIgnoreCase)
+                    : resolved.StartsWith("System32", StringComparison.OrdinalIgnoreCase)
+                        ? Path.Combine(systemRoot, resolved)
+                        : resolved;
+
+                if (Encoding.ASCII.GetString(File.ReadAllBytes(resolved)).Contains("NetAdapter", StringComparison.OrdinalIgnoreCase))
+                {
+                    NetAdapterCx = true;
+                    break;
+                }
+            }
         });
 
         InstallPage.Info.Severity = InfoBarSeverity.Informational;

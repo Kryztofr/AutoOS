@@ -1,6 +1,5 @@
 ﻿using Microsoft.Win32;
 using System.Diagnostics;
-using Windows.Storage;
 
 namespace AutoOS.Views.Settings;
 
@@ -8,8 +7,6 @@ public sealed partial class UpdatePage : Page
 {
     private bool isInitializingWindowsUpdateState = true;
     private bool isInitializingTargetVersion = true;
-
-    private readonly ApplicationDataContainer localSettings = ApplicationData.Current.LocalSettings;
 
     public UpdatePage()
     {
@@ -48,9 +45,6 @@ public sealed partial class UpdatePage : Page
             Severity = InfoBarSeverity.Informational,
             Margin = new Thickness(4, -28, 4, 36)
         });
-
-        // toggle registry value
-        localSettings.Values["PauseWindowsUpdate"] = WindowsUpdate.IsOn ? 0 : 1;
 
         // toggle windows update
         if (WindowsUpdate.IsOn)

@@ -10,9 +10,6 @@ public static class DeviceStage
     public static async Task Run()
     {
         WindowHandle = WindowNative.GetWindowHandle(App.MainWindow);
-        bool? HID = PreparingStage.HID;
-        bool? IMOD = PreparingStage.IMOD;
-        bool? Bluetooth = PreparingStage.Bluetooth;
 
         InstallPage.Status.Text = "Configuring Devices...";
 
@@ -47,19 +44,16 @@ public static class DeviceStage
             ("Disabling ASMedia USB controllers", async () => await ProcessActions.RunPowerShell(@"Get-PnpDevice -FriendlyName ""*ASMedia USB*"" | Disable-PnpDevice -Confirm:$false"), null),
 
             // disable hid devices
-            ("Disabling Human Interface Devices (HID)", async () => await ProcessActions.RunPowerShell("Get-PnpDevice -Class HIDClass | Where-Object { $_.FriendlyName -match 'HID-compliant (consumer control device|device|game controller|system controller|vendor-defined device)' -and $_.FriendlyName -notmatch 'Mouse|Keyboard'} | Disable-PnpDevice -Confirm:$false"), () => HID == false),
+            ("Disabling Human Interface Devices (HID)", async () => await ProcessActions.RunPowerShell("Get-PnpDevice -Class HIDClass | Where-Object { $_.FriendlyName -match 'HID-compliant (consumer control device|device|game controller|system controller|vendor-defined device)' -and $_.FriendlyName -notmatch 'Mouse|Keyboard'} | Disable-PnpDevice -Confirm:$false"), null),
 
             // save xhci interrupt moderation (imod) data
             ("Saving XHCI Interrupt Moderation (IMOD) data", async () => await ProcessActions.RunPowerShellScript("imod.ps1", $"-save \"{Path.Combine(PathHelper.GetAppDataFolderPath(), "Chiptool", "chiptool.exe")}\""), null),
 
             // disable xhci interrupt moderation (imod)
-            ("Disabling XHCI Interrupt Moderation (IMOD)", async () => await ProcessActions.RunPowerShellScript("imod.ps1", $"-disable \"{Path.Combine(PathHelper.GetAppDataFolderPath(), "Chiptool", "chiptool.exe")}\""), () => IMOD == false),
+            ("Disabling XHCI Interrupt Moderation (IMOD)", async () => await ProcessActions.RunPowerShellScript("imod.ps1", $"-disable \"{Path.Combine(PathHelper.GetAppDataFolderPath(), "Chiptool", "chiptool.exe")}\""), null),
             
             // disable reserved storage
             ("Disabling reserved storage", async () => await ProcessActions.RunPowerShell(@"DISM /Online /Set-ReservedStorageState /State:Disabled"), null),
-
-            // disable bluetooth services and drivers
-            ("Disabling Bluetooth services and drivers", async () => await ProcessActions.DisableBluetoothServicesAndDrivers(), () => Bluetooth == false)
         };
 
         var filteredActions = actions.Where(a => a.Condition == null || a.Condition.Invoke()).ToList();

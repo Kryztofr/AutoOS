@@ -15,8 +15,7 @@ public static class StartupStage
         bool OBS = localSettings.Values["OBS"]?.ToString() == "1";
         bool HID = localSettings.Values["HumanInterfaceDevices"]?.ToString() == "0";
         bool NEED_IMOD_SAVE = Registry.CurrentUser.OpenSubKey(@"Software\AutoOS\XHCI Interrupter Addresses") == null;
-        bool IMOD = localSettings.Values["XhciInterruptModeration"]?.ToString() == "0";
-        bool WindowsUpdates = localSettings.Values["PauseWindowsUpdates"]?.ToString() == "0";
+        bool IMOD = localSettings.Values["XhciInterruptModeration"]?.ToString() != "1";
         bool Discord = Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Discord"));
 
         string discordVersion = "";
@@ -69,9 +68,6 @@ public static class StartupStage
 
             // launch lowaudiolatency
             ("Launching LowAudioLatency", async () => await StartupActions.RunApplication("LocalState", "LowAudioLatency", "low_audio_latency_no_console.exe", ""), null),
-
-            // pause windows updates
-            ("Pausing Windows Updates", async () => await StartupActions.RunPowerShellScript("pausewindowsupdates.ps1", ""), () => WindowsUpdates == true),
 
             // debloat discord
             ("Debloating Discord", async () => await Task.Run(() => { discordVersion = new DirectoryInfo(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Discord")).GetDirectories().FirstOrDefault(d => d.Name.StartsWith("app-"))?.Name.Substring(4); }), () => Discord == true),

@@ -10,7 +10,6 @@ public static class PowerStage
     public static async Task Run()
     {
         WindowHandle = WindowNative.GetWindowHandle(App.MainWindow);
-        bool? Desktop = PreparingStage.Desktop;
         int? PCores = PreparingStage.PCores;
         bool? HyperThreading = PreparingStage.HyperThreading;
 

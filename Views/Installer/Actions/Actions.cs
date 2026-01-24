@@ -563,41 +563,6 @@ public static class ProcessActions
         }
     }
 
-    public static async Task DisableWiFiServicesAndDrivers()
-    {
-        // set start values
-        string[] services = ["WlanSvc", "Wcmsvc", "WinHttpAutoProxySvc", "NlaSvc", "tdx", "vwififlt", "Netwtw10", "Netwtw14"];
-
-        foreach (var service in services)
-        {
-            using (var key = Registry.LocalMachine.OpenSubKey($@"SYSTEM\CurrentControlSet\Services\{service}", writable: true))
-            {
-                if (key == null) continue;
-
-                Registry.SetValue($@"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\{service}", "Start", 4);
-            }
-        }
-
-        await Task.Delay(300);
-    }
-
-    public static async Task DisableBluetoothServicesAndDrivers()
-    {
-        string[] services = ["BluetoothUserService", "BTAGService", "BthAvctpSvc", "bthserv", "DsmSvc", "BthA2dp", "BthEnum", "BthHFAud", "BthHFEnum", "BthLEEnum", "BTHMODEM", "BthMini", "BthPan", "BTHPORT", "BTHUSB", "HidBth", "Microsoft_Bluetooth_AvrcpTransport", "RFCOMM", "ibtusb"];
-
-        foreach (var service in services)
-        {
-            using (var key = Registry.LocalMachine.OpenSubKey($@"SYSTEM\CurrentControlSet\Services\{service}", writable: true))
-            {
-                if (key == null) continue;
-
-                Registry.SetValue($@"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\{service}", "Start", 4);
-            }
-        }
-
-        await Task.Delay(300);
-    }
-
     public static async Task Sleep(int amount)
     {
         await Task.Delay(amount);

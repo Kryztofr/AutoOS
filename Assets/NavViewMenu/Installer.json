@@ -52,20 +52,6 @@
           "HideItem": true
         },
         {
-          "UniqueId": "AutoOS.Views.Installer.DevicesPage",
-          "Title": "Bluetooth & Devices",
-          "Subtitle": "Bluetooth & Devices",
-          "ImagePath": "ms-appx:///Assets/Fluent/Bluetooth.png",
-          "HideItem": true
-        },
-        {
-          "UniqueId": "AutoOS.Views.Installer.InternetPage",
-          "Title": "Network & Internet",
-          "Subtitle": "Network & Internet",
-          "ImagePath": "ms-appx:///Assets/Fluent/Internet.png",
-          "HideItem": true
-        },
-        {
           "UniqueId": "AutoOS.Views.Installer.SecurityPage",
           "Title": "Windows Security",
           "Subtitle": "Windows Security",

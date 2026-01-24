@@ -10,7 +10,6 @@ public static class NetworkStage
     public static async Task Run()
     {
         WindowHandle = WindowNative.GetWindowHandle(App.MainWindow);
-        bool? WOL = PreparingStage.WOL;
         bool? Wifi = PreparingStage.Wifi;
         bool? TxIntDelay = PreparingStage.TxIntDelay;
 
@@ -37,16 +36,13 @@ public static class NetworkStage
             ("Waiting for internet connection to reestablish", async () => await ProcessActions.RunConnectionCheck(), null),
 
             // adjust wifi adapter advanved settings
-            ("Adjusting Wi-Fi adapter advanced settings", async () => await ProcessActions.RunPowerShellScript("wifi.ps1", ""), null),
+            ("Adjusting Wi-Fi adapter advanced settings", async () => await ProcessActions.RunPowerShellScript("wifi.ps1", ""), () => Wifi == true),
 
             // check connection
             ("Waiting for internet connection to reestablish", async () => await ProcessActions.RunConnectionCheck(), () => Wifi == true),
 
             // disable power management settings
             ("Disabling power management settings", async () => await ProcessActions.RunPowerShellScript("networkpowermanagement.ps1", ""), null),
-
-            // enabling wake-on-lan
-            ("Enabling Wake-On-Lan (WOL)", async () => await ProcessActions.RunPowerShellScript("wol.ps1", ""), () => WOL == true),
 
              // set txintdelay to 0
             ("Setting TxIntDelay to 0", async () => await ProcessActions.RunPowerShellScript("txintdelay.ps1", ""), () => TxIntDelay == true),
@@ -66,9 +62,6 @@ public static class NetworkStage
 
             // log advanced network settings
             ("Logging advanced network settings", async () => await ProcessActions.LogAdvancedNetworkSettings(), null),
-
-            // disable wifi services and drivers
-            ("Disabling Wi-Fi services and drivers", async () => await ProcessActions.DisableWiFiServicesAndDrivers(), () => Wifi == false),
         };
 
         var filteredActions = actions.Where(a => a.Condition == null || a.Condition.Invoke()).ToList();
