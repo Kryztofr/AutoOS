@@ -83,8 +83,8 @@ If you want to delete your old Windows partition and merge the unallocated space
   <td><img src="https://raw.githubusercontent.com/tinodin/AutoOS-Resources/main/AutoOS%20Installer%20%28Dark%29/Browser.png"/></td>
 </tr>
 <tr>
-  <td><img src="https://raw.githubusercontent.com/tinodin/AutoOS-Resources/main/AutoOS%20Installer%20%28Light%29/Applications.gif"/></td>
-  <td><img src="https://raw.githubusercontent.com/tinodin/AutoOS-Resources/main/AutoOS%20Installer%20%28Dark%29/Applications.gif"/></td>
+  <td><img src="https://raw.githubusercontent.com/tinodin/AutoOS-Resources/main/AutoOS%20Installer%20%28Light%29/Applications.png"/></td>
+  <td><img src="https://raw.githubusercontent.com/tinodin/AutoOS-Resources/main/AutoOS%20Installer%20%28Dark%29/Applications.png"/></td>
 </tr>
 <tr>
   <td><img src="https://raw.githubusercontent.com/tinodin/AutoOS-Resources/main/AutoOS%20Installer%20%28Light%29/Display.png"/></td>
@@ -93,18 +93,6 @@ If you want to delete your old Windows partition and merge the unallocated space
 <tr>
   <td><img src="https://raw.githubusercontent.com/tinodin/AutoOS-Resources/main/AutoOS%20Installer%20%28Light%29/Graphics%20Card.png"/></td>
   <td><img src="https://raw.githubusercontent.com/tinodin/AutoOS-Resources/main/AutoOS%20Installer%20%28Dark%29/Graphics%20Card.png"/></td>
-</tr>
-<tr>
-  <td><img src="https://raw.githubusercontent.com/tinodin/AutoOS-Resources/main/AutoOS%20Installer%20%28Light%29/Bluetooth%20&%20Devices.png"/></td>
-  <td><img src="https://raw.githubusercontent.com/tinodin/AutoOS-Resources/main/AutoOS%20Installer%20%28Dark%29/Bluetooth%20&%20Devices.png"/></td>
-</tr>
-<tr>
-  <td><img src="https://raw.githubusercontent.com/tinodin/AutoOS-Resources/main/AutoOS%20Installer%20%28Light%29/Network%20&%20Internet.png"/></td>
-  <td><img src="https://raw.githubusercontent.com/tinodin/AutoOS-Resources/main/AutoOS%20Installer%20%28Dark%29/Network%20&%20Internet.png"/></td>
-</tr>
-<tr>
-  <td><img src="https://raw.githubusercontent.com/tinodin/AutoOS-Resources/main/AutoOS%20Installer%20%28Light%29/Energy%20&%20Power.png"/></td>
-  <td><img src="https://raw.githubusercontent.com/tinodin/AutoOS-Resources/main/AutoOS%20Installer%20%28Dark%29/Energy%20&%20Power.png"/></td>
 </tr>
 <tr>
   <td><img src="https://raw.githubusercontent.com/tinodin/AutoOS-Resources/main/AutoOS%20Installer%20%28Light%29/Install%20AutoOS.png"/></td>
@@ -150,10 +138,6 @@ If you want to delete your old Windows partition and merge the unallocated space
 <tr>
   <td><img src="https://raw.githubusercontent.com/tinodin/AutoOS-Resources/main/AutoOS%20Settings%20%28Light%29/Services%20&%20Drivers.png"/></td>
   <td><img src="https://raw.githubusercontent.com/tinodin/AutoOS-Resources/main/AutoOS%20Settings%20%28Dark%29/Services%20&%20Drivers.png"/></td>
-</tr>
-<tr>
-  <td><img src="https://raw.githubusercontent.com/tinodin/AutoOS-Resources/main/AutoOS%20Settings%20%28Light%29/Tracking%20&%20Logging.png"/></td>
-  <td><img src="https://raw.githubusercontent.com/tinodin/AutoOS-Resources/main/AutoOS%20Settings%20%28Dark%29/Tracking%20&%20Logging.png"/></td>
 </tr>
 <tr>
   <td><img src="https://raw.githubusercontent.com/tinodin/AutoOS-Resources/main/AutoOS%20Settings%20%28Light%29/BIOS%20Settings.png"/></td>
