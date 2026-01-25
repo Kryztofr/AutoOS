@@ -71,8 +71,6 @@ namespace AutoOS.Views
             "BrowsersPage",
             "DisplayPage",
             "GraphicsPage",
-            "DevicesPage",
-            "InternetPage",
             "SecurityPage"
         ];
 

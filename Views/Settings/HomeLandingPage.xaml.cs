@@ -151,30 +151,37 @@ namespace AutoOS.Views.Settings
             }
 
             bool NetAdapterCx = false;
+            var activeAdapters = new ManagementObjectSearcher("SELECT * FROM Win32_NetworkAdapter").Get().Cast<ManagementObject>().Where(a => (ushort?)a["NetConnectionStatus"] == 2).ToList();
 
-            var adapters = new ManagementObjectSearcher("SELECT * FROM Win32_NetworkAdapter WHERE AdapterTypeID = 0").Get().Cast<ManagementObject>().ToList();
+            foreach (var adapter in activeAdapters)
+            {
+                string pnpDeviceId = adapter["PNPDeviceID"]?.ToString();
+                if (string.IsNullOrEmpty(pnpDeviceId))
+                    continue;
 
-            var mainAdapter = adapters.FirstOrDefault(a => (ushort?)a["NetConnectionStatus"] == 2) ?? adapters.First();
-            string pnpDeviceId = mainAdapter["PNPDeviceID"]?.ToString();
+                using var key = Registry.LocalMachine.OpenSubKey($@"SYSTEM\CurrentControlSet\Enum\{pnpDeviceId}");
+                string driver = key?.GetValue("Driver") as string;
+                using var classKey = Registry.LocalMachine.OpenSubKey($@"SYSTEM\CurrentControlSet\Control\Class\{driver}");
+                using var ndiKey = classKey?.OpenSubKey("Ndi");
+                string serviceName = ndiKey?.GetValue("Service")?.ToString()?.TrimEnd('.');
+                using var serviceKey = Registry.LocalMachine.OpenSubKey($@"SYSTEM\CurrentControlSet\Services\{serviceName}");
+                string imagePath = serviceKey?.GetValue("ImagePath") as string;
 
-            using var key = Registry.LocalMachine.OpenSubKey($@"SYSTEM\CurrentControlSet\Enum\{pnpDeviceId}");
-            string driver = key?.GetValue("Driver") as string;
-            using var classKey = Registry.LocalMachine.OpenSubKey($@"SYSTEM\CurrentControlSet\Control\Class\{driver}");
-            using var ndiKey = classKey?.OpenSubKey("Ndi");
-            string serviceName = ndiKey?.GetValue("Service")?.ToString()?.TrimEnd('.');
-            using var serviceKey = Registry.LocalMachine.OpenSubKey($@"SYSTEM\CurrentControlSet\Services\{serviceName}");
-            string imagePath = serviceKey?.GetValue("ImagePath") as string;
+                string systemRoot = Environment.GetEnvironmentVariable("SystemRoot")!;
+                string resolved = Environment.ExpandEnvironmentVariables(imagePath.StartsWith(@"\??\") ? imagePath[4..] : imagePath);
 
-            string systemRoot = Environment.GetEnvironmentVariable("SystemRoot")!;
-            string resolved = Environment.ExpandEnvironmentVariables(imagePath.StartsWith(@"\??\") ? imagePath[4..] : imagePath);
+                resolved = resolved.StartsWith(@"\SystemRoot", StringComparison.OrdinalIgnoreCase)
+                    ? resolved.Replace(@"\SystemRoot", systemRoot, StringComparison.OrdinalIgnoreCase)
+                    : resolved.StartsWith("System32", StringComparison.OrdinalIgnoreCase)
+                        ? Path.Combine(systemRoot, resolved)
+                        : resolved;
 
-            resolved = resolved.StartsWith(@"\SystemRoot", StringComparison.OrdinalIgnoreCase)
-                ? resolved.Replace(@"\SystemRoot", systemRoot, StringComparison.OrdinalIgnoreCase)
-                : resolved.StartsWith("System32", StringComparison.OrdinalIgnoreCase)
-                    ? Path.Combine(systemRoot, resolved)
-                    : resolved;
-
-            NetAdapterCx = Encoding.ASCII.GetString(File.ReadAllBytes(resolved)).Contains("NetAdapter", StringComparison.OrdinalIgnoreCase);
+                if (Encoding.ASCII.GetString(File.ReadAllBytes(resolved)).Contains("NetAdapter", StringComparison.OrdinalIgnoreCase))
+                {
+                    NetAdapterCx = true;
+                    break;
+                }
+            }
 
             var actions = new List<(string Title, Func<Task> Action, Func<bool> Condition)>
             {
@@ -241,9 +248,9 @@ namespace AutoOS.Views.Settings
                 (@"Reverting ""Allow Diagnostic Data"" policy", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\CPSS\DevicePolicy\AllowTelemetry"" /t DefaultValue /f"), null),
 
                 // revert sleep study
-                ("Reverting sleep study", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"wevtutil sl Microsoft-Windows-SleepStudy/Diagnostic /e:true"), null),
-                ("Reverting sleep study", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"wevtutil sl Microsoft-Windows-Kernel-Processor-Power/Diagnostic /e:true"), null),
-                ("Reverting sleep study", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"wevtutil sl Microsoft-Windows-UserModePowerService/Diagnostic /e:true"), null),
+                ("Reverting sleep study", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"wevtutil sl Microsoft-Windows-SleepStudy/Diagnostic /e:true /q:true"), null),
+                ("Reverting sleep study", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"wevtutil sl Microsoft-Windows-Kernel-Processor-Power/Diagnostic /e:true /q:true"), null),
+                ("Reverting sleep study", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"wevtutil sl Microsoft-Windows-UserModePowerService/Diagnostic /e:true /q:true"), null),
                 ("Reverting sleep study", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg delete ""HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\Power"" /v ""SleepStudyDisabled"" /f"), null),
                 ("Reverting sleep study", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\Power"" /v ""SleepStudyDeviceAccountingLevel"" /t REG_DWORD /d 4 /f"), null),
                 ("Reverting sleep study", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg delete ""HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Power"" /v ""SleepstudyAccountingEnabled"" /f"), null),

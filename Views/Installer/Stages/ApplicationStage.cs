@@ -374,7 +374,7 @@ public static class ApplicationStage
             ("Please log in to your Dolby Access account", async () => await Task.Run(() => Process.Start(new ProcessStartInfo { FileName = Path.Combine(@"C:\Program Files\WindowsApps\DolbyLaboratories.DolbyAccess_" + dolbyAccessVersion + "_x64__rz1tebttyb220", "DolbyAccess.exe"), WindowStyle = ProcessWindowStyle.Maximized }) !.WaitForExitAsync()), () => AppleMusic == true),
 
             // download apple music
-            ("Downloading Apple Music", async () => await ProcessActions.RunMicrosoftStoreDownload("AppleInc.AppleMusicWin", "cf497837-70f4-4c2a-9b9d-3d5767379bb1", "msixbundle", 0, false), () => AppleMusic == true),
+            ("Downloading Apple Music", async () => await ProcessActions.RunMicrosoftStoreDownload("AppleInc.AppleMusicWin", "cf497837-70f4-4c2a-9b9d-3d5767379bb1", "msixbundle", 1, false), () => AppleMusic == true),
 
             // install apple music
             ("Installing Apple Music", async () => await ProcessActions.RunPowerShell(@"Add-AppxPackage -Path (Get-ChildItem -Path \""$env:TEMP\AppleInc.AppleMusicWin (Package)\"" | Select-Object -First 1).FullName"), () => AppleMusic == true),

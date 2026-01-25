@@ -23,7 +23,7 @@ public static class SchedulingStage
             // optimize affinities
             ("Optimizing Affinities", async () => await ProcessActions.Sleep(1000), () => PCores >= 4),
             ("Optimizing Affinities", async () => await AutoAffinityService.ApplyAutoAffinities(), () => PCores >= 4),
-            ("Optimizing Affinities", async () => await ProcessActions.Sleep(4000), () => PCores >= 4),
+            ("Optimizing Affinities", async () => await ProcessActions.Sleep(3000), () => PCores >= 4),
 
             // disable interrupt steering
             ("Disabling interrupt steering", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\kernel"" /v InterruptSteeringFlags /t REG_DWORD /d 1 /f"), () => PCores >= 4),
