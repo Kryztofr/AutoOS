@@ -51,12 +51,16 @@
                   HorizontalAlignment="Stretch">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <!--  Search  -->
                 <dev:TextBox x:Name="Search"
                              Grid.Column="0"
-                             Margin="0,0,12,0"
+                             Margin="0,0,8,0"
                              IsEnabled="False"
                              PlaceholderText="Search..."
                              TextChanged="SearchBox_TextChanged">
@@ -64,28 +68,72 @@
                         <Button Content="&#xE71E;" />
                     </dev:TextBox.Content>
                 </dev:TextBox>
-                <StackPanel Grid.Column="1"
-                            Orientation="Horizontal"
-                            Spacing="12">
-                    <!--  Powerplan  -->
-                    <ComboBox x:Name="PowerPlanComboBox"
-                              MinWidth="175"
-                              DisplayMemberPath="Name"
-                              IsEnabled="False"
-                              SelectionChanged="PowerPlanComboBox_SelectionChanged" />
-                    <!--  Import  -->
-                    <Button x:Name="Import"
-                            Click="Import_Click"
-                            IsEnabled="False">
-                        <StackPanel VerticalAlignment="Center"
-                                    Orientation="Horizontal">
-                            <FontIcon Margin="0,0,8,0"
-                                      FontSize="14"
-                                      Glyph="&#xE8B5;" />
-                            <TextBlock Text="Import" />
-                        </StackPanel>
-                    </Button>
-                </StackPanel>
+                <!--  Powerplan  -->
+                <ComboBox x:Name="PowerPlanComboBox"
+                          Grid.Column="1"
+                          Margin="0,0,8,0"
+                          HorizontalAlignment="Stretch"
+                          IsEnabled="False"
+                          SelectionChanged="PowerPlanComboBox_SelectionChanged">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate x:DataType="local:PowerPlan">
+                            <TextBlock Text="{x:Bind Name}"
+                                       TextTrimming="CharacterEllipsis"
+                                       TextWrapping="NoWrap">
+                                <ToolTipService.ToolTip>
+                                    <TextBlock Text="{x:Bind Description}" />
+                                </ToolTipService.ToolTip>
+                            </TextBlock>
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+                <!--  Edit  -->
+                <Button x:Name="Edit"
+                        Grid.Column="2"
+                        Margin="0,0,8,0"
+                        VerticalAlignment="Stretch"
+                        Click="Edit_Click"
+                        IsEnabled="False">
+                    <FontIcon FontSize="14"
+                              Glyph="&#xE70F;" />
+                </Button>
+                <!--  Delete  -->
+                <Button x:Name="Delete"
+                        Grid.Column="3"
+                        Margin="0,0,8,0"
+                        VerticalAlignment="Stretch"
+                        Click="Delete_Click"
+                        IsEnabled="False">
+                    <FontIcon FontSize="14"
+                              Glyph="&#xE74D;" />
+                </Button>
+                <!--  Export  -->
+                <Button x:Name="Export"
+                        Grid.Column="4"
+                        Margin="0,0,8,0"
+                        Click="Export_Click"
+                        IsEnabled="False">
+                    <StackPanel VerticalAlignment="Center"
+                                Orientation="Horizontal">
+                        <FontIcon Margin="0,0,8,0"
+                                  FontSize="14"
+                                  Glyph="&#xEDE1;" />
+                        <TextBlock Text="Export" />
+                    </StackPanel>
+                </Button>
+                <!--  Import  -->
+                <Button x:Name="Import"
+                        Grid.Column="5"
+                        Click="Import_Click"
+                        IsEnabled="False">
+                    <StackPanel VerticalAlignment="Center"
+                                Orientation="Horizontal">
+                        <FontIcon Margin="0,0,8,0"
+                                  FontSize="14"
+                                  Glyph="&#xE8B5;" />
+                        <TextBlock Text="Import" />
+                    </StackPanel>
+                </Button>
             </Grid>
         </StackPanel>
         <dev:SwitchPresenter x:Name="SwitchPresenter"

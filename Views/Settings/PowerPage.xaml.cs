@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using AutoOS.Views.Settings.Power;
 using CommunityToolkit.WinUI;
@@ -27,6 +28,9 @@ namespace AutoOS.Views.Settings
             await LoadPowerPlanSettings(((PowerPlan)PowerPlanComboBox.SelectedItem).Guid);
             Search.IsEnabled = true;
             PowerPlanComboBox.IsEnabled = true;
+            Edit.IsEnabled = true;
+            Delete.IsEnabled = true;
+            Export.IsEnabled = true;
             Import.IsEnabled = true;
             SwitchPresenter.Value = "Loaded";
             PowerTreeView.UpdateLayout();
@@ -49,7 +53,8 @@ namespace AutoOS.Views.Settings
                 plansList.Add(new PowerPlan
                 {
                     Guid = schemeGuid,
-                    Name = PowerApi.ReadFriendlyName(schemeGuid, null, null)
+                    Name = PowerApi.ReadFriendlyName(schemeGuid, null, null),
+                    Description = PowerApi.ReadDescription(schemeGuid)
                 });
             }
 
@@ -206,6 +211,107 @@ namespace AutoOS.Views.Settings
             }
         }
 
+        private async void Edit_Click(object sender, RoutedEventArgs e)
+        {
+            if (PowerPlanComboBox.SelectedItem is not PowerPlan plan)
+                return;
+
+            var nameTextBox = new Microsoft.UI.Xaml.Controls.TextBox
+            {
+                Text = plan.Name,
+                Margin = new Thickness(0, 0, 0, 8)
+            };
+
+            var descriptionBox = new DevWinUI.TextBox
+            {
+                AcceptsReturn = true,
+                Text = plan.Description
+            };
+
+            var panel = new StackPanel
+            {
+                Spacing = 4
+            };
+            
+            panel.Children.Add(new TextBlock { Text = "Name:" });
+            panel.Children.Add(nameTextBox);
+            panel.Children.Add(new TextBlock { Text = "Description:" });
+            panel.Children.Add(descriptionBox);
+
+            var dialog = new ContentDialog
+            {
+                Title = "Edit Power Plan",
+                Content = panel,
+                PrimaryButtonText = "Apply",
+                CloseButtonText = "Cancel",
+                DefaultButton = ContentDialogButton.Primary,
+                XamlRoot = XamlRoot
+            };
+
+            var result = await dialog.ShowAsync();
+            if (result != ContentDialogResult.Primary)
+                return;
+
+            PowerApi.WriteSchemeFriendlyName(plan.Guid, nameTextBox.Text);
+            PowerApi.WriteSchemeDescription(plan.Guid, descriptionBox.Text);
+
+            plan.Name = nameTextBox.Text;
+            plan.Description = descriptionBox.Text;
+            var selected = PowerPlanComboBox.SelectedItem;
+            PowerPlanComboBox.ItemsSource = null;
+            PowerPlanComboBox.ItemsSource = _powerPlans;
+            PowerPlanComboBox.SelectedItem = selected;
+        }
+
+        private async void Delete_Click(object sender, RoutedEventArgs e)
+        {
+            if (PowerPlanComboBox.SelectedItem is not PowerPlan plan)
+                return;
+
+            if (_powerPlans.Count <= 1)
+            {
+                var errorDialog = new ContentDialog
+                {
+                    Title = "Unable to delete power plan",
+                    Content = "At least one other power plan must exist.",
+                    CloseButtonText = "OK",
+                    DefaultButton = ContentDialogButton.Close,
+                    XamlRoot = XamlRoot
+                };
+                await errorDialog.ShowAsync();
+                return;
+            }
+
+            var dialog = new ContentDialog
+            {
+                Title = "Delete power plan",
+                Content = $"Are you sure that you want to delete \"{plan.Name}\"?",
+                PrimaryButtonText = "Yes",
+                CloseButtonText = "No",
+                DefaultButton = ContentDialogButton.Close,
+                XamlRoot = XamlRoot
+            };
+
+            var result = await dialog.ShowAsync();
+            if (result != ContentDialogResult.Primary)
+                return;
+
+            int currentIndex = _powerPlans.IndexOf(plan);
+
+            PowerPlan nextSelection;
+            if (currentIndex < _powerPlans.Count - 1)
+                nextSelection = _powerPlans[currentIndex + 1];
+            else
+                nextSelection = _powerPlans[currentIndex - 1];
+
+            PowerPlanComboBox.SelectedItem = nextSelection;
+
+            PowerApi.DeleteScheme(plan.Guid);
+
+            _powerPlans.Remove(plan);
+            PowerPlanComboBox.SelectedItem = nextSelection;
+        }
+
         private readonly PowerSubgroup noResultItem = new()
         {
             Name = "No result found",
@@ -276,7 +382,8 @@ namespace AutoOS.Views.Settings
                 var plan = new PowerPlan
                 {
                     Guid = importedGuid,
-                    Name = PowerApi.ReadFriendlyName(importedGuid, null, null)
+                    Name = PowerApi.ReadFriendlyName(importedGuid, null, null),
+                    Description = PowerApi.ReadDescription(importedGuid)
                 };
                 _powerPlans.Add(plan);
             }
@@ -290,6 +397,35 @@ namespace AutoOS.Views.Settings
                     setting.DcValueIndex = PowerApi.ReadDcValueIndex(importedGuid, subgroup.Guid, setting.Guid);
                 }
             }
+        }
+
+        private async void Export_Click(object sender, RoutedEventArgs e)
+        {
+            if (PowerPlanComboBox.SelectedItem is not PowerPlan plan)
+                return;
+
+            var picker = new SavePicker(App.MainWindow)
+            {
+                ShowAllFilesOption = false,
+                SuggestedFileName = plan.Name
+            };
+            picker.FileTypeChoices.Add("Power Scheme Files", ["*.pow"]);
+
+            var file = await picker.PickSaveFileAsync();
+            if (file == null)
+                return;
+
+            var psi = new ProcessStartInfo
+            {
+                FileName = "powercfg.exe",
+                Arguments = @$"-export ""{file.Path}.pow"" {plan.Guid:D}",
+                UseShellExecute = false,
+                CreateNoWindow = true
+            };
+
+            using var proc = Process.Start(psi);
+            if (proc != null)
+                await proc.WaitForExitAsync();
         }
 
         private async void TreeView_ItemInvoked(object sender, TreeViewItemInvokedEventArgs args)

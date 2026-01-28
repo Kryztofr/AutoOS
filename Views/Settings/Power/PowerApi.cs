@@ -139,6 +139,29 @@ namespace AutoOS.Views.Settings.Power
             byte[] Buffer,
             ref uint BufferSize);
 
+        [LibraryImport("powrprof.dll", StringMarshalling = StringMarshalling.Utf16)]
+        internal static partial uint PowerWriteFriendlyName(
+            IntPtr RootPowerKey,
+            IntPtr SchemeGuid,
+            IntPtr SubGroupGuid,
+            IntPtr PowerSettingGuid,
+            string Buffer,
+            uint BufferSize);
+
+        [LibraryImport("powrprof.dll", StringMarshalling = StringMarshalling.Utf16)]
+        internal static partial uint PowerWriteDescription(
+            IntPtr RootPowerKey,
+            IntPtr SchemeGuid,
+            IntPtr SubGroupGuid,
+            IntPtr PowerSettingGuid,
+            string Buffer,
+            uint BufferSize);
+
+        [LibraryImport("powrprof.dll")]
+        internal static partial uint PowerDeleteScheme(
+            IntPtr RootPowerKey,
+            IntPtr SchemeGuid);
+
         public static IntPtr AllocGuid(Guid guid)
         {
             IntPtr ptr = Marshal.AllocHGlobal(Marshal.SizeOf<Guid>());
@@ -170,11 +193,11 @@ namespace AutoOS.Views.Settings.Power
             }
         }
 
-        internal static string ReadDescription(Guid scheme, Guid subgroup, Guid setting)
+        internal static string ReadDescription(Guid scheme, Guid? subgroup = null, Guid? setting = null)
         {
             IntPtr schemePtr = AllocGuid(scheme);
-            IntPtr subgroupPtr = AllocGuid(subgroup);
-            IntPtr settingPtr = AllocGuid(setting);
+            IntPtr subgroupPtr = subgroup.HasValue ? AllocGuid(subgroup.Value) : IntPtr.Zero;
+            IntPtr settingPtr = setting.HasValue ? AllocGuid(setting.Value) : IntPtr.Zero;
 
             try
             {
@@ -189,8 +212,8 @@ namespace AutoOS.Views.Settings.Power
             finally
             {
                 Marshal.FreeHGlobal(schemePtr);
-                Marshal.FreeHGlobal(subgroupPtr);
-                Marshal.FreeHGlobal(settingPtr);
+                if (subgroupPtr != IntPtr.Zero) Marshal.FreeHGlobal(subgroupPtr);
+                if (settingPtr != IntPtr.Zero) Marshal.FreeHGlobal(settingPtr);
             }
         }
 
@@ -319,6 +342,50 @@ namespace AutoOS.Views.Settings.Power
             {
                 Marshal.FreeHGlobal(subgroupPtr);
                 Marshal.FreeHGlobal(settingPtr);
+            }
+        }
+
+        internal static bool WriteSchemeFriendlyName(Guid scheme, string name)
+        {
+            IntPtr schemePtr = AllocGuid(scheme);
+
+            try
+            {
+                uint size = (uint)((name?.Length ?? 0) + 1) * 2;
+                return PowerWriteFriendlyName(IntPtr.Zero, schemePtr, IntPtr.Zero, IntPtr.Zero, name ?? string.Empty, size) == 0;
+            }
+            finally
+            {
+                Marshal.FreeHGlobal(schemePtr);
+            }
+        }
+
+        internal static bool WriteSchemeDescription(Guid scheme, string description)
+        {
+            IntPtr schemePtr = AllocGuid(scheme);
+
+            try
+            {
+                uint size = (uint)((description?.Length ?? 0) + 1) * 2;
+                return PowerWriteDescription(IntPtr.Zero, schemePtr, IntPtr.Zero, IntPtr.Zero, description ?? string.Empty, size) == 0;
+            }
+            finally
+            {
+                Marshal.FreeHGlobal(schemePtr);
+            }
+        }
+
+        internal static bool DeleteScheme(Guid scheme)
+        {
+            IntPtr schemePtr = AllocGuid(scheme);
+
+            try
+            {
+                return PowerDeleteScheme(IntPtr.Zero, schemePtr) == 0;
+            }
+            finally
+            {
+                Marshal.FreeHGlobal(schemePtr);
             }
         }
     }

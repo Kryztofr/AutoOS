@@ -7,6 +7,7 @@ namespace AutoOS.Views.Settings.Power
     {
         public Guid Guid { get; set; }
         public string Name { get; set; }
+        public string Description { get; set; }
     }
 
     public sealed class PowerSubgroup : INotifyPropertyChanged

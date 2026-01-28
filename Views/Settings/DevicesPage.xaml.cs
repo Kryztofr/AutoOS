@@ -209,9 +209,6 @@ public sealed partial class DevicesPage : Page
             process.WaitForExit();
         });
 
-        // cleanup devices
-        await Task.Run(() => Process.Start(new ProcessStartInfo(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Applications", "DeviceCleanup", "DeviceCleanupCmd.exe"), "-s *") { CreateNoWindow = true })?.WaitForExit());
-
         // re-enable hittestvisible
         HID.IsHitTestVisible = true;
 
