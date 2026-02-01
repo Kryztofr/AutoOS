@@ -1,4 +1,3 @@
-# Credit: Peter
 Get-WmiObject -Class Win32_VideoController | Where-Object { $_.PNPDeviceID -ne $null } | ForEach-Object {
     $pnpDeviceId = $_.PNPDeviceID
     $regPath = "HKLM:\SYSTEM\CurrentControlSet\Enum\$pnpDeviceId"
