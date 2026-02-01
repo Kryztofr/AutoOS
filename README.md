@@ -201,11 +201,6 @@ Thank you for [SVCGROUP.ps1](https://github.com/meetrevision/playbook/blob/main/
 
 ---
 
-**Peter:**  
-Thank you for helping me with some BIOS Settings and NVIDIA tweaks.
-
----
-
 **Imribiy:**  
 Thank you for your research on [Configuring services and features](https://github.com/imribiy/XOS/tree/main/configure-services-and-features) and [AMD GPU Tweaks](https://github.com/imribiy/amd-gpu-tweaks).  
 

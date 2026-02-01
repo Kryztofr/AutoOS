@@ -16,6 +16,7 @@
                 <controls:DataRow>
                     <TextBlock />
                     <TextBlock Margin="-24,0,0,0"
+                               FontWeight="{Binding FontWeight}"
                                Text="{Binding Name}" />
                     <TextBlock />
                     <TextBlock />
@@ -26,9 +27,12 @@
             <TreeViewItem Visibility="{Binding IsVisible, Converter={StaticResource BoolToVisibilityConverter}}">
                 <controls:DataRow>
                     <TextBlock />
-                    <TextBlock Text="{Binding Name}" />
-                    <TextBlock Text="{Binding AcValueIndex}" />
-                    <TextBlock Text="{Binding DcValueIndex}" />
+                    <TextBlock Text="{Binding Name}"
+                               ToolTipService.ToolTip="{Binding Description}" />
+                    <TextBlock Text="{Binding AcValueIndex}"
+                               ToolTipService.ToolTip="{Binding FriendlyAcValue}" />
+                    <TextBlock Text="{Binding DcValueIndex}"
+                               ToolTipService.ToolTip="{Binding FriendlyDcValue}" />
                 </controls:DataRow>
             </TreeViewItem>
         </DataTemplate>
@@ -36,6 +40,79 @@
                                          SettingTemplate="{StaticResource SettingTemplate}"
                                          SubgroupTemplate="{StaticResource SubgroupTemplate}" />
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+
+        <DataTemplate x:Key="PowerPlanTemplate"
+                      x:DataType="local:PowerPlan">
+            <TextBlock Text="{x:Bind Name}"
+                       TextTrimming="CharacterEllipsis"
+                       TextWrapping="NoWrap">
+                <ToolTipService.ToolTip>
+                    <TextBlock Text="{x:Bind Description}" />
+                </ToolTipService.ToolTip>
+            </TextBlock>
+        </DataTemplate>
+        <DataTemplate x:Key="CompareSubgroupTemplate"
+                      x:DataType="local:PowerCompareSubgroup">
+            <TreeViewItem IsExpanded="{x:Bind IsExpanded, Mode=TwoWay}"
+                          ItemsSource="{x:Bind SubItems}"
+                          Visibility="{x:Bind IsVisible, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                <controls:DataRow>
+                    <TextBlock />
+                    <TextBlock Margin="-24,0,0,0"
+                               FontWeight="{x:Bind FontWeight}"
+                               Text="{x:Bind Name}" />
+                    <TextBlock />
+                    <TextBlock />
+                    <TextBlock />
+                    <TextBlock />
+                </controls:DataRow>
+            </TreeViewItem>
+        </DataTemplate>
+        <DataTemplate x:Key="CompareSettingTemplate"
+                      x:DataType="local:PowerCompareSetting">
+            <TreeViewItem Visibility="{x:Bind IsVisible, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                <controls:DataRow>
+                    <TextBlock />
+                    <TextBlock Text="{x:Bind Name}"
+                               ToolTipService.ToolTip="{x:Bind Description}" />
+                    <Grid CornerRadius="4">
+                        <Border Background="{ThemeResource SystemFillColorCriticalBackgroundBrush}"
+                                CornerRadius="4"
+                                Visibility="{x:Bind IsAcDifferent, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                        <TextBlock Margin="4,0"
+                                   Text="{x:Bind Plan1AcValue, Mode=OneWay}"
+                                   ToolTipService.ToolTip="{x:Bind Plan1AcFriendlyValue, Mode=OneWay}" />
+                    </Grid>
+                    <Grid CornerRadius="4">
+                        <Border Background="{ThemeResource SystemFillColorCriticalBackgroundBrush}"
+                                CornerRadius="4"
+                                Visibility="{x:Bind IsDcDifferent, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                        <TextBlock Margin="4,0"
+                                   Text="{x:Bind Plan1DcValue, Mode=OneWay}"
+                                   ToolTipService.ToolTip="{x:Bind Plan1DcFriendlyValue, Mode=OneWay}" />
+                    </Grid>
+                    <Grid CornerRadius="4">
+                        <Border Background="{ThemeResource SystemFillColorCriticalBackgroundBrush}"
+                                CornerRadius="4"
+                                Visibility="{x:Bind IsAcDifferent, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                        <TextBlock Margin="4,0"
+                                   Text="{x:Bind Plan2AcValue, Mode=OneWay}"
+                                   ToolTipService.ToolTip="{x:Bind Plan2AcFriendlyValue, Mode=OneWay}" />
+                    </Grid>
+                    <Grid CornerRadius="4">
+                        <Border Background="{ThemeResource SystemFillColorCriticalBackgroundBrush}"
+                                CornerRadius="4"
+                                Visibility="{x:Bind IsDcDifferent, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                        <TextBlock Margin="4,0"
+                                   Text="{x:Bind Plan2DcValue, Mode=OneWay}"
+                                   ToolTipService.ToolTip="{x:Bind Plan2DcFriendlyValue, Mode=OneWay}" />
+                    </Grid>
+                </controls:DataRow>
+            </TreeViewItem>
+        </DataTemplate>
+        <local:PowerCompareItemTemplateSelector x:Key="PowerCompareItemTemplateSelector"
+                                                SettingTemplate="{StaticResource CompareSettingTemplate}"
+                                                SubgroupTemplate="{StaticResource CompareSubgroupTemplate}" />
     </Page.Resources>
     <Grid>
         <Grid.RowDefinitions>
@@ -47,8 +124,9 @@
             <!--  Title  -->
             <TextBlock Style="{StaticResource TitleTextBlockStyle}"
                        Text="Energy &amp; Power" />
-            <Grid Margin="0,48,0,12"
-                  HorizontalAlignment="Stretch">
+            <Grid Margin="0,48,0,8"
+                  HorizontalAlignment="Stretch"
+                  RowSpacing="8">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="*" />
@@ -57,10 +135,15 @@
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
                 <!--  Search  -->
                 <dev:TextBox x:Name="Search"
+                             Grid.Row="0"
                              Grid.Column="0"
-                             Margin="0,0,8,0"
+                             Grid.ColumnSpan="6"
                              IsEnabled="False"
                              PlaceholderText="Search..."
                              TextChanged="SearchBox_TextChanged">
@@ -68,47 +151,59 @@
                         <Button Content="&#xE71E;" />
                     </dev:TextBox.Content>
                 </dev:TextBox>
-                <!--  Powerplan  -->
+                <!--  Power plan  -->
                 <ComboBox x:Name="PowerPlanComboBox"
+                          Grid.Row="1"
+                          Grid.Column="0"
+                          Margin="0,0,8,0"
+                          HorizontalAlignment="Stretch"
+                          IsEnabled="False"
+                          ItemTemplate="{StaticResource PowerPlanTemplate}"
+                          SelectionChanged="PowerPlanComboBox_SelectionChanged" />
+                <!--  Compare power plan  -->
+                <ComboBox x:Name="ComparePowerPlanComboBox"
+                          Grid.Row="1"
                           Grid.Column="1"
                           Margin="0,0,8,0"
                           HorizontalAlignment="Stretch"
                           IsEnabled="False"
-                          SelectionChanged="PowerPlanComboBox_SelectionChanged">
-                    <ComboBox.ItemTemplate>
-                        <DataTemplate x:DataType="local:PowerPlan">
-                            <TextBlock Text="{x:Bind Name}"
-                                       TextTrimming="CharacterEllipsis"
-                                       TextWrapping="NoWrap">
-                                <ToolTipService.ToolTip>
-                                    <TextBlock Text="{x:Bind Description}" />
-                                </ToolTipService.ToolTip>
-                            </TextBlock>
-                        </DataTemplate>
-                    </ComboBox.ItemTemplate>
-                </ComboBox>
+                          ItemTemplate="{StaticResource PowerPlanTemplate}"
+                          SelectionChanged="ComparePowerPlanComboBox_SelectionChanged" />
                 <!--  Edit  -->
                 <Button x:Name="Edit"
+                        Grid.Row="1"
                         Grid.Column="2"
                         Margin="0,0,8,0"
                         VerticalAlignment="Stretch"
                         Click="Edit_Click"
                         IsEnabled="False">
-                    <FontIcon FontSize="14"
-                              Glyph="&#xE70F;" />
+                    <StackPanel VerticalAlignment="Center"
+                                Orientation="Horizontal">
+                        <FontIcon Margin="0,0,8,0"
+                                  FontSize="14"
+                                  Glyph="&#xE70F;" />
+                        <TextBlock Text="Edit" />
+                    </StackPanel>
                 </Button>
                 <!--  Delete  -->
                 <Button x:Name="Delete"
+                        Grid.Row="1"
                         Grid.Column="3"
                         Margin="0,0,8,0"
                         VerticalAlignment="Stretch"
                         Click="Delete_Click"
                         IsEnabled="False">
-                    <FontIcon FontSize="14"
-                              Glyph="&#xE74D;" />
+                    <StackPanel VerticalAlignment="Center"
+                                Orientation="Horizontal">
+                        <FontIcon Margin="0,0,8,0"
+                                  FontSize="14"
+                                  Glyph="&#xE74D;" />
+                        <TextBlock Text="Delete" />
+                    </StackPanel>
                 </Button>
                 <!--  Export  -->
                 <Button x:Name="Export"
+                        Grid.Row="1"
                         Grid.Column="4"
                         Margin="0,0,8,0"
                         Click="Export_Click"
@@ -123,6 +218,7 @@
                 </Button>
                 <!--  Import  -->
                 <Button x:Name="Import"
+                        Grid.Row="1"
                         Grid.Column="5"
                         Click="Import_Click"
                         IsEnabled="False">
@@ -162,33 +258,67 @@
                         BorderThickness="1"
                         CornerRadius="{StaticResource ControlCornerRadius}">
                     <!--  ScrollViewer  -->
-                    <ScrollViewer VerticalScrollBarVisibility="Auto">
-                        <!--  TreeView  -->
-                        <controls:HeaderedTreeView x:Name="PowerTreeView"
-                                                   AllowDrop="False"
-                                                   CanDrag="False"
-                                                   CanDragItems="False"
-                                                   ItemInvoked="TreeView_ItemInvoked"
-                                                   ItemTemplateSelector="{StaticResource PowerItemTemplateSelector}"
-                                                   ItemsSource="{x:Bind Subgroups}"
-                                                   SelectionMode="None">
-                            <!--  Headers  -->
-                            <controls:HeaderedTreeView.Header>
-                                <controls:DataTable ColumnSpacing="8">
-                                    <controls:DataColumn Content=""
-                                                         DesiredWidth="Auto" />
-                                    <controls:DataColumn Margin="-48,0,48,0"
-                                                         Content="Name"
-                                                         DesiredWidth="*" />
-                                    <controls:DataColumn MinWidth="75"
-                                                         Content="Ac"
-                                                         DesiredWidth="75" />
-                                    <controls:DataColumn MinWidth="100"
-                                                         Content="Dc"
-                                                         DesiredWidth="100" />
-                                </controls:DataTable>
-                            </controls:HeaderedTreeView.Header>
-                        </controls:HeaderedTreeView>
+                    <ScrollViewer Padding="0,0,16,0"
+                                  VerticalScrollBarVisibility="Auto">
+                        <Grid>
+                            <!--  Active TreeView  -->
+                            <controls:HeaderedTreeView x:Name="ActiveTreeView"
+                                                       AllowDrop="False"
+                                                       CanDrag="False"
+                                                       CanDragItems="False"
+                                                       ItemInvoked="TreeView_ItemInvoked"
+                                                       ItemTemplateSelector="{StaticResource PowerItemTemplateSelector}"
+                                                       ItemsSource="{x:Bind Subgroups}"
+                                                       SelectionMode="None">
+                                <!--  Headers  -->
+                                <controls:HeaderedTreeView.Header>
+                                    <controls:DataTable ColumnSpacing="8">
+                                        <controls:DataColumn Content=""
+                                                             DesiredWidth="Auto" />
+                                        <controls:DataColumn Margin="-48,0,48,0"
+                                                             Content="Name"
+                                                             DesiredWidth="*" />
+                                        <controls:DataColumn MinWidth="75"
+                                                             Content="Ac"
+                                                             DesiredWidth="75" />
+                                        <controls:DataColumn MinWidth="100"
+                                                             Content="Dc"
+                                                             DesiredWidth="100" />
+                                    </controls:DataTable>
+                                </controls:HeaderedTreeView.Header>
+                            </controls:HeaderedTreeView>
+                            <!--  Compare TreeView  -->
+                            <controls:HeaderedTreeView x:Name="CompareTreeView"
+                                                       AllowDrop="False"
+                                                       CanDrag="False"
+                                                       CanDragItems="False"
+                                                       ItemInvoked="CompareTreeView_ItemInvoked"
+                                                       ItemTemplateSelector="{StaticResource PowerCompareItemTemplateSelector}"
+                                                       ItemsSource="{x:Bind CompareSubgroups}"
+                                                       SelectionMode="None">
+                                <controls:HeaderedTreeView.Header>
+                                    <controls:DataTable ColumnSpacing="8">
+                                        <controls:DataColumn Content=""
+                                                             DesiredWidth="Auto" />
+                                        <controls:DataColumn Margin="-48,0,48,0"
+                                                             Content="Name"
+                                                             DesiredWidth="*" />
+                                        <controls:DataColumn MinWidth="80"
+                                                             Content="1 (AC)"
+                                                             DesiredWidth="80" />
+                                        <controls:DataColumn MinWidth="80"
+                                                             Content="1 (DC)"
+                                                             DesiredWidth="80" />
+                                        <controls:DataColumn MinWidth="80"
+                                                             Content="2 (AC)"
+                                                             DesiredWidth="80" />
+                                        <controls:DataColumn MinWidth="130"
+                                                             Content="2 (DC)"
+                                                             DesiredWidth="130" />
+                                    </controls:DataTable>
+                                </controls:HeaderedTreeView.Header>
+                            </controls:HeaderedTreeView>
+                        </Grid>
                     </ScrollViewer>
                 </Border>
             </dev:Case>

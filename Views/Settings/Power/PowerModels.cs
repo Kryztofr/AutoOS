@@ -1,20 +1,41 @@
-﻿using System.ComponentModel;
+﻿using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using Microsoft.UI.Text;
 
 namespace AutoOS.Views.Settings.Power
 {
-    public sealed class PowerPlan
+    public sealed class PowerPlan : INotifyPropertyChanged
     {
         public Guid Guid { get; set; }
-        public string Name { get; set; }
-        public string Description { get; set; }
+
+        private string _name;
+        public string Name
+        {
+            get => _name;
+            set { if (_name != value) { _name = value; OnPropertyChanged(); } }
+        }
+
+        private string _description;
+        public string Description
+        {
+            get => _description;
+            set { if (_description != value) { _description = value; OnPropertyChanged(); } }
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+        private void OnPropertyChanged([CallerMemberName] string propertyName = null)
+            => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
     public sealed class PowerSubgroup : INotifyPropertyChanged
     {
         public Guid Guid { get; set; }
         public string Name { get; set; }
-        public List<PowerSetting> Settings { get; set; } = [];
+
+        public Windows.UI.Text.FontWeight FontWeight { get; set; } = FontWeights.SemiBold;
+
+        public ObservableCollection<PowerSetting> Settings { get; set; } = new ObservableCollection<PowerSetting>();
         public List<object> SubItems => Settings.Cast<object>().ToList();
 
         private bool _isExpanded = true;
@@ -46,6 +67,9 @@ namespace AutoOS.Views.Settings.Power
         public string Name { get; set; }
         public string Description { get; set; }
 
+        public string FriendlyAcValue { get; set; }
+        public string FriendlyDcValue { get; set; }
+
         public uint AcValueIndex
         {
             get => _acValueIndex;
@@ -76,6 +100,8 @@ namespace AutoOS.Views.Settings.Power
         public uint? Max { get; set; }
         public uint? Increment { get; set; }
         public string Unit { get; set; }
+
+        public bool IsOption => !(Min.HasValue && Max.HasValue && Increment.HasValue && Max.Value > Min.Value && Increment.Value > 0);
 
         private bool _isVisible = true;
         public bool IsVisible

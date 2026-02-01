@@ -2,9 +2,8 @@
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using AutoOS.Views.Settings.Power;
-using CommunityToolkit.WinUI;
 using CommunityToolkit.WinUI.Controls;
-using Windows.System;
+using Microsoft.UI.Text;
 
 namespace AutoOS.Views.Settings
 {
@@ -13,8 +12,11 @@ namespace AutoOS.Views.Settings
         private bool isInitializingPowerPlans = true;
 
         private readonly ObservableCollection<PowerPlan> _powerPlans = [];
+        private readonly ObservableCollection<PowerPlan> _comparePlans = [];
+        private readonly ObservableCollection<PowerSubgroup> _allSubgroups = [];
         public ObservableCollection<PowerSubgroup> Subgroups { get; } = [];
-        private ObservableCollection<PowerSubgroup> _allSubgroups = [];
+        public ObservableCollection<PowerCompareSubgroup> CompareSubgroups { get; } = [];
+        private PowerCompareSubgroup _identicalPlansPlaceholder;
 
         public PowerPage()
         {
@@ -28,12 +30,16 @@ namespace AutoOS.Views.Settings
             await LoadPowerPlanSettings(((PowerPlan)PowerPlanComboBox.SelectedItem).Guid);
             Search.IsEnabled = true;
             PowerPlanComboBox.IsEnabled = true;
+            ComparePowerPlanComboBox.IsEnabled = true;
             Edit.IsEnabled = true;
             Delete.IsEnabled = true;
             Export.IsEnabled = true;
             Import.IsEnabled = true;
             SwitchPresenter.Value = "Loaded";
-            PowerTreeView.UpdateLayout();
+            ActiveTreeView.UpdateLayout();
+            CompareTreeView.UpdateLayout();
+            CompareTreeView.Opacity = 0;
+            CompareTreeView.IsHitTestVisible = false;
         }
 
         private void LoadPowerPlans()
@@ -63,20 +69,33 @@ namespace AutoOS.Views.Settings
             PowerApi.LocalFree(activePtr);
 
             foreach (var plan in plansList.OrderBy(p => p.Name, StringComparer.CurrentCultureIgnoreCase))
+            {
                 _powerPlans.Add(plan);
+                _comparePlans.Add(plan);
+            }
 
+            var selectPlanToCompare = new PowerPlan
+            {
+                Guid = Guid.Empty,
+                Name = "Select plan to compare",
+                Description = "Select a power plan to compare against the active plan."
+            };
+
+            _comparePlans.Insert(0, selectPlanToCompare);
             PowerPlanComboBox.ItemsSource = _powerPlans;
             PowerPlanComboBox.SelectedItem = _powerPlans.FirstOrDefault(p => p.Guid == activeScheme);
-
+            ComparePowerPlanComboBox.ItemsSource = _comparePlans;
+            ComparePowerPlanComboBox.SelectedItem = selectPlanToCompare;
             isInitializingPowerPlans = false;
         }
 
         private async Task LoadPowerPlanSettings(Guid scheme)
         {
-            await Task.Run(async () =>
+            var result = await Task.Run(() =>
             {
                 IntPtr schemePtr = PowerApi.AllocGuid(scheme);
                 var allSubgroupsList = new List<PowerSubgroup>();
+                var compareSubgroupsList = new List<PowerCompareSubgroup>();
 
                 try
                 {
@@ -85,6 +104,14 @@ namespace AutoOS.Views.Settings
                     {
                         Guid = noneSubgroupGuid,
                         Name = "None"
+                    };
+
+                    var noneCompareSubgroup = new PowerCompareSubgroup
+                    {
+                        Guid = noneSubgroupGuid,
+                        Name = "None",
+                        IsExpanded = true,
+                        IsVisible = true
                     };
 
                     uint settingIndex = 0;
@@ -99,7 +126,7 @@ namespace AutoOS.Views.Settings
                         if (res != 0) break;
 
                         Guid settingGuid = new(setBuffer);
-                        noneSubgroup.Settings.Add(new PowerSetting
+                        var setting = new PowerSetting
                         {
                             SubgroupGuid = noneSubgroupGuid,
                             Guid = settingGuid,
@@ -111,10 +138,49 @@ namespace AutoOS.Views.Settings
                             Max = PowerApi.ReadValueMax(noneSubgroupGuid, settingGuid),
                             Increment = PowerApi.ReadValueIncrement(noneSubgroupGuid, settingGuid),
                             Unit = PowerApi.ReadValueUnitsSpecifier(noneSubgroupGuid, settingGuid)
-                        });
+                        };
+
+                        var friendlyAc = setting.AcValueIndex.ToString();
+                        var friendlyDc = setting.DcValueIndex.ToString();
+
+                        if (setting.IsOption)
+                        {
+                            friendlyAc = PowerApi.ReadPossibleFriendlyName(noneSubgroupGuid, settingGuid, setting.AcValueIndex);
+                            friendlyDc = PowerApi.ReadPossibleFriendlyName(noneSubgroupGuid, settingGuid, setting.DcValueIndex);
+                        }
+
+                        setting.FriendlyAcValue = friendlyAc;
+                        setting.FriendlyDcValue = friendlyDc;
+
+                        noneSubgroup.Settings.Add(setting);
+
+                        var compareSetting = new PowerCompareSetting
+                        {
+                            SubgroupGuid = noneSubgroupGuid,
+                            Guid = settingGuid,
+                            Name = setting.Name,
+                            Description = setting.Description,
+                            Min = setting.Min,
+                            Max = setting.Max,
+                            Increment = setting.Increment,
+                            Unit = setting.Unit,
+                            Plan1AcValue = setting.AcValueIndex,
+                            Plan1DcValue = setting.DcValueIndex,
+                            Plan1AcFriendlyValue = friendlyAc,
+                            Plan1DcFriendlyValue = friendlyDc,
+                            Plan2AcValue = 0,
+                            Plan2DcValue = 0,
+                            Plan2AcFriendlyValue = "",
+                            Plan2DcFriendlyValue = "",
+                            IsAcDifferent = false,
+                            IsDcDifferent = false,
+                            IsVisible = true
+                        };
+                        noneCompareSubgroup.Settings.Add(compareSetting);
                     }
 
                     allSubgroupsList.Add(noneSubgroup);
+                    compareSubgroupsList.Add(noneCompareSubgroup);
 
                     uint subgroupIndex = 0;
                     while (true)
@@ -132,6 +198,14 @@ namespace AutoOS.Views.Settings
                             Name = subgroupGuid == new Guid("9596fb26-9850-41fd-ac3e-f7c3c00afd4b") ? "Multimedia settings" : PowerApi.ReadFriendlyName(scheme, subgroupGuid, null)
                         };
 
+                        PowerCompareSubgroup compareSubgroup = new()
+                        {
+                            Guid = subgroupGuid,
+                            Name = subgroup.Name,
+                            IsExpanded = true,
+                            IsVisible = true
+                        };
+
                         IntPtr subgroupPtr = PowerApi.AllocGuid(subgroupGuid);
                         try
                         {
@@ -145,7 +219,7 @@ namespace AutoOS.Views.Settings
                                 if (res != 0) break;
 
                                 Guid settingGuid = new(setBuffer);
-                                subgroup.Settings.Add(new PowerSetting
+                                var setting = new PowerSetting
                                 {
                                     SubgroupGuid = subgroupGuid,
                                     Guid = settingGuid,
@@ -157,7 +231,45 @@ namespace AutoOS.Views.Settings
                                     Max = PowerApi.ReadValueMax(subgroupGuid, settingGuid),
                                     Increment = PowerApi.ReadValueIncrement(subgroupGuid, settingGuid),
                                     Unit = PowerApi.ReadValueUnitsSpecifier(subgroupGuid, settingGuid)
-                                });
+                                };
+
+                                var friendlyAc = setting.AcValueIndex.ToString();
+                                var friendlyDc = setting.DcValueIndex.ToString();
+
+                                if (setting.IsOption)
+                                {
+                                    friendlyAc = PowerApi.ReadPossibleFriendlyName(subgroupGuid, settingGuid, setting.AcValueIndex);
+                                    friendlyDc = PowerApi.ReadPossibleFriendlyName(subgroupGuid, settingGuid, setting.DcValueIndex);
+                                }
+
+                                setting.FriendlyAcValue = friendlyAc;
+                                setting.FriendlyDcValue = friendlyDc;
+
+                                subgroup.Settings.Add(setting);
+
+                                var compareSetting = new PowerCompareSetting
+                                {
+                                    SubgroupGuid = subgroupGuid,
+                                    Guid = settingGuid,
+                                    Name = setting.Name,
+                                    Description = setting.Description,
+                                    Min = setting.Min,
+                                    Max = setting.Max,
+                                    Increment = setting.Increment,
+                                    Unit = setting.Unit,
+                                    Plan1AcValue = setting.AcValueIndex,
+                                    Plan1DcValue = setting.DcValueIndex,
+                                    Plan1AcFriendlyValue = friendlyAc,
+                                    Plan1DcFriendlyValue = friendlyDc,
+                                    Plan2AcValue = 0,
+                                    Plan2DcValue = 0,
+                                    Plan2AcFriendlyValue = "",
+                                    Plan2DcFriendlyValue = "",
+                                    IsAcDifferent = false,
+                                    IsDcDifferent = false,
+                                    IsVisible = true
+                                };
+                                compareSubgroup.Settings.Add(compareSetting);
                             }
                         }
                         finally
@@ -166,32 +278,89 @@ namespace AutoOS.Views.Settings
                         }
 
                         allSubgroupsList.Add(subgroup);
+                        compareSubgroupsList.Add(compareSubgroup);
                     }
 
-                    await DispatcherQueue.EnqueueAsync(() =>
-                    {
-                        _allSubgroups = [];
-
-                        foreach (var sg in allSubgroupsList)
-                        {
-                            var sortedSettings = sg.Settings.OrderBy(s => s.Name, StringComparer.CurrentCultureIgnoreCase).ToList();
-                            sg.Settings.Clear();
-                            foreach (var setting in sortedSettings)
-                                sg.Settings.Add(setting);
-
-                            _allSubgroups.Add(sg);
-                            Subgroups.Add(sg);
-                        }
-                    });
                 }
                 finally
                 {
                     Marshal.FreeHGlobal(schemePtr);
                 }
+
+                return (allSubgroupsList, compareSubgroupsList);
             });
+            var allSubgroupsList = result.allSubgroupsList;
+            var compareSubgroupsList = result.compareSubgroupsList;
+
+            _allSubgroups.Clear();
+            Subgroups.Clear();
+            CompareSubgroups.Clear();
+
+            foreach (var sg in allSubgroupsList)
+            {
+                var sortedSettings = sg.Settings.OrderBy(s => s.Name, StringComparer.CurrentCultureIgnoreCase).ToList();
+                sg.Settings.Clear();
+                foreach (var setting in sortedSettings)
+                {
+                    sg.Settings.Add(setting);
+                }
+
+                _allSubgroups.Add(sg);
+                Subgroups.Add(sg);
+            }
+
+            foreach (var csg in compareSubgroupsList)
+            {
+                var sortedSettings = csg.Settings.OrderBy(s => s.Name, StringComparer.CurrentCultureIgnoreCase).ToList();
+                csg.Settings.Clear();
+                foreach (var setting in sortedSettings)
+                {
+                    csg.Settings.Add(setting);
+                }
+                CompareSubgroups.Add(csg);
+            }
         }
 
-        private void PowerPlanComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private readonly PowerSubgroup noResultItem = new()
+        {
+            Name = "No result found",
+            Settings = [],
+            IsVisible = true,
+            FontWeight = FontWeights.Normal
+        };
+
+        private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (ComparePowerPlanComboBox.SelectedItem is PowerPlan comparePlan && comparePlan.Guid == Guid.Empty && CompareTreeView.Visibility == Visibility.Visible)
+                CompareTreeView.Visibility = Visibility.Collapsed;
+
+            string query = Search.Text.Trim();
+            bool anyVisible = false;
+
+            foreach (var subgroup in _allSubgroups)
+            {
+                foreach (var setting in subgroup.Settings)
+                {
+                    setting.IsVisible = string.IsNullOrEmpty(query) || setting.Name.Contains(query, StringComparison.CurrentCultureIgnoreCase);
+                }
+
+                subgroup.IsVisible = subgroup.Settings.Any(s => s.IsVisible);
+
+                if (subgroup.IsVisible) anyVisible = true;
+            }
+
+            if (!anyVisible)
+            {
+                if (!Subgroups.Contains(noResultItem))
+                    Subgroups.Add(noResultItem);
+            }
+            else
+            {
+                Subgroups.Remove(noResultItem);
+            }
+        }
+
+        private async void PowerPlanComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (isInitializingPowerPlans) return;
 
@@ -206,8 +375,142 @@ namespace AutoOS.Views.Settings
                     {
                         setting.AcValueIndex = PowerApi.ReadAcValueIndex(schemeGuid, subgroup.Guid, setting.Guid);
                         setting.DcValueIndex = PowerApi.ReadDcValueIndex(schemeGuid, subgroup.Guid, setting.Guid);
+
+                        if (setting.IsOption)
+                        {
+                            setting.FriendlyAcValue = PowerApi.ReadPossibleFriendlyName(subgroup.Guid, setting.Guid, setting.AcValueIndex);
+                            setting.FriendlyDcValue = PowerApi.ReadPossibleFriendlyName(subgroup.Guid, setting.Guid, setting.DcValueIndex);
+                        }
+                        else
+                        {
+                            setting.FriendlyAcValue = setting.AcValueIndex.ToString();
+                            setting.FriendlyDcValue = setting.DcValueIndex.ToString();
+                        }
                     }
                 }
+
+                if (ComparePowerPlanComboBox.SelectedItem is PowerPlan comparePlan && comparePlan.Guid != Guid.Empty)
+                {
+                    await UpdateCompareData(comparePlan);
+                    ActiveTreeView.Visibility = Visibility.Collapsed;
+                    ActiveTreeView.Opacity = 0;
+                    ActiveTreeView.IsHitTestVisible = false;
+                    CompareTreeView.Opacity = 1;
+                    CompareTreeView.IsHitTestVisible = true;
+                }
+                else
+                {
+                    ActiveTreeView.Visibility = Visibility.Visible;
+                    ActiveTreeView.Opacity = 1;
+                    ActiveTreeView.IsHitTestVisible = true;
+                    CompareTreeView.Opacity = 0;
+                    CompareTreeView.IsHitTestVisible = false;
+                }
+            }
+        }
+
+        private async void ComparePowerPlanComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (isInitializingPowerPlans) return;
+
+            if (ComparePowerPlanComboBox.SelectedItem is PowerPlan comparePlan && comparePlan.Guid != Guid.Empty)
+            {
+                await UpdateCompareData(comparePlan);
+                ActiveTreeView.Visibility = Visibility.Collapsed;
+                ActiveTreeView.Opacity = 0;
+                ActiveTreeView.IsHitTestVisible = false;
+                CompareTreeView.Opacity = 1;
+                CompareTreeView.IsHitTestVisible = true;
+                CompareTreeView.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                ActiveTreeView.Visibility = Visibility.Visible;
+                ActiveTreeView.Opacity = 1;
+                ActiveTreeView.IsHitTestVisible = true;
+                CompareTreeView.Opacity = 0;
+                CompareTreeView.IsHitTestVisible = false;
+                CompareTreeView.Visibility = Visibility.Collapsed;
+            }
+        }
+
+        private async Task UpdateCompareData(PowerPlan comparePlan)
+        {
+            if (comparePlan == null || comparePlan.Guid == Guid.Empty)
+            {
+                foreach (var sg in CompareSubgroups)
+                {
+                    sg.IsVisible = true;
+                    foreach (var setting in sg.Settings)
+                        setting.IsVisible = true;
+                }
+
+                if (_identicalPlansPlaceholder != null && CompareSubgroups.Contains(_identicalPlansPlaceholder))
+                    CompareSubgroups.Remove(_identicalPlansPlaceholder);
+
+                return;
+            }
+
+            var activePlan = PowerPlanComboBox.SelectedItem as PowerPlan;
+            if (activePlan == null)
+                return;
+
+            foreach (var sg in CompareSubgroups)
+            {
+                if (sg == _identicalPlansPlaceholder) continue;
+                foreach (var setting in sg.Settings)
+                {
+                    uint p1Ac = PowerApi.ReadAcValueIndex(activePlan.Guid, setting.SubgroupGuid, setting.Guid);
+                    uint p1Dc = PowerApi.ReadDcValueIndex(activePlan.Guid, setting.SubgroupGuid, setting.Guid);
+                    uint p2Ac = PowerApi.ReadAcValueIndex(comparePlan.Guid, setting.SubgroupGuid, setting.Guid);
+                    uint p2Dc = PowerApi.ReadDcValueIndex(comparePlan.Guid, setting.SubgroupGuid, setting.Guid);
+
+                    setting.Plan1AcFriendlyValue = setting.IsOption ? PowerApi.ReadPossibleFriendlyName(setting.SubgroupGuid, setting.Guid, p1Ac) : p1Ac.ToString();
+                    setting.Plan1DcFriendlyValue = setting.IsOption ? PowerApi.ReadPossibleFriendlyName(setting.SubgroupGuid, setting.Guid, p1Dc) : p1Dc.ToString();
+                    setting.Plan2AcFriendlyValue = setting.IsOption ? PowerApi.ReadPossibleFriendlyName(setting.SubgroupGuid, setting.Guid, p2Ac) : p2Ac.ToString();
+                    setting.Plan2DcFriendlyValue = setting.IsOption ? PowerApi.ReadPossibleFriendlyName(setting.SubgroupGuid, setting.Guid, p2Dc) : p2Dc.ToString();
+
+                    setting.Plan1AcValue = p1Ac;
+                    setting.Plan1DcValue = p1Dc;
+                    setting.Plan2AcValue = p2Ac;
+                    setting.Plan2DcValue = p2Dc;
+
+                    setting.IsAcDifferent = p1Ac != p2Ac;
+                    setting.IsDcDifferent = p1Dc != p2Dc;
+                    setting.IsVisible = setting.IsAcDifferent || setting.IsDcDifferent;
+
+                }
+            }
+
+            if (_identicalPlansPlaceholder == null)
+            {
+                _identicalPlansPlaceholder = new PowerCompareSubgroup
+                {
+                    Name = "Power plans are identical",
+                    FontWeight = FontWeights.Normal,
+                    IsVisible = true
+                };
+            }
+
+            bool anyDifferent = false;
+
+            foreach (var sg in CompareSubgroups)
+            {
+                if (sg == _identicalPlansPlaceholder) continue;
+                sg.IsVisible = sg.Settings.Any(s => s.IsVisible);
+                if (sg.IsVisible) anyDifferent = true;
+            }
+
+            if (!anyDifferent)
+            {
+                _identicalPlansPlaceholder.IsVisible = true;
+                if (!CompareSubgroups.Contains(_identicalPlansPlaceholder))
+                    CompareSubgroups.Add(_identicalPlansPlaceholder);
+            }
+            else
+            {
+                if (CompareSubgroups.Contains(_identicalPlansPlaceholder))
+                    CompareSubgroups.Remove(_identicalPlansPlaceholder);
             }
         }
 
@@ -232,7 +535,7 @@ namespace AutoOS.Views.Settings
             {
                 Spacing = 4
             };
-            
+
             panel.Children.Add(new TextBlock { Text = "Name:" });
             panel.Children.Add(nameTextBox);
             panel.Children.Add(new TextBlock { Text = "Description:" });
@@ -257,10 +560,26 @@ namespace AutoOS.Views.Settings
 
             plan.Name = nameTextBox.Text;
             plan.Description = descriptionBox.Text;
+
+            var sortedPlans = _powerPlans.OrderBy(p => p.Name, StringComparer.CurrentCultureIgnoreCase).ToList();
+            _powerPlans.Clear();
+            foreach (var p in sortedPlans) _powerPlans.Add(p);
+
+            var comparePlaceholder = _comparePlans.FirstOrDefault(p => p.Guid == Guid.Empty);
+            var sortedCompare = _comparePlans.Where(p => p.Guid != Guid.Empty).OrderBy(p => p.Name, StringComparer.CurrentCultureIgnoreCase).ToList();
+            _comparePlans.Clear();
+            if (comparePlaceholder != null) _comparePlans.Add(comparePlaceholder);
+            foreach (var p in sortedCompare) _comparePlans.Add(p);
+
             var selected = PowerPlanComboBox.SelectedItem;
             PowerPlanComboBox.ItemsSource = null;
             PowerPlanComboBox.ItemsSource = _powerPlans;
             PowerPlanComboBox.SelectedItem = selected;
+
+            var selectedCompare = ComparePowerPlanComboBox.SelectedItem;
+            ComparePowerPlanComboBox.ItemsSource = null;
+            ComparePowerPlanComboBox.ItemsSource = _comparePlans;
+            ComparePowerPlanComboBox.SelectedItem = selectedCompare;
         }
 
         private async void Delete_Click(object sender, RoutedEventArgs e)
@@ -309,44 +628,10 @@ namespace AutoOS.Views.Settings
             PowerApi.DeleteScheme(plan.Guid);
 
             _powerPlans.Remove(plan);
+            _comparePlans.Remove(_comparePlans.FirstOrDefault(p => p.Guid == plan.Guid));
+
             PowerPlanComboBox.SelectedItem = nextSelection;
-        }
-
-        private readonly PowerSubgroup noResultItem = new()
-        {
-            Name = "No result found",
-            Settings = [],
-            IsVisible = true
-        };
-
-        private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            string query = Search.Text.Trim();
-            bool anyVisible = false;
-
-            foreach (var subgroup in _allSubgroups)
-            {
-                foreach (var setting in subgroup.Settings)
-                {
-                    setting.IsVisible = string.IsNullOrEmpty(query) || setting.Name.Contains(query, StringComparison.CurrentCultureIgnoreCase);
-                }
-
-                subgroup.IsVisible = subgroup.Settings.Any(s => s.IsVisible);
-
-                if (subgroup.IsVisible) anyVisible = true;
-            }
-
-            if (!anyVisible)
-            {
-                noResultItem.IsVisible = true;
-                if (!Subgroups.Contains(noResultItem))
-                    Subgroups.Add(noResultItem);
-            }
-            else
-            {
-                if (Subgroups.Contains(noResultItem))
-                    Subgroups.Remove(noResultItem);
-            }
+            ComparePowerPlanComboBox.SelectedItem = _comparePlans.First(p => p.Guid == Guid.Empty);
         }
 
         private async void Import_Click(object sender, RoutedEventArgs e)
@@ -377,17 +662,33 @@ namespace AutoOS.Views.Settings
 
             PowerApi.PowerSetActiveScheme(IntPtr.Zero, ref importedGuid);
 
-            if (!_powerPlans.Any(p => p.Guid == importedGuid))
+            var plan = new PowerPlan
             {
-                var plan = new PowerPlan
-                {
-                    Guid = importedGuid,
-                    Name = PowerApi.ReadFriendlyName(importedGuid, null, null),
-                    Description = PowerApi.ReadDescription(importedGuid)
-                };
-                _powerPlans.Add(plan);
-            }
+                Guid = importedGuid,
+                Name = PowerApi.ReadFriendlyName(importedGuid, null, null),
+                Description = PowerApi.ReadDescription(importedGuid)
+            };
+
+            _powerPlans.Add(plan);
+            
+            var sortedPlans = _powerPlans.OrderBy(p => p.Name, StringComparer.CurrentCultureIgnoreCase).ToList();
+            _powerPlans.Clear();
+            foreach (var p in sortedPlans) _powerPlans.Add(p);
+
+            _comparePlans.Add(plan);
+            var comparePlaceholder = _comparePlans.FirstOrDefault(p => p.Guid == Guid.Empty);
+            var sortedCompare = _comparePlans.Where(p => p.Guid != Guid.Empty).OrderBy(p => p.Name, StringComparer.CurrentCultureIgnoreCase).ToList();
+            _comparePlans.Clear();
+            if (comparePlaceholder != null) _comparePlans.Add(comparePlaceholder);
+            foreach (var p in sortedCompare) _comparePlans.Add(p);
+
+            PowerPlanComboBox.ItemsSource = null;
+            PowerPlanComboBox.ItemsSource = _powerPlans;
             PowerPlanComboBox.SelectedItem = _powerPlans.First(p => p.Guid == importedGuid);
+            
+            ComparePowerPlanComboBox.ItemsSource = null;
+            ComparePowerPlanComboBox.ItemsSource = _comparePlans;
+            ComparePowerPlanComboBox.SelectedItem = _comparePlans.First(p => p.Guid == Guid.Empty);
 
             foreach (var subgroup in _allSubgroups)
             {
@@ -437,9 +738,8 @@ namespace AutoOS.Views.Settings
                     break;
 
                 case PowerSetting setting:
-                    PowerApi.PowerGetActiveScheme(IntPtr.Zero, out var activePtr);
-                    Guid activeScheme = Marshal.PtrToStructure<Guid>(activePtr);
-                    PowerApi.LocalFree(activePtr);
+                    var activePlan = PowerPlanComboBox.SelectedItem as PowerPlan;
+                    Guid activeScheme = activePlan.Guid;
 
                     var dialog = new PowerDialog(setting);
 
@@ -479,6 +779,122 @@ namespace AutoOS.Views.Settings
 
                     setting.AcValueIndex = newAcValue;
                     setting.DcValueIndex = newDcValue;
+                    break;
+            }
+        }
+
+        private async void CompareTreeView_ItemInvoked(object sender, TreeViewItemInvokedEventArgs args)
+        {
+            switch (args.InvokedItem)
+            {
+                case PowerCompareSubgroup subgroup:
+                    subgroup.IsExpanded = !subgroup.IsExpanded;
+                    break;
+
+                case PowerCompareSetting compareSettings:
+                    var activePlan = PowerPlanComboBox.SelectedItem as PowerPlan;
+                    Guid activeScheme = activePlan.Guid;
+
+                    var proxySetting = new PowerSetting
+                    {
+                        SubgroupGuid = compareSettings.SubgroupGuid,
+                        Guid = compareSettings.Guid,
+                        Name = compareSettings.Name,
+                        Description = compareSettings.Description,
+                        Min = compareSettings.Min,
+                        Max = compareSettings.Max,
+                        Increment = compareSettings.Increment,
+                        Unit = compareSettings.Unit,
+                        AcValueIndex = compareSettings.Plan1AcValue,
+                        DcValueIndex = compareSettings.Plan1DcValue
+                    };
+
+                    var dialog = new PowerDialog(proxySetting);
+
+                    var contentDialog = new ContentDialog
+                    {
+                        Content = dialog,
+                        PrimaryButtonText = "Apply",
+                        CloseButtonText = "Cancel",
+                        DefaultButton = ContentDialogButton.Close,
+                        XamlRoot = XamlRoot,
+                        Title = compareSettings.Name
+                    };
+                    contentDialog.Resources["ContentDialogMaxWidth"] = 600;
+
+                    var result = await contentDialog.ShowAsync();
+                    if (result != ContentDialogResult.Primary) return;
+
+                    uint newAcValue = dialog.GetAcValue();
+                    uint newDcValue = dialog.GetDcValue();
+
+                    IntPtr schemePtr = PowerApi.AllocGuid(activeScheme);
+                    IntPtr subgroupPtr = PowerApi.AllocGuid(compareSettings.SubgroupGuid);
+                    IntPtr settingPtr = PowerApi.AllocGuid(compareSettings.Guid);
+
+                    try
+                    {
+                        PowerApi.PowerWriteACValueIndex(IntPtr.Zero, schemePtr, subgroupPtr, settingPtr, newAcValue);
+                        PowerApi.PowerWriteDCValueIndex(IntPtr.Zero, schemePtr, subgroupPtr, settingPtr, newDcValue);
+                        PowerApi.PowerSetActiveScheme(IntPtr.Zero, ref activeScheme);
+                    }
+                    finally
+                    {
+                        Marshal.FreeHGlobal(schemePtr);
+                        Marshal.FreeHGlobal(subgroupPtr);
+                        Marshal.FreeHGlobal(settingPtr);
+                    }
+
+                    compareSettings.Plan1AcValue = newAcValue;
+                    compareSettings.Plan1DcValue = newDcValue;
+
+                    compareSettings.Plan1AcFriendlyValue = compareSettings.IsOption ? PowerApi.ReadPossibleFriendlyName(compareSettings.SubgroupGuid, compareSettings.Guid, newAcValue) : newAcValue.ToString();
+                    compareSettings.Plan1DcFriendlyValue = compareSettings.IsOption ? PowerApi.ReadPossibleFriendlyName(compareSettings.SubgroupGuid, compareSettings.Guid, newDcValue) : newDcValue.ToString();
+
+                    compareSettings.IsAcDifferent = compareSettings.Plan1AcValue != compareSettings.Plan2AcValue;
+                    compareSettings.IsDcDifferent = compareSettings.Plan1DcValue != compareSettings.Plan2DcValue;
+                    compareSettings.IsVisible = compareSettings.IsAcDifferent || compareSettings.IsDcDifferent;
+
+                    var settingsSubgroup = _allSubgroups.FirstOrDefault(sg => sg.Guid == compareSettings.SubgroupGuid);
+                    var settings = settingsSubgroup?.Settings.FirstOrDefault(s => s.Guid == compareSettings.Guid);
+
+                    if (settings != null)
+                    {
+                        settings.AcValueIndex = newAcValue;
+                        settings.DcValueIndex = newDcValue;
+                        settings.FriendlyAcValue = compareSettings.Plan1AcFriendlyValue;
+                        settings.FriendlyDcValue = compareSettings.Plan1DcFriendlyValue;
+                    }
+
+                    if (_identicalPlansPlaceholder == null)
+                    {
+                        _identicalPlansPlaceholder = new PowerCompareSubgroup
+                        {
+                            Name = "Power plans are identical",
+                            FontWeight = FontWeights.Normal,
+                            IsVisible = true
+                        };
+                    }
+
+                    bool anyDifferent = false;
+                    foreach (var sg in CompareSubgroups)
+                    {
+                        if (sg == _identicalPlansPlaceholder) continue;
+                        sg.IsVisible = sg.Settings.Any(s => s.IsVisible);
+                        if (sg.IsVisible) anyDifferent = true;
+                    }
+
+                    if (!anyDifferent)
+                    {
+                        _identicalPlansPlaceholder.IsVisible = true;
+                        if (!CompareSubgroups.Contains(_identicalPlansPlaceholder))
+                            CompareSubgroups.Add(_identicalPlansPlaceholder);
+                    }
+                    else
+                    {
+                        if (CompareSubgroups.Contains(_identicalPlansPlaceholder))
+                            CompareSubgroups.Remove(_identicalPlansPlaceholder);
+                    }
                     break;
             }
         }

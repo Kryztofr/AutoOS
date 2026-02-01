@@ -158,6 +158,12 @@ namespace AutoOS.Views.Settings.Power
             uint BufferSize);
 
         [LibraryImport("powrprof.dll")]
+        internal static partial uint PowerDuplicateScheme(
+            IntPtr RootPowerKey,
+            ref Guid SourceSchemeGuid,
+            out IntPtr DestinationSchemeGuid);
+
+        [LibraryImport("powrprof.dll")]
         internal static partial uint PowerDeleteScheme(
             IntPtr RootPowerKey,
             IntPtr SchemeGuid);
@@ -373,6 +379,17 @@ namespace AutoOS.Views.Settings.Power
             {
                 Marshal.FreeHGlobal(schemePtr);
             }
+        }
+
+        internal static Guid DuplicateScheme(Guid guid, string name, string description)
+        {
+            PowerDuplicateScheme(IntPtr.Zero, ref guid, out var destPtr);
+            Guid newGuid = Marshal.PtrToStructure<Guid>(destPtr);
+            Marshal.FreeHGlobal(destPtr);
+            WriteSchemeFriendlyName(newGuid, name);
+            WriteSchemeDescription(newGuid, description);
+
+            return newGuid;
         }
 
         internal static bool DeleteScheme(Guid scheme)

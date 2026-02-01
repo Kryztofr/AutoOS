@@ -58,9 +58,9 @@ namespace AutoOS.Views.Settings.Power
         private uint _acValue;
         private uint _dcValue;
 
-        public bool IsValue => Setting.Min.HasValue && Setting.Max.HasValue && Setting.Increment.HasValue && Setting.Max.Value > Setting.Min.Value && Setting.Increment.Value > 0;
+        public bool IsValue => !Setting.IsOption;
 
-        public bool IsOption => !IsValue;
+        public bool IsOption => Setting.IsOption;
 
         public uint AcValue
         {

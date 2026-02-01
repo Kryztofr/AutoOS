@@ -390,7 +390,7 @@ public static class BiosSettingRecommendationsList
         new BiosSettingRecommendation { SetupQuestion = "PCH PCIE23 LTR", Type = "Option", RecommendedOption = "Disabled" },
         new BiosSettingRecommendation { SetupQuestion = "PCH PCIE24 LTR", Type = "Option", RecommendedOption = "Disabled" },
         new BiosSettingRecommendation { SetupQuestion = "PCH Trace Hub Enable Mode", Type = "Option", RecommendedOption = "Disabled" },
-        new BiosSettingRecommendation { SetupQuestion = "PCI Delay Optimization", Type = "Option", RecommendedOption = "Enabled" },
+        new BiosSettingRecommendation { SetupQuestion = "PCI Delay Optimization", Type = "Option", RecommendedOption = "Disabled" },
         new BiosSettingRecommendation { SetupQuestion = "PCI Express Clock Gating", Type = "Option", RecommendedOption = "Disabled" },
         new BiosSettingRecommendation { SetupQuestion = "PCI Express Power Gating", Type = "Option", RecommendedOption = "Disabled" },
         new BiosSettingRecommendation { SetupQuestion = "PCIE Resizable BAR Support", Type = "Option", RecommendedOption = "Enabled" },
@@ -597,7 +597,6 @@ public static class BiosSettingRecommendationsList
         new BiosSettingRecommendation { SetupQuestion = "WoV (Wake on Voice)", Type = "Value", RecommendedOption = "0" },
         new BiosSettingRecommendation { SetupQuestion = "XHCI LTR Mode", Type = "Option", RecommendedOption = "Disabled" },
         //new BiosSettingRecommendation { SetupQuestion = "ZPODD", Type = "Option", RecommendedOption = "Disabled" }, // already disabled by default
-        new BiosSettingRecommendation { SetupQuestion = "[*]Power Down Control", Type = "Value", RecommendedOption = "0" },
         new BiosSettingRecommendation { SetupQuestion = "80 Port Display Mode", Type = "Option", RecommendedOption = "Disabled" },
 
         //new BiosSettingRecommendation { SetupQuestion = "Active E-Cores", Type = "Option", RecommendedOption = "0" },
@@ -814,11 +813,6 @@ public static class BiosSettingRecommendationsList
         new BiosSettingRecommendation { SetupQuestion = "NBIO SyncFlood Reporting", Type = "Option", RecommendedOption = "Disabled" },
         new BiosSettingRecommendation { SetupQuestion = "NPU Deep Sleep Enable", Type = "Option", RecommendedOption = "Disabled" },
         new BiosSettingRecommendation { SetupQuestion = "NX Mode", Type = "Option", RecommendedOption = "Enabled" },
-        new BiosSettingRecommendation { SetupQuestion = "Nitro Control Line", Type = "Option", RecommendedOption = "1" },
-        new BiosSettingRecommendation { SetupQuestion = "Nitro RX Data", Type = "Option", RecommendedOption = "1" },
-        new BiosSettingRecommendation { SetupQuestion = "Nitro Rx Burst Length", Type = "Option", RecommendedOption = "8x" },
-        new BiosSettingRecommendation { SetupQuestion = "Nitro TX Data", Type = "Option", RecommendedOption = "2" },
-        new BiosSettingRecommendation { SetupQuestion = "Nitro Tx Burst Length", Type = "Option", RecommendedOption = "8x" },
         new BiosSettingRecommendation { SetupQuestion = "Onboard Debug Port LED", Type = "Option", RecommendedOption = "Off" },
         new BiosSettingRecommendation { SetupQuestion = "Onboard PCIE LAN PXE ROM", Type = "Option", RecommendedOption = "Disabled" },
         new BiosSettingRecommendation { SetupQuestion = "Opcache Control", Type = "Option", RecommendedOption = "Disabled" },
@@ -1013,7 +1007,7 @@ public static class BiosSettingRecommendationsList
         new BiosSettingRecommendation { SetupQuestion = "Serial(COM) Port0", Type = "Value", RecommendedOption = "0" },
         new BiosSettingRecommendation { SetupQuestion = "Suspend to RAM", Type = "Option", RecommendedOption = "Disabled" }, // already disabled on INTEL
         new BiosSettingRecommendation { SetupQuestion = "UFS Support", Type = "Option", RecommendedOption = "Disabled" },
-        new BiosSettingRecommendation { SetupQuestion = "USB power delivery in Soft Off state (S5)", Type = "Option", RecommendedOption = "Disabled" },
+        //new BiosSettingRecommendation { SetupQuestion = "USB power delivery in Soft Off state (S5)", Type = "Option", RecommendedOption = "Disabled" },
         new BiosSettingRecommendation { SetupQuestion = "Unpopulated Links", Type = "Option", RecommendedOption = "Keep Link ON" },
         new BiosSettingRecommendation { SetupQuestion = "XHCI Hand-off", Type = "Option", RecommendedOption = "Enabled" },
 
