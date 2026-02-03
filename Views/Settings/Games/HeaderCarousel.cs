@@ -1447,96 +1447,117 @@ public partial class HeaderCarousel : ItemsControl
     {
         selectionTimer?.Stop();
 
-        if (Launcher == "Epic Games")
+        var tile = selectedTile;
+        if (tile == null)
+            return;
+
+        var launcher = tile.Launcher;
+        var installLocation = tile.InstallLocation;
+        var launchExecutable = tile.LaunchExecutable;
+        var launchCommand = tile.LaunchCommand;
+        var launcherLocation = tile.LauncherLocation;
+        var gameLocation = tile.GameLocation;
+        var dataLocation = tile.DataLocation;
+        var gameId = tile.GameID;
+        var appName = tile.AppName;
+        var catalogNamespace = tile.CatalogNamespace;
+        var catalogItemId = tile.CatalogItemId;
+        var artifactId = tile.ArtifactId;
+
+        if (launcher == "Epic Games")
         {
             string exchangeCode = await EpicGamesHelper.Exchange();
             var (accountId, displayName, _, _) = EpicGamesHelper.GetAccountData(EpicGamesHelper.ActiveEpicGamesAccountPath);
 
             var startInfo = new ProcessStartInfo
             {
-                FileName = Path.Combine(InstallLocation, LaunchExecutable),
+                FileName = Path.Combine(installLocation, launchExecutable),
                 Arguments = string.Join(" ", new[]
                 {
-                    LaunchCommand,
-                    "-AUTH_LOGIN=unused",
-                    $"-AUTH_PASSWORD={exchangeCode}",
-                    "-AUTH_TYPE=exchangeCode",
-                    $"-epicapp={AppName}",
-                    "-epicenv=Prod",
-                    "-EpicPortal",
-                    $"-epicusername={displayName}",
-                    $"-epicuserid={accountId}",
-                    "-epiclocale=en",
-                    $"-epicsandboxid={CatalogNamespace}"
-                }),
-                WorkingDirectory = Path.GetDirectoryName(Path.Combine(InstallLocation, LaunchExecutable)),
+                launchCommand,
+                "-AUTH_LOGIN=unused",
+                $"-AUTH_PASSWORD={exchangeCode}",
+                "-AUTH_TYPE=exchangeCode",
+                $"-epicapp={appName}",
+                "-epicenv=Prod",
+                "-EpicPortal",
+                $"-epicusername={displayName}",
+                $"-epicuserid={accountId}",
+                "-epiclocale=en",
+                $"-epicsandboxid={catalogNamespace}"
+            }),
+                WorkingDirectory = Path.GetDirectoryName(Path.Combine(installLocation, launchExecutable)),
                 UseShellExecute = false
             };
 
             Process.Start(startInfo);
         }
-        else if (Launcher == "Steam")
+        else if (launcher == "Steam")
         {
-            Process.Start(new ProcessStartInfo { FileName = @"C:\Program Files (x86)\Steam\steam.exe", Arguments = $"-applaunch {GameID} -silent" });
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = @"C:\Program Files (x86)\Steam\steam.exe",
+                Arguments = $"-applaunch {gameId} -silent"
+            });
         }
-        else if (Launcher == "Ubisoft Connect")
+        else if (launcher == "Ubisoft Connect")
         {
-            Process.Start(new ProcessStartInfo($"uplay://launch/{GameID}") { UseShellExecute = true });
+            //Process.Start(new ProcessStartInfo($"uplay://launch/{gameId}") { UseShellExecute = true });
 
             //var startInfo = new ProcessStartInfo
             //{
-            //    FileName = LauncherLocation,
+            //    FileName = launcherLocation,
             //    Arguments = string.Join(" ", new[]
             //    {
-            //        LaunchCommand,
+            //        launchExecutable,
             //        "gamelauncher_wait_handle 1012",
-            //        $"-upc_uplay_id {GameID}",
+            //        $"-upc_uplay_id {gameId}",
             //        "-upc_game_version 1",
             //        $"-upc_exe_path ",
             //        $"-upc_working_directory",
             //        $"-upc_arguments"
             //    }),
-            //    WorkingDirectory = Path.GetDirectoryName(Path.Combine(InstallLocation, LaunchExecutable)),
+            //    WorkingDirectory = Path.GetDirectoryName(Path.Combine(installLocation, launchExecutable)),
             //    UseShellExecute = false
             //};
 
             //Process.Start(startInfo);
         }
-        else if (Launcher == "Eden")
+        else if (launcher == "Eden")
         {
             var startInfo = new ProcessStartInfo
             {
-                FileName = LauncherLocation,
-                Arguments = $@"-f -g ""{GameLocation}""",
+                FileName = launcherLocation,
+                Arguments = $@"-f -g ""{gameLocation}""",
                 CreateNoWindow = true,
             };
 
             Process.Start(startInfo);
         }
-        else if (Launcher == "Citron")
+        else if (launcher == "Citron")
         {
             var startInfo = new ProcessStartInfo
             {
-                FileName = LauncherLocation,
-                Arguments = $@"-f -g ""{GameLocation}""",
+                FileName = launcherLocation,
+                Arguments = $@"-f -g ""{gameLocation}""",
                 CreateNoWindow = true,
             };
 
             Process.Start(startInfo);
         }
-        else if (Launcher == "Ryujinx")
+        else if (launcher == "Ryujinx")
         {
             var startInfo = new ProcessStartInfo
             {
-                FileName = LauncherLocation,
-                Arguments = $@"-r ""{DataLocation}"" -fullscreen ""{GameLocation}""",
+                FileName = launcherLocation,
+                Arguments = $@"-r ""{dataLocation}"" -fullscreen ""{gameLocation}""",
                 CreateNoWindow = true,
             };
 
             Process.Start(startInfo);
         }
 
-        localSettings.Values[$"LastPlayed_{Title}"] = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+        localSettings.Values[$"LastPlayed_{tile.Title}"] = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
 
         if (currentSortKey == "Recently played")
         {
