@@ -1,6 +1,8 @@
 ﻿using AutoOS.Views.Installer.Actions;
-using System.Runtime.InteropServices;
 using Microsoft.Win32;
+using System.Diagnostics;
+using System.Management;
+using System.Runtime.InteropServices;
 using Windows.Storage;
 
 namespace AutoOS.Views.Installer
@@ -9,6 +11,7 @@ namespace AutoOS.Views.Installer
     {
         [LibraryImport("user32.dll")]
         private static partial void keybd_event(byte bVk, byte bScan, uint dwFlags, UIntPtr dwExtraInfo);
+        private static readonly HttpClient httpClient = new();
 
         private readonly ApplicationDataContainer localSettings = ApplicationData.Current.LocalSettings;
 
@@ -20,7 +23,7 @@ namespace AutoOS.Views.Installer
 
         private async void HomeLandingPage_Loaded(object sender, RoutedEventArgs e)
         {
-            #if !DEBUG
+#if !DEBUG
                 using var key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion");
                 if (key == null) return;
 
@@ -46,7 +49,7 @@ namespace AutoOS.Views.Installer
                 string ubrStr = key.GetValue("UBR")?.ToString() ?? "";
                 if (int.TryParse(buildStr, out int build) && int.TryParse(ubrStr, out int ubr))
                 {
-                    if (build != 22631 || (build == 22631 && ubr < 6494))
+                    if (build != 22631 || (build == 22631 && ubr < 6495))
                     {
                         var dialog = new ContentDialog
                         {
@@ -60,12 +63,10 @@ namespace AutoOS.Views.Installer
                         Application.Current.Exit();
                     }
                 }
-            #endif
+#endif
 
             // enable app access to location
-            await ProcessActions.RunNsudo("CurrentUser", @"reg add ""HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\location"" /v ""Value"" /t REG_SZ /d ""Allow"" /f");
             await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\location"" /v ""Value"" /t REG_SZ /d ""Allow"" /f");
-            await ProcessActions.RunNsudo("CurrentUser", @"reg add ""HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\activity"" /v ""Value"" /t REG_SZ /d ""Allow"" /f");
             await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\activity"" /v ""Value"" /t REG_SZ /d ""Allow"" /f");
             await ProcessActions.RunNsudo("CurrentUser", @"reg add HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\location\AutoOS_xxtketq8p23nt /v Value /t REG_SZ /d Allow /f");
 
@@ -78,6 +79,12 @@ namespace AutoOS.Views.Installer
                 keybd_event(0x5B, 0, 0x0002, UIntPtr.Zero);
                 localSettings.Values["HasChangedLayout"] = true;
             }
+
+            // download pci ids
+            string pciPath = Path.Combine(PathHelper.GetAppDataFolderPath(), "pci.ids");
+
+            if (!File.Exists(pciPath))
+                await File.WriteAllBytesAsync(pciPath, await httpClient.GetByteArrayAsync("https://raw.githubusercontent.com/pciutils/pciids/master/pci.ids"));
         }
     }
 }

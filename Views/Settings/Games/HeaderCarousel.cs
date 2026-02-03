@@ -1586,7 +1586,7 @@ public partial class HeaderCarousel : ItemsControl
             {
                 using var searcher = new ManagementObjectSearcher($"SELECT ProcessId, CommandLine FROM Win32_Process WHERE Name = 'dllhost.exe'");
 
-                foreach (ManagementObject obj in searcher.Get().Cast<ManagementObject>())
+                foreach (ManagementObject obj in searcher.Get().Cast<ManagementObject>().ToArray())
                 {
                     string cmdLine = obj["CommandLine"]?.ToString() ?? "";
                     int pid = Convert.ToInt32(obj["ProcessId"]);
@@ -1706,7 +1706,7 @@ public partial class HeaderCarousel : ItemsControl
             try
             {
                 var searcher = new ManagementObjectSearcher($"SELECT ProcessId FROM Win32_Service WHERE Name LIKE '{serviceName}%'");
-                foreach (ManagementObject service in searcher.Get().Cast<ManagementObject>())
+                foreach (ManagementObject service in searcher.Get().Cast<ManagementObject>().ToArray())
                 {
                     try
                     {

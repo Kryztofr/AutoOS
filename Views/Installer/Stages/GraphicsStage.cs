@@ -4,6 +4,7 @@ using Microsoft.UI.Xaml.Media;
 using System.Diagnostics;
 using Windows.Storage;
 using WinRT.Interop;
+using System.Management;
 
 namespace AutoOS.Views.Installer.Stages;
 
@@ -18,11 +19,12 @@ public static class GraphicsStage
         bool? Intel_7th_10th = PreparingStage.Intel_7th_10th;
         bool? Intel_11th_14th = PreparingStage.Intel_11th_14th;
         bool? Intel_Arc = PreparingStage.Intel_Arc;
-        bool? NVIDIA_GTX900_GTX10 = PreparingStage.NVIDIA_GTX900_GTX10;
-        bool? NVIDIA_GTX16_RTX50 = PreparingStage.NVIDIA_GTX16_RTX50;
+        bool? NVIDIA = PreparingStage.NVIDIA;
         bool? AMD_RX5000_RX9000 = PreparingStage.AMD_RX5000_RX9000;
         bool? HDCP = PreparingStage.HDCP;
-        bool? HDMIDPAudio = PreparingStage.HDMIDPAudio;
+        bool? NVIDIA_HDMIDPAudio = PreparingStage.NVIDIA_HDMIDPAudio;
+        bool? AMD_HDMIDPAudio = PreparingStage.AMD_HDMIDPAudio;
+        bool? INTEL_HDMIDPAudio = PreparingStage.INTEL_HDMIDPAudio;
         bool? AlwaysShowTrayIcons = PreparingStage.AlwaysShowTrayIcons;
         bool? MSI = PreparingStage.MSI;
         bool? CRU = PreparingStage.CRU;
@@ -33,7 +35,7 @@ public static class GraphicsStage
         int stagePercentage = 5;
 
         string obsVersion = "";
-        InIHelper iniHelper = new InIHelper(Path.Combine(Path.GetTempPath(), "obs-studio", "basic", "profiles", "Untitled", "basic.ini"));
+        InIHelper iniHelper = new(Path.Combine(Path.GetTempPath(), "obs-studio", "basic", "profiles", "Untitled", "basic.ini"));
 
         var actions = new List<(string Title, Func<Task> Action, Func<bool> Condition)>
         {
@@ -77,6 +79,20 @@ public static class GraphicsStage
             ("Installing the Intel driver", async () => await ProcessActions.RunNsudo("CurrentUser", @"""%TEMP%\driver\Installer.exe"" /silent"), () => Intel_Arc == true),
             ("Installing the Intel driver", async () => await ProcessActions.RefreshUI(), () => Intel_Arc == true),
 
+            // download the latest nvidia driver                                                     
+            ("Downloading the latest NVIDIA Driver", async () => await ProcessActions.RunDownload((await NvidiaHelper.CheckUpdate()).newestDownloadUrl, Path.GetTempPath(), "driver.exe"), () => NVIDIA == true),
+
+            // extract the nvidia driver
+            ("Extracting the NVIDIA driver", async () => await ProcessActions.RunExtract(Path.Combine(Path.GetTempPath(), "driver.exe"), Path.Combine(Path.GetTempPath(), "driver")), () => NVIDIA == true),
+
+            // strip the driver
+            ("Stripping the NVIDIA driver", async () => await ProcessActions.RunNvidiaStrip(), () => NVIDIA == true),
+
+            // install the nvidia driver
+            ("Installing the NVIDIA driver", async () => await ProcessActions.RunNsudo("CurrentUser", @"""%TEMP%\driver\setup.exe"" /s"), () => NVIDIA == true),
+            ("Installing the NVIDIA driver", async () => await ProcessActions.Sleep(3000), () => NVIDIA == true),
+            ("Installing the NVIDIA driver", async () => await ProcessActions.RefreshUI(), () => NVIDIA == true),
+
             // download the latest amd driver
             ("Downloading the latest AMD Driver", async () => await ProcessActions.RunDownload(await ProcessActions.GetLatestAmdDriverUrl(), Path.GetTempPath(), "driver.exe"), () => AMD_RX5000_RX9000 == true),
 
@@ -88,23 +104,6 @@ public static class GraphicsStage
 
             // install the driver
             ("Installing the AMD driver", async () => await ProcessActions.RunNsudo("CurrentUser", @"""%TEMP%\driver\Setup.exe"" -install"), () => AMD_RX5000_RX9000 == true),
-
-            // download the latest nvidia driver                                      
-            ("Downloading the latest NVIDIA Driver", async () => await ProcessActions.RunDownload("https://uk.download.nvidia.com/Windows/581.80/581.80-desktop-win10-win11-64bit-international-dch-whql.exe", Path.GetTempPath(), "driver.exe"), () => NVIDIA_GTX900_GTX10 == true),
-
-            // download the latest nvidia driver                                                     
-            ("Downloading the latest NVIDIA Driver", async () => await ProcessActions.RunDownload((await NvidiaHelper.CheckUpdate()).newestDownloadUrl, Path.GetTempPath(), "driver.exe"), () => NVIDIA_GTX16_RTX50 == true),
-
-            // extract the nvidia driver
-            ("Extracting the NVIDIA driver", async () => await ProcessActions.RunExtract(Path.Combine(Path.GetTempPath(), "driver.exe"), Path.Combine(Path.GetTempPath(), "driver")), () => NVIDIA_GTX16_RTX50 == true  || NVIDIA_GTX900_GTX10 == true),
-
-            // strip the driver
-            ("Stripping the NVIDIA driver", async () => await ProcessActions.RunNvidiaStrip(), () => NVIDIA_GTX16_RTX50 == true  || NVIDIA_GTX900_GTX10 == true),
-
-            // install the nvidia driver
-            ("Installing the NVIDIA driver", async () => await ProcessActions.RunNsudo("CurrentUser", @"""%TEMP%\driver\setup.exe"" /s"), () => NVIDIA_GTX16_RTX50 == true  || NVIDIA_GTX900_GTX10 == true),
-            ("Installing the NVIDIA driver", async () => await ProcessActions.Sleep(3000), () => NVIDIA_GTX16_RTX50 == true  || NVIDIA_GTX900_GTX10 == true),
-            ("Installing the NVIDIA driver", async () => await ProcessActions.RefreshUI(), () => NVIDIA_GTX16_RTX50 == true  || NVIDIA_GTX900_GTX10 == true),
 
             // system -> display -> graphics -> default graphics settings
             (@"Enabling ""Hardware-accelerated GPU scheduling"" (HAGS)", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\GraphicsDrivers"" /v ""HwSchMode"" /t REG_DWORD /d 2 /f"), null),
@@ -171,6 +170,64 @@ public static class GraphicsStage
             ("Disabling high-definition-content-protection (HDCP)", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"cmd /c reg add ""HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\cphs"" /v ""Start"" /t REG_DWORD /d 4 /f & sc stop cphs"), () => Intel_6th == true || Intel_7th_10th == true || Intel_11th_14th == true || Intel_Arc == true),
             ("Disabling high-definition-content-protection (HDCP)", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"cmd /c reg add ""HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\cplspcon"" /v ""Start"" /t REG_DWORD /d 4 /f & sc stop cplspcon"), () => Intel_6th == true || Intel_7th_10th == true || Intel_11th_14th == true || Intel_Arc == true),
 
+            // disable nvidia tray icon
+            ("Disabling NVIDIA tray icon", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SOFTWARE\NVIDIA Corporation\NvTray"" /v StartOnLogin /t REG_DWORD /d 0 /f"), () => NVIDIA == true),
+            ("Disabling NVIDIA tray icon", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\nvlddmkm\Global\NVTweak"" /v ""HideXGpuTrayIcon"" /t REG_DWORD /d 1 /f"), () => NVIDIA == true),
+            ("Disabling NVIDIA tray icon", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SOFTWARE\NVIDIA Corporation\Global\CoProcManager"" /v ""ShowTrayIcon"" /t REG_DWORD /d 0 /f"), () => NVIDIA == true),
+
+            // disable dlss indicator
+            ("Disabling DLSS Indicator", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SOFTWARE\NVIDIA Corporation\Global\NGXCore"" /v ""ShowDlssIndicator"" /t REG_DWORD /d 0 /f"), () => NVIDIA == true),
+
+            // disable automatic updates
+            ("Disabling automatic updates", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SOFTWARE\NVIDIA Corporation\Global\CoProcManager"" /v AutoDownload /t REG_DWORD /d 0 /f"), () => NVIDIA == true),
+
+            // disable telemetry
+            ("Disabling telemetry", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\Software\Nvidia Corporation\NvControlPanel2\Client"" /v ""OptInOrOutPreference"" /t REG_DWORD /d 0 /f"), () => NVIDIA == true),
+            ("Disabling telemetry", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\nvlddmkm\Global\Startup"" /v ""SendTelemetryData"" /t REG_DWORD /d 0 /f"), () => NVIDIA == true),
+            ("Disabling telemetry", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SOFTWARE\NVIDIA Corporation\Global\FTS"" /v EnableRID44231 /t REG_DWORD /d 0 /f"), () => NVIDIA == true),
+            ("Disabling telemetry", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SOFTWARE\NVIDIA Corporation\Global\FTS"" /v EnableRID64640 /t REG_DWORD /d 0 /f"), () => NVIDIA == true),
+            ("Disabling telemetry", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SOFTWARE\NVIDIA Corporation\Global\FTS"" /v EnableRID66610 /t REG_DWORD /d 0 /f"), () => NVIDIA == true),
+            ("Disabling telemetry", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"cmd /c cd /d ""C:\Windows\System32\DriverStore\FileRepository\"" & dir NvTelemetry64.dll /a /b /s & del NvTelemetry64.dll /a /s"), () => NVIDIA == true),
+
+            // disable logging
+            ("Disabling logging", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\nvlddmkm\Parameters"" /v LogDisableMasks /t REG_BINARY /d ""00ffff0f01ffff0f02ffff0f03ffff0f04ffff0f05ffff0f06ffff0f07ffff0f08ffff0f09ffff0f0affff0f0bffff0f0cffff0f0dffff0f0effff0f0fffff0f10ffff0f11ffff0f12ffff0f13ffff0f14ffff0f15ffff0f16ffff0f00ffff1f01ffff1f02ffff1f03ffff1f04ffff1f05ffff1f06ffff1f07ffff1f08ffff1f09ffff1f0affff1f0bffff1f0cffff1f0dffff1f0effff1f0fffff1f00ffff2f01ffff2f02ffff2f03ffff2f04ffff2f05ffff2f06ffff2f07ffff2f08ffff2f09ffff2f0affff2f0bffff2f0cffff2f0dffff2f0effff2f0fffff2f00ffff3f01ffff3f02ffff3f03ffff3f04ffff3f05ffff3f06ffff3f07ffff3f"" /f"), () => NVIDIA == true),
+            ("Disabling logging", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\nvlddmkm\Parameters"" /v LogWarningEntries /t REG_DWORD /d 0 /f"), () => NVIDIA == true),
+            ("Disabling logging", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\nvlddmkm\Parameters"" /v LogPagingEntries /t REG_DWORD /d 0 /f"), () => NVIDIA == true),
+            ("Disabling logging", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\nvlddmkm\Parameters"" /v LogEventEntries /t REG_DWORD /d 0 /f"), () => NVIDIA == true),
+            ("Disabling logging", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\nvlddmkm\Parameters"" /v LogErrorEntries /t REG_DWORD /d 0 /f"), () => NVIDIA == true),
+
+            // use advanced 3d image settings
+            ("Using advanced 3D image settings", async () => await ProcessActions.RunNsudo("CurrentUser", @"reg add ""HKEY_CURRENT_USER\SOFTWARE\NVIDIA Corporation\Global\NVTweak"" /v ""Gestalt"" /t REG_DWORD /d 515 /f"), () => NVIDIA == true),
+
+            // import optimized nvidia profile
+            ("Importing optimized NVIDIA profile", async () => await ProcessActions.ImportProfile("BaseProfile.nip"), () => NVIDIA == true),
+
+            // configure physx to use gpu
+            ("Configuring PhysX to use GPU", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\nvlddmkm\Global\NVTweak"" /v ""NvCplPhysxAuto"" /t REG_DWORD /d 0 /f"), () => NVIDIA == true),
+
+            // configure color settings
+            ("Configuring color settings", async () => await ProcessActions.RunPowerShellScript("colorsettings.ps1", ""), () => NVIDIA == true),
+            ("Configuring color settings", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"cmd /c for /f ""delims="" %a in ('reg query HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\nvlddmkm\State\DisplayDatabase') do reg add ""%a"" /v ""ColorformatConfig"" /t REG_BINARY /d ""DB02000014000000000A00080000000003010000"" /f"), () => NVIDIA == true),
+
+            // disable high-definition-content-protection (hdcp)
+            ("Disabling high-definition-content-protection (HDCP)", async () => await ProcessActions.RunPowerShellScript("hdcp.ps1", ""), () => NVIDIA == true && HDCP == false),
+
+            // disable error code correction (ecc)
+            ("Disabling error code correction (ECC)", async () => await ProcessActions.RunPowerShellScript("ecc.ps1", ""), () => NVIDIA == true),
+
+            // configure miscellaneous nvidia settings
+            ("Configuring miscellaneous NVIDIA settings", async () => await ProcessActions.RunPowerShellScript("nvidiamisc.ps1", ""), () => NVIDIA == true),
+
+            // disable dynamic p-state
+            ("Disabling dynamic P-State", async () => await ProcessActions.RunPowerShellScript("pstate.ps1", ""), () => NVIDIA == true),
+
+            // disable display power savings
+            ("Disabling Display Power Savings", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\nvlddmkm\Global\NVTweak"" /v ""DisplayPowerSaving"" /t REG_DWORD /d 0 /f"), () => NVIDIA == true),
+            ("Disabling Display Power Savings", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\Software\NVIDIA Corporation\Global\NVTweak"" /v ""DisplayPowerSaving"" /t REG_DWORD /d 0 /f"), () => NVIDIA == true),
+
+            // disable hd audio power savings
+            ("Disabling HD Audio Power Savings", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\nvlddmkm"" /v ""EnableHDAudioD3Cold"" /t REG_DWORD /d 0 /f"), () => NVIDIA == true),
+
             // configure amd settings
             ("Configuring AMD settings", async () => await ProcessActions.RunPowerShellScript("amdsettings.ps1", ""), () => AMD_RX5000_RX9000 == true),
 
@@ -211,70 +268,10 @@ public static class GraphicsStage
             ("Disabling unnecessary services", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"cmd /c reg add ""HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\amdfendrmgr"" /v Start /t REG_DWORD /d 4 /f & sc stop ""amdfendrmgr"""), () => AMD_RX5000_RX9000 == true),
             ("Disabling unnecessary services", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"cmd /c reg add ""HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\amdlog"" /v Start /t REG_DWORD /d 4 /f & sc stop ""amdlog"""), () => AMD_RX5000_RX9000 == true),
 
-            // disable nvidia tray icon
-            ("Disabling NVIDIA tray icon", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SOFTWARE\NVIDIA Corporation\NvTray"" /v StartOnLogin /t REG_DWORD /d 0 /f"), () => NVIDIA_GTX16_RTX50 == true  || NVIDIA_GTX900_GTX10 == true),
-            ("Disabling NVIDIA tray icon", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\nvlddmkm\Global\NVTweak"" /v ""HideXGpuTrayIcon"" /t REG_DWORD /d 1 /f"), () => NVIDIA_GTX16_RTX50 == true  || NVIDIA_GTX900_GTX10 == true),
-            ("Disabling NVIDIA tray icon", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SOFTWARE\NVIDIA Corporation\Global\CoProcManager"" /v ""ShowTrayIcon"" /t REG_DWORD /d 0 /f"), () => NVIDIA_GTX16_RTX50 == true  || NVIDIA_GTX900_GTX10 == true),
-
-            // disable dlss indicator
-            ("Disabling DLSS Indicator", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SOFTWARE\NVIDIA Corporation\Global\NGXCore"" /v ""ShowDlssIndicator"" /t REG_DWORD /d 0 /f"), () => NVIDIA_GTX16_RTX50 == true  || NVIDIA_GTX900_GTX10 == true),
-
-            // disable automatic updates
-            ("Disabling automatic updates", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SOFTWARE\NVIDIA Corporation\Global\CoProcManager"" /v AutoDownload /t REG_DWORD /d 0 /f"), () => NVIDIA_GTX16_RTX50 == true  || NVIDIA_GTX900_GTX10 == true),
-
-            // disable telemetry
-            ("Disabling telemetry", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\Software\Nvidia Corporation\NvControlPanel2\Client"" /v ""OptInOrOutPreference"" /t REG_DWORD /d 0 /f"), () => NVIDIA_GTX16_RTX50 == true  || NVIDIA_GTX900_GTX10 == true),
-            ("Disabling telemetry", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\nvlddmkm\Global\Startup"" /v ""SendTelemetryData"" /t REG_DWORD /d 0 /f"), () => NVIDIA_GTX16_RTX50 == true  || NVIDIA_GTX900_GTX10 == true),
-            ("Disabling telemetry", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SOFTWARE\NVIDIA Corporation\Global\FTS"" /v EnableRID44231 /t REG_DWORD /d 0 /f"), () => NVIDIA_GTX16_RTX50 == true  || NVIDIA_GTX900_GTX10 == true),
-            ("Disabling telemetry", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SOFTWARE\NVIDIA Corporation\Global\FTS"" /v EnableRID64640 /t REG_DWORD /d 0 /f"), () => NVIDIA_GTX16_RTX50 == true  || NVIDIA_GTX900_GTX10 == true),
-            ("Disabling telemetry", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SOFTWARE\NVIDIA Corporation\Global\FTS"" /v EnableRID66610 /t REG_DWORD /d 0 /f"), () => NVIDIA_GTX16_RTX50 == true  || NVIDIA_GTX900_GTX10 == true),
-            ("Disabling telemetry", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"cmd /c cd /d ""C:\Windows\System32\DriverStore\FileRepository\"" & dir NvTelemetry64.dll /a /b /s & del NvTelemetry64.dll /a /s"), () => NVIDIA_GTX16_RTX50 == true  || NVIDIA_GTX900_GTX10 == true),
-
-            // disable logging
-            ("Disabling logging", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\nvlddmkm\Parameters"" /v LogDisableMasks /t REG_BINARY /d ""00ffff0f01ffff0f02ffff0f03ffff0f04ffff0f05ffff0f06ffff0f07ffff0f08ffff0f09ffff0f0affff0f0bffff0f0cffff0f0dffff0f0effff0f0fffff0f10ffff0f11ffff0f12ffff0f13ffff0f14ffff0f15ffff0f16ffff0f00ffff1f01ffff1f02ffff1f03ffff1f04ffff1f05ffff1f06ffff1f07ffff1f08ffff1f09ffff1f0affff1f0bffff1f0cffff1f0dffff1f0effff1f0fffff1f00ffff2f01ffff2f02ffff2f03ffff2f04ffff2f05ffff2f06ffff2f07ffff2f08ffff2f09ffff2f0affff2f0bffff2f0cffff2f0dffff2f0effff2f0fffff2f00ffff3f01ffff3f02ffff3f03ffff3f04ffff3f05ffff3f06ffff3f07ffff3f"" /f"), () => NVIDIA_GTX16_RTX50 == true  || NVIDIA_GTX900_GTX10 == true),
-            ("Disabling logging", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\nvlddmkm\Parameters"" /v LogWarningEntries /t REG_DWORD /d 0 /f"), () => NVIDIA_GTX16_RTX50 == true  || NVIDIA_GTX900_GTX10 == true),
-            ("Disabling logging", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\nvlddmkm\Parameters"" /v LogPagingEntries /t REG_DWORD /d 0 /f"), () => NVIDIA_GTX16_RTX50 == true  || NVIDIA_GTX900_GTX10 == true),
-            ("Disabling logging", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\nvlddmkm\Parameters"" /v LogEventEntries /t REG_DWORD /d 0 /f"), () => NVIDIA_GTX16_RTX50 == true  || NVIDIA_GTX900_GTX10 == true),
-            ("Disabling logging", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\nvlddmkm\Parameters"" /v LogErrorEntries /t REG_DWORD /d 0 /f"), () => NVIDIA_GTX16_RTX50 == true  || NVIDIA_GTX900_GTX10 == true),
-
-            // use advanced 3d image settings
-            ("Using advanced 3D image settings", async () => await ProcessActions.RunNsudo("CurrentUser", @"reg add ""HKEY_CURRENT_USER\SOFTWARE\NVIDIA Corporation\Global\NVTweak"" /v ""Gestalt"" /t REG_DWORD /d 515 /f"), () => NVIDIA_GTX16_RTX50 == true  || NVIDIA_GTX900_GTX10 == true),
-
-            // import optimized nvidia profile
-            ("Importing optimized NVIDIA profile", async () => await ProcessActions.ImportProfile("BaseProfile.nip"), () => NVIDIA_GTX16_RTX50 == true  || NVIDIA_GTX900_GTX10 == true),
-
-            // configure physx to use gpu
-            ("Configuring PhysX to use GPU", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\nvlddmkm\Global\NVTweak"" /v ""NvCplPhysxAuto"" /t REG_DWORD /d 0 /f"), () => NVIDIA_GTX16_RTX50 == true  || NVIDIA_GTX900_GTX10 == true),
-
-            // configure color settings
-            ("Configuring color settings", async () => await ProcessActions.RunPowerShellScript("colorsettings.ps1", ""), () => NVIDIA_GTX16_RTX50 == true  || NVIDIA_GTX900_GTX10 == true),
-            ("Configuring color settings", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"cmd /c for /f ""delims="" %a in ('reg query HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\nvlddmkm\State\DisplayDatabase') do reg add ""%a"" /v ""ColorformatConfig"" /t REG_BINARY /d ""DB02000014000000000A00080000000003010000"" /f"), () => NVIDIA_GTX16_RTX50 == true  || NVIDIA_GTX900_GTX10 == true),
-
-            // disable high-definition-content-protection (hdcp)
-            ("Disabling high-definition-content-protection (HDCP)", async () => await ProcessActions.RunPowerShellScript("hdcp.ps1", ""), () => NVIDIA_GTX16_RTX50 == true  || NVIDIA_GTX900_GTX10 == true && HDCP == false),
-
-            // disable error code correction (ecc)
-            ("Disabling error code correction (ECC)", async () => await ProcessActions.RunPowerShellScript("ecc.ps1", ""), () => NVIDIA_GTX16_RTX50 == true  || NVIDIA_GTX900_GTX10 == true),
-
-            // configure miscellaneous nvidia settings
-            ("Configuring miscellaneous NVIDIA settings", async () => await ProcessActions.RunPowerShellScript("nvidiamisc.ps1", ""), () => NVIDIA_GTX16_RTX50 == true  || NVIDIA_GTX900_GTX10 == true),
-
-            // disable scaling
-            ("Disabling scaling", async () => await ProcessActions.RunNsudo("CurrentUser", @"cmd /c for %i in (Scaling) do for /f ""tokens=*"" %a in ('reg query ""HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\GraphicsDrivers"" /s /f ""%i""^| findstr ""HKEY""') do reg add ""%a"" /v ""Scaling"" /t REG_DWORD /d 1 /f"), () => NVIDIA_GTX16_RTX50 == true  || NVIDIA_GTX900_GTX10 == true),
-
-            // disable dynamic p-state
-            ("Disabling dynamic P-State", async () => await ProcessActions.RunPowerShellScript("pstate.ps1", ""), () => NVIDIA_GTX16_RTX50 == true  || NVIDIA_GTX900_GTX10 == true),
-
-            // disable display power savings
-            ("Disabling Display Power Savings", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\nvlddmkm\Global\NVTweak"" /v ""DisplayPowerSaving"" /t REG_DWORD /d 0 /f"), () => NVIDIA_GTX16_RTX50 == true  || NVIDIA_GTX900_GTX10 == true),
-            ("Disabling Display Power Savings", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\Software\NVIDIA Corporation\Global\NVTweak"" /v ""DisplayPowerSaving"" /t REG_DWORD /d 0 /f"), () => NVIDIA_GTX16_RTX50 == true  || NVIDIA_GTX900_GTX10 == true),
-
-            // disable hd audio power savings
-            ("Disabling HD Audio Power Savings", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\nvlddmkm"" /v ""EnableHDAudioD3Cold"" /t REG_DWORD /d 0 /f"), () => NVIDIA_GTX16_RTX50 == true  || NVIDIA_GTX900_GTX10 == true),
-
             // disable high-definition multimedia interface (hdmi)/displayport (dp) audio
-            //("Disabling High-Definition Multimedia Interface (HDMI)/DisplayPort (DP) Audio", async () => await ProcessActions.RunPowerShell("Get-PnpDevice | Where-Object { $_.FriendlyName -eq 'High Definition Audio Device' } | Disable-PnpDevice -Confirm:$false"), () => HDMIDPAudio == false && (NVIDIA_GTX16_RTX50 == true  || NVIDIA_GTX900_GTX10 == true || AMD_RX5000_RX9000 == true)),
-            //("Disabling High-Definition Multimedia Interface (HDMI)/DisplayPort (DP) Audio", async () => await ProcessActions.RunPowerShell("Get-PnpDevice | Where-Object { $_.FriendlyName -eq 'Intel(R) Display Audio' } | Disable-PnpDevice -Confirm:$false"), () => HDMIDPAudio == false && (Intel_6th == true || Intel_7th_10th == true || Intel_11th_14th == true || Intel_Arc == true)),
+            ("Disabling High-Definition Multimedia Interface (HDMI)/DisplayPort (DP) Audio", async () => await Task.Run(() => new ManagementObjectSearcher(@"SELECT * FROM Win32_PnPEntity WHERE Name LIKE '%High Definition Audio Controller%' AND DeviceID LIKE '%VEN_10DE%'").Get().Cast<ManagementObject>().ToList().ForEach(o => o.InvokeMethod("Disable", null))), () => NVIDIA_HDMIDPAudio == true),
+            ("Disabling High-Definition Multimedia Interface (HDMI)/DisplayPort (DP) Audio", async () => await Task.Run(() => new ManagementObjectSearcher(@"SELECT * FROM Win32_PnPEntity WHERE Name LIKE '%High Definition Audio Controller%' AND DeviceID LIKE '%VEN_1002%'").Get().Cast<ManagementObject>().ToList().ForEach(o => o.InvokeMethod("Disable", null))), () => AMD_HDMIDPAudio == true),
+            ("Disabling High-Definition Multimedia Interface (HDMI)/DisplayPort (DP) Audio", async () => await Task.Run(() => new ManagementObjectSearcher(@"SELECT * FROM Win32_PnPEntity WHERE Name LIKE '%High Definition Audio Controller%' AND DeviceID LIKE '%VEN_8086%'").Get().Cast<ManagementObject>().ToList().ForEach(o => o.InvokeMethod("Disable", null))), () => INTEL_HDMIDPAudio == true),
 
             // download msi afterburner
             ("Downloading MSI Afterburner", async () => await ProcessActions.RunDownload("https://www.dl.dropboxusercontent.com/scl/fi/6dvl62kgm3z38x49752bt/MSI-Afterburner.zip?rlkey=h2m2riyjisrb3ph0i8j0q4eu5&st=l87whmmi&dl=0", Path.GetTempPath(), "MSI Afterburner.zip"), null),

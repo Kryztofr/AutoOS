@@ -102,7 +102,7 @@ public sealed partial class BiosSettingPage : Page, INotifyPropertyChanged
 
         using (var searcher = new ManagementObjectSearcher("SELECT Manufacturer, Product FROM Win32_BaseBoard"))
         {
-            foreach (ManagementObject mo in searcher.Get().Cast<ManagementObject>())
+            foreach (ManagementObject mo in searcher.Get().Cast<ManagementObject>().ToArray())
             {
                 manufacturer = mo["Manufacturer"]?.ToString().ToLowerInvariant() ?? "Unknown";
                 product = mo["Product"]?.ToString().ToUpperInvariant() ?? "Unknown";
@@ -430,7 +430,7 @@ public sealed partial class BiosSettingPage : Page, INotifyPropertyChanged
 
                 using (var searcher = new ManagementObjectSearcher("SELECT Manufacturer, Product FROM Win32_BaseBoard"))
                 {
-                    foreach (ManagementObject mo in searcher.Get().Cast<ManagementObject>())
+                    foreach (ManagementObject mo in searcher.Get().Cast<ManagementObject>().ToArray())
                     {
                         manufacturer = mo["Manufacturer"]?.ToString().ToLowerInvariant() ?? "Unknown";
                         product = mo["Product"]?.ToString().ToUpperInvariant() ?? "Unknown";
@@ -509,7 +509,7 @@ public sealed partial class BiosSettingPage : Page, INotifyPropertyChanged
 
         using (var searcher = new ManagementObjectSearcher("SELECT Manufacturer, Product FROM Win32_BaseBoard"))
         {
-            foreach (ManagementObject mo in searcher.Get().Cast<ManagementObject>())
+            foreach (ManagementObject mo in searcher.Get().Cast<ManagementObject>().ToArray())
             {
                 manufacturer = mo["Manufacturer"]?.ToString().ToLowerInvariant() ?? "Unknown";
                 product = mo["Product"]?.ToString().ToUpperInvariant() ?? "Unknown";

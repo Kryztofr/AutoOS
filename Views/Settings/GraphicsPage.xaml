@@ -31,7 +31,7 @@
                         <dev:ProgressButton x:Name="NvidiaUpdateCheck"
                                             Checked="NvidiaUpdateCheck_Checked"
                                             CheckedContent="Checking for updates..."
-                                            Content="Done"
+                                            Content="No updates available"
                                             IsIndeterminate="True"
                                             Loaded="NvidiaUpdateCheck_Checked"
                                             Style="{ThemeResource AccentProgressButtonStyle}" />
@@ -42,12 +42,11 @@
                             <ToggleSwitch x:Name="HDCP"
                                           Toggled="HDCP_Toggled" />
                         </dev:SettingsCard>
-                        <!--<dev:SettingsCard Description="Disabling HDMI/DP Audio prevents audio devices connected to the graphics card from showing up."
-                                          Header="High-Definition Multimedia Interface (HDMI)/DisplayPort (DP) Audio"
-                                          Visibility="Collapsed">
+                        <dev:SettingsCard Description="Disabling HDMI/DP Audio prevents audio devices connected to the graphics card from showing up."
+                                          Header="High-Definition Multimedia Interface (HDMI)/DisplayPort (DP) Audio">
                             <ToggleSwitch x:Name="NVIDIA_HDMIDPAudio"
                                           Toggled="HDMIDPAudio_Toggled" />
-                        </dev:SettingsCard>-->
+                        </dev:SettingsCard>
                     </dev:SettingsGroup.Items>
                 </dev:SettingsGroup>
                 <dev:SettingsGroup x:Name="Amd_SettingsGroup"
@@ -59,17 +58,17 @@
                         <dev:ProgressButton x:Name="AmdUpdateCheck"
                                             Checked="AmdUpdateCheck_Checked"
                                             CheckedContent="Checking for updates..."
-                                            Content="Done"
+                                            Content="No updates available"
                                             IsIndeterminate="True"
                                             Loaded="AmdUpdateCheck_Checked"
                                             Style="{ThemeResource AccentProgressButtonStyle}" />
                     </dev:SettingsGroup.Content>
                     <dev:SettingsGroup.Items>
-                        <!--<dev:SettingsCard Description="Disabling HDMI/DP Audio prevents audio devices connected to the graphics card from showing up."
+                        <dev:SettingsCard Description="Disabling HDMI/DP Audio prevents audio devices connected to the graphics card from showing up."
                                           Header="High-Definition Multimedia Interface (HDMI)/DisplayPort (DP) Audio">
                             <ToggleSwitch x:Name="AMD_HDMIDPAudio"
                                           Toggled="HDMIDPAudio_Toggled" />
-                        </dev:SettingsCard>-->
+                        </dev:SettingsCard>
                     </dev:SettingsGroup.Items>
                 </dev:SettingsGroup>
                 <dev:SettingsGroup x:Name="Intel_SettingsGroup"
@@ -81,17 +80,17 @@
                         <dev:ProgressButton x:Name="IntelUpdateCheck"
                                             Checked="IntelUpdateCheck_Checked"
                                             CheckedContent="Checking for updates..."
-                                            Content="Done"
+                                            Content="No updates available"
                                             IsIndeterminate="True"
                                             Loaded="IntelUpdateCheck_Checked"
                                             Style="{ThemeResource AccentProgressButtonStyle}" />
                     </dev:SettingsGroup.Content>
                     <dev:SettingsGroup.Items>
-                        <!--<dev:SettingsCard Description="Disabling HDMI/DP Audio prevents audio devices connected to the graphics card from showing up."
+                        <dev:SettingsCard Description="Disabling HDMI/DP Audio prevents audio devices connected to the graphics card from showing up."
                                           Header="High-Definition Multimedia Interface (HDMI)/DisplayPort (DP) Audio">
                             <ToggleSwitch x:Name="INTEL_HDMIDPAudio"
                                           Toggled="HDMIDPAudio_Toggled" />
-                        </dev:SettingsCard>-->
+                        </dev:SettingsCard>
                     </dev:SettingsGroup.Items>
                 </dev:SettingsGroup>
                 <StackPanel x:Name="GpuInfo" />

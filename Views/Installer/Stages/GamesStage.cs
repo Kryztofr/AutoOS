@@ -22,8 +22,7 @@ public static partial class GamesStage
     {
         WindowHandle = WindowNative.GetWindowHandle(App.MainWindow);
         bool? Fortnite = ApplicationStage.Fortnite;
-        bool? NVIDIA_GTX900_GTX10 = PreparingStage.NVIDIA_GTX900_GTX10;
-        bool? NVIDIA_GTX16_RTX50 = PreparingStage.NVIDIA_GTX16_RTX50;
+        bool? NVIDIA = PreparingStage.NVIDIA;
 
         InstallPage.Status.Text = "Configuring Games...";
 
@@ -43,8 +42,8 @@ public static partial class GamesStage
             ("Setting Fortnite Frame Rate", async () => await ProcessActions.Sleep(1000), () => Fortnite == true),
             
             // setting fortnite rendering mode
-            ("Setting Fortnite Rendering Mode", async () => iniHelper.AddValue("PreferredRHI", "dx11", "D3DRHIPreference"), () => Fortnite == true && NVIDIA_GTX900_GTX10 == true || Fortnite == true && NVIDIA_GTX16_RTX50 == true),
-            ("Setting Fortnite Rendering Mode", async () => await ProcessActions.Sleep(1000), () => Fortnite == true && NVIDIA_GTX900_GTX10 == true || Fortnite == true && NVIDIA_GTX16_RTX50 == true),
+            ("Setting Fortnite Rendering Mode", async () => iniHelper.AddValue("PreferredRHI", "dx11", "D3DRHIPreference"), () => Fortnite == true && NVIDIA == true),
+            ("Setting Fortnite Rendering Mode", async () => await ProcessActions.Sleep(1000), () => Fortnite == true && NVIDIA == true),
             
             // import fortnite settings
             ("Importing Fortnite settings", async () => await ProcessActions.RunNsudo("CurrentUser", @"cmd /c mkdir ""%LocalAppData%\FortniteGame\Saved\Config\WindowsClient"""), () => Fortnite == true),

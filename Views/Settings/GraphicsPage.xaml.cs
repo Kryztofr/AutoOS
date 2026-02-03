@@ -3,6 +3,7 @@ using AutoOS.Views.Installer.Actions;
 using AutoOS.Views.Settings.Scheduling.Models;
 using AutoOS.Views.Settings.Scheduling.Services;
 using Downloader;
+using Markdig.Extensions.Tables;
 using Microsoft.Win32;
 using System.Diagnostics;
 using System.Management;
@@ -16,52 +17,46 @@ public sealed partial class GraphicsPage : Page
     private readonly ApplicationDataContainer localSettings = ApplicationData.Current.LocalSettings;
 
     private bool isInitializingHDCPState = true;
-    //private bool isInitializingHDMIDPAudioState = true;
+    private bool isInitializingHDMIDPAudioState = true;
     private bool isInitializingOBSState = true;
-    private Dictionary<string, (DeviceSettings settings, string devObjName)> deviceConfig = new Dictionary<string, (DeviceSettings, string)>();
+    private readonly Dictionary<string, (DeviceSettings settings, string devObjName)> deviceConfig = new Dictionary<string, (DeviceSettings, string)>();
 
     public GraphicsPage()
     {
         InitializeComponent();
         LoadGpus();
         GetHDCPState();
-        //GetHDMIDPAudioState();
+        GetHDMIDPAudioState();
         GetOBSState();
     }
 
-    private async void LoadGpus()
+    private void LoadGpus()
     {
-        using (var searcher = new ManagementObjectSearcher("SELECT * FROM Win32_VideoController"))
+        foreach (var obj in new ManagementObjectSearcher("SELECT * FROM Win32_VideoController").Get().Cast<ManagementObject>().ToArray())
         {
-            foreach (var obj in searcher.Get())
-            {
-                string name = obj["Name"]?.ToString();
-                string version = obj["DriverVersion"]?.ToString();
+            string name = obj["Name"]?.ToString();
+            string version = obj["DriverVersion"]?.ToString();
 
-                if (name != null)
-                {
-                    if (name.Contains("NVIDIA", StringComparison.OrdinalIgnoreCase))
-                    {
-                        Nvidia_SettingsGroup.Visibility = Visibility.Visible;
-                        Nvidia_SettingsGroup.Header = name;
-                        Nvidia_SettingsGroup.Description = "Current Version: " + (await Task.Run(() => Process.Start(new ProcessStartInfo("nvidia-smi", "--query-gpu=driver_version --format=csv,noheader") { CreateNoWindow = true, RedirectStandardOutput = true })?.StandardOutput.ReadToEndAsync()))?.Trim();
-                        NvidiaUpdateCheck.IsChecked = true;
-                    }
-                    if (name.Contains("AMD", StringComparison.OrdinalIgnoreCase) || name.Contains("Radeon", StringComparison.OrdinalIgnoreCase))
-                    {
-                        Amd_SettingsGroup.Visibility = Visibility.Visible;
-                        Amd_SettingsGroup.Header = name;
-                        Amd_SettingsGroup.Description = $"Current Version: {AmdHelper.GetCurrentVersion()}";
-                        AmdUpdateCheck.IsChecked = true;
-                    }
-                    if (name.Contains("Intel", StringComparison.OrdinalIgnoreCase))
-                    {
-                        Intel_SettingsGroup.Visibility = Visibility.Visible;
-                        Intel_SettingsGroup.Header = name;
-                        Intel_SettingsGroup.Description = "Current Version: " + (version?.Split('.')[2] + "." + version?.Split('.')[3]);
-                        IntelUpdateCheck.IsChecked = true;
-                    }
-                }
+            if (name.Contains("NVIDIA", StringComparison.OrdinalIgnoreCase))
+            {
+                Nvidia_SettingsGroup.Visibility = Visibility.Visible;
+                Nvidia_SettingsGroup.Header = name;
+                Nvidia_SettingsGroup.Description = "Current Version: " + version.Split('.')[2][1..] + version.Split('.')[3][..2] + "." + version.Split('.')[3].Substring(2, 2);
+                NvidiaUpdateCheck.IsChecked = true;
+            }
+            if (name.Contains("AMD", StringComparison.OrdinalIgnoreCase) || name.Contains("Radeon", StringComparison.OrdinalIgnoreCase))
+            {
+                Amd_SettingsGroup.Visibility = Visibility.Visible;
+                Amd_SettingsGroup.Header = name;
+                Amd_SettingsGroup.Description = $"Current Version: {AmdHelper.GetCurrentVersion()}";
+                AmdUpdateCheck.IsChecked = true;
+            }
+            if (name.Contains("Intel", StringComparison.OrdinalIgnoreCase))
+            {
+                Intel_SettingsGroup.Visibility = Visibility.Visible;
+                Intel_SettingsGroup.Header = name;
+                Intel_SettingsGroup.Description = "Current Version: " + (version?.Split('.')[2] + "." + version?.Split('.')[3]);
+                IntelUpdateCheck.IsChecked = true;
             }
         }
     }
@@ -111,7 +106,7 @@ public sealed partial class GraphicsPage : Page
                     if (device.RegistryKey != null)
                     {
                         string deviceKey = !string.IsNullOrEmpty(device.PnpDeviceId) ? device.PnpDeviceId : device.DevObjName ?? string.Empty;
-                        
+
                         var settings = RegistryService.ReadDeviceSettings(device.RegistryKey, device.MaxMSILimit);
                         deviceConfig[deviceKey] = (settings, device.DevObjName ?? string.Empty);
                     }
@@ -119,7 +114,7 @@ public sealed partial class GraphicsPage : Page
 
                 foreach (var device in gpuDevices)
                     device.RegistryKey?.Close();
-                
+
                 if (deviceInfoSetHandle != IntPtr.Zero && deviceInfoSetHandle != new IntPtr(-1))
                     SetupApi.SetupDiDestroyDeviceInfoList(deviceInfoSetHandle);
 
@@ -192,10 +187,6 @@ public sealed partial class GraphicsPage : Page
                 NvidiaUpdateCheck.CheckedContent = "Configuring miscellaneous NVIDIA settings...";
                 await ProcessActions.RunPowerShellScript("nvidiamisc.ps1", "");
 
-                // disable scaling
-                NvidiaUpdateCheck.CheckedContent = "Disabling scaling...";
-                await ProcessActions.RunNsudo("CurrentUser", @"cmd /c for %i in (Scaling) do for /f ""tokens=*"" %a in ('reg query ""HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\GraphicsDrivers"" /s /f ""%i""^| findstr ""HKEY""') do reg add ""%a"" /v ""Scaling"" /t REG_DWORD /d 1 /f");
-
                 // disable dynamic p-state
                 NvidiaUpdateCheck.CheckedContent = "Disabling dynamic P-State...";
                 await ProcessActions.RunPowerShellScript("pstate.ps1", "");
@@ -213,10 +204,11 @@ public sealed partial class GraphicsPage : Page
                 if (deviceConfig.Count > 0)
                 {
                     NvidiaUpdateCheck.CheckedContent = "Reapplying Affinity...";
+                    await Task.Delay(1000);
                     var changedDevices = new List<DeviceInfo>();
                     var gpuDevicesAfterUpdate = DeviceDetectionService.FindDevicesByType(DeviceType.GPU);
                     IntPtr deviceInfoSetHandleAfterUpdate = IntPtr.Zero;
-                    
+
                     foreach (var device in gpuDevicesAfterUpdate)
                     {
                         if (deviceInfoSetHandleAfterUpdate == IntPtr.Zero)
@@ -232,7 +224,7 @@ public sealed partial class GraphicsPage : Page
                             var savedSettings = savedData.settings;
                             var currentSettings = RegistryService.ReadDeviceSettings(device.RegistryKey, device.MaxMSILimit);
                             bool settingsChanged = currentSettings.DevicePolicy != savedSettings.DevicePolicy || currentSettings.DevicePriority != savedSettings.DevicePriority || currentSettings.AssignmentSetOverride != savedSettings.AssignmentSetOverride;
-                            
+
                             if (settingsChanged)
                             {
                                 RegistryService.SetAffinityPolicy(device.RegistryKey, savedSettings.DevicePolicy, savedSettings.DevicePriority, savedSettings.AssignmentSetOverride);
@@ -262,7 +254,7 @@ public sealed partial class GraphicsPage : Page
 
                     if (deviceInfoSetHandleAfterUpdate != IntPtr.Zero && deviceInfoSetHandleAfterUpdate != new IntPtr(-1))
                         SetupApi.SetupDiDestroyDeviceInfoList(deviceInfoSetHandleAfterUpdate);
-                    
+
                     deviceConfig.Clear();
                 }
 
@@ -631,117 +623,85 @@ public sealed partial class GraphicsPage : Page
         GpuInfo.Children.Clear();
     }
 
-    //private async void GetHDMIDPAudioState()
-    //{
-    //    var toggles = new[] { NVIDIA_HDMIDPAudio, AMD_HDMIDPAudio};
+    private void GetHDMIDPAudioState()
+    {
+        var devices = new ManagementObjectSearcher(@"SELECT DeviceID, ConfigManagerErrorCode FROM Win32_PnPEntity WHERE Name LIKE '%High Definition Audio Controller%'").Get().Cast<ManagementObject>().ToArray();
 
-    //    foreach (var toggle in toggles)
-    //    {
-    //        toggle.IsOn = await Task.Run(() =>
-    //        {
-    //            return new ManagementObjectSearcher(
-    //                "SELECT * FROM Win32_PnPEntity WHERE Description = 'High Definition Audio Device'")
-    //                   .Get()
-    //                   .Cast<ManagementObject>()
-    //                   .Any(device => device["Status"]?.ToString() == "OK");
-    //        });
-    //    }
+        NVIDIA_HDMIDPAudio.IsOn = devices.Any(o => o["DeviceID"]?.ToString().Contains("VEN_10DE", StringComparison.OrdinalIgnoreCase) == true && Convert.ToInt32(o["ConfigManagerErrorCode"]) == 0);
+        AMD_HDMIDPAudio.IsOn = devices.Any(o => o["DeviceID"]?.ToString().Contains("VEN_1002", StringComparison.OrdinalIgnoreCase) == true && Convert.ToInt32(o["ConfigManagerErrorCode"]) == 0);
+        INTEL_HDMIDPAudio.IsOn = devices.Any(o => o["DeviceID"]?.ToString().Contains("VEN_8086", StringComparison.OrdinalIgnoreCase) == true && Convert.ToInt32(o["ConfigManagerErrorCode"]) == 0);
 
-    //    INTEL_HDMIDPAudio.IsOn = await Task.Run(() =>
-    //    {
-    //        return new ManagementObjectSearcher(
-    //            "SELECT * FROM Win32_PnPEntity WHERE Description = 'Intel(R) Display Audio'")
-    //               .Get()
-    //               .Cast<ManagementObject>()
-    //               .Any(device => device["Status"]?.ToString() == "OK");
-    //    });
+        isInitializingHDMIDPAudioState = false;
+    }
 
-    //    isInitializingHDMIDPAudioState = false;
-    //}
+    private async void HDMIDPAudio_Toggled(object sender, RoutedEventArgs e)
+    {
+        // return if still initializing
+        if (isInitializingHDMIDPAudioState) return;
 
-    //private async void HDMIDPAudio_Toggled(object sender, RoutedEventArgs e)
-    //{
-    //    // return if still initializing
-    //    if (isInitializingHDMIDPAudioState) return;
+        var toggle = sender as ToggleSwitch;
 
-    //    var toggle = sender as ToggleSwitch;
+        // remove infobar
+        GpuInfo.Children.Clear();
 
-    //    // remove infobar
-    //    GpuInfo.Children.Clear();
+        // add infobar
+        GpuInfo.Children.Add(new InfoBar
+        {
+            Title = toggle.IsOn ? "Enabling High-Definition Multimedia Interface (HDMI)/DisplayPort (DP) Audio..." : "Disabling High-Definition Multimedia Interface (HDMI)/DisplayPort (DP) Audio...",
+            IsClosable = false,
+            IsOpen = true,
+            Severity = InfoBarSeverity.Informational,
+            Margin = new Thickness(4, -4, 4, 12)
+        });
 
-    //    // add infobar
-    //    GpuInfo.Children.Add(new InfoBar
-    //    {
-    //        Title = toggle.IsOn ? "Enabling High-Definition Multimedia Interface (HDMI)/DisplayPort (DP) Audio..." : "Disabling High-Definition Multimedia Interface (HDMI)/DisplayPort (DP) Audio...",
-    //        IsClosable = false,
-    //        IsOpen = true,
-    //        Severity = InfoBarSeverity.Informational,
-    //        Margin = new Thickness(5)
-    //    });
+        // toggle hdmi/dp audio
+        bool isOn = toggle.IsOn;
 
-    //    // toggle hdmi/dp audio
-    //    bool isOn = toggle.IsOn;
+        if (toggle == NVIDIA_HDMIDPAudio)
+        {
+            foreach (ManagementObject obj in new ManagementObjectSearcher(@"SELECT * FROM Win32_PnPEntity WHERE Name LIKE '%High Definition Audio Controller%' AND DeviceID LIKE '%VEN_10DE%'").Get().Cast<ManagementObject>().ToArray())
+            {
+                obj.InvokeMethod(isOn ? "Enable" : "Disable", null, null);
+            }
+        }
+        else if (toggle == AMD_HDMIDPAudio)
+        {
+            foreach (ManagementObject obj in new ManagementObjectSearcher(@"SELECT * FROM Win32_PnPEntity WHERE Name LIKE '%High Definition Audio Controller%' AND DeviceID LIKE '%VEN_1002%'").Get().Cast<ManagementObject>().ToArray())
+            {
+                obj.InvokeMethod(isOn ? "Enable" : "Disable", null, null);
+            }
+        }
+        else if (toggle == INTEL_HDMIDPAudio)
+        {
+            foreach (ManagementObject obj in new ManagementObjectSearcher(@"SELECT * FROM Win32_PnPEntity WHERE Name LIKE '%High Definition Audio Controller%' AND DeviceID LIKE '%VEN_8086%'").Get().Cast<ManagementObject>().ToArray())
+            {
+                obj.InvokeMethod(isOn ? "Enable" : "Disable", null, null);
+            }
+        }
 
-    //    if (toggle == NVIDIA_HDMIDPAudio || toggle == AMD_HDMIDPAudio)
-    //    {
-    //        await Task.Run(() =>
-    //        {
-    //            var process = new Process
-    //            {
-    //                StartInfo = new ProcessStartInfo
-    //                {
-    //                    FileName = "powershell.exe",
-    //                    Arguments = @$"-ExecutionPolicy Bypass -Command ""Get-PnpDevice | Where-Object {{ $_.FriendlyName -eq 'High Definition Audio Device' }} | {(isOn ? "Enable" : "Disable")}-PnpDevice -Confirm:$false""",
-    //                    CreateNoWindow = true
-    //                }
-    //            };
+        // delay
+        await Task.Delay(400);
 
-    //            process.Start();
-    //            process.WaitForExit();
-    //        });
-    //    }
-    //    else if (toggle == INTEL_HDMIDPAudio)
-    //    {
-    //        await Task.Run(() =>
-    //        {
-    //            var process = new Process
-    //            {
-    //                StartInfo = new ProcessStartInfo
-    //                {
-    //                    FileName = "powershell.exe",
-    //                    Arguments = @$"-ExecutionPolicy Bypass -Command ""Get-PnpDevice | Where-Object {{ $_.FriendlyName -eq 'Intel(R) Display Audio' }} | {(isOn ? "Enable" : "Disable")}-PnpDevice -Confirm:$false""",
-    //                    CreateNoWindow = true
-    //                }
-    //            };
+        // remove infobar
+        GpuInfo.Children.Clear();
 
-    //            process.Start();
-    //            process.WaitForExit();
-    //        });
-    //    }
+        // add infobar
+        var infoBar = new InfoBar
+        {
+            Title = toggle.IsOn ? "Successfully enabled High-Definition Multimedia Interface (HDMI)/DisplayPort (DP) Audio." : "Successfully disabled High-Definition Multimedia Interface (HDMI)/DisplayPort (DP) Audio.",
+            IsClosable = false,
+            IsOpen = true,
+            Severity = InfoBarSeverity.Success,
+            Margin = new Thickness(4, -4, 4, 12)
+        };
+        GpuInfo.Children.Add(infoBar);
 
-    //    // delay
-    //    await Task.Delay(400);
+        // delay
+        await Task.Delay(2000);
 
-    //    // remove infobar
-    //    GpuInfo.Children.Clear();
-
-    //    // add infobar
-    //    var infoBar = new InfoBar
-    //    {
-    //        Title = toggle.IsOn ? "Successfully enabled High-Definition Multimedia Interface (HDMI)/DisplayPort (DP) Audio." : "Successfully disabled High-Definition Multimedia Interface (HDMI)/DisplayPort (DP) Audio.",
-    //        IsClosable = false,
-    //        IsOpen = true,
-    //        Severity = InfoBarSeverity.Success,
-    //        Margin = new Thickness(5)
-    //    };
-    //    GpuInfo.Children.Add(infoBar);
-
-    //    // delay
-    //    await Task.Delay(2000);
-
-    //    // remove infobar
-    //    GpuInfo.Children.Clear();
-    //}
+        // remove infobar
+        GpuInfo.Children.Clear();
+    }
 
     private async void BrowseMsi_Click(object sender, RoutedEventArgs e)
     {

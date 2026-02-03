@@ -89,11 +89,12 @@ public static class PreparingStage
     public static bool? Intel_7th_10th;
     public static bool? Intel_11th_14th;
     public static bool? Intel_Arc;
-    public static bool? NVIDIA_GTX900_GTX10;
-    public static bool? NVIDIA_GTX16_RTX50;
+    public static bool? NVIDIA;
     public static bool? AMD_RX5000_RX9000;
     public static bool? HDCP;
-    public static bool? HDMIDPAudio;
+    public static bool? INTEL_HDMIDPAudio;
+    public static bool? NVIDIA_HDMIDPAudio;
+    public static bool? AMD_HDMIDPAudio;
     public static bool? MSI;
     public static bool? CRU;
 
@@ -222,12 +223,13 @@ public static class PreparingStage
             Intel_7th_10th = (localSettings.Values["GpuBrand"]?.ToString().Contains("Intel® 7th-10th Gen Processor Graphics") ?? false);
             Intel_11th_14th = (localSettings.Values["GpuBrand"]?.ToString().Contains("Intel® 11th-14th Gen Processor Graphics") ?? false);
             Intel_Arc = (localSettings.Values["GpuBrand"]?.ToString().Contains("Intel® Arc™ Graphics") ?? false);
-            NVIDIA_GTX900_GTX10 = (localSettings.Values["GpuBrand"]?.ToString().Contains("NVIDIA GeForce GTX™ 900 - 10 series") ?? false);
-            NVIDIA_GTX16_RTX50 = (localSettings.Values["GpuBrand"]?.ToString().Contains("NVIDIA GeForce GTX™ 16 - RTX™ 50 series") ?? false);
+            NVIDIA = (localSettings.Values["GpuBrand"]?.ToString().Contains("NVIDIA") ?? false);
             AMD_RX5000_RX9000 = (localSettings.Values["GpuBrand"]?.ToString().Contains("AMD Radeon™ RX 5000 - 9000 series") ?? false);
 
             HDCP = (localSettings.Values["HighDefinitionContentProtection"]?.ToString() == "1");
-            HDMIDPAudio = (localSettings.Values["HighDefinitionMultimediaInterface/DisplayPortAudio"]?.ToString() == "1");
+            INTEL_HDMIDPAudio = (localSettings.Values["INTELHighDefinitionMultimediaInterface/DisplayPortAudio"]?.ToString() == "1");
+            NVIDIA_HDMIDPAudio = (localSettings.Values["NVIDIAHighDefinitionMultimediaInterface/DisplayPortAudio"]?.ToString() == "1");
+            AMD_HDMIDPAudio = (localSettings.Values["AMDHighDefinitionMultimediaInterface/DisplayPortAudio"]?.ToString() == "1");
             MSI = (localSettings.Values["MsiProfile"] != null);
             CRU = (localSettings.Values["CruProfile"] != null);
 
@@ -297,8 +299,8 @@ public static class PreparingStage
                 })
                 .FirstOrDefault(false);
 
-            var adapters = new ManagementObjectSearcher("SELECT * FROM Win32_NetworkAdapter").Get().Cast<ManagementObject>().ToList();
-            var activeAdapters = new ManagementObjectSearcher("SELECT * FROM Win32_NetworkAdapter").Get().Cast<ManagementObject>().Where(a => (ushort?)a["NetConnectionStatus"] == 2).ToList();
+            var adapters = new ManagementObjectSearcher("SELECT * FROM Win32_NetworkAdapter").Get().Cast<ManagementObject>().ToArray();
+            var activeAdapters = adapters.Where(a => (ushort?)a["NetConnectionStatus"] == 2).ToArray();
 
             foreach (var adapter in adapters)
             {

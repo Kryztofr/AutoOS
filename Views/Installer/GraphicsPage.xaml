@@ -23,56 +23,48 @@
             <StackPanel Margin="{ThemeResource ContentPageMargin}"
                         Padding="{ThemeResource ContentPagePadding}"
                         dev:PanelAttach.ChildrenTransitions="Default">
-                <dev:SettingsGroup Margin="0,0,0,12"
-                                   Header="Manufacturer">
-                    <dev:SettingsGroup.Content>
-                        <GridView x:Name="Brands"
-                                  Margin="0,0,0,-12"
-                                  IsMultiSelectCheckBoxEnabled="False"
-                                  SelectionChanged="Brand_Changed"
-                                  SelectionMode="Multiple">
-                            <GridView.ItemTemplate>
-                                <DataTemplate>
-                                    <Grid Height="105"
-                                          Margin="24">
-                                        <Grid.RowDefinitions>
-                                            <RowDefinition Height="*" />
-                                        </Grid.RowDefinitions>
-                                        <StackPanel VerticalAlignment="Center">
-                                            <Image Height="36"
-                                                   Margin="0,0,0,8"
-                                                   Source="{Binding ImageSource}" />
-                                            <TextBlock HorizontalAlignment="Center"
-                                                       FontSize="14"
-                                                       Text="{Binding Text}"
-                                                       TextAlignment="Center"
-                                                       TextTrimming="CharacterEllipsis"
-                                                       TextWrapping="Wrap" />
-                                        </StackPanel>
-                                    </Grid>
-                                </DataTemplate>
-                            </GridView.ItemTemplate>
-                            <GridView.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <controls:StaggeredPanel ColumnSpacing="12"
-                                                             DesiredColumnWidth="155"
-                                                             RowSpacing="12" />
-                                </ItemsPanelTemplate>
-                            </GridView.ItemsPanel>
-                        </GridView>
-                    </dev:SettingsGroup.Content>
+                <dev:SettingsGroup x:Name="Nvidia_SettingsGroup"
+                                   Margin="0,0,0,12"
+                                   Header="NVIDIA Driver"
+                                   HeaderIcon="{dev:BitmapIcon Source=Assets/Fluent/Nvidia.png}"
+                                   Visibility="Collapsed">
                     <dev:SettingsGroup.Items>
                         <dev:SettingsCard Description="Disabling HDCP breaks Netflix and other protected video streaming services."
                                           Header="High-Bandwidth Digital Content Protection (HDCP)">
                             <ToggleSwitch x:Name="HDCP"
                                           Toggled="HDCP_Toggled" />
                         </dev:SettingsCard>
-                        <!--<dev:SettingsCard Description="Disabling HDMI/DP Audio prevents audio devices connected to the graphics card from showing up."
-                                          Header="High-Definition Multimedia Interface (HDMI)/DisplayPort (DP) Audio"
-                                          Visibility="Collapsed">
-                            <ToggleSwitch x:Name="HDMIDPAudio"
+                        <dev:SettingsCard Description="Disabling HDMI/DP Audio prevents audio devices connected to the graphics card from showing up."
+                                          Header="High-Definition Multimedia Interface (HDMI)/DisplayPort (DP) Audio">
+                            <ToggleSwitch x:Name="NVIDIA_HDMIDPAudio"
                                           Toggled="HDMIDPAudio_Toggled" />
-                        </dev:SettingsCard>-->
+                        </dev:SettingsCard>
+                    </dev:SettingsGroup.Items>
+                </dev:SettingsGroup>
+                <dev:SettingsGroup x:Name="Amd_SettingsGroup"
+                                   Margin="0,0,0,12"
+                                   Header="AMD Driver"
+                                   HeaderIcon="{dev:BitmapIcon Source=Assets/Fluent/Amd.png}"
+                                   Visibility="Collapsed">
+                    <dev:SettingsGroup.Items>
+                        <dev:SettingsCard Description="Disabling HDMI/DP Audio prevents audio devices connected to the graphics card from showing up."
+                                          Header="High-Definition Multimedia Interface (HDMI)/DisplayPort (DP) Audio">
+                            <ToggleSwitch x:Name="AMD_HDMIDPAudio"
+                                          Toggled="HDMIDPAudio_Toggled" />
+                        </dev:SettingsCard>
+                    </dev:SettingsGroup.Items>
+                </dev:SettingsGroup>
+                <dev:SettingsGroup x:Name="Intel_SettingsGroup"
+                                   Margin="0,0,0,12"
+                                   Header="Intel Driver"
+                                   HeaderIcon="{dev:BitmapIcon Source=Assets/Fluent/Intel.png}"
+                                   Visibility="Collapsed">
+                    <dev:SettingsGroup.Items>
+                        <dev:SettingsCard Description="Disabling HDMI/DP Audio prevents audio devices connected to the graphics card from showing up."
+                                          Header="High-Definition Multimedia Interface (HDMI)/DisplayPort (DP) Audio">
+                            <ToggleSwitch x:Name="INTEL_HDMIDPAudio"
+                                          Toggled="HDMIDPAudio_Toggled" />
+                        </dev:SettingsCard>
                     </dev:SettingsGroup.Items>
                 </dev:SettingsGroup>
                 <dev:SettingsGroup Margin="0,0,0,12"
