@@ -309,7 +309,11 @@ else {
     }
     else {
         Write-Host "No partition with at least 64GB of free space or shrinkable space found. Use the 'Split' function in Minitool Partition Wizard Free and rerun this script."
-        exit
+        Write-Host "Press Enter to exit..."
+        if ($Host.Name -eq 'ConsoleHost') {
+            [void][System.Console]::ReadLine()
+        }
+        return
     }
 }
 
