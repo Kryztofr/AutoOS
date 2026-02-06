@@ -505,64 +505,6 @@ public static class ProcessActions
         }
     }
 
-    public static async Task RemoveWindowsCapabilities()
-    {
-        ProcessStartInfo processStartInfo = new ProcessStartInfo("powershell.exe", $"-ExecutionPolicy Bypass -File \"{Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Scripts", "removecapabilities.ps1")}\"")
-        {
-            CreateNoWindow = true,
-            RedirectStandardOutput = true
-        };
-
-        using (Process process = Process.Start(processStartInfo))
-        {
-            using (StreamReader reader = process.StandardOutput)
-            {
-                string line;
-                while ((line = await reader.ReadLineAsync()) != null)
-                {
-                    if (double.TryParse(line, out double progress))
-                    {
-                        InstallPage.ProgressRingControl.IsIndeterminate = false;
-                        InstallPage.ProgressRingControl.Value = progress;
-                    }
-                }
-            }
-
-            await process.WaitForExitAsync();
-            InstallPage.ProgressRingControl.IsIndeterminate = true;
-            InstallPage.ProgressRingControl.Value = 0;
-        }
-    }
-
-    public static async Task DisableOptionalFeatures()
-    {
-        ProcessStartInfo processStartInfo = new("powershell.exe", $"-ExecutionPolicy Bypass -File \"{Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Scripts", "disablefeatures.ps1")}\"")
-        {
-            CreateNoWindow = true,
-            RedirectStandardOutput = true
-        };
-
-        using (Process process = Process.Start(processStartInfo))
-        {
-            using (StreamReader reader = process.StandardOutput)
-            {
-                string line;
-                while ((line = await reader.ReadLineAsync()) != null)
-                {
-                    if (double.TryParse(line, out double progress))
-                    {
-                        InstallPage.ProgressRingControl.IsIndeterminate = false;
-                        InstallPage.ProgressRingControl.Value = progress;
-                    }
-                }
-            }
-
-            await process.WaitForExitAsync();
-            InstallPage.ProgressRingControl.IsIndeterminate = true;
-            InstallPage.ProgressRingControl.Value = 0;
-        }
-    }
-
     public static async Task Sleep(int amount)
     {
         await Task.Delay(amount);
