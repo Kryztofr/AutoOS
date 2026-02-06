@@ -122,7 +122,7 @@ public static class RegistryStage
             (@"Disabling ""Archive apps""", async () => await ProcessActions.RunPowerShell(@"New-Item -Path ""HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\InstallService\Stubification\$([System.Security.Principal.WindowsIdentity]::GetCurrent().User.Value)"" -Force | Out-Null; New-ItemProperty -Path ""HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\InstallService\Stubification\$([System.Security.Principal.WindowsIdentity]::GetCurrent().User.Value)"" -Name EnableAppOffloading -PropertyType DWord -Value 0 -Force"), null),
 
             // apps -> resume
-            //("Disabling resume feature", async () => await ProcessActions.RunNsudo("CurrentUser", @"reg add ""HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\CrossDeviceResume\Configuration"" /v ""IsResumeAllowed"" /t REG_DWORD /d 0 /f"), null),
+            ("Disabling resume feature", async () => await ProcessActions.RunNsudo("CurrentUser", @"reg add ""HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\CrossDeviceResume\Configuration"" /v ""IsResumeAllowed"" /t REG_DWORD /d 0 /f"), null),
 
             // system -> clipboard
             (@"Enabling ""Clipboard history""", async () => await ProcessActions.RunNsudo("CurrentUser", @"reg add ""HKEY_CURRENT_USER\Software\Microsoft\Clipboard"" /v EnableClipboardHistory /t REG_DWORD /d 1 /f"), null),

@@ -40,9 +40,9 @@ public static class AppxStage
             ("Deprovisioning Microsoft.BingNews_8wekyb3d8bbwe", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Appx\AppxAllUserStore\Deprovisioned\Microsoft.BingNews_8wekyb3d8bbwe"" /f"), null),
 
             // bing search 
-            //("Uninstalling Microsoft.BingSearch_8wekyb3d8bbwe", async () => await ProcessActions.RemoveAppx("Microsoft.BingSearch"), null),
-            //("Uninstalling provisioned Microsoft.BingSearch_8wekyb3d8bbwe", async () => await ProcessActions.RemoveAppxProvisioned("Microsoft.BingSearch"), null),
-            //("Deprovisioning Microsoft.BingSearch_8wekyb3d8bbwe", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Appx\AppxAllUserStore\Deprovisioned\Microsoft.BingSearch"" /f"), null),
+            ("Uninstalling Microsoft.BingSearch_8wekyb3d8bbwe", async () => await ProcessActions.RemoveAppx("Microsoft.BingSearch"), null),
+            ("Uninstalling provisioned Microsoft.BingSearch_8wekyb3d8bbwe", async () => await ProcessActions.RemoveAppxProvisioned("Microsoft.BingSearch"), null),
+            ("Deprovisioning Microsoft.BingSearch_8wekyb3d8bbwe", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Appx\AppxAllUserStore\Deprovisioned\Microsoft.BingSearch"" /f"), null),
 
             // bing weather
             ("Uninstalling Microsoft.BingWeather_8wekyb3d8bbwe", async () => await ProcessActions.RemoveAppx("Microsoft.BingWeather"), null),
@@ -184,9 +184,9 @@ public static class AppxStage
             ("Deprovisioning MicrosoftTeams_8wekyb3d8bbwe", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Appx\AppxAllUserStore\Deprovisioned\MicrosoftTeams_8wekyb3d8bbwe"" /f"), null),
 
             // teams
-            //("Uninstalling MSTeams_8wekyb3d8bbwe", async () => await ProcessActions.RemoveAppx("MSTeams"), null),
-            //("Uninstalling provisioned MSTeams_8wekyb3d8bbwe", async () => await ProcessActions.RemoveAppxProvisioned("MSTeams"), null),
-            //("Deprovisioning MSTeams_8wekyb3d8bbwe", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Appx\AppxAllUserStore\Deprovisioned\MSTeams_8wekyb3d8bbwe"" /f"), null),
+            ("Uninstalling MSTeams_8wekyb3d8bbwe", async () => await ProcessActions.RemoveAppx("MSTeams"), null),
+            ("Uninstalling provisioned MSTeams_8wekyb3d8bbwe", async () => await ProcessActions.RemoveAppxProvisioned("MSTeams"), null),
+            ("Deprovisioning MSTeams_8wekyb3d8bbwe", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Appx\AppxAllUserStore\Deprovisioned\MSTeams_8wekyb3d8bbwe"" /f"), null),
 
             // client web experience
             ("Uninstalling MicrosoftWindows.Client.WebExperience_cw5n1h2txyewy", async () => await ProcessActions.RemoveAppx("MicrosoftWindows.Client.WebExperience"), null),
@@ -241,19 +241,19 @@ public static class AppxStage
             ("Updating Microsoft.RawImageExtension_8wekyb3d8bbwe", async () => await ProcessActions.UpdateAppx("Microsoft.RawImageExtension_8wekyb3d8bbwe"), null),
 
             // update mpeg 2 video extension
-            //("Updating Microsoft.MPEG2VideoExtension_8wekyb3d8bbwe", async () => await ProcessActions.UpdateAppx("Microsoft.MPEG2VideoExtension_8wekyb3d8bbwe"), null),
+            ("Updating Microsoft.MPEG2VideoExtension_8wekyb3d8bbwe", async () => await ProcessActions.UpdateAppx("Microsoft.MPEG2VideoExtension_8wekyb3d8bbwe"), null),
 
             // update av1 video extension
-            //("Updating Microsoft.AV1VideoExtension_8wekyb3d8bbwe", async () => await ProcessActions.UpdateAppx("Microsoft.AV1VideoExtension_8wekyb3d8bbwe"), null),
+            ("Updating Microsoft.AV1VideoExtension_8wekyb3d8bbwe", async () => await ProcessActions.UpdateAppx("Microsoft.AV1VideoExtension_8wekyb3d8bbwe"), null),
 
             // update avc encoder video extension
-            //("Updating Microsoft.AVCEncoderVideoExtension_8wekyb3d8bbwe", async () => await ProcessActions.UpdateAppx("Microsoft.AVCEncoderVideoExtension_8wekyb3d8bbwe"), null),
+            ("Updating Microsoft.AVCEncoderVideoExtension_8wekyb3d8bbwe", async () => await ProcessActions.UpdateAppx("Microsoft.AVCEncoderVideoExtension_8wekyb3d8bbwe"), null),
 
             // update application compatibility enhancements
-            //("Updating Microsoft.ApplicationCompatibilityEnhancements_8wekyb3d8bbwe", async () => await ProcessActions.UpdateAppx("Microsoft.ApplicationCompatibilityEnhancements_8wekyb3d8bbwe"), null),
+            ("Updating Microsoft.ApplicationCompatibilityEnhancements_8wekyb3d8bbwe", async () => await ProcessActions.UpdateAppx("Microsoft.ApplicationCompatibilityEnhancements_8wekyb3d8bbwe"), null),
 
             // update cross device
-            //("Updating MicrosoftWindows.CrossDevice_cw5n1h2txyewy", async () => await ProcessActions.UpdateAppx("MicrosoftWindows.CrossDevice_cw5n1h2txyewy"), null),
+            ("Updating MicrosoftWindows.CrossDevice_cw5n1h2txyewy", async () => await ProcessActions.UpdateAppx("MicrosoftWindows.CrossDevice_cw5n1h2txyewy"), null),
 
             // optimize notepad settings
             ("Optimizing Notepad settings", async () => await ProcessActions.RunPowerShellScript("notepad.ps1", ""), null),

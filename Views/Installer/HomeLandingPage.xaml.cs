@@ -23,7 +23,7 @@ namespace AutoOS.Views.Installer
 
         private async void HomeLandingPage_Loaded(object sender, RoutedEventArgs e)
         {
-#if !DEBUG
+            #if !DEBUG
                 using var key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion");
                 if (key == null) return;
 
@@ -49,12 +49,12 @@ namespace AutoOS.Views.Installer
                 string ubrStr = key.GetValue("UBR")?.ToString() ?? "";
                 if (int.TryParse(buildStr, out int build) && int.TryParse(ubrStr, out int ubr))
                 {
-                    if (build != 22631 || (build == 22631 && ubr < 6495))
+                    if (build != 26200 || (build == 26200 && ubr < 7705))
                     {
                         var dialog = new ContentDialog
                         {
                             Title = "Unsupported Windows Version",
-                            Content = $"AutoOS is currently only supported on new versions of Windows 23H2. \nPlease download it from the Getting Started guide in the README on GitHub.",
+                            Content = $"AutoOS is currently only supported on new versions of Windows 25H2. \nPlease download it from the Getting Started guide in the README on GitHub.",
                             CloseButtonText = "OK",
                             DefaultButton = ContentDialogButton.Close,
                             XamlRoot = App.MainWindow.Content.XamlRoot
@@ -63,12 +63,11 @@ namespace AutoOS.Views.Installer
                         Application.Current.Exit();
                     }
                 }
-#endif
+            #endif
 
             // enable app access to location
-            await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\location"" /v ""Value"" /t REG_SZ /d ""Allow"" /f");
-            await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\activity"" /v ""Value"" /t REG_SZ /d ""Allow"" /f");
-            await ProcessActions.RunNsudo("CurrentUser", @"reg add HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\location\AutoOS_xxtketq8p23nt /v Value /t REG_SZ /d Allow /f");
+            await ProcessActions.RunNsudo("TrustedInstaller", @"C:\Windows\system32\SystemSettingsAdminFlows.exe SetCamSystemGlobal location 1");
+            await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy"" /v LetAppsAccessLocation /t REG_DWORD /d 1 /f");
 
             // switch keyboard layout
             if (!(localSettings.Values["HasChangedLayout"] as bool? == true))

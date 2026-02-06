@@ -11,20 +11,75 @@
 [![Discord](https://img.shields.io/badge/Discord-AutoOS-5865F2?style=flat&logo=discord&logoColor=white)](https://discord.gg/bZU4dMMWpg)
 [![PayPal](https://img.shields.io/badge/Donate-PayPal-003087?logo=paypal&logoColor=fff)](https://www.paypal.com/donate/?hosted_button_id=GVEVUSHUWXEAG)
 
+<p align="center">
+  <a href="#-features">Features</a> •
+  <a href="#-getting-started">Getting Started</a> •
+  <a href="#-screenshots">Screenshots</a> •
+  <a href="#️-build-instructions">Build</a> •
+  <a href="#-credits">Credits</a> •
+  <a href="#-license">License</a>
+</p>
 </div>
 
-AutoOS is a WinUI3 application focused on automation to improve performance while ensuring privacy and compatibility.
+AutoOS is a WinUI 3 application that automates Windows setup, optimization, and configuration with a focus on gaming performance, privacy, and system compatibility.
 
 ## ✨ Features
-- Automatically set every monitor to their highest supported refresh rate
-- Automatically optimize GPU, XHCI Controller and NIC affinities
-- Easily update GPU driver with one click
-- Toggle XHCI Interrupt Moderation without having to restart
-- Toggle between service states with configured functionality
-- Apply all hidden BIOS Settings (600+) in one click
-- Automatically import Epic Games and Steam titles from old install
-- Custom Game Launcher supporting (Epic Games, Steam, Riot Games, Eden, Citron, Ryujinx)
-- Stop processes when running your game to stop all unnecessary services and executables
+**AutoOS Installer**:
+- Creates an optimized Power plan
+- Adjusts Registry and Group Policies for Privacy, Work and Performance
+- Disables selected Security features
+- Adjusts Memory Management and Prefetching depending on disk type
+- Automatically detects your GPUs and strips, installs and optimizes settings
+- Allows for importing a preconfigured Custom Resolution Utility (CRU) profile
+- Automatically sets your Monitors to their highest supported refresh rates
+- Allows for importing a preconfigured MSI Afterburner overclock profile
+- Installs OBS Studio with optimal settings depending on your GPU
+- Adjusts your Ethernet and Wi-Fi adapters advanced settings
+- Disables Audio Enhancements and optimizes MMCSS settings depending on your NIC driver (NDIS / NetAdapterCx)
+- Restores the Dolby AC-3 Feature on Demand to support Dolby Atmos on newer Windows Versions
+- Disables Device Power Management features, enables MSI mode for supported devices, saves IMOD data and disables it
+- Disables some Scheduled Tasks
+- Disables some Optional Features and removes some Windows Capabilities
+- Uninstalls and deprovisions unneeded AppX packages and updates all installed AppX to their latest version
+- Installs Visual C++ Redistributable, Microsoft Edge WebView2 and DirectX Runtimes
+- Installs selected Browsers with selected Browser Extensions and preconfigured settings
+- Installs additional Image / Video Extensions
+- Installs NanaZip, Everything, StartAllBack and Windhawk with preconfigured Mods for Start Menu, Taskbar, File Explorer etc.
+- Installs selected Apps for Office, Development, Music, Messaging, Launchers with preconfigured settings and disables startup entries
+- Imports / Links Epic Games and Steam titles from old Windows Install to the new one and imports the old Epic Games Account
+- Imports Fortnite GameUserSettings and sets Frame Rate and Rendering Mode depending on your Monitor and GPU
+- Automatically optimizes your GPU, XHCI and NIC Affinities depending on your CPU configuration
+- Groups Services and disables failure actions
+- Cleans up temporary files
+
+**AutoOS Settings**:
+- Manually adjust or import a Custom Resolution Utility (CRU) profile 
+- Check for GPU Driver Updates and install them without losing settings
+- Toggle HDCP and HDMI/DP Audio for your GPUs
+- Manually adjust or import an MSI Afterburner overclock profile
+- Toggle OBS Studio Replay Buffer
+- Manually adjust or automatically optimize GPU, XHCI and NIC Affinities
+- Toggle Bluetooth Services and Drivers, Human Interface Devices (HID) and XHCI Interrupt Moderation (IMOD)
+- Toggle Wi-Fi Services and Drivers and Wake-on-LAN (WOL)
+- Adjust, Edit, Delete, Export, Import Power plans and compare them
+- Toggle Services & Drivers States with configured functionality (Disable for Gaming and Enable for Work)
+- Manually adjust or merge over 600 recommended BIOS Settings
+- Clean up your drives
+- Toggle Windows Security Options
+- Toggle Windows Updates and set target version
+- Custom Game Launcher supporting Epic Games, Steam, Riot Games, Eden, Citron and Ryujinx
+- Launch Games, Stop Processes and Restart Processes when done  
+- Switch between Epic Games and Steam Accounts
+
+**AutoOS Startup**:
+- Syncs the time
+- Applies the MSI Afterburner profile
+- Disables XHCI Interrupt Moderation (IMOD)
+- Disables Device Power Management features
+- Launches LowAudioLatency
+- Launches OBS Studio
+- Debloats Discord
+- Cleans up temporary files
 
 ## ⚠️ Current Issues
 - **Blank screen after installing the Graphics Driver:** You may experience a blank screen in the App after installing the Graphics Driver. To fix this, resize the window from the left side until it rerenders the UI.
@@ -36,9 +91,17 @@ AutoOS is a WinUI3 application focused on automation to improve performance whil
 
 **Step 1:** Before installing, please join my [Discord Server](https://discord.gg/bZU4dMMWpg) to receive installation support and stay informed about future updates or changes.
 
-**Step 2:** Download the latest Windows 23H2 ISO file from [here](https://drive.google.com/drive/folders/1ZxTVzvKROzOQ_o4bzUvv0PY86HL0JiuY?usp=sharing). Other ISOs are currently not supported. 
+**Step 2:** Download the latest Windows 25H2 ISO file from [here](https://drive.google.com/file/d/1YfoDW9o5v0qphEyTAoYEklih4-CEO-u0/view?usp=sharing). Other ISOs are not supported to guarantee consistency. 
 
-**Step 3:** Go to the Drivers / Support page or your Mainboard / PC and download your LAN, Wi-Fi and Bluetooth driver (No Audio, Chipset, or anything else). On prebuilts and laptops you may also need the disk driver (Intel Rapid Storage Technology Driver) otherwise you may get a bluescreen. 
+**Step 3:** Download your Ethernet, Wi-Fi and Bluetooth driver (No Audio, Chipset, etc). 
+
+**Intel:** [Ethernet](https://www.intel.com/content/www/us/en/download/727998/intel-network-adapter-driver-for-microsoft-windows-11.html) · [Wi-Fi](https://www.intel.com/content/www/us/en/download/19351/intel-wireless-wi-fi-drivers-for-windows-10-and-windows-11.html) · [Bluetooth](https://www.intel.com/content/www/us/en/download/18649/intel-wireless-bluetooth-drivers-for-windows-10-and-windows-11.html)
+
+**Realtek:** [Ethernet (Win10/Win11 Auto Installation Program (NDIS) - Not Support Power Saving)](https://www.realtek.com/Download/List?cate_id=584)
+
+If your device is older and not supported by these drivers go to the Drivers / Support page or your Mainboard / PC and download them from there.
+
+On Prebuilts and Laptops you may need to disable VMD Controller in your BIOS or download the disk driver (Intel Rapid Storage Technology Driver) otherwise you may get a BSOD. 
 
 Extract all `.zip` files (for `.exe` files, there may be an extract option in the setup, otherwise use 7-Zip, NanaZip, or WinRAR to extract them) and move all extracted folders into one folder.
 
@@ -52,7 +115,7 @@ Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
 irm https://raw.githubusercontent.com/tinodin/AutoOS/master/deploy.ps1 | iex
 ```
 
-If you get any errors during the script, its most likely because your current operating system has disabled services that are required. Make sure to you use a default installation of windows to run the script.
+If you get any errors during the script, it’s most likely because your current operating system has disabled services that are required. Make sure to use a default installation of Windows to run the script.
 
 **Step 6:** Once the script finished, restart your computer and boot into the default option. Make sure to `keep your ethernet cable connected` or `connect to your WiFi in the setup`. Then wait for Windows to finish installing.
 
@@ -60,10 +123,10 @@ If you get any errors during the script, its most likely because your current op
 
 **Step 8:** Select your settings and click "Install AutoOS". This process will take around 30 minutes.
 
-If you want to delete your old Windows partition and merge the unallocated space with the AutoOS partition, use [Minitool Partition Wizard Free](https://cdn2.minitool.com/?p=pw&e=pw-free) (decline each offer in the installer). Then use the `Delete` function on the old Windows partition and the `Extend` function on the AutoOS partition and max out the slider. Click appy and restart. Make sure to delete `Minitool Partition Wizard Free` again after you are done.
+If you want to delete your old Windows partition and merge the unallocated space with the AutoOS partition, use [Minitool Partition Wizard Free](https://cdn2.minitool.com/?p=pw&e=pw-free) (decline each offer in the installer). Then use the `Delete` function on the old Windows partition and the `Extend` function on the AutoOS partition and max out the slider. Click apply and restart. Make sure to delete `Minitool Partition Wizard Free` again after you are done.
 
-## 📷Screenshots
-### Installer
+## 📷 Screenshots
+### AutoOS Installer
 
 <table>
 <tr>
@@ -100,7 +163,7 @@ If you want to delete your old Windows partition and merge the unallocated space
 </tr>
 </table>
 
-### Settings
+### AutoOS Settings
 
 <table>
 <tr>
@@ -175,7 +238,6 @@ Ensure that your installation includes the appropriate workloads:
   - **.NET Desktop Development**
   - **WinUI Application Development**
 
-
 ### 2. 🔗 Clone the repository
 
 Clone the repository and run this in the terminal inside of Visual Studio.  
@@ -183,7 +245,7 @@ Clone the repository and run this in the terminal inside of Visual Studio.
 dotnet nuget add source https://pkgs.dev.azure.com/dotnet/CommunityToolkit/_packaging/CommunityToolkit-Labs/nuget/v3/index.json -n CommunityToolkit-Labs
 ```
 
-If the debugger is not attaching to the process you sadly are required to set EnableLua to 0. This has been a problem for 5 years and Microsoft hasn't provided a fix:
+If the debugger is not attaching to the process you are required to set EnableLua to 0. This has been a problem for 5 years and Microsoft hasn't provided a fix:
 ```bat
 reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" /v EnableLUA /t REG_DWORD /d 0 /f
 ```
@@ -203,11 +265,6 @@ Thank you for [SVCGROUP.ps1](https://github.com/meetrevision/playbook/blob/main/
 
 **Imribiy:**  
 Thank you for your research on [Configuring services and features](https://github.com/imribiy/XOS/tree/main/configure-services-and-features) and [AMD GPU Tweaks](https://github.com/imribiy/amd-gpu-tweaks).  
-
----
-
-**Duckleeng:**  
-Thank you for your research on [Receive Side Scaling (RSS)](https://github.com/Duckleeng/TweakCollection/tree/main/Research#which-nicsdrivers-support-receive-side-scaling-rss) and [Windows 11 24H2 AutoBoost Behavior](https://github.com/Duckleeng/TweakCollection/tree/main/Research/AutoBoost#windows-11-24h2-autoboost-behavior).
 
 ---
 
@@ -268,7 +325,11 @@ This project is licensed under the **GNU General Public License v3.0**. See the 
    - Licensed under the **GNU General Public License v3.0**.
    - Source: [LuSlower/chiptool](https://github.com/LuSlower/chiptool)
 
-7. **7-Zip**
+7. **ClassicWindowSwitcher**
+   - Licensed under the **GNU General Public License v2.0**.
+   - Source: [Ingan121/ClassicWindowSwitcher](https://github.com/Ingan121/ClassicWindowSwitcher)
+
+8. **7-Zip**
 ```
   7-Zip
   ~~~~~
@@ -419,7 +480,7 @@ The license for original unRAR code has the following restriction:
 ```
 - Source: [7-Zip](https://www.7-zip.org)
  
-8. **Custom Resolution Utility (CRU)**
+9. **Custom Resolution Utility (CRU)**
 ```
 Copyright (C) 2012-2022 ToastyX
 https://monitortests.com/custom-resolution-utility

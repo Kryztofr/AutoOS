@@ -22,8 +22,11 @@ public static class PowerStage
 
         var actions = new List<(string Title, Func<Task> Action, Func<bool> Condition)>
         {
+            // reset power plans
+            ("Resetting Power plans", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"powercfg -restoredefaultschemes"), null),
+
             // create "autoos" power plan
-            (@"Creating ""AutoOS"" power plan", async () => guid = PowerApi.DuplicateScheme(new Guid("8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c"), "AutoOS", "AutoOS Power Plan"), null),
+            (@"Creating ""AutoOS"" Power plan", async () => guid = PowerApi.DuplicateScheme(new Guid("8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c"), "AutoOS", "AutoOS Power Plan"), null),
 
             // hard disk
             (@"Disabling ""NVMe NOPPME""", async () => PowerApi.PowerWriteACValueIndex(IntPtr.Zero, PowerApi.AllocGuid(guid), PowerApi.AllocGuid(new Guid("0012ee47-9041-4b5d-9b77-535fba8b1442")), PowerApi.AllocGuid(new Guid("fc7372b6-ab2d-43ee-8797-15e9841f2cca")), 0), null),

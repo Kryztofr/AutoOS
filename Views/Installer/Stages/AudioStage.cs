@@ -57,13 +57,13 @@ public static class AudioStage
             // disable multimedia class scheduler service (mmcss)
             ("Disabling Multimedia Class Scheduler Service (MMCSS)", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\MMCSS"" /v Start /t REG_DWORD /d 4 /f"), () => NetAdapterCx == true),
 
-            //// download dolby ac-3 feature on demand
-            //("Downloading Dolby AC-3 Feature on Demand", async () => await ProcessActions.RunDownload("https://www.dl.dropboxusercontent.com/scl/fi/g7qcrrpxt3o3gudzk1icg/Dolby-AC-3-FoD.zip?rlkey=i9koe4r0cu0nemf1f4j7pm026&st=bhgsaiec&dl=0", Path.GetTempPath(), "Dolby-AC-3-FoD.zip"), null),
+            // download dolby ac-3 feature on demand
+            ("Downloading Dolby AC-3 Feature on Demand", async () => await ProcessActions.RunDownload("https://www.dl.dropboxusercontent.com/scl/fi/g7qcrrpxt3o3gudzk1icg/Dolby-AC-3-FoD.zip?rlkey=i9koe4r0cu0nemf1f4j7pm026&st=bhgsaiec&dl=0", Path.GetTempPath(), "Dolby-AC-3-FoD.zip"), null),
 
-            //// install dolby ac-3 feature on demand
-            //("Installing Dolby AC-3 Feature on Demand", async () => await ProcessActions.RunExtract(Path.Combine(Path.GetTempPath(), "Dolby-AC-3-FoD.zip"), Path.Combine(Path.GetTempPath(), "Dolby-AC-3-FoD")), null),
-            //("Installing Dolby AC-3 Feature on Demand", async () => await ProcessActions.RunNsudo("CurrentUser", @"DISM /online /Add-Package /PackagePath:""%TEMP%\Dolby-AC-3-FoD\Microsoft-Windows-DolbyCodec-Package~31bf3856ad364e35~amd64~~10.0.26100.1.mum"""), null),
-            //("Installing Dolby AC-3 Feature on Demand", async () => await ProcessActions.RunNsudo("CurrentUser", @"DISM /online /Add-Package /PackagePath:""%TEMP%\Dolby-AC-3-FoD\Microsoft-Windows-DolbyCodec-WOW64-Package~31bf3856ad364e35~wow64~~10.0.26100.1.mum"""), null),
+            // install dolby ac-3 feature on demand
+            ("Installing Dolby AC-3 Feature on Demand", async () => await ProcessActions.RunExtract(Path.Combine(Path.GetTempPath(), "Dolby-AC-3-FoD.zip"), Path.Combine(Path.GetTempPath(), "Dolby-AC-3-FoD")), null),
+            ("Installing Dolby AC-3 Feature on Demand", async () => await ProcessActions.RunNsudo("CurrentUser", @"DISM /online /Add-Package /PackagePath:""%TEMP%\Dolby-AC-3-FoD\Microsoft-Windows-DolbyCodec-Package~31bf3856ad364e35~amd64~~10.0.26100.1.mum"""), null),
+            ("Installing Dolby AC-3 Feature on Demand", async () => await ProcessActions.RunNsudo("CurrentUser", @"DISM /online /Add-Package /PackagePath:""%TEMP%\Dolby-AC-3-FoD\Microsoft-Windows-DolbyCodec-WOW64-Package~31bf3856ad364e35~wow64~~10.0.26100.1.mum"""), null),
         };
 
         var filteredActions = actions.Where(a => a.Condition == null || a.Condition.Invoke()).ToList();

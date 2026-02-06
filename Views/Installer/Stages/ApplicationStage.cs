@@ -119,11 +119,11 @@ public static class ApplicationStage
             // install dolby vision extension
             ("Installing Dolby Vision Extension", async () => await ProcessActions.RunPowerShell(@"Add-AppxPackage -Path (Get-ChildItem -Path \""$env:TEMP\DolbyLaboratories.DolbyVisionAccess (Package)\"" | Select-Object -First 1).FullName"), null),
 
-            //// download movies & tv
-            //("Downloading Movies & TV", async () => await ProcessActions.RunMicrosoftStoreDownload("Microsoft.ZuneVideo_8wekyb3d8bbwe", "64b22df1-5a9c-4c88-aa1f-42cefaf8b281", "appxbundle", 0, false), null),
+            // download movies & tv
+            ("Downloading Movies & TV", async () => await ProcessActions.RunMicrosoftStoreDownload("Microsoft.ZuneVideo", "64b22df1-5a9c-4c88-aa1f-42cefaf8b281", "appxbundle", 2, false), null),
 
-            //// install movies & tv
-            //("Installing Movies & TV", async () => await ProcessActions.RunPowerShell(@"Add-AppxPackage -Path (Get-ChildItem -Path \""$env:TEMP\Microsoft.ZuneVideo_8wekyb3d8bbwe (Package)\"" | Select-Object -First 1).FullName"), null),
+            // install movies & tv
+            ("Installing Movies & TV", async () => await ProcessActions.RunPowerShell(@"Add-AppxPackage -Path (Get-ChildItem -Path \""$env:TEMP\Microsoft.ZuneVideo (Package)\"" | Select-Object -First 1).FullName"), null),
 
             // download icloud dependencies
             ("Downloading iCloud Dependencies", async () => await ProcessActions.RunMicrosoftStoreDownload("AppleInc.iCloud", "1e4f5d0e-4b36-4f9b-bfbc-9fec63fd0f1e", "", 0, true), () => iCloud == true),
@@ -374,7 +374,7 @@ public static class ApplicationStage
             ("Please log in to your Dolby Access account", async () => await Task.Run(() => Process.Start(new ProcessStartInfo { FileName = Path.Combine(@"C:\Program Files\WindowsApps\DolbyLaboratories.DolbyAccess_" + dolbyAccessVersion + "_x64__rz1tebttyb220", "DolbyAccess.exe"), WindowStyle = ProcessWindowStyle.Maximized }) !.WaitForExitAsync()), () => AppleMusic == true),
 
             // download apple music
-            ("Downloading Apple Music", async () => await ProcessActions.RunMicrosoftStoreDownload("AppleInc.AppleMusicWin", "cf497837-70f4-4c2a-9b9d-3d5767379bb1", "msixbundle", 1, false), () => AppleMusic == true),
+            ("Downloading Apple Music", async () => await ProcessActions.RunMicrosoftStoreDownload("AppleInc.AppleMusicWin", "cf497837-70f4-4c2a-9b9d-3d5767379bb1", "msixbundle", 0, false), () => AppleMusic == true),
 
             // install apple music
             ("Installing Apple Music", async () => await ProcessActions.RunPowerShell(@"Add-AppxPackage -Path (Get-ChildItem -Path \""$env:TEMP\AppleInc.AppleMusicWin (Package)\"" | Select-Object -First 1).FullName"), () => AppleMusic == true),
