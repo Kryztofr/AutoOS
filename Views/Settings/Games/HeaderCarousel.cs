@@ -745,8 +745,9 @@ public partial class HeaderCarousel : ItemsControl
     private void LoadSortSettings()
     {
         var settings = ApplicationData.Current.LocalSettings.Values;
-        currentSortKey = settings["SortKey"] as string ?? "Title";
-        ascending = settings["SortAscending"] is not bool b || b;
+        currentSortKey = settings["SortKey"] as string ?? "Time Played";
+
+        ascending = settings["SortAscending"] as bool? ?? false;
 
         SortByName.IsChecked = currentSortKey == "Title";
         SortByLauncher.IsChecked = currentSortKey == "Launcher";
@@ -1577,167 +1578,177 @@ public partial class HeaderCarousel : ItemsControl
     [return: MarshalAs(UnmanagedType.Bool)]
     private static partial bool SetProcessWorkingSetSize(IntPtr process, int min, int max);
 
-    private void StopProcesses_Click(object sender, RoutedEventArgs e)
+    private async void StopProcesses_Click(object sender, RoutedEventArgs e)
     {
-        // close dllhost processes
-        foreach (var process in Process.GetProcessesByName("dllhost"))
+        await Task.Run(() =>
         {
-            try
-            {
-                using var searcher = new ManagementObjectSearcher($"SELECT ProcessId, CommandLine FROM Win32_Process WHERE Name = 'dllhost.exe'");
-
-                foreach (ManagementObject obj in searcher.Get().Cast<ManagementObject>().ToArray())
-                {
-                    string cmdLine = obj["CommandLine"]?.ToString() ?? "";
-                    int pid = Convert.ToInt32(obj["ProcessId"]);
-
-                    if (cmdLine.Contains("/PROCESSID", StringComparison.OrdinalIgnoreCase))
-                    {
-                        try
-                        {
-                            var proc = Process.GetProcessById(pid);
-                            proc.Kill();
-                            proc.WaitForExit();
-                        }
-                        catch { }
-                    }
-                }
-            }
-            catch { }
-        }
-
-        // close executables
-        Registry.SetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon", "AutoRestartShell", 0, RegistryValueKind.DWord);
-
-        var processNames = new[]
-        {
-            "ApplicationFrameHost",
-            "CrashReportClient",
-            "CrossDeviceResume",
-            //"ctfmon",
-            "DataExchangeHost",
-            "EasyAntiCheat_EOS",
-            "EpicGamesLauncher",
-            "explorer",
-            "Everything",
-            //"Files",
-            "FortniteClient-Win64-Shipping_EAC_EOS",
-            "GameBar",
-            "GameBarFTServer",
-            "LeagueCrashHandler64",
-            "mobsync",
-            "RiotClientServices",
-            "RiotClientCrashHandler",
-            "rundll32",
-            "RuntimeBroker",
-            "SearchHost",
-            "secd",
-            "ShellExperienceHost",
-            "SpatialAudioLicenseSrv",
-            "sppsvc",
-            "StartMenuExperienceHost",
-            "SystemSettingsBroker",
-            "TrustedInstaller",
-            "useroobebroker",
-            "WMIADAP",
-            "WmiPrvSE",
-            "WUDFHost"
-        };
-
-        foreach (var name in processNames)
-        {
-            foreach (var process in Process.GetProcessesByName(name))
+            // close dllhost processes
+            foreach (var process in Process.GetProcessesByName("dllhost"))
             {
                 try
-                { 
-                    process.Kill(); 
-                    process.WaitForExit(); 
-                } 
+                {
+                    using var searcher = new ManagementObjectSearcher($"SELECT ProcessId, CommandLine FROM Win32_Process WHERE Name = 'dllhost.exe'");
+
+                    foreach (ManagementObject obj in searcher.Get().Cast<ManagementObject>().ToArray())
+                    {
+                        string cmdLine = obj["CommandLine"]?.ToString() ?? "";
+                        int pid = Convert.ToInt32(obj["ProcessId"]);
+
+                        if (cmdLine.Contains("/PROCESSID", StringComparison.OrdinalIgnoreCase))
+                        {
+                            try
+                            {
+                                var proc = Process.GetProcessById(pid);
+                                proc.Kill();
+                                proc.WaitForExit();
+                            }
+                            catch { }
+                        }
+                    }
+                }
                 catch { }
             }
-        }
 
-        Registry.SetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon", "AutoRestartShell", 1, RegistryValueKind.DWord);
+            // close executables
+            Registry.SetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon", "AutoRestartShell", 0, RegistryValueKind.DWord);
 
-        // stop services
-        var serviceNames = new[]
-        {
-            "AudioEndpointBuilder",
-            "AppXSvc",
-            "Appinfo",
-            "CaptureService",
-            "cbdhsvc",
-            "ClipSvc",
-            "CryptSvc",
-            "DevicesFlowUserSvc",
-            "DeviceAssociationService",
-            "Dhcp",
-            "DispBrokerDesktopSvc",
-            //"Dnscache",
-            "DoSvc",
-            "Everything (1.5a)",
-            "gpsvc",
-            "InstallService",
-            //"KeyIso",
-            "LicenseManager",
-            "lfsvc",
-            "msiserver",
-            "Netman",
-            "NetSetupSvc",
-            "netprofm",
-            "NgcCtnrSvc",
-            "NgcSvc",
-            "nsi",
-            "ProfSvc",
-            "StateRepository",
-            //"TextInputManagementService",
-            "TrustedInstaller",
-            "UdkUserSvc",
-            "UserManager",
-            "WFDSConMgrSvc",
-            "Windhawk",
-            "WinHttpAutoProxySvc",
-            "Winmgmt",
-            "Wcmsvc"
-        };
-
-        foreach (var serviceName in serviceNames)
-        {
-            try
+            var processNames = new[]
             {
-                var searcher = new ManagementObjectSearcher($"SELECT ProcessId FROM Win32_Service WHERE Name LIKE '{serviceName}%'");
-                foreach (ManagementObject service in searcher.Get().Cast<ManagementObject>().ToArray())
+                "ApplicationFrameHost",
+                "CrashReportClient",
+                "CrossDeviceResume",
+                //"ctfmon",
+                "DataExchangeHost",
+                "EasyAntiCheat_EOS",
+                "EpicGamesLauncher",
+                "explorer",
+                "Everything",
+                //"Files",
+                "FortniteClient-Win64-Shipping_EAC_EOS",
+                "GameBar",
+                "GameBarFTServer",
+                "LeagueCrashHandler64",
+                "LsaIso",
+                "mobsync",
+                "NgcIso",
+                "RiotClientServices",
+                "RiotClientCrashHandler",
+                "rundll32",
+                "RuntimeBroker",
+                "SearchHost",
+                "secd",
+                "ShellExperienceHost",
+                "SpatialAudioLicenseSrv",
+                "sppsvc",
+                "StartMenuExperienceHost",
+                "SystemSettingsBroker",
+                "TrustedInstaller",
+                "useroobebroker",
+                "WMIADAP",
+                "WmiPrvSE",
+                "WUDFHost"
+            };
+
+            foreach (var name in processNames)
+            {
+                foreach (var process in Process.GetProcessesByName(name))
                 {
                     try
                     {
-                        int pid = Convert.ToInt32(service["ProcessId"]);
-                        var process = Process.GetProcessById(pid);
                         process.Kill();
                         process.WaitForExit();
                     }
                     catch { }
                 }
             }
-            catch { }
-        }
 
-        try { new ServiceController("KeyIso").Stop(); } catch { }
-        try { new ServiceController("Winmgmt").Stop(); } catch { }
+            Registry.SetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon", "AutoRestartShell", 1, RegistryValueKind.DWord);
 
-        foreach (var process in Process.GetProcesses())
-        {
-            try
+            // stop services
+            var serviceNames = new[]
             {
-                SetProcessWorkingSetSize(process.Handle, -1, -1);
+                "AudioEndpointBuilder",
+                "AppXSvc",
+                "Appinfo",
+                "CaptureService",
+                "cbdhsvc",
+                "ClipSvc",
+                "CryptSvc",
+                "DevicesFlowUserSvc",
+                "DeviceAssociationService",
+                "Dhcp",
+                "DispBrokerDesktopSvc",
+                //"Dnscache",
+                "DoSvc",
+                "Everything (1.5a)",
+                "gpsvc",
+                "InstallService",
+                //"KeyIso",
+                "LicenseManager",
+                "lfsvc",
+                "msiserver",
+                "Netman",
+                "NetSetupSvc",
+                "netprofm",
+                "NgcCtnrSvc",
+                "NgcSvc",
+                "nsi",
+                "ProfSvc",
+                "StateRepository",
+                //"TextInputManagementService",
+                "TrustedInstaller",
+                "UdkUserSvc",
+                "UserManager",
+                "WFDSConMgrSvc",
+                "Windhawk",
+                "WinHttpAutoProxySvc",
+                "Winmgmt",
+                "Wcmsvc"
+            };
+
+            foreach (var serviceName in serviceNames)
+            {
+                try
+                {
+                    var searcher = new ManagementObjectSearcher($"SELECT ProcessId FROM Win32_Service WHERE Name LIKE '{serviceName}%'");
+                    foreach (ManagementObject service in searcher.Get().Cast<ManagementObject>().ToArray())
+                    {
+                        try
+                        {
+                            int pid = Convert.ToInt32(service["ProcessId"]);
+                            var process = Process.GetProcessById(pid);
+                            process.Kill();
+                            process.WaitForExit();
+                        }
+                        catch { }
+                    }
+                }
+                catch { }
             }
-            catch { }
-        }
+
+            try { new ServiceController("KeyIso").Stop(); } catch { }
+            try { new ServiceController("Winmgmt").Stop(); } catch { }
+
+            foreach (var process in Process.GetProcesses())
+            {
+                try
+                {
+                    SetProcessWorkingSetSize(process.Handle, -1, -1);
+                }
+                catch { }
+            }
+
+            if (Process.GetProcessesByName("ClassicWindowSwitcher").Length == 0)
+                Process.Start(new ProcessStartInfo(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Applications", "ClassicWindowSwitcher", "ClassicWindowSwitcher.exe")) { CreateNoWindow = true });
+        });
     }
 
     private async void RestartProcesses_Click(object sender, RoutedEventArgs e)
     {
         await Task.Run(() =>
         {
+            Process.GetProcessesByName("ClassicWindowSwitcher").FirstOrDefault()?.Kill();
+
             // launch explorer
             Process.Start("explorer.exe");
 
