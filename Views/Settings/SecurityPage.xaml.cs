@@ -1,4 +1,6 @@
 ﻿using AutoOS.Views.Installer.Actions;
+using Microsoft.UI.Xaml.Documents;
+using Microsoft.UI.Xaml.Media;
 using Microsoft.Win32;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
@@ -8,7 +10,6 @@ namespace AutoOS.Views.Settings;
 
 public sealed partial class SecurityPage : Page
 {
-    private string nsudoPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Applications", "NSudo", "NSudoLC.exe");
     private bool initialUACState = false;
     private bool initialMemoryIntegrityState = false;
     private bool initialSpectreMeltdownState = false;
@@ -39,7 +40,7 @@ public sealed partial class SecurityPage : Page
         var groups = new[]
         {
             (new[] { "SecurityHealthService", "Sense", "WdNisDrv", "WdNisSvc", "webthreatdefsvc" }, 3),
-            (new[] { "webthreatdefusersvc", "WinDefend", "wscsvc"  }, 2),
+            (new[] { "webthreatdefusersvc", "WinDefend"  }, 2),
             (new[] { "MsSecCore", "WdBoot", "WdFilter" }, 0)
         };
 
@@ -115,6 +116,11 @@ public sealed partial class SecurityPage : Page
         // toggle windows defender
         if (WindowsDefender.IsOn)
         {
+            await ProcessActions.RunNsudo("TrustedInstaller", @"sc stop wscsvc");
+            await ProcessActions.RunNsudo("TrustedInstaller", @"reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows Defender"" /v PassiveMode /f");
+            await ProcessActions.RunNsudo("TrustedInstaller", @"reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows Defender"" /v DisableAntiSpyware /f");
+            await ProcessActions.RunNsudo("TrustedInstaller", @"reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows Defender"" /v DisableAntiVirus /f");
+            await ProcessActions.RunNsudo("TrustedInstaller", @"""C:\Program Files\Windows Defender\MpCmdRun.exe"" -EnableService -HighPriority");
             await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\MsSecCore"" /v Start /t REG_DWORD /d 0 /f");
             await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\SecurityHealthService"" /v Start /t REG_DWORD /d 3 /f");
             await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Sense"" /v Start /t REG_DWORD /d 3 /f");
@@ -129,6 +135,127 @@ public sealed partial class SecurityPage : Page
         }
         else
         {
+            bool IsTamperOn()
+            {
+                using var k = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows Defender\Features", false);
+                return (k?.GetValue("TamperProtection") as int?) == 1;
+            }
+
+            bool IsRealtimeOn()
+            {
+                using var k = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows Defender\Real-Time Protection", false);
+                return (k?.GetValue("DisableRealtimeMonitoring") as int?) != 1;
+            }
+
+            if (!IsTamperOn() && !IsRealtimeOn())
+                return;
+
+            var panel = new StackPanel
+            {
+                Spacing = 8
+            };
+
+            var dialogProgressBar = new ProgressBar
+            {
+                IsIndeterminate = true
+            };
+            panel.Children.Add(dialogProgressBar);
+
+            var dialogInfoText = new TextBlock { };
+
+            var dialogHyperlink = new Hyperlink
+            {
+                UnderlineStyle = UnderlineStyle.None
+            };
+            dialogHyperlink.Inlines.Add(new Run
+            {
+                Text = "Windows Security"
+            });
+
+            dialogHyperlink.Click += async (_, __) =>
+            {
+                await Task.Run(() =>
+                {
+                    try
+                    {
+                        Process.Start(new ProcessStartInfo
+                        {
+                            FileName = "windowsdefender://threatsettings",
+                            UseShellExecute = true
+                        });
+                    }
+                    catch { }
+                });
+            };
+
+            dialogInfoText.Inlines.Add(new Run { Text = "Open " });
+            dialogInfoText.Inlines.Add(dialogHyperlink);
+            dialogInfoText.Inlines.Add(new Run
+            {
+                Text = " and disable Real-time protection and Tamper Protection."
+            });
+
+            var dialogInfoBar = new InfoBar
+            {
+                IsOpen = true,
+                Severity = InfoBarSeverity.Informational,
+                IsClosable = false,
+                Content = new Grid
+                {
+                    Padding = new Thickness(12, 0, 16, 0),
+                    Children = { dialogInfoText }
+                }
+            };
+
+            panel.Children.Add(dialogInfoBar);
+
+            var contentDialog = new ContentDialog
+            {
+                Title = "Disable Windows Security",
+                Content = panel,
+                PrimaryButtonText = "Done",
+                IsPrimaryButtonEnabled = false,
+                XamlRoot = XamlRoot
+            };
+
+            contentDialog.Resources["ContentDialogMaxWidth"] = 800;
+
+            contentDialog.Opened += async (_, __) =>
+            {
+                while (true)
+                {
+                    await Task.Delay(1000);
+
+                    if (!IsTamperOn() && !IsRealtimeOn())
+                    {
+                        contentDialog.IsPrimaryButtonEnabled = true;
+                        dialogProgressBar.IsIndeterminate = false;
+                        dialogProgressBar.Value = 100;
+                        dialogProgressBar.Foreground = new SolidColorBrush((Windows.UI.Color)Application.Current.Resources["SystemFillColorSuccess"]);
+                        dialogInfoBar.Severity = InfoBarSeverity.Success;
+                        dialogInfoText.Inlines.Clear();
+                        dialogInfoText.Inlines.Add(new Run
+                        {
+                            Text = "Windows Security is disabled. Click done to continue."
+                        });
+
+                        foreach (var p in Process.GetProcessesByName("SecHealthUI"))
+                        {
+                            try { p.Kill(); } catch { }
+                        }
+
+                        break;
+                    }
+                }
+            };
+
+            await contentDialog.ShowAsync();
+    
+            await ProcessActions.RunNsudo("TrustedInstaller", @"sc stop wscsvc");
+            await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows Defender"" /v PassiveMode /t REG_DWORD /d 1 /f");
+            await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows Defender"" /v DisableAntiSpyware /t REG_DWORD /d 1 /f");
+            await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows Defender"" /v DisableAntiVirus /t REG_DWORD /d 1 /f");
+            await ProcessActions.RunNsudo("TrustedInstaller", @"""C:\Program Files\Windows Defender\MpCmdRun.exe"" -DisableService -HighPriority");
             await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\MsSecCore"" /v Start /t REG_DWORD /d 4 /f");
             await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\SecurityHealthService"" /v Start /t REG_DWORD /d 4 /f");
             await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Sense"" /v Start /t REG_DWORD /d 4 /f");

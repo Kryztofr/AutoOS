@@ -42,6 +42,11 @@ public static class SecurityStage
             ("Setting execution policy to unrestricted", async () => await ProcessActions.RunPowerShell("Set-ExecutionPolicy Unrestricted -Force"), null),
 
             // disable windows defender services & drivers
+            ("Disabling Windows Defender Services & Drivers", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"sc stop wscsvc"), () => WindowsDefender == false),
+            ("Disabling Windows Defender Services & Drivers", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows Defender"" /v PassiveMode /t REG_DWORD /d 1 /f"), () => WindowsDefender == false),
+            ("Disabling Windows Defender Services & Drivers", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows Defender"" /v DisableAntiSpyware /t REG_DWORD /d 1 /f"), () => WindowsDefender == false),
+            ("Disabling Windows Defender Services & Drivers", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows Defender"" /v DisableAntiVirus /t REG_DWORD /d 1 /f"), () => WindowsDefender == false),
+            ("Disabling Windows Defender Services & Drivers", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"""C:\Program Files\Windows Defender\MpCmdRun.exe"" -DisableService -HighPriority"), () => WindowsDefender == false),
             ("Disabling Windows Defender Services & Drivers", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\MsSecCore"" /v Start /t REG_DWORD /d 4 /f"), () => WindowsDefender == false),
             ("Disabling Windows Defender Services & Drivers", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\SecurityHealthService"" /v Start /t REG_DWORD /d 4 /f"), () => WindowsDefender == false),
             ("Disabling Windows Defender Services & Drivers", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Sense"" /v Start /t REG_DWORD /d 4 /f"), () => WindowsDefender == false),

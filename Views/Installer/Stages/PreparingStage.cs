@@ -149,6 +149,14 @@ public static class PreparingStage
                 CreateNoWindow = true
             }).StandardOutput.ReadToEnd();
 
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = "powershell.exe",
+                Arguments = $@"-NoProfile -ExecutionPolicy Bypass -Command ""Add-MpPreference -ExclusionPath '{Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Applications")}'; Add-MpPreference -ExclusionPath '{Path.Combine(PathHelper.GetAppDataFolderPath(), "Chiptool")}'""",
+                CreateNoWindow = true,
+                WindowStyle = ProcessWindowStyle.Hidden
+            });
+
             if (output.Contains("SSD"))
             {
                 SSD = true;
@@ -227,9 +235,9 @@ public static class PreparingStage
             AMD_RX5000_RX9000 = (localSettings.Values["GpuBrand"]?.ToString().Contains("AMD Radeon™ RX 5000 - 9000 series") ?? false);
 
             HDCP = (localSettings.Values["HighDefinitionContentProtection"]?.ToString() == "1");
-            INTEL_HDMIDPAudio = (localSettings.Values["INTELHighDefinitionMultimediaInterface/DisplayPortAudio"]?.ToString() == "1");
-            NVIDIA_HDMIDPAudio = (localSettings.Values["NVIDIAHighDefinitionMultimediaInterface/DisplayPortAudio"]?.ToString() == "1");
-            AMD_HDMIDPAudio = (localSettings.Values["AMDHighDefinitionMultimediaInterface/DisplayPortAudio"]?.ToString() == "1");
+            INTEL_HDMIDPAudio = (localSettings.Values["INTELHighDefinitionMultimediaInterface/DisplayPortAudio"]?.ToString() == "0");
+            NVIDIA_HDMIDPAudio = (localSettings.Values["NVIDIAHighDefinitionMultimediaInterface/DisplayPortAudio"]?.ToString() == "0");
+            AMD_HDMIDPAudio = (localSettings.Values["AMDHighDefinitionMultimediaInterface/DisplayPortAudio"]?.ToString() == "0");
             MSI = (localSettings.Values["MsiProfile"] != null);
             CRU = (localSettings.Values["CruProfile"] != null);
 

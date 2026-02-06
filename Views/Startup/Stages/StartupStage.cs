@@ -50,10 +50,6 @@ public static class StartupStage
             // apply msi afterburner profile
             ("Applying MSI Afterburner profile", async () => await Task.Run(() => Process.Start(new ProcessStartInfo { FileName = @"C:\Program Files (x86)\MSI Afterburner\MSIAfterburner.exe", Arguments = "/Profile1 /q" })), () => MSI == true),
 
-            // launch obs studio
-            ("Launching OBS Studio", async () => await StartupActions.RunNsudo("CurrentUser", @"cmd /c del ""%APPDATA%\obs-studio\.sentinel"" /s /f /q"), () => OBS == true),
-            ("Launching OBS Studio", async () => await Task.Run(() => Process.Start(new ProcessStartInfo { FileName = @"C:\Program Files\obs-studio\bin\64bit\obs64.exe", Arguments = "--disable-updater --startreplaybuffer --minimize-to-tray", WorkingDirectory = @"C:\Program Files\obs-studio\bin\64bit" })), () => OBS == true),
-
             // disable hid devices
             ("Disabling Human Interface Devices (HID)", async () => await StartupActions.RunPowerShell("Get-PnpDevice -Class HIDClass | Where-Object { $_.FriendlyName -match 'HID-compliant (consumer control device|device|game controller|system controller|vendor-defined device)' -and $_.FriendlyName -notmatch 'Mouse|Keyboard'} | Disable-PnpDevice -Confirm:$false"), () => HID == true),
 
@@ -68,6 +64,10 @@ public static class StartupStage
 
             // launch lowaudiolatency
             ("Launching LowAudioLatency", async () => await StartupActions.RunApplication("LocalState", "LowAudioLatency", "low_audio_latency_no_console.exe", ""), null),
+
+            // launch obs studio
+            ("Launching OBS Studio", async () => await StartupActions.RunNsudo("CurrentUser", @"cmd /c del ""%APPDATA%\obs-studio\.sentinel"" /s /f /q"), () => OBS == true),
+            ("Launching OBS Studio", async () => await Task.Run(() => Process.Start(new ProcessStartInfo { FileName = @"C:\Program Files\obs-studio\bin\64bit\obs64.exe", Arguments = "--disable-updater --startreplaybuffer --minimize-to-tray", WorkingDirectory = @"C:\Program Files\obs-studio\bin\64bit" })), () => OBS == true),
 
             // debloat discord
             ("Debloating Discord", async () => await Task.Run(() => { discordVersion = new DirectoryInfo(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Discord")).GetDirectories().FirstOrDefault(d => d.Name.StartsWith("app-"))?.Name.Substring(4); }), () => Discord == true),
