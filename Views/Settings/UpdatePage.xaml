@@ -23,7 +23,7 @@
                         Padding="{ThemeResource ContentPagePadding}"
                         dev:PanelAttach.ChildrenTransitions="Default">
                 <dev:SettingsGroup Margin="0,0,0,36"
-                                   Description="AutoOS supports installing Windows Updates without losing any tweaks. It is recommended to enable Windows Updates from time to time and install them through the Settings app. Selecting a target version above 23H2 is currently not recommended, as these versions introduce changes to AutoBoost behavior that can negatively affect gaming performance."
+                                   Description="AutoOS supports installing Windows Updates without losing any tweaks. It is recommended to enable Windows Updates from time to time and install them through the Settings app."
                                    Header="Windows Updates"
                                    HeaderIcon="{dev:BitmapIcon Source=Assets/Fluent/Update2.png}">
                     <dev:SettingsGroup.Content>
