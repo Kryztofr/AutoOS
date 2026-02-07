@@ -35,18 +35,20 @@ AutoOS is a WinUI 3 application that automates Windows setup, optimization, and 
 - Allows for importing a preconfigured MSI Afterburner overclock profile
 - Installs OBS Studio with optimal settings depending on your GPU
 - Adjusts your Ethernet and Wi-Fi adapters advanced settings
-- Disables Audio Enhancements and optimizes MMCSS settings depending on your NIC driver (NDIS / NetAdapterCx)
+- Disables Audio Enhancements and optimizes MMCSS settings depending on your NIC driver
 - Restores the Dolby AC-3 Feature on Demand to support Dolby Atmos on newer Windows Versions
-- Disables Device Power Management features, enables MSI mode for supported devices, saves IMOD data and disables it
+- Disables Device Power Management features
+- Enables MSI mode for supported devices, saves XHCI Interrupt Moderation (IMOD) data and disables it
 - Disables some Scheduled Tasks
-- Disables some Optional Features and removes some Windows Capabilities
+- Disables some unneeded Optional Features and removes some unneeded Capabilities
 - Uninstalls and deprovisions unneeded AppX packages and updates all installed AppX to their latest version
 - Installs Visual C++ Redistributable, Microsoft Edge WebView2 and DirectX Runtimes
 - Installs selected Browsers with selected Browser Extensions and preconfigured settings
 - Installs additional Image / Video Extensions
-- Installs NanaZip, Everything, StartAllBack and Windhawk with preconfigured Mods for Start Menu, Taskbar, File Explorer etc.
-- Installs selected Apps for Office, Development, Music, Messaging, Launchers with preconfigured settings and disables startup entries
-- Imports / Links Epic Games and Steam titles from old Windows Install to the new one and imports the old Epic Games Account
+- Installs NanaZip, Everything, StartAllBack and Windhawk with Mods for Start Menu, Taskbar, File Explorer etc.
+- Installs selected Apps for Office, Development, Music, Messaging, Launchers and disables their startup entries
+- Imports the Epic Games Account from old Windows Install to the new one
+- Imports / Links Epic Games and Steam titles from old Windows Install to the new one
 - Imports Fortnite GameUserSettings and sets Frame Rate and Rendering Mode depending on your Monitor and GPU
 - Automatically optimizes your GPU, XHCI and NIC Affinities depending on your CPU configuration
 - Groups Services and disables failure actions
