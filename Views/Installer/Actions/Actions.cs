@@ -513,32 +513,57 @@ public static class ProcessActions
     public static async Task RunMicrosoftStoreDownload(string productFamilyName, string catalogId, string fileType, int index, bool dependencies)
     {
         string title = InstallPage.Info.Title;
-
         string output = "";
+        string errorOutput = "";
+        var uiContext = SynchronizationContext.Current;
 
-        for (int attempt = 1; attempt <= 3; attempt++)
+        while (true)
         {
-            using var process = new Process
+            try
             {
-                StartInfo = new ProcessStartInfo("powershell.exe", @$"-ExecutionPolicy Bypass -File ""{Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Scripts", "getmicrosoftstorelink.ps1")}"" {productFamilyName} {catalogId} {fileType} {index}{(dependencies ? " -Dependencies" : "")}")
+                using var process = new Process
                 {
-                    CreateNoWindow = true,
-                    UseShellExecute = false,
-                    RedirectStandardOutput = true
-                }
-            };
+                    StartInfo = new ProcessStartInfo("powershell.exe", @$"-ExecutionPolicy Bypass -File ""{Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Scripts", "getmicrosoftstorelink.ps1")}"" {productFamilyName} {catalogId} {fileType} {index}{(dependencies ? " -Dependencies" : "")}")
+                    {
+                        CreateNoWindow = true,
+                        UseShellExecute = false,
+                        RedirectStandardOutput = true,
+                        RedirectStandardError = true
+                    }
+                };
 
-            process.Start();
-            output = await process.StandardOutput.ReadToEndAsync();
-            await process.WaitForExitAsync();
+                process.Start();
+                Task<string> stdOutTask = process.StandardOutput.ReadToEndAsync();
+                Task<string> stdErrTask = process.StandardError.ReadToEndAsync();
 
-            if (!string.IsNullOrWhiteSpace(output))
-                break;
+                await Task.WhenAll(stdOutTask, stdErrTask);
+                output = stdOutTask.Result;
+                errorOutput = stdErrTask.Result;
+
+                await process.WaitForExitAsync();
+
+                if (!string.IsNullOrWhiteSpace(output) && string.IsNullOrWhiteSpace(errorOutput))
+                    break;
+            }
+            catch
+            { }
+
+            for (int i = 30; i >= 0; i--)
+            {
+                int secondsLeft = i;
+                uiContext?.Post(_ =>
+                {
+                    InstallPage.Info.Title = $"{title} - Download failed, retrying in {secondsLeft}s";
+                }, null);
+
+                await Task.Delay(1000);
+            }
         }
+
+        uiContext?.Post(_ => InstallPage.Info.Title = title, null);
 
         string folderName = $"{productFamilyName} {(dependencies ? "(Dependencies)" : "(Package)")}";
         string downloadFolder = Path.Combine(Path.GetTempPath(), folderName);
-
         Directory.CreateDirectory(downloadFolder);
 
         if (dependencies)
@@ -547,7 +572,7 @@ public static class ProcessActions
 
             foreach (string url in urls)
             {
-                InstallPage.Info.Title = title;
+                uiContext?.Post(_ => InstallPage.Info.Title = title, null);
                 await RunDownload(url.Trim(), downloadFolder);
             }
         }
