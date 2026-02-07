@@ -93,7 +93,7 @@ AutoOS is a WinUI 3 application that automates Windows setup, optimization, and 
 
 **Step 1:** Before installing, please join my [Discord Server](https://discord.gg/bZU4dMMWpg) to receive installation support and stay informed about future updates or changes.
 
-**Step 2:** Download the latest Windows 25H2 ISO file from [here](https://drive.google.com/file/d/1YfoDW9o5v0qphEyTAoYEklih4-CEO-u0/view?usp=sharing). Other ISOs are not supported to guarantee consistency. 
+**Step 2:** Download the latest Windows 25H2 ISO file from [here](https://drive.google.com/drive/folders/1BlAYofjlW1bU-WPG3jXygO1ezoJ4gPs7?usp=sharing). Other ISOs are not supported to guarantee consistency. 
 
 **Step 3:** Download your Ethernet, Wi-Fi and Bluetooth driver (No Audio, Chipset, etc). 
 
