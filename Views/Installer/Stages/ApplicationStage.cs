@@ -330,6 +330,9 @@ public static class ApplicationStage
             // install visual studio code
             ("Installing Visual Studio Code", async () => await ProcessActions.RunNsudo("CurrentUser", @"cmd /c ""%TEMP%\VSCodeUserSetup-x64.exe"" /VERYSILENT /NORESTART /MERGETASKS=!runcode"), () => VisualStudioCode ==  true),
             
+            // pin visual studio code to the taskbar
+            ("Pinning Visual Studio Code to the taskbar", async () => await ProcessActions.RunPowerShellScript("taskbarpin.ps1", $@"-Type Link -Path ""{Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), @"Microsoft\Windows\Start Menu\Programs\Visual Studio Code\Visual Studio Code.lnk")}"""), () => VisualStudioCode == true),
+
             // download git
             ("Downloading Git", async () => await ProcessActions.RunDownload("https://github.com/git-for-windows/git/releases/download/v2.52.0.windows.1/Git-2.52.0-64-bit.exe", Path.GetTempPath(), "Git64-bit.exe"), () => Git == true),
 
