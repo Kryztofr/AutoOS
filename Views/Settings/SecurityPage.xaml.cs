@@ -12,13 +12,15 @@ public sealed partial class SecurityPage : Page
 {
     private bool initialUACState = false;
     private bool initialMemoryIntegrityState = false;
+    private bool initialVBSState = false;
     private bool initialSpectreMeltdownState = false;
     private bool initialProcessMitigationsState = false;
     private bool isInitializingWindowsDefenderState = true;
     private bool isInitializingUACState = true;
     private bool isInitializingDEPState = true;
     private bool isInitializingMemoryIntegrityState = true;
-    private bool isInitializingSpectreMeltdownState = true;
+    private bool isInitializingVBSState = true;
+	private bool isInitializingSpectreMeltdownState = true;
     private bool isInitializingProcessMitigationsState = true;
 
     [DllImport("kernel32.dll")]
@@ -29,9 +31,10 @@ public sealed partial class SecurityPage : Page
         GetWindowsDefenderState();
         GetUACState();
         GetDEPState();
-        GetSpectreMeltdownState();
+		GetMemoryIntegrityState();
+		GetVBSState();
+		GetSpectreMeltdownState();
         GetProcessMitigationsState();
-        GetMemoryIntegrityState();
     }
 
     private void GetWindowsDefenderState()
@@ -639,7 +642,121 @@ public sealed partial class SecurityPage : Page
         }
     }
 
-    private void GetSpectreMeltdownState()
+	private void GetVBSState()
+	{
+		// get state
+		if ((Registry.GetValue(@"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\DeviceGuard\Scenarios\WindowsHello", "Enabled", 0) is int helloVal && helloVal == 1) || (Registry.GetValue(@"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\DeviceGuard", "EnableVirtualizationBasedSecurity", 0) is int vbsVal && vbsVal == 1))
+		{
+			VirtualizationBasedSecurity.IsOn = true;
+			initialVBSState = true;
+		}
+
+		isInitializingVBSState = false;
+	}
+
+	private async void VirtualizationBasedSecurity_Toggled(object sender, RoutedEventArgs e)
+	{
+		if (isInitializingVBSState) return;
+
+		// disable hittestvisible to avoid double-clicking
+		VirtualizationBasedSecurity.IsHitTestVisible = false;
+
+		// remove infobar
+		WindowsDefenderInfo.Children.Clear();
+
+		// add infobar
+		WindowsDefenderInfo.Children.Add(new InfoBar
+		{
+			Title = VirtualizationBasedSecurity.IsOn ? "Enabling Virtualization-based Security (VBS)..." : "Disabling Virtualization-based Security (VBS)...",
+			IsClosable = false,
+			IsOpen = true,
+			Severity = InfoBarSeverity.Informational,
+			Margin = new Thickness(4, -28, 4, 36)
+		});
+
+		// toggle
+		Registry.SetValue(@"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\DeviceGuard", "EnableVirtualizationBasedSecurity", VirtualizationBasedSecurity.IsOn ? 1 : 0, RegistryValueKind.DWord);
+
+		if (!VirtualizationBasedSecurity.IsOn)
+		{
+			if (Registry.GetValue(@"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\DeviceGuard\Scenarios\WindowsHello", "Enabled", 0) is int helloVal && helloVal == 1)
+			{
+				var dialog = new ContentDialog
+				{
+					Title = "Disable Windows Hello",
+					Content = "Windows Hello has to be disabled in order to disable Virtualization-based Security (VBS). Do you want to disable Windows Hello?",
+					PrimaryButtonText = "Yes",
+					DefaultButton = ContentDialogButton.Close,
+					CloseButtonText = "No",
+					XamlRoot = XamlRoot
+				};
+
+				var result = await dialog.ShowAsync();
+
+				if (result == ContentDialogResult.Primary)
+				{
+					Registry.SetValue(@"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\DeviceGuard\Scenarios\WindowsHello", "Enabled", 0, RegistryValueKind.DWord);
+				}
+				else
+				{
+					isInitializingVBSState = true;
+					VirtualizationBasedSecurity.IsOn = true;
+					isInitializingVBSState = false;
+
+					// re-enable hittestvisible
+					VirtualizationBasedSecurity.IsHitTestVisible = true;
+
+					// remove infobar
+					WindowsDefenderInfo.Children.Clear();
+
+                    return;
+				}
+			}
+		}
+
+		// delay
+		await Task.Delay(500);
+
+		// re-enable hittestvisible
+		VirtualizationBasedSecurity.IsHitTestVisible = true;
+
+		// remove infobar
+		WindowsDefenderInfo.Children.Clear();
+
+		// add infobar
+		var infoBar = new InfoBar
+		{
+			Title = VirtualizationBasedSecurity.IsOn ? "Successfully enabled Virtualization-based Security (VBS)." : "Successfully disabled Virtualization-based Security (VBS).",
+			IsClosable = false,
+			IsOpen = true,
+			Severity = InfoBarSeverity.Success,
+			Margin = new Thickness(4, -28, 4, 36)
+		};
+		WindowsDefenderInfo.Children.Add(infoBar);
+
+		// add restart button if needed
+		if (VirtualizationBasedSecurity.IsOn != initialVBSState)
+		{
+			infoBar.Title += " A restart is required to apply the change.";
+			infoBar.ActionButton = new Button
+			{
+				Content = "Restart",
+				HorizontalAlignment = HorizontalAlignment.Right
+			};
+			((Button)infoBar.ActionButton).Click += (s, args) =>
+				Process.Start(new ProcessStartInfo("shutdown", "/r /f /t 0") { CreateNoWindow = true });
+		}
+		else
+		{
+			// delay
+			await Task.Delay(2000);
+
+			// remove infobar
+			WindowsDefenderInfo.Children.Clear();
+		}
+	}
+
+	private void GetSpectreMeltdownState()
     {
         // check registry
         string cpuVendor = (string)Registry.GetValue(@"HKEY_LOCAL_MACHINE\HARDWARE\DESCRIPTION\System\CentralProcessor\0", "VendorIdentifier", null);

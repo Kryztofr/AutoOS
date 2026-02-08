@@ -14,6 +14,7 @@ public static class SecurityStage
         bool? UserAccountControl = PreparingStage.UserAccountControl;
         bool? DEP = PreparingStage.DEP;
         bool? MemoryIntegrity = PreparingStage.MemoryIntegrity;
+        bool? VirtualizationBasedSecurity = PreparingStage.VirtualizationBasedSecurity;
         bool? INTELCPU = PreparingStage.INTELCPU;
         bool? AMDCPU = PreparingStage.AMDCPU;
         bool? SpectreMeltdownMitigations = PreparingStage.SpectreMeltdownMitigations;
@@ -78,6 +79,9 @@ public static class SecurityStage
 
             // disable hypervisor enforced code integrity (hvci)
             ("Disabling Hypervisor Enforced Code Integrity (HVCI)", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\DeviceGuard\Scenarios\HypervisorEnforcedCodeIntegrity"" /v Enabled /t REG_DWORD /d 0 /f"), () => MemoryIntegrity == false),
+            
+            // disable virtualization-based security (VBS)
+            ("Disabling Virtualization-based Security (VBS)", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\DeviceGuard"" /v EnableVirtualizationBasedSecurity /t REG_DWORD /d 0 /f"), () => VirtualizationBasedSecurity == false),
 
             // enable spectre and meltdown mitigations
             ("Enabling Spectre & Meltdown Mitigations", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management"" /v ""FeatureSettings"" /t REG_DWORD /d 1 /f"), () => AMDCPU == true && SpectreMeltdownMitigations == true),

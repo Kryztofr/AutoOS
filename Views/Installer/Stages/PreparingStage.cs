@@ -108,6 +108,7 @@ public static class PreparingStage
     public static bool? UserAccountControl;
     public static bool? DEP;
     public static bool? MemoryIntegrity;
+    public static bool? VirtualizationBasedSecurity;
     public static bool? SpectreMeltdownMitigations;
     public static bool? ProcessMitigations;
 
@@ -245,6 +246,7 @@ public static class PreparingStage
             UserAccountControl = (localSettings.Values["UserAccountControl"]?.ToString() == "1");
             DEP = (localSettings.Values["DataExecutionPrevention"]?.ToString() == "1");
             MemoryIntegrity = (localSettings.Values["MemoryIntegrity"]?.ToString() == "1");
+			VirtualizationBasedSecurity = (localSettings.Values["VirtualizationBasedSecurity"]?.ToString() == "1");
             SpectreMeltdownMitigations = (localSettings.Values["SpectreMeltdownMitigations"]?.ToString() == "1");
             ProcessMitigations = (localSettings.Values["ProcessMitigations"]?.ToString() == "1");
 

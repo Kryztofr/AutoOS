@@ -12,7 +12,8 @@ public sealed partial class SecurityPage : Page
     private bool isInitializingUACState = true;
     private bool isInitializingDEPState = true;
     private bool isInitializingMemoryIntegrityState = true;
-    private bool isInitializingSpectreMeltdownState = true;
+	private bool isInitializingVBSState = true;
+	private bool isInitializingSpectreMeltdownState = true;
     private bool isInitializingProcessMitigationsState = true;
 
     private ApplicationDataContainer localSettings = ApplicationData.Current.LocalSettings;
@@ -25,7 +26,8 @@ public sealed partial class SecurityPage : Page
         GetUACState();
         GetDEPState();
         GetMemoryIntegrityState();
-        GetSpectreMeltdownState();
+		GetVBSState();
+		GetSpectreMeltdownState();
         GetProcessMitigationsState();
     }
 
@@ -259,6 +261,28 @@ public sealed partial class SecurityPage : Page
         if (isInitializingMemoryIntegrityState) return;
 
         localSettings.Values["MemoryIntegrity"] = MemoryIntegrity.IsOn ? 1 : 0;
+    }
+
+    private void GetVBSState()
+    {
+        var value = localSettings.Values["VirtualizationBasedSecurity"];
+        if (value == null)
+        {
+            localSettings.Values["VirtualizationBasedSecurity"] = 0;
+        }
+        else
+        {
+			VirtualizationBasedSecurity.IsOn = (int)value == 1;
+        }
+
+        isInitializingVBSState = false;
+    }
+
+    private void VirtualizationBasedSecurity_Toggled(object sender, RoutedEventArgs e)
+    {
+        if (isInitializingVBSState) return;
+
+        localSettings.Values["VirtualizationBasedSecurity"] = VirtualizationBasedSecurity.IsOn ? 1 : 0;
     }
 
     private void GetSpectreMeltdownState()
