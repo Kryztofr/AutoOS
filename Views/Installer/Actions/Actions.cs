@@ -573,10 +573,10 @@ public static class ProcessActions
 
             foreach (string url in urls)
             {
-                uiContext?.Post(_ => InstallPage.Info.Title = title, null);
-                await RunDownload(url.Trim(), downloadFolder);
-            }
-        }
+				InstallPage.Info.Title = title;
+				await RunDownload(url.Trim(), downloadFolder);
+			}
+		}
         else
         {
             string url = output.Trim();

@@ -336,10 +336,10 @@ public static class ApplicationStage
             ("Pinning Visual Studio Code to the taskbar", async () => await ProcessActions.RunPowerShellScript("taskbarpin.ps1", $@"-Type Link -Path ""{Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), @"Microsoft\Windows\Start Menu\Programs\Visual Studio Code\Visual Studio Code.lnk")}"""), () => VisualStudioCode == true),
 
             // download git
-            ("Downloading Git", async () => await ProcessActions.RunDownload("https://github.com/git-for-windows/git/releases/download/v2.52.0.windows.1/Git-2.52.0-64-bit.exe", Path.GetTempPath(), "Git64-bit.exe"), () => Git == true),
+            ("Downloading Git", async () => await ProcessActions.RunDownload("https://github.com/git-for-windows/git/releases/download/v2.53.0.windows.1/Git-2.53.0-64-bit.exe", Path.GetTempPath(), "Git64-bit.exe"), () => Git == true),
 
             // install git
-            ("Installing Git", async () => await ProcessActions.RunNsudo("CurrentUser", @"cmd /c ""%TEMP%\Git64-bit.exe"" /VERYSILENT /SUPPRESSMSGBOXES /NORESTART"), () => Git ==  true),
+            ("Installing Git", async () => await ProcessActions.RunNsudo("CurrentUser", @"cmd /c ""%TEMP%\Git64-bit.exe"" /VERYSILENT /SUPPRESSMSGBOXES /NORESTART /NOICONS /COMPONENTS=GitLFS,GitGUI,GitCore"), () => Git ==  true),
 
             // download pyton
             ("Downloading Pyton", async () => await ProcessActions.RunDownload("https://www.python.org/ftp/python/3.14.2/python-3.14.2-amd64.exe", Path.GetTempPath(), "python-3.14.2-amd64.exe"), () => Python == true),
@@ -592,6 +592,7 @@ public static class ApplicationStage
 
             // update steam
             ("Updating Steam", async () => await Task.Run(() => Process.Start(new ProcessStartInfo { FileName = Path.Combine(@"C:\Program Files (x86)\Steam\Steam.exe") }) !.WaitForExitAsync()), () => Steam == true),
+            ("Updating Steam", async () => await Task.Run(async () => { while (Process.GetProcessesByName("steamwebhelper").Length == 0) await Task.Delay(500); }), () => Steam == true),
 
             // log in to steam
             ("Please log in to your Steam account", async () => await ProcessActions.SteamLogin(), () => Steam == true),
