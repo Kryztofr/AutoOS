@@ -54,7 +54,7 @@ Windows Registry Editor Version 5.00
 "NumColumnSets"=dword:00000000
 "ConfirmKill"=dword:00000000
 "RefreshRate"=dword:000003e8
-"PrcessColumnCount"=dword:0000000c
+"PrcessColumnCount"=dword:0000000d
 "DllColumnCount"=dword:00000004
 "HandleColumnCount"=dword:00000002
 "DefaultProcPropPage"=dword:00000000
@@ -149,6 +149,7 @@ Windows Registry Editor Version 5.00
 "9"=dword:0000052e
 "10"=dword:00000530
 "11"=dword:00000537
+"12"=dword:00000429
 
 [HKEY_CURRENT_USER\Software\Sysinternals\Process Explorer\ProcessColumns]
 "0"=dword:0000010d
@@ -163,3 +164,4 @@ Windows Registry Editor Version 5.00
 "9"=dword:00000064
 "10"=dword:00000064
 "11"=dword:00000064
+"12"=dword:00000064

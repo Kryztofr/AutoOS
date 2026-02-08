@@ -1022,7 +1022,7 @@ public static class ProcessActions
         {
             MainWindow.Instance.AppWindow.Resize(new SizeInt32(MainWindow.Instance.AppWindow.Size.Width - 500, MainWindow.Instance.AppWindow.Size.Height - 500));
 
-            await Task.Delay(10);
+            await Task.Delay(100);
 
             presenter.Restore();
             presenter.Maximize();
