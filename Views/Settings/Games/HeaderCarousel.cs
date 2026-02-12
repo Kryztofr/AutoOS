@@ -1574,10 +1574,6 @@ public partial class HeaderCarousel : ItemsControl
         }
     }
 
-    [LibraryImport("kernel32.dll")]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    private static partial bool SetProcessWorkingSetSize(IntPtr process, int min, int max);
-
     private async void StopProcesses_Click(object sender, RoutedEventArgs e)
     {
         await Task.Run(() =>
@@ -1644,8 +1640,8 @@ public partial class HeaderCarousel : ItemsControl
                 "SystemSettingsBroker",
                 "TrustedInstaller",
                 "useroobebroker",
-                "WMIADAP",
-                "WmiPrvSE",
+                //"WMIADAP",
+                //"WmiPrvSE",
                 "WUDFHost"
             };
 
@@ -1702,7 +1698,7 @@ public partial class HeaderCarousel : ItemsControl
                 "WFDSConMgrSvc",
                 "Windhawk",
                 "WinHttpAutoProxySvc",
-                "Winmgmt",
+                //"Winmgmt",
                 "Wcmsvc"
             };
 
@@ -1727,16 +1723,7 @@ public partial class HeaderCarousel : ItemsControl
             }
 
             try { new ServiceController("KeyIso").Stop(); } catch { }
-            try { new ServiceController("Winmgmt").Stop(); } catch { }
-
-            foreach (var process in Process.GetProcesses())
-            {
-                try
-                {
-                    SetProcessWorkingSetSize(process.Handle, -1, -1);
-                }
-                catch { }
-            }
+            //try { new ServiceController("Winmgmt").Stop(); } catch { }
 
             if (Process.GetProcessesByName("ClassicWindowSwitcher").Length == 0)
                 Process.Start(new ProcessStartInfo(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Applications", "ClassicWindowSwitcher", "ClassicWindowSwitcher.exe")) { CreateNoWindow = true });
