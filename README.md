@@ -29,7 +29,7 @@ AutoOS is a WinUI 3 application that automates Windows setup and optimization wi
 - Creates a local user account
 - Cleans up visual clutter
 - Disables automatic driver/app installation via Windows Update
-- Remove web results from Windows start menu
+- Removes web results from Windows start menu
 - Precompiles .NET assemblies to improve PowerShell loading time
 - Pauses Windows Updates for 100 years
 - Adds Recycle Bin to Quick Access

@@ -39,28 +39,6 @@ namespace AutoOS.Views.Settings
 
         private async void GetChangeLog(object sender, RoutedEventArgs e)
         {
-            using var key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion");
-
-            string buildStr = key.GetValue("CurrentBuild")?.ToString() ?? "";
-            string ubrStr = key.GetValue("UBR")?.ToString() ?? "";
-            if (int.TryParse(buildStr, out int build) && int.TryParse(ubrStr, out int ubr))
-            {
-                if (build != 26200 || (build == 26200 && ubr < 7705))
-                {
-                    var dialog = new ContentDialog
-                    {
-                        Title = "AutoOS now requires 25H2",
-                        Content = $"AutoOS is now only supported on Windows 11 25H2. \nPlease follow the Getting Started guide in the README on GitHub to reinstall AutoOS.",
-                        CloseButtonText = "OK",
-                        DefaultButton = ContentDialogButton.Close,
-                        XamlRoot = App.MainWindow.Content.XamlRoot
-                    };
-                    dialog.Resources["ContentDialogMaxWidth"] = 800;
-                    await dialog.ShowAsync();
-                    Application.Current.Exit();
-                }
-            }
-
             string storedVersion = localSettings.Values["Version"] as string;
             string currentVersion = ProcessInfoHelper.Version;
 
@@ -158,6 +136,28 @@ namespace AutoOS.Views.Settings
             bool servicesState = (int)(Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Services\Beep")?.GetValue("Start", 0) ?? 0) == 1;
             string list = Path.Combine(PathHelper.GetAppDataFolderPath(), "Service-list-builder", "lists.ini");
             string nsudoPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Applications", "NSudo", "NSudoLC.exe");
+
+            using var key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion");
+
+            string buildStr = key.GetValue("CurrentBuild")?.ToString() ?? "";
+            string ubrStr = key.GetValue("UBR")?.ToString() ?? "";
+            if (int.TryParse(buildStr, out int build) && int.TryParse(ubrStr, out int ubr))
+            {
+                if (build != 26200 && !servicesState)
+                {
+                    var dialog = new ContentDialog
+                    {
+                        Title = "AutoOS now requires 25H2",
+                        Content = $"AutoOS is now only supported on Windows 11 25H2. \nPlease follow the Getting Started guide in the README on GitHub to reinstall AutoOS.",
+                        CloseButtonText = "OK",
+                        DefaultButton = ContentDialogButton.Close,
+                        XamlRoot = App.MainWindow.Content.XamlRoot
+                    };
+                    dialog.Resources["ContentDialogMaxWidth"] = 800;
+                    await dialog.ShowAsync();
+                    Application.Current.Exit();
+                }
+            }
 
             var actions = new List<(string Title, Func<Task> Action, Func<bool> Condition)>
             {
@@ -290,6 +290,9 @@ namespace AutoOS.Views.Settings
 
                 // disable services & drivers
                 ("Disabling Services & Drivers", async () => await Process.Start(new ProcessStartInfo { FileName = nsudoPath, Arguments = $"-U:T -P:E -Wait -ShowWindowMode:Hide \"{Path.Combine(PathHelper.GetAppDataFolderPath(), "Service-list-builder", "build", Directory.GetDirectories(Path.Combine(PathHelper.GetAppDataFolderPath(), "Service-list-builder", "build")).OrderByDescending(d => Directory.GetLastWriteTime(d)).FirstOrDefault()?.Split('\\').Last(), "Services-Disable.bat")}\"", CreateNoWindow = true }).WaitForExitAsync(), () => servicesState == false),
+
+                // enable services & drivers
+                ("Enabling Services & Drivers", async () => await Process.Start(new ProcessStartInfo { FileName = nsudoPath, Arguments = $"-U:T -P:E -Wait -ShowWindowMode:Hide \"{Path.Combine(PathHelper.GetAppDataFolderPath(), "Service-list-builder", "build", Directory.GetDirectories(Path.Combine(PathHelper.GetAppDataFolderPath(), "Service-list-builder", "build")).OrderByDescending(d => Directory.GetLastWriteTime(d)).FirstOrDefault()?.Split('\\').Last(), "Services-Enable.bat")}\"", CreateNoWindow = true }).WaitForExitAsync(), () => servicesState == false && build != 26200),
             };
 
             var filteredActions = actions.Where(a => a.Condition == null || a.Condition.Invoke()).ToList();
