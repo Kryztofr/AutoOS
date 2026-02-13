@@ -3,14 +3,15 @@ using AutoOS.Views.Installer.Actions;
 using CommunityToolkit.WinUI.Controls;
 using Downloader;
 using Microsoft.UI.Text;
+using Microsoft.UI.Xaml.Documents;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.Win32;
+using System.Diagnostics;
 using System.Management;
 using System.Net;
 using System.Text;
 using System.Text.Json;
 using Windows.Storage;
-using System.Diagnostics;
 
 namespace AutoOS.Views.Settings
 {
@@ -39,6 +40,68 @@ namespace AutoOS.Views.Settings
 
         private async void GetChangeLog(object sender, RoutedEventArgs e)
         {
+            using var key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion");
+            bool servicesState = (int)(Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Services\Beep")?.GetValue("Start", 0) ?? 0) == 1;
+            string buildStr = key.GetValue("CurrentBuild")?.ToString() ?? "";
+            string ubrStr = key.GetValue("UBR")?.ToString() ?? "";
+            if (int.TryParse(buildStr, out int build) && int.TryParse(ubrStr, out int ubr))
+            {
+                if (build != 26200 && servicesState)
+                {
+                    var textBlock = new TextBlock
+                    {
+                        TextWrapping = TextWrapping.Wrap
+                    };
+
+                    textBlock.Inlines.Add(new Run
+                    {
+                        Text = "AutoOS is now only supported on Windows 11 25H2.\nPlease follow the "
+                    });
+
+                    var guideLink = new Hyperlink
+                    {
+                        UnderlineStyle = UnderlineStyle.None
+                    };
+                    guideLink.Inlines.Add(new Run { Text = "Getting Started guide" });
+
+                    guideLink.Click += async (_, __) =>
+                    {
+                        await Task.Run(() =>
+                        {
+                            try
+                            {
+                                Process.Start(new ProcessStartInfo
+                                {
+                                    FileName = "https://github.com/tinodin/AutoOS?tab=readme-ov-file#-getting-started",
+                                    UseShellExecute = true
+                                });
+                            }
+                            catch { }
+                        });
+                    };
+
+                    textBlock.Inlines.Add(guideLink);
+
+                    textBlock.Inlines.Add(new Run
+                    {
+                        Text = " in the README on GitHub to reinstall AutoOS."
+                    });
+
+                    var dialog = new ContentDialog
+                    {
+                        Title = "AutoOS now requires 25H2",
+                        Content = textBlock,
+                        CloseButtonText = "OK",
+                        DefaultButton = ContentDialogButton.Close,
+                        XamlRoot = App.MainWindow.Content.XamlRoot
+                    };
+
+                    dialog.Resources["ContentDialogMaxWidth"] = 800;
+                    await dialog.ShowAsync();
+                    Application.Current.Exit();
+                }
+            }
+
             string storedVersion = localSettings.Values["Version"] as string;
             string currentVersion = ProcessInfoHelper.Version;
 
@@ -140,24 +203,7 @@ namespace AutoOS.Views.Settings
             using var key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion");
 
             string buildStr = key.GetValue("CurrentBuild")?.ToString() ?? "";
-            string ubrStr = key.GetValue("UBR")?.ToString() ?? "";
-            if (int.TryParse(buildStr, out int build) && int.TryParse(ubrStr, out int ubr))
-            {
-                if (build != 26200 && !servicesState)
-                {
-                    var dialog = new ContentDialog
-                    {
-                        Title = "AutoOS now requires 25H2",
-                        Content = $"AutoOS is now only supported on Windows 11 25H2. \nPlease follow the Getting Started guide in the README on GitHub to reinstall AutoOS.",
-                        CloseButtonText = "OK",
-                        DefaultButton = ContentDialogButton.Close,
-                        XamlRoot = App.MainWindow.Content.XamlRoot
-                    };
-                    dialog.Resources["ContentDialogMaxWidth"] = 800;
-                    await dialog.ShowAsync();
-                    Application.Current.Exit();
-                }
-            }
+            int build = int.TryParse(buildStr, out var b) ? b : 0;
 
             var actions = new List<(string Title, Func<Task> Action, Func<bool> Condition)>
             {
@@ -239,9 +285,9 @@ namespace AutoOS.Views.Settings
                 ("Removing unneeded registry keys", async () => await ProcessActions.RunNsudo("CurrentUser", @"reg delete ""HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\SearchSettings"" /v IsDeviceSearchHistoryEnabled /f"), () => build == 26200),
                 ("Removing unneeded registry keys", async () => await ProcessActions.RunNsudo("CurrentUser", @"reg delete ""HKEY_CURRENT_USER\Software\Policies\Microsoft\Windows\Windows Feeds"" /v EnableFeeds /f"), () => build == 26200),
                 ("Removing unneeded registry keys", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\Explorer"" /v DisableGraphRecentItems /f"), () => build == 26200),
-                ("Removing unneeded registry keys", async () => await ProcessActions.RunNsudo("LocalMachine", @"reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\Windows Search"" /v EnableDynamicContentInWSB /f"), () => build == 26200),
-                ("Removing unneeded registry keys", async () => await ProcessActions.RunNsudo("LocalMachine", @"reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\Windows Search"" /v ConnectedSearchUseWeb /f"), () => build == 26200),
-                ("Removing unneeded registry keys", async () => await ProcessActions.RunNsudo("LocalMachine", @"reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\Windows Search"" /v ConnectedSearchPrivacy /f"), () => build == 26200),
+                ("Removing unneeded registry keys", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\Windows Search"" /v EnableDynamicContentInWSB /f"), () => build == 26200),
+                ("Removing unneeded registry keys", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\Windows Search"" /v ConnectedSearchUseWeb /f"), () => build == 26200),
+                ("Removing unneeded registry keys", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\Windows Search"" /v ConnectedSearchPrivacy /f"), () => build == 26200),
 
                 // revert notification settings
                 (@"Enabling ""Allow notifications to play sounds""", async () => await ProcessActions.RunNsudo("CurrentUser", @"reg delete ""HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Notifications\Settings"" /v NOC_GLOBAL_SETTING_ALLOW_NOTIFICATION_SOUND /f"), () => build == 26200),
