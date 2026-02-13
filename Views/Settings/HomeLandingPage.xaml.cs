@@ -10,6 +10,7 @@ using System.Net;
 using System.Text;
 using System.Text.Json;
 using Windows.Storage;
+using System.Diagnostics;
 
 namespace AutoOS.Views.Settings
 {
@@ -106,23 +107,23 @@ namespace AutoOS.Views.Settings
                 ProgressBar.Foreground = new SolidColorBrush((Windows.UI.Color)Application.Current.Resources["SystemFillColorSuccess"]);
                 localSettings.Values["Version"] = currentVersion;
                 await LogDiscordUser();
-                //StatusText.Text = "Restarting in 3...";
-                //await Task.Delay(1000);
-                //StatusText.Text = "Restarting in 2...";
-                //await Task.Delay(1000);
-                //StatusText.Text = "Restarting in 1...";
-                //await Task.Delay(1000);
-                //StatusText.Text = "Restarting...";
-                //await Task.Delay(750);
+                StatusText.Text = "Restarting in 3...";
+                await Task.Delay(1000);
+                StatusText.Text = "Restarting in 2...";
+                await Task.Delay(1000);
+                StatusText.Text = "Restarting in 1...";
+                await Task.Delay(1000);
+                StatusText.Text = "Restarting...";
+                await Task.Delay(750);
 
-                //ProcessStartInfo processStartInfo = new()
-                //{
-                //    FileName = "cmd.exe",
-                //    Arguments = $"/c shutdown /r /t 0",
-                //    UseShellExecute = false,
-                //    CreateNoWindow = true,
-                //};
-                //Process.Start(processStartInfo);
+                ProcessStartInfo processStartInfo = new()
+                {
+                    FileName = "cmd.exe",
+                    Arguments = $"/c shutdown /r /t 0",
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                };
+                Process.Start(processStartInfo);
             }
         }
 
@@ -154,15 +155,16 @@ namespace AutoOS.Views.Settings
             string previousTitle = string.Empty;
 
             bool Steam = File.Exists(SteamHelper.SteamPath);
-
-            Guid guid = Guid.Empty;
+            bool servicesState = (int)(Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Services\Beep")?.GetValue("Start", 0) ?? 0) == 1;
+            string list = Path.Combine(PathHelper.GetAppDataFolderPath(), "Service-list-builder", "lists.ini");
+            string nsudoPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Applications", "NSudo", "NSudoLC.exe");
 
             var actions = new List<(string Title, Func<Task> Action, Func<bool> Condition)>
             {
                 // process explorer
                 ("Installing Process Explorer", async () => await Task.Run(() => Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Process Explorer"))), null),
 				("Installing Process Explorer", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\taskmgr.exe"" /v Debugger /f"), null),
-				("Installing Process Explorer", async () => await Task.Run(() => File.Copy(Path.Combine(Path.GetTempPath(), "procexp64.exe"), Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Process Explorer", "procexp64.exe"), true)), null),
+				("Installing Process Explorer", async () => await Task.Run(() => File.Copy(@"C:\Windows\procexp64.exe", Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Process Explorer", "procexp64.exe"), true)), null),
 			    ("Installing Process Explorer", async () => await ProcessActions.RunPowerShell(@"$Shell = New-Object -ComObject WScript.Shell; $Shortcut = $Shell.CreateShortcut([System.IO.Path]::Combine($env:ProgramData, 'Microsoft\Windows\Start Menu\Programs\Process Explorer.lnk')); $Shortcut.TargetPath = [System.IO.Path]::Combine($env:ProgramFiles, 'Process Explorer\procexp64.exe'); $Shortcut.Save()"), null),
 			    ("Installing Process Explorer", async () => await ProcessActions.RunNsudo("CurrentUser", $"cmd /c reg import \"{Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Scripts", "processexplorer.reg")}\""), null),
 			    ("Installing Process Explorer", async () => await ProcessActions.Sleep(500), null),
@@ -273,6 +275,18 @@ namespace AutoOS.Views.Settings
 
                 // enable scroll wheel for alt tab
                 (@"Enabling Scroll Wheel for Alt Tab", async () => await ProcessActions.RunNsudo("CurrentUser", @"reg add ""HKEY_CURRENT_USER\SOFTWARE\Ingan121\ClassicWindowSwitcher"" /v ScrollWheelBehavior /t REG_DWORD /d 1 /f"), null),
+
+                // update lists.ini
+                ("Updating lists.ini", async () => { File.Copy(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Applications", "Service-list-builder", "lists.ini"), list, true); }, null),
+                
+                // enable services & drivers
+                ("Enabling Services & Drivers", async () => await Process.Start(new ProcessStartInfo { FileName = nsudoPath, Arguments = $"-U:T -P:E -Wait -ShowWindowMode:Hide \"{Path.Combine(PathHelper.GetAppDataFolderPath(), "Service-list-builder", "build", Directory.GetDirectories(Path.Combine(PathHelper.GetAppDataFolderPath(), "Service-list-builder", "build")).OrderByDescending(d => Directory.GetLastWriteTime(d)).FirstOrDefault()?.Split('\\').Last(), "Services-Enable.bat")}\"", CreateNoWindow = true }).WaitForExitAsync(), () => servicesState == false),
+
+                // build service list
+                ("Building service list", async () => await Process.Start(new ProcessStartInfo { FileName = nsudoPath, Arguments = $@"-U:T -P:E -Wait -ShowWindowMode:Hide ""{Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Applications", "Service-list-builder", "service-list-builder.exe")}"" --config ""{Path.Combine(PathHelper.GetAppDataFolderPath(), "Service-list-builder", "lists.ini")}"" --disable-service-warning --output-dir ""{Path.Combine(PathHelper.GetAppDataFolderPath(), "Service-list-builder", "build")}""", CreateNoWindow = true }).WaitForExitAsync(), () => servicesState == false),
+
+                // disable services & drivers
+                ("Disabling Services & Drivers", async () => await Process.Start(new ProcessStartInfo { FileName = nsudoPath, Arguments = $"-U:T -P:E -Wait -ShowWindowMode:Hide \"{Path.Combine(PathHelper.GetAppDataFolderPath(), "Service-list-builder", "build", Directory.GetDirectories(Path.Combine(PathHelper.GetAppDataFolderPath(), "Service-list-builder", "build")).OrderByDescending(d => Directory.GetLastWriteTime(d)).FirstOrDefault()?.Split('\\').Last(), "Services-Disable.bat")}\"", CreateNoWindow = true }).WaitForExitAsync(), () => servicesState == false),
             };
 
             var filteredActions = actions.Where(a => a.Condition == null || a.Condition.Invoke()).ToList();
@@ -334,7 +348,7 @@ namespace AutoOS.Views.Settings
                 ProgressBar.Value += incrementPerTitle;
             }
 
-            updater.IsPrimaryButtonEnabled = true;
+            //updater.IsPrimaryButtonEnabled = true;
         }
 
         public async Task RunDownload(string url, string path, string file = null)

@@ -1,6 +1,5 @@
 ﻿using Microsoft.Win32;
 using System.Diagnostics;
-using System.Management;
 using System.ServiceProcess;
 
 namespace AutoOS.Views.Settings;
@@ -10,11 +9,6 @@ public sealed partial class ServicesPage : Page
     private bool isInitializingServicesState = true;
     private bool isInitializingWIFIState = true;
     private bool isInitializingBluetoothState = true;
-    private bool isInitializingCameraState = true;
-    private bool isInitializingTaskManagerState = true;
-    private bool isInitializingLaptopState = true;
-    private bool isInitializingGTAState = true;
-    private bool isInitializingAMDVRRState = true;
     private readonly string list = Path.Combine(PathHelper.GetAppDataFolderPath(), "Service-list-builder", "lists.ini");
     private readonly string nsudoPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Applications", "NSudo", "NSudoLC.exe");
 
@@ -29,11 +23,6 @@ public sealed partial class ServicesPage : Page
         GetServicesState();
         GetWIFIState();
         GetBluetoothState();
-        GetCameraState();
-        GetTaskManagerState();
-        GetLaptopState();
-        GetGTAState();
-        GetAMDVRRState();
     }
 
     private void GetServicesState()
@@ -77,6 +66,8 @@ public sealed partial class ServicesPage : Page
 
         // disable hittestvisible to avoid double-clicking
         Services.IsHitTestVisible = false;
+        WIFI.IsHitTestVisible = false;
+        Bluetooth.IsHitTestVisible = false;
 
         // remove infobar
         ServiceInfo.Children.Clear();
@@ -115,6 +106,8 @@ public sealed partial class ServicesPage : Page
 
         // re-enable hittestvisible
         Services.IsHitTestVisible = true;
+        WIFI.IsHitTestVisible = true;
+        Bluetooth.IsHitTestVisible = true;
 
         // remove infobar
         ServiceInfo.Children.Clear();
@@ -173,7 +166,9 @@ public sealed partial class ServicesPage : Page
         if (isInitializingWIFIState) return;
 
         // disable hittestvisible to avoid double-clicking
+        Services.IsHitTestVisible = false;
         WIFI.IsHitTestVisible = false;
+        Bluetooth.IsHitTestVisible = false;
 
         // remove infobar
         ServiceInfo.Children.Clear();
@@ -254,7 +249,9 @@ public sealed partial class ServicesPage : Page
             await Process.Start(new ProcessStartInfo { FileName = nsudoPath, Arguments = $"-U:T -P:E -Wait -ShowWindowMode:Hide \"{Path.Combine(PathHelper.GetAppDataFolderPath(), "Service-list-builder", "build", folderName, "Services-Disable.bat")}\"", CreateNoWindow = true }).WaitForExitAsync();
 
             // re-enable hittestvisible
+            Services.IsHitTestVisible = true;
             WIFI.IsHitTestVisible = true;
+            Bluetooth.IsHitTestVisible = true;
 
             // remove infobar
             ServiceInfo.Children.Clear();
@@ -281,7 +278,9 @@ public sealed partial class ServicesPage : Page
         else
         {
             // re-enable hittestvisible
+            Services.IsHitTestVisible = true;
             WIFI.IsHitTestVisible = true;
+            Bluetooth.IsHitTestVisible = true;
 
             // remove infobar
             ServiceInfo.Children.Clear();
@@ -322,6 +321,8 @@ public sealed partial class ServicesPage : Page
         if (isInitializingBluetoothState) return;
 
         // disable hittestvisible to avoid double-clicking
+        Services.IsHitTestVisible = false;
+        WIFI.IsHitTestVisible = false;
         Bluetooth.IsHitTestVisible = false;
 
         // remove infobar
@@ -401,6 +402,8 @@ public sealed partial class ServicesPage : Page
             await Process.Start(new ProcessStartInfo { FileName = nsudoPath, Arguments = $"-U:T -P:E -Wait -ShowWindowMode:Hide \"{Path.Combine(PathHelper.GetAppDataFolderPath(), "Service-list-builder", "build", folderName, "Services-Disable.bat")}\"", CreateNoWindow = true }).WaitForExitAsync();
 
             // re-enable hittestvisible
+            Services.IsHitTestVisible = true;
+            WIFI.IsHitTestVisible = true;
             Bluetooth.IsHitTestVisible = true;
 
             // remove infobar
@@ -428,6 +431,8 @@ public sealed partial class ServicesPage : Page
         else
         {
             // re-enable hittestvisible
+            Services.IsHitTestVisible = true;
+            WIFI.IsHitTestVisible = true;
             Bluetooth.IsHitTestVisible = true;
 
             // remove infobar
@@ -437,742 +442,6 @@ public sealed partial class ServicesPage : Page
             ServiceInfo.Children.Add(new InfoBar
             {
                 Title = Bluetooth.IsChecked == true ? "Successfully enabled Bluetooth support." : "Successfully disabled Bluetooth support.",
-                IsClosable = false,
-                IsOpen = true,
-                Severity = InfoBarSeverity.Success,
-                Margin = new Thickness(4, -28, 4, 36)
-            });
-
-            // delay
-            await Task.Delay(2000);
-
-            // remove infobar
-            ServiceInfo.Children.Clear();
-        }
-    }
-
-    private void GetCameraState()
-    {
-        // define services and drivers
-        var drivers = new[] { "# swenum" };
-
-        // check state
-        Camera.IsChecked = drivers.All(driver => File.ReadAllLines(list).Any(line => line.Trim() == driver));
-
-        isInitializingCameraState = false;
-    }
-
-    private async void Camera_Checked(object sender, RoutedEventArgs e)
-    {
-        if (isInitializingCameraState) return;
-
-        // disable hittestvisible to avoid double-clicking
-        Camera.IsHitTestVisible = false;
-
-        // remove infobar
-        ServiceInfo.Children.Clear();
-
-        // add infobar
-        ServiceInfo.Children.Add(new InfoBar
-        {
-            Title = Camera.IsChecked == true ? "Enabling Camera support..." : "Disabling Camera support...",
-            IsClosable = false,
-            IsOpen = true,
-            Severity = InfoBarSeverity.Informational,
-            Margin = new Thickness(4, -28, 4, 36)
-        });
-
-        // read list
-        var lines = await File.ReadAllLinesAsync(list);
-
-        // define drivers
-        var drivers = new[] { "swenum" };
-
-        // make changes
-        bool isChecked = Camera.IsChecked == true;
-        for (int i = 0; i < lines.Length; i++)
-        {
-            if (drivers.Contains(lines[i].Trim().TrimStart('#', ' ')))
-                lines[i] = (isChecked ? "# " + lines[i] : lines[i].TrimStart('#')).Trim();
-        }
-
-        // write changes
-        await File.WriteAllLinesAsync(list, lines);
-
-        if (!Services.IsOn)
-        {
-            // get latest build
-            string folderName = Directory.GetDirectories(Path.Combine(PathHelper.GetAppDataFolderPath(), "Service-list-builder", "build")).OrderByDescending(d => Directory.GetLastWriteTime(d)).FirstOrDefault()?.Split('\\').Last();
-
-            // enable services
-            await Process.Start(new ProcessStartInfo { FileName = nsudoPath, Arguments = $"-U:T -P:E -Wait -ShowWindowMode:Hide \"{Path.Combine(PathHelper.GetAppDataFolderPath(), "Service-list-builder", "build", folderName, "Services-Enable.bat")}\"", CreateNoWindow = true }).WaitForExitAsync();
-        }
-
-        if (isChecked)
-        {
-            // declare services and drivers
-            var groups = new[]
-            {
-                (new[] { "swenum" }, 3),
-            };
-
-            // set start values
-            foreach (var group in groups)
-            {
-                foreach (var service in group.Item1)
-                {
-                    using (var key = Registry.LocalMachine.OpenSubKey($@"SYSTEM\CurrentControlSet\Services\{service}", writable: true))
-                    {
-                        if (key == null) continue;
-
-                        Registry.SetValue($@"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\{service}", "Start", group.Item2);
-                    }
-                }
-            }
-        }
-
-        // build service list
-        await Process.Start(new ProcessStartInfo { FileName = nsudoPath, Arguments = $@"-U:T -P:E -Wait -ShowWindowMode:Hide ""{Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Applications", "Service-list-builder", "service-list-builder.exe")}"" --config ""{Path.Combine(PathHelper.GetAppDataFolderPath(), "Service-list-builder", "lists.ini")}"" --disable-service-warning --output-dir ""{Path.Combine(PathHelper.GetAppDataFolderPath(), "Service-list-builder", "build")}""", CreateNoWindow = true }).WaitForExitAsync();
-
-        if (!Services.IsOn)
-        {
-            // get latest build
-            string folderName = Directory.GetDirectories(Path.Combine(PathHelper.GetAppDataFolderPath(), "Service-list-builder", "build")).OrderByDescending(d => Directory.GetLastWriteTime(d)).FirstOrDefault()?.Split('\\').Last();
-
-            // disable services
-            await Process.Start(new ProcessStartInfo { FileName = nsudoPath, Arguments = $"-U:T -P:E -Wait -ShowWindowMode:Hide \"{Path.Combine(PathHelper.GetAppDataFolderPath(), "Service-list-builder", "build", folderName, "Services-Disable.bat")}\"", CreateNoWindow = true }).WaitForExitAsync();
-
-            // re-enable hittestvisible
-            Camera.IsHitTestVisible = true;
-
-            // remove infobar
-            ServiceInfo.Children.Clear();
-
-            // add infobar
-            var infoBar = new InfoBar
-            {
-                Title = Camera.IsChecked == true ? "Successfully enabled Camera support. A restart is required to apply the change." : "Successfully disabled Camera support. A restart is required to apply the change.",
-                IsClosable = false,
-                IsOpen = true,
-                Severity = InfoBarSeverity.Success,
-                Margin = new Thickness(4, -28, 4, 36),
-                ActionButton = new Button
-                {
-                    Content = "Restart",
-                    HorizontalAlignment = HorizontalAlignment.Right
-                }
-            };
-            ((Button)infoBar.ActionButton).Click += (s, args) =>
-            Process.Start(new ProcessStartInfo("shutdown", "/r /f /t 0") { CreateNoWindow = true });
-
-            ServiceInfo.Children.Add(infoBar);
-        }
-        else
-        {
-            // re-enable hittestvisible
-            Camera.IsHitTestVisible = true;
-
-            // remove infobar
-            ServiceInfo.Children.Clear();
-
-            // add infobar
-            ServiceInfo.Children.Add(new InfoBar
-            {
-                Title = Camera.IsChecked == true ? "Successfully enabled Camera support." : "Successfully disabled Camera support.",
-                IsClosable = false,
-                IsOpen = true,
-                Severity = InfoBarSeverity.Success,
-                Margin = new Thickness(4, -28, 4, 36)
-            });
-
-            // delay
-            await Task.Delay(2000);
-
-            // remove infobar
-            ServiceInfo.Children.Clear();
-        }
-    }
-
-    private void GetTaskManagerState()
-    {
-        // define services and drivers
-        var drivers = new[] { "# pcw" };
-
-        // check state
-        TaskManager.IsChecked = drivers.All(driver => File.ReadAllLines(list).Any(line => line.Trim() == driver));
-
-        isInitializingTaskManagerState = false;
-    }
-
-    private async void TaskManager_Checked(object sender, RoutedEventArgs e)
-    {
-        if (isInitializingTaskManagerState) return;
-
-        // disable hittestvisible to avoid double-clicking
-        TaskManager.IsHitTestVisible = false;
-
-        // remove infobar
-        ServiceInfo.Children.Clear();
-
-        // add infobar
-        ServiceInfo.Children.Add(new InfoBar
-        {
-            Title = TaskManager.IsChecked == true ? "Enabling Task Manager support..." : "Disabling Task Manager support...",
-            IsClosable = false,
-            IsOpen = true,
-            Severity = InfoBarSeverity.Informational,
-            Margin = new Thickness(4, -28, 4, 36)
-        });
-
-        // read list
-        var lines = await File.ReadAllLinesAsync(list);
-
-        // define drivers
-        var drivers = new[] { "pcw" };
-
-        // make changes
-        bool isChecked = TaskManager.IsChecked == true;
-        for (int i = 0; i < lines.Length; i++)
-        {
-            if (drivers.Contains(lines[i].Trim().TrimStart('#', ' ')))
-                lines[i] = (isChecked ? "# " + lines[i] : lines[i].TrimStart('#')).Trim();
-        }
-
-        // write changes
-        await File.WriteAllLinesAsync(list, lines);
-
-        if (!Services.IsOn)
-        {
-            // get latest build
-            string folderName = Directory.GetDirectories(Path.Combine(PathHelper.GetAppDataFolderPath(), "Service-list-builder", "build")).OrderByDescending(d => Directory.GetLastWriteTime(d)).FirstOrDefault()?.Split('\\').Last();
-
-            // enable services
-            await Process.Start(new ProcessStartInfo { FileName = nsudoPath, Arguments = $"-U:T -P:E -Wait -ShowWindowMode:Hide \"{Path.Combine(PathHelper.GetAppDataFolderPath(), "Service-list-builder", "build", folderName, "Services-Enable.bat")}\"", CreateNoWindow = true }).WaitForExitAsync();
-        }
-
-        if (isChecked)
-        {
-            // declare services and drivers
-            var groups = new[]
-            {
-                (new[] { "pcw" }, 0),
-            };
-
-            // set start values
-            foreach (var group in groups)
-            {
-                foreach (var service in group.Item1)
-                {
-                    using (var key = Registry.LocalMachine.OpenSubKey($@"SYSTEM\CurrentControlSet\Services\{service}", writable: true))
-                    {
-                        if (key == null) continue;
-
-                        Registry.SetValue($@"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\{service}", "Start", group.Item2);
-                    }
-                }
-            }
-        }
-
-        // build service list
-        await Process.Start(new ProcessStartInfo { FileName = nsudoPath, Arguments = $@"-U:T -P:E -Wait -ShowWindowMode:Hide ""{Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Applications", "Service-list-builder", "service-list-builder.exe")}"" --config ""{Path.Combine(PathHelper.GetAppDataFolderPath(), "Service-list-builder", "lists.ini")}"" --disable-service-warning --output-dir ""{Path.Combine(PathHelper.GetAppDataFolderPath(), "Service-list-builder", "build")}""", CreateNoWindow = true }).WaitForExitAsync();
-
-        if (!Services.IsOn)
-        {
-            // get latest build
-            string folderName = Directory.GetDirectories(Path.Combine(PathHelper.GetAppDataFolderPath(), "Service-list-builder", "build")).OrderByDescending(d => Directory.GetLastWriteTime(d)).FirstOrDefault()?.Split('\\').Last();
-
-            // disable services
-            await Process.Start(new ProcessStartInfo { FileName = nsudoPath, Arguments = $"-U:T -P:E -Wait -ShowWindowMode:Hide \"{Path.Combine(PathHelper.GetAppDataFolderPath(), "Service-list-builder", "build", folderName, "Services-Disable.bat")}\"", CreateNoWindow = true }).WaitForExitAsync();
-
-            // re-enable hittestvisible
-            TaskManager.IsHitTestVisible = true;
-
-            // remove infobar
-            ServiceInfo.Children.Clear();
-
-            // add infobar
-            var infoBar = new InfoBar
-            {
-                Title = TaskManager.IsChecked == true ? "Successfully enabled Task Manager support. A restart is required to apply the change." : "Successfully disabled Task Manager support. A restart is required to apply the change.",
-                IsClosable = false,
-                IsOpen = true,
-                Severity = InfoBarSeverity.Success,
-                Margin = new Thickness(4, -28, 4, 36),
-                ActionButton = new Button
-                {
-                    Content = "Restart",
-                    HorizontalAlignment = HorizontalAlignment.Right
-                }
-            };
-            ((Button)infoBar.ActionButton).Click += (s, args) =>
-            Process.Start(new ProcessStartInfo("shutdown", "/r /f /t 0") { CreateNoWindow = true });
-
-            ServiceInfo.Children.Add(infoBar);
-        }
-        else
-        {
-            // re-enable hittestvisible
-            TaskManager.IsHitTestVisible = true;
-
-            // remove infobar
-            ServiceInfo.Children.Clear();
-
-            // add infobar
-            ServiceInfo.Children.Add(new InfoBar
-            {
-                Title = TaskManager.IsChecked == true ? "Successfully enabled Task Manager support." : "Successfully disabled Task Manager support.",
-                IsClosable = false,
-                IsOpen = true,
-                Severity = InfoBarSeverity.Success,
-                Margin = new Thickness(4, -28, 4, 36)
-            });
-
-            // delay
-            await Task.Delay(2000);
-
-            // remove infobar
-            ServiceInfo.Children.Clear();
-        }
-    }
-
-    private void GetLaptopState()
-    {
-        bool isDesktop = new ManagementObjectSearcher("SELECT * FROM Win32_SystemEnclosure")
-               .Get()
-               .Cast<ManagementObject>()
-               .Any(obj => ((ushort[])obj["ChassisTypes"])?.Any(type => new ushort[] { 3, 4, 5, 6, 7, 15, 16, 17 }.Contains(type)) == true);
-
-        if (isDesktop)
-        {
-            Laptop_SettingsCard.Visibility = Visibility.Collapsed;
-        }
-
-        // define services and drivers
-        var drivers = new[] { "# msisadrv" };
-
-        // check state
-        Laptop.IsChecked = drivers.All(driver => File.ReadAllLines(list).Any(line => line.Trim() == driver));
-
-        isInitializingLaptopState = false;
-    }
-
-    private async void Laptop_Checked(object sender, RoutedEventArgs e)
-    {
-        if (isInitializingLaptopState) return;
-
-        // disable hittestvisible to avoid double-clicking
-        Laptop.IsHitTestVisible = false;
-
-        // remove infobar
-        ServiceInfo.Children.Clear();
-
-        // add infobar
-        ServiceInfo.Children.Add(new InfoBar
-        {
-            Title = Laptop.IsChecked == true ? "Enabling Laptop Keyboard support..." : "Disabling Laptop Keyboard support...",
-            IsClosable = false,
-            IsOpen = true,
-            Severity = InfoBarSeverity.Informational,
-            Margin = new Thickness(4, -28, 4, 36)
-        });
-
-        // read list
-        var lines = await File.ReadAllLinesAsync(list);
-
-        // define drivers
-        var drivers = new[] { "msisadrv" };
-
-        // make changes
-        bool isChecked = Laptop.IsChecked == true;
-        for (int i = 0; i < lines.Length; i++)
-        {
-            if (drivers.Contains(lines[i].Trim().TrimStart('#', ' ')))
-                lines[i] = (isChecked ? "# " + lines[i] : lines[i].TrimStart('#')).Trim();
-        }
-
-        // write changes
-        await File.WriteAllLinesAsync(list, lines);
-
-        if (!Services.IsOn)
-        {
-            // get latest build
-            string folderName = Directory.GetDirectories(Path.Combine(PathHelper.GetAppDataFolderPath(), "Service-list-builder", "build")).OrderByDescending(d => Directory.GetLastWriteTime(d)).FirstOrDefault()?.Split('\\').Last();
-
-            // enable services
-            await Process.Start(new ProcessStartInfo { FileName = nsudoPath, Arguments = $"-U:T -P:E -Wait -ShowWindowMode:Hide \"{Path.Combine(PathHelper.GetAppDataFolderPath(), "Service-list-builder", "build", folderName, "Services-Enable.bat")}\"", CreateNoWindow = true }).WaitForExitAsync();
-        }
-
-        if (isChecked)
-        {
-            // declare services and drivers
-            var groups = new[]
-            {
-                (new[] { "msisadrv" }, 0),
-            };
-
-            // set start values
-            foreach (var group in groups)
-            {
-                foreach (var service in group.Item1)
-                {
-                    using (var key = Registry.LocalMachine.OpenSubKey($@"SYSTEM\CurrentControlSet\Services\{service}", writable: true))
-                    {
-                        if (key == null) continue;
-
-                        Registry.SetValue($@"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\{service}", "Start", group.Item2);
-                    }
-                }
-            }
-        }
-
-        // build service list
-        await Process.Start(new ProcessStartInfo { FileName = nsudoPath, Arguments = $@"-U:T -P:E -Wait -ShowWindowMode:Hide ""{Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Applications", "Service-list-builder", "service-list-builder.exe")}"" --config ""{Path.Combine(PathHelper.GetAppDataFolderPath(), "Service-list-builder", "lists.ini")}"" --disable-service-warning --output-dir ""{Path.Combine(PathHelper.GetAppDataFolderPath(), "Service-list-builder", "build")}""", CreateNoWindow = true }).WaitForExitAsync();
-
-        if (!Services.IsOn)
-        {
-            // get latest build
-            string folderName = Directory.GetDirectories(Path.Combine(PathHelper.GetAppDataFolderPath(), "Service-list-builder", "build")).OrderByDescending(d => Directory.GetLastWriteTime(d)).FirstOrDefault()?.Split('\\').Last();
-
-            // disable services
-            await Process.Start(new ProcessStartInfo { FileName = nsudoPath, Arguments = $"-U:T -P:E -Wait -ShowWindowMode:Hide \"{Path.Combine(PathHelper.GetAppDataFolderPath(), "Service-list-builder", "build", folderName, "Services-Disable.bat")}\"", CreateNoWindow = true }).WaitForExitAsync();
-
-            // re-enable hittestvisible
-            Laptop.IsHitTestVisible = true;
-
-            // remove infobar
-            ServiceInfo.Children.Clear();
-
-            // add infobar
-            var infoBar = new InfoBar
-            {
-                Title = Laptop.IsChecked == true ? "Successfully enabled Laptop Keyboard support. A restart is required to apply the change." : "Successfully disabled Laptop Keyboard support. A restart is required to apply the change.",
-                IsClosable = false,
-                IsOpen = true,
-                Severity = InfoBarSeverity.Success,
-                Margin = new Thickness(4, -28, 4, 36),
-                ActionButton = new Button
-                {
-                    Content = "Restart",
-                    HorizontalAlignment = HorizontalAlignment.Right
-                }
-            };
-            ((Button)infoBar.ActionButton).Click += (s, args) =>
-            Process.Start(new ProcessStartInfo("shutdown", "/r /f /t 0") { CreateNoWindow = true });
-
-            ServiceInfo.Children.Add(infoBar);
-        }
-        else
-        {
-            // re-enable hittestvisible
-            Laptop.IsHitTestVisible = true;
-
-            // remove infobar
-            ServiceInfo.Children.Clear();
-
-            // add infobar
-            ServiceInfo.Children.Add(new InfoBar
-            {
-                Title = Laptop.IsChecked == true ? "Successfully enabled Laptop Keyboard support." : "Successfully disabled Laptop Keyboard support.",
-                IsClosable = false,
-                IsOpen = true,
-                Severity = InfoBarSeverity.Success,
-                Margin = new Thickness(4, -28, 4, 36)
-            });
-
-            // delay
-            await Task.Delay(2000);
-
-            // remove infobar
-            ServiceInfo.Children.Clear();
-        }
-    }
-
-    private void GetGTAState()
-    {
-        // define services and drivers
-        var drivers = new[] { "# mssmbios" };
-
-        // check state
-        GTA.IsChecked = drivers.All(driver => File.ReadAllLines(list).Any(line => line.Trim() == driver));
-
-        isInitializingGTAState = false;
-    }
-
-    private async void GTA_Checked(object sender, RoutedEventArgs e)
-    {
-        if (isInitializingGTAState) return;
-
-        // disable hittestvisible to avoid double-clicking
-        GTA.IsHitTestVisible = false;
-
-        // remove infobar
-        ServiceInfo.Children.Clear();
-
-        // add infobar
-        ServiceInfo.Children.Add(new InfoBar
-        {
-            Title = GTA.IsChecked == true ? "Enabling GTA support..." : "Disabling GTA support...",
-            IsClosable = false,
-            IsOpen = true,
-            Severity = InfoBarSeverity.Informational,
-            Margin = new Thickness(4, -28, 4, 36)
-        });
-
-        // read list
-        var lines = await File.ReadAllLinesAsync(list);
-
-        // define drivers
-        var drivers = new[] { "mssmbios" };
-
-        // make changes
-        bool isChecked = GTA.IsChecked == true;
-        for (int i = 0; i < lines.Length; i++)
-        {
-            if (drivers.Contains(lines[i].Trim().TrimStart('#', ' ')))
-                lines[i] = (isChecked ? "# " + lines[i] : lines[i].TrimStart('#')).Trim();
-        }
-
-        // write changes
-        await File.WriteAllLinesAsync(list, lines);
-
-        if (!Services.IsOn)
-        {
-            // get latest build
-            string folderName = Directory.GetDirectories(Path.Combine(PathHelper.GetAppDataFolderPath(), "Service-list-builder", "build")).OrderByDescending(d => Directory.GetLastWriteTime(d)).FirstOrDefault()?.Split('\\').Last();
-
-            // enable services
-            await Process.Start(new ProcessStartInfo { FileName = nsudoPath, Arguments = $"-U:T -P:E -Wait -ShowWindowMode:Hide \"{Path.Combine(PathHelper.GetAppDataFolderPath(), "Service-list-builder", "build", folderName, "Services-Enable.bat")}\"", CreateNoWindow = true }).WaitForExitAsync();
-        }
-
-        if (isChecked)
-        {
-            // declare services and drivers
-            var groups = new[]
-            {
-                (new[] { "mssmbios" }, 1),
-            };
-
-            // set start values
-            foreach (var group in groups)
-            {
-                foreach (var service in group.Item1)
-                {
-                    using var key = Registry.LocalMachine.OpenSubKey($@"SYSTEM\CurrentControlSet\Services\{service}", writable: true);
-                    if (key == null) continue;
-
-                    Registry.SetValue($@"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\{service}", "Start", group.Item2);
-                }
-            }
-        }
-
-        // build service list
-        await Process.Start(new ProcessStartInfo { FileName = nsudoPath, Arguments = $@"-U:T -P:E -Wait -ShowWindowMode:Hide ""{Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Applications", "Service-list-builder", "service-list-builder.exe")}"" --config ""{Path.Combine(PathHelper.GetAppDataFolderPath(), "Service-list-builder", "lists.ini")}"" --disable-service-warning --output-dir ""{Path.Combine(PathHelper.GetAppDataFolderPath(), "Service-list-builder", "build")}""", CreateNoWindow = true }).WaitForExitAsync();
-
-        if (!Services.IsOn)
-        {
-            // get latest build
-            string folderName = Directory.GetDirectories(Path.Combine(PathHelper.GetAppDataFolderPath(), "Service-list-builder", "build")).OrderByDescending(d => Directory.GetLastWriteTime(d)).FirstOrDefault()?.Split('\\').Last();
-
-            // disable services
-            await Process.Start(new ProcessStartInfo { FileName = nsudoPath, Arguments = $"-U:T -P:E -Wait -ShowWindowMode:Hide \"{Path.Combine(PathHelper.GetAppDataFolderPath(), "Service-list-builder", "build", folderName, "Services-Disable.bat")}\"", CreateNoWindow = true }).WaitForExitAsync();
-
-            // re-enable hittestvisible
-            GTA.IsHitTestVisible = true;
-
-            // remove infobar
-            ServiceInfo.Children.Clear();
-
-            // add infobar
-            var infoBar = new InfoBar
-            {
-                Title = GTA.IsChecked == true ? "Successfully enabled GTA support. A restart is required to apply the change." : "Successfully disabled GTA support. A restart is required to apply the change.",
-                IsClosable = false,
-                IsOpen = true,
-                Severity = InfoBarSeverity.Success,
-                Margin = new Thickness(4, -28, 4, 36),
-                ActionButton = new Button
-                {
-                    Content = "Restart",
-                    HorizontalAlignment = HorizontalAlignment.Right
-                }
-            };
-            ((Button)infoBar.ActionButton).Click += (s, args) =>
-            Process.Start(new ProcessStartInfo("shutdown", "/r /f /t 0") { CreateNoWindow = true });
-
-            ServiceInfo.Children.Add(infoBar);
-        }
-        else
-        {
-            // re-enable hittestvisible
-            GTA.IsHitTestVisible = true;
-
-            // remove infobar
-            ServiceInfo.Children.Clear();
-
-            // add infobar
-            ServiceInfo.Children.Add(new InfoBar
-            {
-                Title = GTA.IsChecked == true ? "Successfully enabled GTA support." : "Successfully disabled GTA support.",
-                IsClosable = false,
-                IsOpen = true,
-                Severity = InfoBarSeverity.Success,
-                Margin = new Thickness(4, -28, 4, 36)
-            });
-
-            // delay
-            await Task.Delay(2000);
-
-            // remove infobar
-            ServiceInfo.Children.Clear();
-        }
-    }
-
-    private void GetAMDVRRState()
-    {
-        // remove if no amd gpu
-        using (var searcher = new ManagementObjectSearcher("SELECT * FROM Win32_VideoController"))
-        {
-            foreach (var obj in searcher.Get())
-            {
-                string name = obj["Name"]?.ToString();
-                string version = obj["DriverVersion"]?.ToString();
-
-                if (name != null)
-                {
-                    if (!name.Contains("AMD", StringComparison.OrdinalIgnoreCase) && !name.Contains("Radeon", StringComparison.OrdinalIgnoreCase))
-                    {
-                        Services_SettingsGroup.Items.Remove(AmdVrr_SettingsCard);
-                    }
-                }
-            }
-        }
-
-        // define services and drivers
-        var services = new[] { "AMD External Events Utility" };
-
-        // check state
-        AMDVRR.IsChecked = services.All(service => File.ReadAllLines(list).Any(line => line.Trim() == service));
-
-        isInitializingAMDVRRState = false;
-    }
-
-    private async void AMDVRR_Checked(object sender, RoutedEventArgs e)
-    {
-        if (isInitializingAMDVRRState) return;
-
-        // disable hittestvisible to avoid double-clicking
-        AMDVRR.IsHitTestVisible = false;
-
-        // remove infobar
-        ServiceInfo.Children.Clear();
-
-        // add infobar
-        ServiceInfo.Children.Add(new InfoBar
-        {
-            Title = AMDVRR.IsChecked == true ? "Enabling AMD Variable Refresh Rate (VRR) / FreeSync support..." : "Disabling AMD Variable Refresh Rate (VRR) / FreeSync support...",
-            IsClosable = false,
-            IsOpen = true,
-            Severity = InfoBarSeverity.Informational,
-            Margin = new Thickness(4, -28, 4, 36)
-        });
-
-        // read list
-        var lines = await File.ReadAllLinesAsync(list);
-
-        // define services
-        var services = new[] { "AMD External Events Utility" };
-
-        // make changes
-        bool isChecked = AMDVRR.IsChecked == true;
-        for (int i = 0; i < lines.Length; i++)
-        {
-            if (services.Contains(lines[i].Trim().TrimStart('#', ' ')))
-                lines[i] = (isChecked ? lines[i].TrimStart('#', ' ') : "# " + lines[i].TrimStart('#', ' ')).Trim();
-        }
-
-        // write changes
-        await File.WriteAllLinesAsync(list, lines);
-
-        if (!Services.IsOn)
-        {
-            // get latest build
-            string folderName = Directory.GetDirectories(Path.Combine(PathHelper.GetAppDataFolderPath(), "Service-list-builder", "build")).OrderByDescending(d => Directory.GetLastWriteTime(d)).FirstOrDefault()?.Split('\\').Last();
-
-            // enable services
-            await Process.Start(new ProcessStartInfo { FileName = nsudoPath, Arguments = $"-U:T -P:E -Wait -ShowWindowMode:Hide \"{Path.Combine(PathHelper.GetAppDataFolderPath(), "Service-list-builder", "build", folderName, "Services-Enable.bat")}\"", CreateNoWindow = true }).WaitForExitAsync();
-        }
-
-        if (isChecked)
-        {
-            // declare services and drivers
-            var groups = new[]
-            {
-                (new[] { "AMD External Events Utility" }, 2),
-            };
-
-            // set start values
-            foreach (var group in groups)
-            {
-                foreach (var service in group.Item1)
-                {
-                    using (var key = Registry.LocalMachine.OpenSubKey($@"SYSTEM\CurrentControlSet\Services\{service}", writable: true))
-                    {
-                        if (key == null) continue;
-
-                        Registry.SetValue($@"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\{service}", "Start", group.Item2);
-                    }
-                }
-            }
-        }
-
-        // build service list
-        await Process.Start(new ProcessStartInfo { FileName = nsudoPath, Arguments = $@"-U:T -P:E -Wait -ShowWindowMode:Hide ""{Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Applications", "Service-list-builder", "service-list-builder.exe")}"" --config ""{Path.Combine(PathHelper.GetAppDataFolderPath(), "Service-list-builder", "lists.ini")}"" --disable-service-warning --output-dir ""{Path.Combine(PathHelper.GetAppDataFolderPath(), "Service-list-builder", "build")}""", CreateNoWindow = true }).WaitForExitAsync();
-
-        if (!Services.IsOn)
-        {
-            // get latest build
-            string folderName = Directory.GetDirectories(Path.Combine(PathHelper.GetAppDataFolderPath(), "Service-list-builder", "build")).OrderByDescending(d => Directory.GetLastWriteTime(d)).FirstOrDefault()?.Split('\\').Last();
-
-            // disable services
-            await Process.Start(new ProcessStartInfo { FileName = nsudoPath, Arguments = $"-U:T -P:E -Wait -ShowWindowMode:Hide \"{Path.Combine(PathHelper.GetAppDataFolderPath(), "Service-list-builder", "build", folderName, "Services-Disable.bat")}\"", CreateNoWindow = true }).WaitForExitAsync();
-
-            // re-enable hittestvisible
-            AMDVRR.IsHitTestVisible = true;
-
-            // remove infobar
-            ServiceInfo.Children.Clear();
-
-            // add infobar
-            var infoBar = new InfoBar
-            {
-                Title = AMDVRR.IsChecked == true ? "Successfully enabled AMD Variable Refresh Rate (VRR) / FreeSync support. A restart is required to apply the change." : "Successfully disabled AMD Variable Refresh Rate (VRR) / FreeSync support. A restart is required to apply the change.",
-                IsClosable = false,
-                IsOpen = true,
-                Severity = InfoBarSeverity.Success,
-                Margin = new Thickness(4, -28, 4, 36),
-                ActionButton = new Button
-                {
-                    Content = "Restart",
-                    HorizontalAlignment = HorizontalAlignment.Right
-                }
-            };
-            ((Button)infoBar.ActionButton).Click += (s, args) =>
-            Process.Start(new ProcessStartInfo("shutdown", "/r /f /t 0") { CreateNoWindow = true });
-
-            ServiceInfo.Children.Add(infoBar);
-        }
-        else
-        {
-            // re-enable hittestvisible
-            AMDVRR.IsHitTestVisible = true;
-
-            // remove infobar
-            ServiceInfo.Children.Clear();
-
-            // add infobar
-            ServiceInfo.Children.Add(new InfoBar
-            {
-                Title = AMDVRR.IsChecked == true ? "Successfully enabled AMD Variable Refresh Rate (VRR) / FreeSync support." : "Successfully disabled AMD Variable Refresh Rate (VRR) / FreeSync support.",
                 IsClosable = false,
                 IsOpen = true,
                 Severity = InfoBarSeverity.Success,
