@@ -40,7 +40,7 @@ public static class GraphicsStage
         var actions = new List<(string Title, Func<Task> Action, Func<bool> Condition)>
         {
             // download the latest intel driver
-            ("Downloading the latest Intel Driver", async () => await ProcessActions.RunDownload("https://downloadmirror.intel.com/764512/gfx_win_101.2115.zip", Path.GetTempPath(), "driver.zip"), () => Intel_6th == true),
+            ("Downloading the latest Intel Driver", async () => await ProcessActions.RunDownload((await IntelHelper.CheckUpdate()).newestDownloadUrl, Path.GetTempPath(), "driver.zip"), () => Intel_6th == true),
 
             // extract the driver
             ("Extracting the Intel driver", async () => await ProcessActions.RunExtract(Path.Combine(Path.GetTempPath(), "driver.zip"), Path.Combine(Path.GetTempPath(), "driver")), () => Intel_6th == true),
@@ -50,34 +50,14 @@ public static class GraphicsStage
             ("Installing the Intel driver", async () => await ProcessActions.RefreshUI(), () => Intel_6th == true),
            
             // download the latest intel driver
-            ("Downloading the latest Intel Driver", async () => await ProcessActions.RunDownload("https://downloadmirror.intel.com/871509/gfx_win_101.2140.exe", Path.GetTempPath(), "driver.exe"), () => Intel_7th_10th == true),
+            ("Downloading the latest Intel Driver", async () => await ProcessActions.RunDownload((await IntelHelper.CheckUpdate()).newestDownloadUrl, Path.GetTempPath(), "driver.exe"), () => Intel_7th_10th == true || Intel_11th_14th == true || Intel_Arc == true),
 
             // extract the driver
-            ("Extracting the Intel driver", async () => await ProcessActions.RunExtract(Path.Combine(Path.GetTempPath(), "driver.exe"), Path.Combine(Path.GetTempPath(), "driver")), () => Intel_7th_10th == true),
+            ("Extracting the Intel driver", async () => await ProcessActions.RunExtract(Path.Combine(Path.GetTempPath(), "driver.exe"), Path.Combine(Path.GetTempPath(), "driver")), () => Intel_7th_10th == true || Intel_11th_14th == true || Intel_Arc == true),
 
             // install the driver
-            ("Installing the Intel driver", async () => await ProcessActions.RunNsudo("CurrentUser", @"""%TEMP%\driver\Installer.exe"" /silent"), () => Intel_7th_10th == true),
-            ("Installing the Intel driver", async () => await ProcessActions.RefreshUI(), () => Intel_7th_10th == true),
-
-            // download the latest intel driver
-            ("Downloading the latest Intel Driver", async () => await ProcessActions.RunDownload("https://downloadmirror.intel.com/873460/gfx_win_101.7084.exe", Path.GetTempPath(), "driver.exe"), () => Intel_11th_14th == true),
-
-            // extract the driver
-            ("Extracting the Intel driver", async () => await ProcessActions.RunExtract(Path.Combine(Path.GetTempPath(), "driver.exe"), Path.Combine(Path.GetTempPath(), "driver")), () => Intel_11th_14th == true),
-
-            // install the driver
-            ("Installing the Intel driver", async () => await ProcessActions.RunNsudo("CurrentUser", @"""%TEMP%\driver\Installer.exe"" /silent"), () => Intel_11th_14th == true),
-            ("Installing the Intel driver", async () => await ProcessActions.RefreshUI(), () => Intel_11th_14th == true),
-
-            // download the latest intel driver
-            ("Downloading the latest Intel Driver", async () => await ProcessActions.RunDownload("https://downloadmirror.intel.com/873140/gfx_win_101.8425.exe", Path.GetTempPath(), "driver.exe"), () => Intel_Arc == true),
-
-            // extract the driver
-            ("Extracting the Intel driver", async () => await ProcessActions.RunExtract(Path.Combine(Path.GetTempPath(), "driver.exe"), Path.Combine(Path.GetTempPath(), "driver")), () => Intel_Arc == true),
-
-            // install the driver
-            ("Installing the Intel driver", async () => await ProcessActions.RunNsudo("CurrentUser", @"""%TEMP%\driver\Installer.exe"" /silent"), () => Intel_Arc == true),
-            ("Installing the Intel driver", async () => await ProcessActions.RefreshUI(), () => Intel_Arc == true),
+            ("Installing the Intel driver", async () => await ProcessActions.RunNsudo("CurrentUser", @"""%TEMP%\driver\Installer.exe"" /silent"), () => Intel_7th_10th == true || Intel_11th_14th == true || Intel_Arc == true),
+            ("Installing the Intel driver", async () => await ProcessActions.RefreshUI(), () => Intel_7th_10th == true || Intel_11th_14th == true || Intel_Arc == true),
 
             // download the latest nvidia driver                                                     
             ("Downloading the latest NVIDIA Driver", async () => await ProcessActions.RunDownload((await NvidiaHelper.CheckUpdate()).newestDownloadUrl, Path.GetTempPath(), "driver.exe"), () => NVIDIA == true),
@@ -164,12 +144,10 @@ public static class GraphicsStage
             ("Configuring settings", async () => await ProcessActions.RunPowerShellScript("intelsettings.ps1", ""), () => Intel_6th == true || Intel_7th_10th == true || Intel_11th_14th == true || Intel_Arc == true),
 
             // disable unnecessary services
-            ("Disabling unnecessary services", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"cmd /c reg add ""HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\igccservice"" /v ""Start"" /t REG_DWORD /d 4 /f & sc stop igccservice"), () => Intel_6th == true || Intel_7th_10th == true || Intel_11th_14th == true || Intel_Arc == true),
+            ("Disabling unnecessary services", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"cmd /c reg add ""HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\igccservice"" /v ""Start"" /t REG_DWORD /d 4 /f & sc stop igccservice"), () => Intel_6th == true),
             ("Disabling unnecessary services", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"cmd /c reg add ""HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\igfxCUIService2.0.0.0"" /v ""Start"" /t REG_DWORD /d 4 /f & sc stop igfxCUIService2.0.0.0"), () => Intel_6th == true || Intel_7th_10th == true || Intel_11th_14th == true || Intel_Arc == true),
-
-            // disable high-definition-content-protection (hdcp)
-            ("Disabling high-definition-content-protection (HDCP)", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"cmd /c reg add ""HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\cphs"" /v ""Start"" /t REG_DWORD /d 4 /f & sc stop cphs"), () => Intel_6th == true || Intel_7th_10th == true || Intel_11th_14th == true || Intel_Arc == true),
-            ("Disabling high-definition-content-protection (HDCP)", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"cmd /c reg add ""HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\cplspcon"" /v ""Start"" /t REG_DWORD /d 4 /f & sc stop cplspcon"), () => Intel_6th == true || Intel_7th_10th == true || Intel_11th_14th == true || Intel_Arc == true),
+            ("Disabling unnecessary services", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"cmd /c reg add ""HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\cphs"" /v ""Start"" /t REG_DWORD /d 4 /f & sc stop cphs"), () => Intel_6th == true),
+            ("Disabling unnecessary services", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"cmd /c reg add ""HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\cplspcon"" /v ""Start"" /t REG_DWORD /d 4 /f & sc stop cplspcon"), () => Intel_6th == true || Intel_7th_10th == true || Intel_11th_14th == true || Intel_Arc == true),
 
             // disable nvidia tray icon
             ("Disabling NVIDIA tray icon", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SOFTWARE\NVIDIA Corporation\NvTray"" /v StartOnLogin /t REG_DWORD /d 0 /f"), () => NVIDIA == true),

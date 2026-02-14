@@ -111,7 +111,9 @@ namespace AutoOS
         private void TaskScheduler_UnobservedTaskException(object sender, UnobservedTaskExceptionEventArgs e)
         {
             e.SetObserved();
-            _ = ShowCrashDialogAsync(e.Exception);
+
+            if (e.Exception != null && !e.Exception.Message.Contains("Response body is unavailable for redirect responses"))
+                _ = ShowCrashDialogAsync(e.Exception);
         }
 
         private static async Task ShowCrashDialogAsync(Exception ex)

@@ -33,7 +33,6 @@
                                             CheckedContent="Checking for updates..."
                                             Content="No updates available"
                                             IsIndeterminate="True"
-                                            Loaded="NvidiaUpdateCheck_Checked"
                                             Style="{ThemeResource AccentProgressButtonStyle}" />
                     </dev:SettingsGroup.Content>
                     <dev:SettingsGroup.Items>
@@ -60,7 +59,6 @@
                                             CheckedContent="Checking for updates..."
                                             Content="No updates available"
                                             IsIndeterminate="True"
-                                            Loaded="AmdUpdateCheck_Checked"
                                             Style="{ThemeResource AccentProgressButtonStyle}" />
                     </dev:SettingsGroup.Content>
                     <dev:SettingsGroup.Items>
@@ -82,7 +80,6 @@
                                             CheckedContent="Checking for updates..."
                                             Content="No updates available"
                                             IsIndeterminate="True"
-                                            Loaded="IntelUpdateCheck_Checked"
                                             Style="{ThemeResource AccentProgressButtonStyle}" />
                     </dev:SettingsGroup.Content>
                     <dev:SettingsGroup.Items>

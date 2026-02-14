@@ -119,7 +119,7 @@ public sealed partial class GraphicsPage : Page
                 NvidiaUpdateCheck.CheckedContent = "Updating the NVIDIA driver...";
                 await ProcessActions.RunNsudo("CurrentUser", @"""%TEMP%\driver\setup.exe"" /s /clean");
                 await ProcessActions.Sleep(3000);
-                Nvidia_SettingsGroup.Description = "Current Version: " + (await Task.Run(() => Process.Start(new ProcessStartInfo("nvidia-smi", "--query-gpu=driver_version --format=csv,noheader") { CreateNoWindow = true, RedirectStandardOutput = true })?.StandardOutput.ReadToEndAsync()))?.Trim();
+                LoadGpus();
 
                 // disable the nvidia tray icon
                 NvidiaUpdateCheck.CheckedContent = "Disabling the NVIDIA tray icon...";
@@ -445,15 +445,127 @@ public sealed partial class GraphicsPage : Page
         {
             if (new ServiceController("Beep").Status == ServiceControllerStatus.Running)
             {
-                var dialog = new ContentDialog
+                var (_, newestVersion, newestDownloadUrl) = await IntelHelper.CheckUpdate();
+
+                IntelUpdateCheck.IsHitTestVisible = false;
+
+                // download the nvidia driver   
+                IntelUpdateCheck.CheckedContent = "Downloading the INTEL driver...";
+                await RunDownload(newestDownloadUrl, Path.GetTempPath(), "driver.exe");
+
+                // extract the driver
+                IntelUpdateCheck.CheckedContent = "Extracting the INTEL driver...";
+                await ProcessActions.RunExtract(Path.Combine(Path.GetTempPath(), "driver.exe"), Path.Combine(Path.GetTempPath(), "driver"));
+
+                // close obs studio
+                if (Process.GetProcessesByName("obs64").Length > 0)
                 {
-                    Title = "Not implemented yet",
-                    Content = "Intel Driver Update functionality has not been added yet.",
-                    CloseButtonText = "OK",
-                    DefaultButton = ContentDialogButton.Close,
-                    XamlRoot = App.MainWindow.Content.XamlRoot
-                };
-                await dialog.ShowAsync();
+                    foreach (var process in Process.GetProcessesByName("obs64"))
+                    {
+                        process.Kill();
+                        process.WaitForExit();
+                    }
+                }
+
+                // save config
+                var gpuDevices = DeviceDetectionService.FindDevicesByType(DeviceType.GPU);
+                IntPtr deviceInfoSetHandle = IntPtr.Zero;
+                foreach (var device in gpuDevices)
+                {
+                    if (deviceInfoSetHandle == IntPtr.Zero)
+                        deviceInfoSetHandle = device.DeviceInfoSet;
+
+                    if (device.RegistryKey != null)
+                    {
+                        string deviceKey = !string.IsNullOrEmpty(device.PnpDeviceId) ? device.PnpDeviceId : device.DevObjName ?? string.Empty;
+
+                        var settings = RegistryService.ReadDeviceSettings(device.RegistryKey, device.MaxMSILimit);
+                        deviceConfig[deviceKey] = (settings, device.DevObjName ?? string.Empty);
+                    }
+                }
+
+                foreach (var device in gpuDevices)
+                    device.RegistryKey?.Close();
+
+                if (deviceInfoSetHandle != IntPtr.Zero && deviceInfoSetHandle != new IntPtr(-1))
+                    SetupApi.SetupDiDestroyDeviceInfoList(deviceInfoSetHandle);
+
+                // update driver
+                NvidiaUpdateCheck.CheckedContent = "Updating the NVIDIA driver...";
+                await ProcessActions.RunNsudo("CurrentUser", @"""%TEMP%\driver\Installer.exe"" /silent");
+                await ProcessActions.Sleep(3000);
+                LoadGpus();
+
+                // reapply config
+                if (deviceConfig.Count > 0)
+                {
+                    NvidiaUpdateCheck.CheckedContent = "Reapplying Affinity...";
+                    await Task.Delay(1000);
+                    var changedDevices = new List<DeviceInfo>();
+                    var gpuDevicesAfterUpdate = DeviceDetectionService.FindDevicesByType(DeviceType.GPU);
+                    IntPtr deviceInfoSetHandleAfterUpdate = IntPtr.Zero;
+
+                    foreach (var device in gpuDevicesAfterUpdate)
+                    {
+                        if (deviceInfoSetHandleAfterUpdate == IntPtr.Zero)
+                            deviceInfoSetHandleAfterUpdate = device.DeviceInfoSet;
+
+                        if (device.RegistryKey == null)
+                            continue;
+
+                        string deviceKey = !string.IsNullOrEmpty(device.PnpDeviceId) ? device.PnpDeviceId : device.DevObjName ?? string.Empty;
+
+                        if (!string.IsNullOrEmpty(deviceKey) && deviceConfig.TryGetValue(deviceKey, out var savedData))
+                        {
+                            var savedSettings = savedData.settings;
+                            var currentSettings = RegistryService.ReadDeviceSettings(device.RegistryKey, device.MaxMSILimit);
+                            bool settingsChanged = currentSettings.DevicePolicy != savedSettings.DevicePolicy || currentSettings.DevicePriority != savedSettings.DevicePriority || currentSettings.AssignmentSetOverride != savedSettings.AssignmentSetOverride;
+
+                            if (settingsChanged)
+                            {
+                                RegistryService.SetAffinityPolicy(device.RegistryKey, savedSettings.DevicePolicy, savedSettings.DevicePriority, savedSettings.AssignmentSetOverride);
+                                changedDevices.Add(device);
+                            }
+                        }
+                    }
+
+                    if (changedDevices.Count > 0)
+                    {
+                        await Task.Run(() =>
+                        {
+                            foreach (var device in changedDevices)
+                            {
+                                if (device.DeviceInfoSet != IntPtr.Zero)
+                                {
+                                    DeviceSettingsService.RestartDevice(device);
+                                }
+                            }
+                        });
+                    }
+
+                    foreach (var device in gpuDevicesAfterUpdate)
+                    {
+                        device.RegistryKey?.Close();
+                    }
+
+                    if (deviceInfoSetHandleAfterUpdate != IntPtr.Zero && deviceInfoSetHandleAfterUpdate != new IntPtr(-1))
+                        SetupApi.SetupDiDestroyDeviceInfoList(deviceInfoSetHandleAfterUpdate);
+
+                    deviceConfig.Clear();
+                }
+
+                // apply profile
+                if (localSettings.Values["MsiProfile"] != null)
+                {
+                    await Task.Run(() => Process.Start(new ProcessStartInfo(@"C:\Program Files (x86)\MSI Afterburner\MSIAfterburner.exe") { Arguments = "/Profile1 /q" })?.WaitForExit());
+                }
+
+                // launch obs studio
+                if (!(localSettings.Values["OBS"] as int? == 0))
+                {
+                    await Task.Run(() => Process.Start(new ProcessStartInfo("cmd.exe") { Arguments = @"/c del ""%APPDATA%\obs-studio\.sentinel"" /s /f /q", CreateNoWindow = true, WindowStyle = ProcessWindowStyle.Hidden, UseShellExecute = false })?.WaitForExit());
+                    await Task.Run(() => Process.Start(new ProcessStartInfo { FileName = @"C:\Program Files\obs-studio\bin\64bit\obs64.exe", Arguments = "--disable-updater --startreplaybuffer --minimize-to-tray", WorkingDirectory = @"C:\Program Files\obs-studio\bin\64bit" }));
+                }
 
                 IntelUpdateCheck.IsHitTestVisible = true;
                 IntelUpdateCheck.IsChecked = false;
@@ -481,11 +593,7 @@ public sealed partial class GraphicsPage : Page
 
             try
             {
-                string currentVersion = Intel_SettingsGroup.Description.ToString();
-                string newestVersion = Intel_SettingsGroup.Description.ToString();
-
-                // delay
-                await Task.Delay(800);
+                var (currentVersion, newestVersion, newestDownloadUrl) = await IntelHelper.CheckUpdate();
 
                 // check if update is needed
                 if (string.Compare(newestVersion, currentVersion, StringComparison.Ordinal) > 0)
@@ -501,9 +609,6 @@ public sealed partial class GraphicsPage : Page
             }
             catch
             {
-                // delay
-                await Task.Delay(800);
-
                 IntelUpdateCheck.IsChecked = false;
                 IntelUpdateCheck.Content = "Failed to check for updates";
             }
