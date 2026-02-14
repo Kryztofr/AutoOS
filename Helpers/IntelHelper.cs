@@ -134,11 +134,6 @@ namespace AutoOS.Helpers
             if (!string.IsNullOrEmpty(fileId) && !string.IsNullOrEmpty(fileName))
                 newestDownloadUrl = $"https://downloadmirror.intel.com/{fileId}/{fileName}";
 
-            await MessageBox.ShowAsync(
-                $"Codename: {codename}\nCurrent Version: {currentVersion}\nLatest Version: {newestVersion}\nDownload URL: {newestDownloadUrl}",
-                "Intel Helper"
-            );
-
             return (currentVersion, newestVersion, newestDownloadUrl);
         }
     }

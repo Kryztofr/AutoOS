@@ -105,15 +105,6 @@ public sealed partial class UpdatePage : Page
         WindowsUpdateInfo.Children.Clear();
     }
 
-    private void ReadMoreButton_Click(object sender, RoutedEventArgs e)
-    {
-        Process.Start(new ProcessStartInfo
-        {
-            FileName = "https://github.com/Duckleeng/TweakCollection/tree/main/Research/AutoBoost#windows-11-24h2-autoboost-behavior",
-            UseShellExecute = true
-        });
-    }
-
     private void GetTargetVersion()
     {
         TargetVersion.Items.Add(new ComboBoxItem { Content = "Default" });

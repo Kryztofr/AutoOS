@@ -27,14 +27,8 @@
                                    Header="Windows Updates"
                                    HeaderIcon="{dev:BitmapIcon Source=Assets/Fluent/Update2.png}">
                     <dev:SettingsGroup.Content>
-                        <StackPanel Spacing="12">
-                            <HyperlinkButton Margin="0,-24,0,0"
-                                             Click="ReadMoreButton_Click"
-                                             Content="Read more"
-                                             Style="{StaticResource TextBlockButtonStyle}" />
-                            <ToggleSwitch x:Name="WindowsUpdate"
-                                          Toggled="Update_Toggled" />
-                        </StackPanel>
+                        <ToggleSwitch x:Name="WindowsUpdate"
+                                      Toggled="Update_Toggled" />
                     </dev:SettingsGroup.Content>
                     <dev:SettingsGroup.Items>
                         <dev:SettingsCard Header="Target Version">
