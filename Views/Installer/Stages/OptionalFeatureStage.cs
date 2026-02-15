@@ -28,12 +28,12 @@ public static class OptionalFeatureStage
             (@"Disabling ""SmbDirect"" optional feature", async () => await ProcessActions.RunPowerShell(@"Disable-WindowsOptionalFeature -FeatureName SmbDirect -Online -NoRestart -ErrorAction Stop"), null),
 
             // remove capabilities 
-            (@"Removing ""App.StepsRecorder"" capability", async () => await ProcessActions.RunPowerShell(@"Remove-WindowsCapability -Online -Name App.StepsRecorder* -ErrorAction Stop"), null),
-            (@"Removing ""Browser.InternetExplorer"" capability", async () => await ProcessActions.RunPowerShell(@"Remove-WindowsCapability -Online -Name Browser.InternetExplorer* -ErrorAction Stop"), null),
-            (@"Removing ""Media.WindowsMediaPlayer"" capability", async () => await ProcessActions.RunPowerShell(@"Remove-WindowsCapability -Online -Name Media.WindowsMediaPlayer* -ErrorAction Stop"), null),
-            (@"Removing ""Microsoft.Windows.PowerShell.ISE"" capability", async () => await ProcessActions.RunPowerShell(@"Remove-WindowsCapability -Online -Name Microsoft.Windows.PowerShell.ISE* -ErrorAction Stop"), null),
-            (@"Removing ""Microsoft.Windows.WordPad"" capability", async () => await ProcessActions.RunPowerShell(@"Remove-WindowsCapability -Online -Name Microsoft.Windows.WordPad* -ErrorAction Stop"), null),
-            (@"Removing ""VBSCRIPT"" capability", async () => await ProcessActions.RunPowerShell(@"Remove-WindowsCapability -Online -Name VBSCRIPT* -ErrorAction Stop"), null),
+            (@"Removing ""App.StepsRecorder"" capability", async () => await ProcessActions.RunPowerShell(@"Remove-WindowsCapability -Online -Name (Get-WindowsCapability -Online | Where Name -like ""App.StepsRecorder*"").Name"), null),
+            (@"Removing ""Browser.InternetExplorer"" capability", async () => await ProcessActions.RunPowerShell(@"Remove-WindowsCapability -Online -Name (Get-WindowsCapability -Online | Where Name -like ""Browser.InternetExplorer*"").Name"), null),
+            (@"Removing ""Media.WindowsMediaPlayer"" capability", async () => await ProcessActions.RunPowerShell(@"Remove-WindowsCapability -Online -Name (Get-WindowsCapability -Online | Where Name -like ""Media.WindowsMediaPlayer*"").Name"), null),
+            (@"Removing ""Microsoft.Windows.PowerShell.ISE"" capability", async () => await ProcessActions.RunPowerShell(@"Remove-WindowsCapability -Online -Name (Get-WindowsCapability -Online | Where Name -like ""Microsoft.Windows.PowerShell.ISE*"").Name"), null),
+            (@"Removing ""Microsoft.Windows.WordPad"" capability", async () => await ProcessActions.RunPowerShell(@"Remove-WindowsCapability -Online -Name (Get-WindowsCapability -Online | Where Name -like ""Microsoft.Windows.WordPad**"").Name"), null),
+            (@"Removing ""VBSCRIPT"" capability", async () => await ProcessActions.RunPowerShell(@"Remove-WindowsCapability -Online -Name (Get-WindowsCapability -Online | Where Name -like ""VBSCRIPT*"").Name"), null),
         };
 
         var filteredActions = actions.Where(a => a.Condition == null || a.Condition.Invoke()).ToList();
