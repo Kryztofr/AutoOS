@@ -283,6 +283,7 @@ if ($ExistingPartitions.Count -gt 0) {
 }
 else {
     foreach ($Partition in $Partitions) {
+        if (-not $Partition.DriveLetter) { continue }
         $Supported = Get-PartitionSupportedSize -DriveLetter $Partition.DriveLetter
         $MaxShrinkMB = [math]::Floor(($Partition.Size - $Supported.SizeMin) / 1MB)
         Write-Host "Partition $($Partition.DriveLetter): $MaxShrinkMB MB shrinkable"

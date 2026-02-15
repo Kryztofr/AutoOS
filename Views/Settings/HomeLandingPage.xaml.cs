@@ -203,6 +203,11 @@ namespace AutoOS.Views.Settings
                 (@"Removing ""Microsoft.Windows.PowerShell.ISE"" capability", async () => await ProcessActions.RunPowerShell(@"Remove-WindowsCapability -Online -Name (Get-WindowsCapability -Online | Where Name -like ""Microsoft.Windows.PowerShell.ISE*"").Name"), null),
                 (@"Removing ""Microsoft.Windows.WordPad"" capability", async () => await ProcessActions.RunPowerShell(@"Remove-WindowsCapability -Online -Name (Get-WindowsCapability -Online | Where Name -like ""Microsoft.Windows.WordPad**"").Name"), null),
                 (@"Removing ""VBSCRIPT"" capability", async () => await ProcessActions.RunPowerShell(@"Remove-WindowsCapability -Online -Name (Get-WindowsCapability -Online | Where Name -like ""VBSCRIPT*"").Name"), null),
+                
+                // disable language hotkeys
+                ("Disabling Language Hotkeys", async () => await ProcessActions.RunNsudo("CurrentUser", @"reg add ""HKEY_CURRENT_USER\Keyboard Layout\Toggle"" /v ""Hotkey"" /t REG_SZ /d 3 /f"), null),
+                ("Disabling Language Hotkeys", async () => await ProcessActions.RunNsudo("CurrentUser", @"reg add ""HKEY_CURRENT_USER\Keyboard Layout\Toggle"" /v ""Language Hotkey"" /t REG_SZ /d 3 /f"), null),
+                ("Disabling Language Hotkeys", async () => await ProcessActions.RunNsudo("CurrentUser", @"reg add ""HKEY_CURRENT_USER\Keyboard Layout\Toggle"" /v ""Layout Hotkey"" /t REG_SZ /d 3 /f"), null),
             };
 
             var filteredActions = actions.Where(a => a.Condition == null || a.Condition.Invoke()).ToList();

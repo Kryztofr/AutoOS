@@ -639,6 +639,6 @@ net stop w32time
 # Set-WinLanguageBarOption -UseLegacyLanguageBar
 
 # Disable hotkeys
-# Set-ItemProperty -Path "HKCU:\Keyboard Layout\Toggle" -Name "Hotkey" -Type String -Value "3"
-# Set-ItemProperty -Path "HKCU:\Keyboard Layout\Toggle" -Name "Language Hotkey" -Type String -Value "3"
-# Set-ItemProperty -Path "HKCU:\Keyboard Layout\Toggle" -Name "Layout Hotkey" -Type String -Value "3"
+Set-ItemProperty -Path "HKCU:\Keyboard Layout\Toggle" -Name "Hotkey" -Type String -Value "3"
+Set-ItemProperty -Path "HKCU:\Keyboard Layout\Toggle" -Name "Language Hotkey" -Type String -Value "3"
+Set-ItemProperty -Path "HKCU:\Keyboard Layout\Toggle" -Name "Layout Hotkey" -Type String -Value "3"
