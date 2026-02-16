@@ -222,9 +222,9 @@ public static class BrowsersStage
             ("Removing Brave shortcut from the desktop", async () => await ProcessActions.RunNsudo("CurrentUser", @"cmd /c del /f /q ""C:\Users\Public\Desktop\Brave.lnk"""), () => Brave == true),
 
             // optimize brave settings
-            ("Optimizing Brave settings", async () => await Task.Run(() => File.Copy(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Scripts", "initial_preferences"), @"C:\Program Files\BraveSoftware\Brave-Browser\Application\initial_preferences", true)), () => Brave == true),
-            ("Optimizing Brave settings", async () => await ProcessActions.RunNsudo("CurrentUser", @"cmd /c mkdir ""%LOCALAPPDATA%\BraveSoftware\Brave-Browser\User Data"""), () => Brave == true),
-            ("Optimizing Brave settings", async () => await Task.Run(() => File.Copy(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Scripts", "Local State"), Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "BraveSoftware", "Brave-Browser", "User Data", "Local State"), true)), () => Brave == true),
+            //("Optimizing Brave settings", async () => await Task.Run(() => File.Copy(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Scripts", "initial_preferences"), @"C:\Program Files\BraveSoftware\Brave-Browser\Application\initial_preferences", true)), () => Brave == true),
+            //("Optimizing Brave settings", async () => await ProcessActions.RunNsudo("CurrentUser", @"cmd /c mkdir ""%LOCALAPPDATA%\BraveSoftware\Brave-Browser\User Data"""), () => Brave == true),
+            //("Optimizing Brave settings", async () => await Task.Run(() => File.Copy(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Scripts", "Local State"), Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "BraveSoftware", "Brave-Browser", "User Data", "Local State"), true)), () => Brave == true),
 
             // disable brave services
             ("Disabling Brave services", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"cmd /c reg add ""HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\brave"" /v ""Start"" /t REG_DWORD /d 4 /f & sc stop brave"), () => Brave == true),
