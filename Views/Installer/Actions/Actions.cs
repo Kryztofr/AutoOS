@@ -1,4 +1,4 @@
-﻿using AutoOS.Helpers;
+﻿using AutoOS.Helpers.Games;
 using Downloader;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml.Media;
@@ -172,36 +172,44 @@ public static class ProcessActions
         await Process.Start(new ProcessStartInfo(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Applications", folderName, executable), arguments) { CreateNoWindow = true })!.WaitForExitAsync();
     }
 
-    public static async Task RunDownload(string url, string path, string file = null)
+    public static async Task RunDownload(string url, string path, string file = null, ProgressButton progressButton = null)
     {
-        string title = InstallPage.Info.Title;
-
         var uiContext = SynchronizationContext.Current;
 
+        string title = progressButton == null ? InstallPage.Info?.Title ?? string.Empty : string.Empty;
+
         DownloadBuilder downloadBuilder;
+        DownloadConfiguration config;
 
         if (url.Contains("raw.githubusercontent.com", StringComparison.OrdinalIgnoreCase))
         {
             using var client = new HttpClient();
-            await File.WriteAllTextAsync(string.IsNullOrWhiteSpace(file) ? path : Path.Combine(path, file), await client.GetStringAsync(url), Encoding.UTF8);
+            string dest = string.IsNullOrWhiteSpace(file) ? path : Path.Combine(path, file);
+            await File.WriteAllTextAsync(dest, await client.GetStringAsync(url), Encoding.UTF8);
             return;
         }
-        else if (url.Contains("drivers.amd.com", StringComparison.OrdinalIgnoreCase))
+
+        if (url.Contains("www2.ati.com", StringComparison.OrdinalIgnoreCase))
         {
-            var config = new DownloadConfiguration
+            config = new DownloadConfiguration
             {
                 RequestConfiguration = new RequestConfiguration
                 {
                     Headers = new WebHeaderCollection
-                    {
-                        { "Referer", "https://www.amd.com/en/support/downloads/drivers.html" }
-                    }
+                {
+                    { "Referer", "http://support.amd.com" },
+                    { "Accept", "*/*" },
+                    { "User-Agent", "AMD Catalyst Install Manager/0.0" },
+                    { "Cache-Control", "no-cache" },
+                    { "Connection", "Keep-Alive" }
+                }
                 }
             };
 
             downloadBuilder = DownloadBuilder.New()
                 .WithUrl(url)
                 .WithDirectory(path)
+                .WithFileName(file)
                 .WithConfiguration(config);
         }
         else
@@ -209,28 +217,21 @@ public static class ProcessActions
             downloadBuilder = DownloadBuilder.New()
                 .WithUrl(url)
                 .WithDirectory(path)
+                .WithFileName(file)
                 .WithConfiguration(new DownloadConfiguration());
-        }
-
-        if (!string.IsNullOrWhiteSpace(file))
-        {
-            downloadBuilder.WithFileName(file);
         }
 
         var download = downloadBuilder.Build();
 
-        DateTime lastLoggedTime = DateTime.MinValue;
-
+        double speedMB = 0.0;
         double receivedMB = 0.0;
         double totalMB = 0.0;
-        double speedMB = 0.0;
         double percentage = 0.0;
+        DateTime lastLoggedTime = DateTime.MinValue;
 
         download.DownloadProgressChanged += (sender, e) =>
         {
-            if ((DateTime.Now - lastLoggedTime).TotalMilliseconds < 50)
-                return;
-
+            if ((DateTime.Now - lastLoggedTime).TotalMilliseconds < 50) return;
             lastLoggedTime = DateTime.Now;
 
             speedMB = e.BytesPerSecondSpeed / (1024.0 * 1024.0);
@@ -240,9 +241,17 @@ public static class ProcessActions
 
             uiContext?.Post(_ =>
             {
-                InstallPage.Info.Title = $"{title} ({speedMB:F1} MB/s - {receivedMB:F2} MB of {totalMB:F2} MB)";
-                InstallPage.ProgressRingControl.IsIndeterminate = false;
-                InstallPage.ProgressRingControl.Value = percentage;
+                if (progressButton != null)
+                {
+                    progressButton.IsIndeterminate = false;
+                    progressButton.Progress = percentage;
+                }
+                else if (!string.IsNullOrEmpty(title))
+                {
+                    InstallPage.Info.Title = $"{title} ({speedMB:F1} MB/s - {receivedMB:F2} MB of {totalMB:F2} MB)";
+                    InstallPage.ProgressRingControl.IsIndeterminate = false;
+                    InstallPage.ProgressRingControl.Value = percentage;
+                }
             }, null);
         };
 
@@ -250,9 +259,17 @@ public static class ProcessActions
         {
             uiContext?.Post(_ =>
             {
-                InstallPage.Info.Title = $"{title} ({speedMB:F1} MB/s - {totalMB:F2} MB of {totalMB:F2} MB)";
-                InstallPage.ProgressRingControl.Value = 100;
-                InstallPage.ProgressRingControl.IsIndeterminate = true;
+                if (progressButton != null)
+                {
+                    progressButton.Progress = 100;
+                    progressButton.IsIndeterminate = true;
+                }
+                else if (!string.IsNullOrEmpty(title))
+                {
+                    InstallPage.Info.Title = $"{title} ({speedMB:F1} MB/s - {totalMB:F2} MB of {totalMB:F2} MB)";
+                    InstallPage.ProgressRingControl.Value = 100;
+                    InstallPage.ProgressRingControl.IsIndeterminate = true;
+                }
             }, null);
         };
 
@@ -262,63 +279,6 @@ public static class ProcessActions
     public static async Task RunExtract(string inputPath, string outputPath)
     {
         await Process.Start(new ProcessStartInfo { FileName = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Applications", "7-Zip", "7z.exe"), Arguments = $"x \"{inputPath}\" -y -o\"{outputPath}\"", CreateNoWindow = true })!.WaitForExitAsync();
-    }
-
-    public static async Task<string> GetLatestAmdDriverUrl()
-    {
-        using var client = new HttpClient();
-        client.DefaultRequestHeaders.Referrer = new Uri("http://support.amd.com");
-
-        string json = await client.GetStringAsync("https://drivers.amd.com/drivers/installer/json/DrvDldDetails_Consumer_WHQL_Win10.json");
-        using var doc = JsonDocument.Parse(json);
-
-        return doc.RootElement[0].GetProperty("fullbuild").GetString().Replace("www2.ati.com", "drivers.amd.com").Replace("-combined", "");
-    }
-
-    public static async Task RunNvidiaStrip()
-    {
-        var directories = Directory.GetDirectories(Path.Combine(Path.GetTempPath(), "driver"));
-
-        foreach (var directory in directories)
-        {
-            string folderName = Path.GetFileName(directory);
-
-            if (folderName != "Display.Driver" && folderName != "NVI2")
-            {
-                Directory.Delete(directory, true);
-            }
-        }
-
-        string setupCfgPath = Path.Combine(Path.Combine(Path.GetTempPath(), "driver"), "setup.cfg");
-
-        if (File.Exists(setupCfgPath))
-        {
-            var lines = await File.ReadAllLinesAsync(setupCfgPath);
-            var newLines = lines.Where(line => !line.Contains("<file name=\"${{EulaHtmlFile}}\"/>") && !line.Contains("<file name=\"${{FunctionalConsentFile}}\"/>") && !line.Contains("<file name=\"${{PrivacyPolicyFile}}\"/>")).ToList();
-
-            await File.WriteAllLinesAsync(setupCfgPath, newLines);
-        }
-
-        string presentationsCfgPath = Path.Combine(Path.Combine(Path.GetTempPath(), "driver"), "NVI2", "presentations.cfg");
-
-        if (File.Exists(presentationsCfgPath))
-        {
-            var lines = await File.ReadAllLinesAsync(presentationsCfgPath);
-            var newLines = lines.Select(line =>
-            {
-                if (line.Contains("<string name=\"ProgressPresentationUrl\""))
-                {
-                    return "        <string name=\"ProgressPresentationUrl\" value=\"\"/>";
-                }
-                else if (line.Contains("<string name=\"ProgressPresentationSelectedPackageUrl\""))
-                {
-                    return "        <string name=\"ProgressPresentationSelectedPackageUrl\" value=\"\"/>";
-                }
-                return line;
-            }).ToList();
-
-            await File.WriteAllLinesAsync(presentationsCfgPath, newLines);
-        }
     }
 
     public static async Task SetHighestRefreshRates()
@@ -364,11 +324,6 @@ public static class ProcessActions
         }
 
         await Task.Delay(2000);
-    }
-
-    public static async Task ImportProfile(string file)
-    {
-        await Process.Start(new ProcessStartInfo { FileName = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Applications", "NvidiaProfileInspector", "nvidiaProfileInspector.exe"), Arguments = $"-silentimport \"{Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Applications", "NvidiaProfileInspector", file)}\"", CreateNoWindow = true })!.WaitForExitAsync();
     }
 
     public static async Task<string> GetLatestObsStudioUrl()
@@ -503,11 +458,6 @@ public static class ProcessActions
             InstallPage.ProgressRingControl.IsIndeterminate = true;
             InstallPage.ProgressRingControl.Value = 0;
         }
-    }
-
-    public static async Task Sleep(int amount)
-    {
-        await Task.Delay(amount);
     }
 
     public static async Task RunMicrosoftStoreDownload(string productFamilyName, string catalogId, string fileType, int index, bool dependencies)
@@ -1014,18 +964,5 @@ public static class ProcessActions
         File.WriteAllText(SteamHelper.SteamLibraryPath, new StreamReader(msOut).ReadToEnd());
 
         await Task.Delay(1000);
-    }
-
-    public static async Task RefreshUI()
-    {
-        if (MainWindow.Instance.AppWindow.Presenter is OverlappedPresenter presenter)
-        {
-            MainWindow.Instance.AppWindow.Resize(new SizeInt32(MainWindow.Instance.AppWindow.Size.Width - 500, MainWindow.Instance.AppWindow.Size.Height - 500));
-
-            await Task.Delay(100);
-
-            presenter.Restore();
-            presenter.Maximize();
-        }
     }
 }

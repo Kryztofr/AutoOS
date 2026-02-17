@@ -3,7 +3,7 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using Windows.Storage;
 
-namespace AutoOS.Helpers
+namespace AutoOS.Helpers.Games
 {
     public static partial class EdenHelper
     {

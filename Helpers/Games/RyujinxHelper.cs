@@ -3,9 +3,9 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using Windows.Storage;
 
-namespace AutoOS.Helpers
+namespace AutoOS.Helpers.Games
 {
-    public static partial class CitronHelper
+    public static partial class RyujinxHelper
     {
         private static readonly ApplicationDataContainer localSettings = ApplicationData.Current.LocalSettings;
         private static readonly HttpClient httpClient = new();
@@ -13,7 +13,7 @@ namespace AutoOS.Helpers
         public static async Task LoadGames()
         {
             // if paths defined
-            if (localSettings.Values["CitronLocation"] is string exePath && localSettings.Values["CitronDataLocation"] is string dataPath && File.Exists(exePath) && Directory.Exists(dataPath))
+            if (localSettings.Values["RyujinxLocation"] is string exePath && localSettings.Values["RyujinxDataLocation"] is string dataPath && File.Exists(exePath) && Directory.Exists(dataPath))
             {
                 // download switch game catalog
                 string filePath = Path.Combine(PathHelper.GetAppDataFolderPath(), "Switch", "US.en.json");
@@ -27,15 +27,20 @@ namespace AutoOS.Helpers
                 }
 
                 // remove previous games
-                foreach (var item in GamesPage.Instance.Games.Items.OfType<Views.Settings.Games.HeaderCarouselItem>().Where(item => item.Launcher == "Citron").ToList())
+                foreach (var item in GamesPage.Instance.Games.Items.OfType<Views.Settings.Games.HeaderCarouselItem>().Where(item => item.Launcher == "Ryujinx").ToList())
                     GamesPage.Instance.Games.Items.Remove(item);
-                
-                // get game list
-                using var stream = File.OpenRead(Path.Combine(localSettings.Values["CitronDataLocation"]?.ToString(), "cache", "game_list", "game_metadata_cache.json"));
+
+                // get game dirs
+                using var stream = File.OpenRead(Path.Combine(localSettings.Values["RyujinxDataLocation"]?.ToString(), "Config.json"));
                 var config = await JsonSerializer.DeserializeAsync<Dictionary<string, JsonElement>>(stream);
 
+                var gameDirs = new List<string>();
+                if (config != null && config.TryGetValue("game_dirs", out var dirs) && dirs.ValueKind == JsonValueKind.Array)
+                    foreach (var dir in dirs.EnumerateArray())
+                        gameDirs.Add(dir.GetString() ?? "");
+
                 // read json database
-                using var fs = File.OpenRead(Path.Combine(PathHelper.GetAppDataFolderPath(), "Switch", "US.en.json"));
+                using var fs = File.OpenRead(Path.Combine(PathHelper.GetAppDataFolderPath(), "Ryujinx", "US.en.json"));
                 using var doc = await JsonDocument.ParseAsync(fs);
 
                 var jsonById = new Dictionary<string, JsonElement>(StringComparer.OrdinalIgnoreCase);
@@ -46,17 +51,30 @@ namespace AutoOS.Helpers
                     {
                         var key = idElem.GetString()?.ToLowerInvariant();
                         if (!string.IsNullOrEmpty(key))
+                        {
                             jsonById.TryAdd(key, kvp.Value);
+                        }
                     }
                 }
 
-                if (config.TryGetValue("entries", out var entries) && entries.ValueKind == JsonValueKind.Array)
+                // get all roms in game dirs
+                var candidatesPerDir = new Dictionary<string, List<string>>();
+                var validExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { ".nsp", ".xci" };
 
-                await Parallel.ForEachAsync(entries.EnumerateArray(), new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount * 2 }, async (CitronEntry, _) =>
+                foreach (var gameDir in gameDirs)
                 {
-                    // check if game id exists in database
-                    string id = "0" + CitronEntry.GetProperty("program_id").GetString();
-                    if (!jsonById.TryGetValue(id, out var entry)) 
+                    if (!Directory.Exists(gameDir)) continue;
+
+                    var matches = Directory.EnumerateFiles(gameDir)
+                                           .Where(f => validExtensions.Contains(Path.GetExtension(f)));
+
+                    candidatesPerDir[gameDir] = [.. matches];
+                }
+
+                await Parallel.ForEachAsync(Directory.GetDirectories(Path.Combine(localSettings.Values["RyujinxDataLocation"]?.ToString(), "games")), new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount * 2 }, (Func<string, CancellationToken, ValueTask>)(async (folder, _) =>
+                {
+                    // check if game exists in database
+                    if (!jsonById.TryGetValue(Path.GetFileName(folder).Trim().ToLowerInvariant(), out var entry))
                         return;
 
                     // get name from database
@@ -66,43 +84,59 @@ namespace AutoOS.Helpers
                     if (string.IsNullOrWhiteSpace(name)) return;
                     string cleanName = CleanNameRegex().Replace(name.Replace('’', '\''), "");
 
-                    // get install location
-                    string installLocation = CitronEntry.GetProperty("file_path").GetString();
+                    // make name simple to find install location
+                    string simpleCleanName = SimpleCleanNameRegex().Replace(cleanName.ToLowerInvariant(), "");
 
-                    // get playtime
-                    string playTime = "0m";
+                    // find install location
+                    string bestInstallLocation = null;
 
-                    byte[] playtimeData = File.Exists(Path.Combine(localSettings.Values["CitronDataLocation"]?.ToString() ?? "", "play_time", "playtime.bin")) ? File.ReadAllBytes(Path.Combine(localSettings.Values["CitronDataLocation"]?.ToString() ?? "", "play_time", "playtime.bin")) : Directory.Exists(Path.Combine(localSettings.Values["CitronDataLocation"]?.ToString() ?? "", "play_time")) ? Directory.GetFiles(Path.Combine(localSettings.Values["CitronDataLocation"]?.ToString() ?? "", "play_time"), "*.bin").FirstOrDefault() is string f ? File.ReadAllBytes(f) : [] : [];
-
-                    for (int offset = 0; offset + 16 <= playtimeData.Length; offset += 16)
+                    foreach (var gameDir in candidatesPerDir.Keys)
                     {
-                        if (BitConverter.ToUInt64(playtimeData, offset).ToString("x16").Equals(id, StringComparison.InvariantCultureIgnoreCase))
+                        var candidates = candidatesPerDir[gameDir];
+                        bestInstallLocation = candidates.FirstOrDefault((Func<string, bool>)(candidate =>
                         {
-                            ulong seconds = BitConverter.ToUInt64(playtimeData, offset + 8);
-                            playTime = (seconds / 3600) > 0 ? $"{seconds / 3600}h {(seconds % 3600) / 60}m" : $"{(seconds % 3600) / 60}m";
+                            var simpleFileName = SimpleCleanNameRegex().Replace(Path.GetFileNameWithoutExtension(candidate).ToLowerInvariant(), "");
+                            return simpleFileName.StartsWith(simpleCleanName, StringComparison.Ordinal);
+                        }));
+                        if (bestInstallLocation != null)
                             break;
-                        }
                     }
 
-                    // get size
-                    long sizeBytes = CitronEntry.TryGetProperty("file_size", out var sizeElem) ? sizeElem.GetInt64() : 0;
+                    if (bestInstallLocation == null)
+                        return;
 
                     // search on igdb
                     var result = await SearchCovers(cleanName);
                     if (result == null) return;
 
-                    using var docData = JsonDocument.Parse(await httpClient.GetStringAsync(result["game_url"], _));
-                    var data = docData.RootElement.Clone();
+                    // get playtime
+                    string metadataPath = Path.Combine(folder, "gui", "metadata.json");
+                    if (!File.Exists(metadataPath)) return;
+
+                    var metadataText = await File.ReadAllTextAsync(metadataPath);
+                    var metadataObj = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(metadataText);
+
+                    string playTime = "0m";
+                    if (metadataObj != null && metadataObj.TryGetValue("timespan_played", out var timespanElement) && TimeSpan.TryParse(timespanElement.GetString(), out TimeSpan ts))
+                    {
+                        playTime = (int)ts.TotalHours > 0 ? $"{(int)ts.TotalHours}h {ts.Minutes}m" : $"{ts.Minutes}m";
+                    }
+
+                    // get size
+                    long sizeBytes = new FileInfo(bestInstallLocation).Length;
+
+                    using var doc = JsonDocument.Parse(await httpClient.GetStringAsync(result["game_url"], _));
+                    var data = doc.RootElement.Clone();
 
                     GamesPage.Instance.DispatcherQueue.TryEnqueue(() =>
                     {
                         GamesPage.Instance.Games.Items.Add(new Views.Settings.Games.HeaderCarouselItem
                         {
-                            Launcher = "Citron",
-                            LauncherLocation = localSettings.Values["CitronLocation"]?.ToString(),
-                            DataLocation = localSettings.Values["CitronDataLocation"]?.ToString(),
-                            GameLocation = installLocation,
-                            InstallLocation = Path.GetDirectoryName(installLocation),
+                            Launcher = "Ryujinx",
+                            LauncherLocation = localSettings.Values["RyujinxLocation"]?.ToString(),
+                            DataLocation = localSettings.Values["RyujinxDataLocation"]?.ToString(),
+                            GameLocation = bestInstallLocation,
+                            InstallLocation = Path.GetDirectoryName(bestInstallLocation),
                             Title = name,
                             ImageUrl = result["cover_url"],
                             BackgroundImageUrl = entry.GetProperty("bannerUrl").GetString(),
@@ -133,8 +167,8 @@ namespace AutoOS.Helpers
                         });
                     });
 
-                    //doc.Dispose();
-                });
+                    doc.Dispose();
+                }));
             }
         }
 

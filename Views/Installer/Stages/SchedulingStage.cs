@@ -21,10 +21,9 @@ public static class SchedulingStage
         var actions = new List<(string Title, Func<Task> Action, Func<bool> Condition)>
         {
             // optimize affinities
-            ("Optimizing Affinities", async () => await ProcessActions.Sleep(1000), () => PCores >= 4),
+            ("Optimizing Affinities", async () => await Task.Delay(1000), () => PCores >= 4),
             ("Optimizing Affinities", async () => await AutoAffinityService.ApplyAutoAffinities(), () => PCores >= 4),
-            ("Optimizing Affinities", async () => await ProcessActions.Sleep(2000), () => PCores >= 4),
-			("Optimizing Affinities", async () => await ProcessActions.RefreshUI(), () => PCores >= 4),
+            ("Optimizing Affinities", async () => await Task.Delay(2000), () => PCores >= 4),
 
             // disable interrupt steering
             ("Disabling interrupt steering", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\kernel"" /v InterruptSteeringFlags /t REG_DWORD /d 1 /f"), () => PCores >= 4),

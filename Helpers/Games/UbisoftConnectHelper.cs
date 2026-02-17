@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using System.Text;
 
-namespace AutoOS.Helpers
+namespace AutoOS.Helpers.Games
 {
     public static class UbisoftConnectHelper
     {
@@ -34,20 +34,12 @@ namespace AutoOS.Helpers
 
                 if (trimmed.StartsWith("name:"))
                 {
-                    // Add previous game if all fields are set
-                    if (!string.IsNullOrEmpty(currentName) &&
-                        !string.IsNullOrEmpty(publisher) &&
-                        !string.IsNullOrEmpty(appId) &&
-                        !string.IsNullOrEmpty(thumbImage) &&
-                        !string.IsNullOrEmpty(backgroundImage))
+                    if (!string.IsNullOrEmpty(currentName) && !string.IsNullOrEmpty(publisher) && !string.IsNullOrEmpty(appId) && !string.IsNullOrEmpty(thumbImage) && !string.IsNullOrEmpty(backgroundImage))
                     {
-                        // Check InstallState in HKCU
-                        using (var key = Registry.CurrentUser.OpenSubKey($@"Software\Ubisoft\Launcher\Installs\{appId}"))
+                        using var key = Registry.CurrentUser.OpenSubKey($@"Software\Ubisoft\Launcher\Installs\{appId}");
+                        if (key != null && key.GetValue("InstallState")?.ToString() == "1")
                         {
-                            if (key != null && key.GetValue("InstallState")?.ToString() == "1")
-                            {
-                                parsedGames.Add((currentName, publisher, appId, thumbImage, backgroundImage));
-                            }
+                            parsedGames.Add((currentName, publisher, appId, thumbImage, backgroundImage));
                         }
                     }
 

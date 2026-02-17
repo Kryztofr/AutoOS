@@ -343,17 +343,17 @@ Write-Host "Mounting install.wim..."
 $MountDirectory = "C:\mnt"
 New-Item -Path $MountDirectory -ItemType Directory -Force | Out-Null
 
-$Images = Get-WindowsImage -ImagePath $TempWim -ErrorAction Stop
+$Images = Get-WindowsImage -ImagePath $TempWim
 foreach ($Image in $Images) {
     try {
-        Mount-WindowsImage -Path $MountDirectory -ImagePath $TempWim -Name $Image.ImageName -ErrorAction Stop | Out-Null
+        Mount-WindowsImage -Path $MountDirectory -ImagePath $TempWim -Name $Image.ImageName | Out-Null
         Write-Host "Stripping 8.3 filenames..."
         [TrustedInstaller]::Spawn(
             "cmd /C fsutil 8dot3name strip /f /s `"$MountDirectory`""
         )
     } finally {
         Write-Host "Unmounting install.wim..."
-        Dismount-WindowsImage -Path $MountDirectory -Save -ErrorAction Stop | Out-Null
+        Dismount-WindowsImage -Path $MountDirectory -Save | Out-Null
         Remove-Item -LiteralPath $MountDirectory -Force
     }
 }

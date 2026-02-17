@@ -1,4 +1,5 @@
 ﻿using System.Runtime.InteropServices;
+using System.Text;
 
 namespace AutoOS.Views.Settings.Scheduling.Services;
 
@@ -122,7 +123,15 @@ public static class SetupApi
 {
     private const string SetupApiDll = "setupapi.dll";
 
-    [DllImport(SetupApiDll, CharSet = CharSet.Unicode, SetLastError = true)]
+    [DllImport("setupapi.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+    public static extern IntPtr SetupDiGetClassDevs(
+        ref Guid ClassGuid,
+        IntPtr Enumerator,
+        IntPtr hwndParent,
+        DIGCF Flags
+    );
+
+    [DllImport("setupapi.dll", CharSet = CharSet.Unicode, SetLastError = true)]
     public static extern IntPtr SetupDiGetClassDevs(
         IntPtr ClassGuid,
         IntPtr Enumerator,
@@ -149,6 +158,15 @@ public static class SetupApi
         IntPtr PropertyBuffer,
         uint PropertyBufferSize,
         out uint RequiredSize
+    );
+
+    [DllImport(SetupApiDll, CharSet = CharSet.Auto, SetLastError = true)]
+    public static extern bool SetupDiGetDeviceInstanceId(
+        IntPtr DeviceInfoSet,
+        ref SP_DEVINFO_DATA DeviceInfoData,
+        StringBuilder DeviceInstanceId,
+        int DeviceInstanceIdSize,
+        out int RequiredSize
     );
 
     [DllImport(SetupApiDll, CharSet = CharSet.Unicode, SetLastError = true)]
@@ -196,6 +214,12 @@ public static class SetupApi
     {
         fmtid = new Guid(0x3ab22e31, 0x8264, 0x4b4e, 0x9a, 0xf5, 0xa8, 0xd2, 0xd8, 0xe3, 0x3e, 0x62),
         pid = 15
+    };
+
+    public static DEVPROPKEY DEVPKEY_Device_DriverVersion = new()
+    {
+        fmtid = new Guid("A8B865DD-2E3D-4094-AD97-E593A70C75D6"),
+        pid = 3
     };
 
     [DllImport(SetupApiDll, CharSet = CharSet.Unicode, SetLastError = true)]

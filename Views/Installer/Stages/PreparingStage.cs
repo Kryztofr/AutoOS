@@ -1,4 +1,5 @@
-﻿using AutoOS.Views.Settings.Scheduling.Services;
+﻿using AutoOS.Helpers.GPU;
+using AutoOS.Views.Settings.Scheduling.Services;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.Win32;
 using System.Diagnostics;
@@ -9,6 +10,7 @@ using System.Text.RegularExpressions;
 using ValveKeyValue;
 using Windows.Storage;
 using WinRT.Interop;
+using System.Text.Json;
 
 namespace AutoOS.Views.Installer.Stages;
 
@@ -85,16 +87,7 @@ public static class PreparingStage
     public static bool? FiveM;
     public static bool? FACEIT;
 
-    public static bool? Intel_6th;
-    public static bool? Intel_7th_10th;
-    public static bool? Intel_11th_14th;
-    public static bool? Intel_Arc;
-    public static bool? NVIDIA;
-    public static bool? AMD_RX5000_RX9000;
-    public static bool? HDCP;
-    public static bool? INTEL_HDMIDPAudio;
-    public static bool? NVIDIA_HDMIDPAudio;
-    public static bool? AMD_HDMIDPAudio;
+    public static List<GpuModel> GPUs { get; set; } = [];
     public static bool? MSI;
     public static bool? CRU;
 
@@ -149,6 +142,17 @@ public static class PreparingStage
                 UseShellExecute = false,
                 CreateNoWindow = true
             }).StandardOutput.ReadToEnd();
+
+            string sourcePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Applications", "Chiptool");
+            string destinationPath = Path.Combine(PathHelper.GetAppDataFolderPath(), "Chiptool");
+
+            Directory.CreateDirectory(destinationPath);
+
+            foreach (var directory in Directory.GetDirectories(sourcePath, "*", SearchOption.AllDirectories))
+                Directory.CreateDirectory(directory.Replace(sourcePath, destinationPath));
+
+            foreach (var file in Directory.GetFiles(sourcePath, "*.*", SearchOption.AllDirectories))
+                File.Copy(file, file.Replace(sourcePath, destinationPath), overwrite: true);
 
             Process.Start(new ProcessStartInfo
             {
@@ -228,17 +232,7 @@ public static class PreparingStage
             FiveM = (localSettings.Values["Launchers"]?.ToString().Contains("FiveM") ?? false);
             FACEIT = (localSettings.Values["Launchers"]?.ToString().Contains("FACEIT") ?? false);
 
-            Intel_6th = (localSettings.Values["GpuBrand"]?.ToString().Contains("Intel® 6th Gen Processor Graphics") ?? false);
-            Intel_7th_10th = (localSettings.Values["GpuBrand"]?.ToString().Contains("Intel® 7th-10th Gen Processor Graphics") ?? false);
-            Intel_11th_14th = (localSettings.Values["GpuBrand"]?.ToString().Contains("Intel® 11th-14th Gen Processor Graphics") ?? false);
-            Intel_Arc = (localSettings.Values["GpuBrand"]?.ToString().Contains("Intel® Arc™ Graphics") ?? false);
-            NVIDIA = (localSettings.Values["GpuBrand"]?.ToString().Contains("NVIDIA") ?? false);
-            AMD_RX5000_RX9000 = (localSettings.Values["GpuBrand"]?.ToString().Contains("AMD Radeon™ RX 5000 - 9000 series") ?? false);
-
-            HDCP = (localSettings.Values["HighDefinitionContentProtection"]?.ToString() == "1");
-            INTEL_HDMIDPAudio = (localSettings.Values["INTELHighDefinitionMultimediaInterface/DisplayPortAudio"]?.ToString() == "0");
-            NVIDIA_HDMIDPAudio = (localSettings.Values["NVIDIAHighDefinitionMultimediaInterface/DisplayPortAudio"]?.ToString() == "0");
-            AMD_HDMIDPAudio = (localSettings.Values["AMDHighDefinitionMultimediaInterface/DisplayPortAudio"]?.ToString() == "0");
+            GPUs = JsonSerializer.Deserialize<List<GpuModel>>(localSettings.Values["GPUs"]?.ToString() ?? "[]") ?? [];
             MSI = (localSettings.Values["MsiProfile"] != null);
             CRU = (localSettings.Values["CruProfile"] != null);
 

@@ -1,4 +1,4 @@
-﻿using AutoOS.Helpers;
+﻿using AutoOS.Helpers.Games;
 using Microsoft.UI.Xaml.Markup;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.Win32;
@@ -1576,6 +1576,9 @@ public partial class HeaderCarousel : ItemsControl
 
     private async void StopProcesses_Click(object sender, RoutedEventArgs e)
     {
+        // disable hittestvisible to avoid double-clicking
+        StopProcesses.IsHitTestVisible = false;
+
         await Task.Run(() =>
         {
             // close dllhost processes
@@ -1728,10 +1731,16 @@ public partial class HeaderCarousel : ItemsControl
             if (Process.GetProcessesByName("ClassicWindowSwitcher").Length == 0)
                 Process.Start(new ProcessStartInfo(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Applications", "ClassicWindowSwitcher", "ClassicWindowSwitcher.exe")) { CreateNoWindow = true });
         });
+
+        // re-enable hittestvisible
+        StopProcesses.IsHitTestVisible = true;
     }
 
     private async void RestartProcesses_Click(object sender, RoutedEventArgs e)
     {
+        // disable hittestvisible to avoid double-clicking
+        StopProcesses.IsHitTestVisible = false;
+
         await Task.Run(() =>
         {
             Process.GetProcessesByName("ClassicWindowSwitcher").FirstOrDefault()?.Kill();
@@ -1809,6 +1818,9 @@ public partial class HeaderCarousel : ItemsControl
             });
 
         });
+
+        // re-enable hittestvisible
+        StopProcesses.IsHitTestVisible = true;
     }
 
     private DispatcherTimer gameWatcherTimer;

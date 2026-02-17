@@ -1,13 +1,14 @@
-﻿using AutoOS.Helpers;
-using AutoOS.Views.Installer.Actions;
+﻿using AutoOS.Helpers.GPU;
 using AutoOS.Views.Settings.Scheduling.Models;
 using AutoOS.Views.Settings.Scheduling.Services;
-using Downloader;
+using Microsoft.UI.Xaml.Media;
 using Microsoft.Win32;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Management;
 using System.ServiceProcess;
 using Windows.Storage;
+using static AutoOS.Views.Settings.Scheduling.Services.SetupApi;
 
 namespace AutoOS.Views.Settings;
 
@@ -18,615 +19,377 @@ public sealed partial class GraphicsPage : Page
     private bool isInitializingHDCPState = true;
     private bool isInitializingHDMIDPAudioState = true;
     private bool isInitializingOBSState = true;
-    private readonly Dictionary<string, (DeviceSettings settings, string devObjName)> deviceConfig = new Dictionary<string, (DeviceSettings, string)>();
-
+    public ObservableCollection<GpuModel> GPUs { get; } = [];
     public GraphicsPage()
     {
         InitializeComponent();
-        LoadGpus();
-        GetHDCPState();
-        GetHDMIDPAudioState();
+        GetGpus();
         GetOBSState();
+        Loaded += GraphicsPage_Loaded;
     }
 
-    private void LoadGpus()
+    private async void GraphicsPage_Loaded(object sender, RoutedEventArgs e)
     {
-        foreach (var obj in new ManagementObjectSearcher("SELECT * FROM Win32_VideoController").Get().Cast<ManagementObject>().ToArray())
-        {
-            string name = obj["Name"]?.ToString();
-            string version = obj["DriverVersion"]?.ToString();
-
-            if (name.Contains("NVIDIA", StringComparison.OrdinalIgnoreCase))
-            {
-                Nvidia_SettingsGroup.Visibility = Visibility.Visible;
-                Nvidia_SettingsGroup.Header = name;
-                Nvidia_SettingsGroup.Description = "Current Version: " + version.Split('.')[2][1..] + version.Split('.')[3][..2] + "." + version.Split('.')[3].Substring(2, 2);
-                NvidiaUpdateCheck.IsChecked = true;
-            }
-            if (name.Contains("AMD", StringComparison.OrdinalIgnoreCase) || name.Contains("Radeon", StringComparison.OrdinalIgnoreCase))
-            {
-                Amd_SettingsGroup.Visibility = Visibility.Visible;
-                Amd_SettingsGroup.Header = name;
-                Amd_SettingsGroup.Description = $"Current Version: {AmdHelper.GetCurrentVersion()}";
-                //AmdUpdateCheck.IsChecked = true;
-            }
-            if (name.Contains("Intel", StringComparison.OrdinalIgnoreCase))
-            {
-                Intel_SettingsGroup.Visibility = Visibility.Visible;
-                Intel_SettingsGroup.Header = name;
-                Intel_SettingsGroup.Description = "Current Version: " + (version?.Split('.')[2] + "." + version?.Split('.')[3]);
-                IntelUpdateCheck.IsChecked = true;
-            }
-        }
-    }
-
-    private async void NvidiaUpdateCheck_Checked(object sender, RoutedEventArgs e)
-    {
-        if (NvidiaUpdateCheck.Content.ToString().Contains("Update to"))
-        {
-            if (new ServiceController("Beep").Status == ServiceControllerStatus.Running)
-            {
-                var (_, newestVersion, newestDownloadUrl) = await NvidiaHelper.CheckUpdate();
-
-                NvidiaUpdateCheck.IsHitTestVisible = false;
-
-                // download the nvidia driver   
-                NvidiaUpdateCheck.CheckedContent = "Downloading the NVIDIA driver...";
-                await RunDownload(newestDownloadUrl, Path.GetTempPath(), "driver.exe");
-
-                // extract the driver
-                NvidiaUpdateCheck.CheckedContent = "Extracting the NVIDIA driver...";
-                await ProcessActions.RunExtract(Path.Combine(Path.GetTempPath(), "driver.exe"), Path.Combine(Path.GetTempPath(), "driver"));
-
-                // strip the driver
-                NvidiaUpdateCheck.CheckedContent = "Stripping the NVIDIA driver...";
-                await ProcessActions.RunNvidiaStrip();
-
-                // close obs studio
-                if (Process.GetProcessesByName("obs64").Length > 0)
-                {
-                    foreach (var process in Process.GetProcessesByName("obs64"))
-                    {
-                        process.Kill();
-                        process.WaitForExit();
-                    }
-                }
-
-                // save config
-                var gpuDevices = DeviceDetectionService.FindDevicesByType(DeviceType.GPU);
-                IntPtr deviceInfoSetHandle = IntPtr.Zero;
-                foreach (var device in gpuDevices)
-                {
-                    if (deviceInfoSetHandle == IntPtr.Zero)
-                        deviceInfoSetHandle = device.DeviceInfoSet;
-
-                    if (device.RegistryKey != null)
-                    {
-                        string deviceKey = !string.IsNullOrEmpty(device.PnpDeviceId) ? device.PnpDeviceId : device.DevObjName ?? string.Empty;
-
-                        var settings = RegistryService.ReadDeviceSettings(device.RegistryKey, device.MaxMSILimit);
-                        deviceConfig[deviceKey] = (settings, device.DevObjName ?? string.Empty);
-                    }
-                }
-
-                foreach (var device in gpuDevices)
-                    device.RegistryKey?.Close();
-
-                if (deviceInfoSetHandle != IntPtr.Zero && deviceInfoSetHandle != new IntPtr(-1))
-                    SetupApi.SetupDiDestroyDeviceInfoList(deviceInfoSetHandle);
-
-                // update driver
-                NvidiaUpdateCheck.CheckedContent = "Updating the NVIDIA driver...";
-                await ProcessActions.RunNsudo("CurrentUser", @"""%TEMP%\driver\setup.exe"" /s /clean");
-                await ProcessActions.Sleep(3000);
-                LoadGpus();
-
-                // disable the nvidia tray icon
-                NvidiaUpdateCheck.CheckedContent = "Disabling the NVIDIA tray icon...";
-                await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SOFTWARE\NVIDIA Corporation\NvTray"" /v StartOnLogin /t REG_DWORD /d 0 /f");
-                await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\nvlddmkm\Global\NVTweak"" /v ""HideXGpuTrayIcon"" /t REG_DWORD /d 1 /f");
-                await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SOFTWARE\NVIDIA Corporation\Global\CoProcManager"" /v ""ShowTrayIcon"" /t REG_DWORD /d 0 /f");
-
-                // disable the dlss indicator
-                NvidiaUpdateCheck.CheckedContent = "Disabling the DLSS Indicator...";
-                await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SOFTWARE\NVIDIA Corporation\Global\NGXCore"" /v ""ShowDlssIndicator"" /t REG_DWORD /d 0 /f");
-
-                // disable automatic updates
-                NvidiaUpdateCheck.CheckedContent = "Disabling automatic updates...";
-                await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SOFTWARE\NVIDIA Corporation\Global\CoProcManager"" /v AutoDownload /t REG_DWORD /d 0 /f");
-
-                // disable telemetry
-                NvidiaUpdateCheck.CheckedContent = "Disabling telemetry...";
-                await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\Software\Nvidia Corporation\NvControlPanel2\Client"" /v ""OptInOrOutPreference"" /t REG_DWORD /d 0 /f");
-                await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\nvlddmkm\Global\Startup"" /v ""SendTelemetryData"" /t REG_DWORD /d 0 /f");
-                await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SOFTWARE\NVIDIA Corporation\Global\FTS"" /v EnableRID44231 /t REG_DWORD /d 0 /f");
-                await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SOFTWARE\NVIDIA Corporation\Global\FTS"" /v EnableRID64640 /t REG_DWORD /d 0 /f");
-                await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SOFTWARE\NVIDIA Corporation\Global\FTS"" /v EnableRID66610 /t REG_DWORD /d 0 /f");
-                await ProcessActions.RunNsudo("TrustedInstaller", @"cmd /c cd /d ""C:\Windows\System32\DriverStore\FileRepository\"" & dir NvTelemetry64.dll /a /b /s & del NvTelemetry64.dll /a /s");
-
-                // disable logging
-                NvidiaUpdateCheck.CheckedContent = "Disabling logging...";
-                await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\nvlddmkm\Parameters"" /v LogDisableMasks /t REG_BINARY /d ""00ffff0f01ffff0f02ffff0f03ffff0f04ffff0f05ffff0f06ffff0f07ffff0f08ffff0f09ffff0f0affff0f0bffff0f0cffff0f0dffff0f0effff0f0fffff0f10ffff0f11ffff0f12ffff0f13ffff0f14ffff0f15ffff0f16ffff0f00ffff1f01ffff1f02ffff1f03ffff1f04ffff1f05ffff1f06ffff1f07ffff1f08ffff1f09ffff1f0affff1f0bffff1f0cffff1f0dffff1f0effff1f0fffff1f00ffff2f01ffff2f02ffff2f03ffff2f04ffff2f05ffff2f06ffff2f07ffff2f08ffff2f09ffff2f0affff2f0bffff2f0cffff2f0dffff2f0effff2f0fffff2f00ffff3f01ffff3f02ffff3f03ffff3f04ffff3f05ffff3f06ffff3f07ffff3f"" /f");
-                await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\nvlddmkm\Parameters"" /v LogWarningEntries /t REG_DWORD /d 0 /f");
-                await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\nvlddmkm\Parameters"" /v LogPagingEntries /t REG_DWORD /d 0 /f");
-                await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\nvlddmkm\Parameters"" /v LogEventEntries /t REG_DWORD /d 0 /f");
-                await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\nvlddmkm\Parameters"" /v LogErrorEntries /t REG_DWORD /d 0 /f");
-
-                // use the advanced 3d image settings
-                NvidiaUpdateCheck.CheckedContent = "Using the advanced 3D image settings...";
-                await ProcessActions.RunNsudo("CurrentUser", @"reg add ""HKEY_CURRENT_USER\SOFTWARE\NVIDIA Corporation\Global\NVTweak"" /v ""Gestalt"" /t REG_DWORD /d 515 /f");
-
-                // import the optimized nvidia profile
-                NvidiaUpdateCheck.CheckedContent = "Importing the optimized NVIDIA profile...";
-                await ProcessActions.ImportProfile("BaseProfile.nip");
-
-                // configure physx to use gpu
-                NvidiaUpdateCheck.CheckedContent = "Configuring PhysX to use GPU...";
-                await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\nvlddmkm\Global\NVTweak"" /v ""NvCplPhysxAuto"" /t REG_DWORD /d 0 /f");
-
-                // configure color settings
-                NvidiaUpdateCheck.CheckedContent = "Configuring color settings...";
-                await ProcessActions.RunPowerShellScript("colorsettings.ps1", "");
-                await ProcessActions.RunNsudo("TrustedInstaller", @"cmd /c for /f ""delims="" %a in ('reg query HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\nvlddmkm\State\DisplayDatabase') do reg add ""%a"" /v ""ColorformatConfig"" /t REG_BINARY /d ""DB02000014000000000A00080000000003010000"" /f");
-
-                // disable high-definition-content-protection (hdcp)
-                if (!HDCP.IsOn)
-                {
-                    NvidiaUpdateCheck.CheckedContent = "Disabling high-definition-content-protection (HDCP)...";
-                    await ProcessActions.RunPowerShellScript("hdcp.ps1", "");
-                }
-
-                // disable error code correction (ecc)
-                NvidiaUpdateCheck.CheckedContent = "Disabling error code correction (ECC)...";
-                await ProcessActions.RunPowerShellScript("ecc.ps1", "");
-
-                // configure miscellaneous nvidia settings
-                NvidiaUpdateCheck.CheckedContent = "Configuring miscellaneous NVIDIA settings...";
-                await ProcessActions.RunPowerShellScript("nvidiamisc.ps1", "");
-
-                // disable dynamic p-state
-                NvidiaUpdateCheck.CheckedContent = "Disabling dynamic P-State...";
-                await ProcessActions.RunPowerShellScript("pstate.ps1", "");
-
-                // disable display power savings
-                NvidiaUpdateCheck.CheckedContent = "Disabling Display Power Savings...";
-                await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\nvlddmkm\Global\NVTweak"" /v ""DisplayPowerSaving"" /t REG_DWORD /d 0 /f");
-                await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\Software\NVIDIA Corporation\Global\NVTweak"" /v ""DisplayPowerSaving"" /t REG_DWORD /d 0 /f");
-
-                // disable hd audio power savings
-                NvidiaUpdateCheck.CheckedContent = "Disabling HD Audio Power Savings...";
-                await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\nvlddmkm"" /v ""EnableHDAudioD3Cold"" /t REG_DWORD /d 0 /f");
-
-                // reapply config
-                if (deviceConfig.Count > 0)
-                {
-                    NvidiaUpdateCheck.CheckedContent = "Reapplying Affinity...";
-                    await Task.Delay(1000);
-                    var changedDevices = new List<DeviceInfo>();
-                    var gpuDevicesAfterUpdate = DeviceDetectionService.FindDevicesByType(DeviceType.GPU);
-                    IntPtr deviceInfoSetHandleAfterUpdate = IntPtr.Zero;
-
-                    foreach (var device in gpuDevicesAfterUpdate)
-                    {
-                        if (deviceInfoSetHandleAfterUpdate == IntPtr.Zero)
-                            deviceInfoSetHandleAfterUpdate = device.DeviceInfoSet;
-
-                        if (device.RegistryKey == null)
-                            continue;
-
-                        string deviceKey = !string.IsNullOrEmpty(device.PnpDeviceId) ? device.PnpDeviceId : device.DevObjName ?? string.Empty;
-
-                        if (!string.IsNullOrEmpty(deviceKey) && deviceConfig.TryGetValue(deviceKey, out var savedData))
-                        {
-                            var savedSettings = savedData.settings;
-                            var currentSettings = RegistryService.ReadDeviceSettings(device.RegistryKey, device.MaxMSILimit);
-                            bool settingsChanged = currentSettings.DevicePolicy != savedSettings.DevicePolicy || currentSettings.DevicePriority != savedSettings.DevicePriority || currentSettings.AssignmentSetOverride != savedSettings.AssignmentSetOverride;
-
-                            if (settingsChanged)
-                            {
-                                RegistryService.SetAffinityPolicy(device.RegistryKey, savedSettings.DevicePolicy, savedSettings.DevicePriority, savedSettings.AssignmentSetOverride);
-                                changedDevices.Add(device);
-                            }
-                        }
-                    }
-
-                    if (changedDevices.Count > 0)
-                    {
-                        await Task.Run(() =>
-                        {
-                            foreach (var device in changedDevices)
-                            {
-                                if (device.DeviceInfoSet != IntPtr.Zero)
-                                {
-                                    DeviceSettingsService.RestartDevice(device);
-                                }
-                            }
-                        });
-                    }
-
-                    foreach (var device in gpuDevicesAfterUpdate)
-                    {
-                        device.RegistryKey?.Close();
-                    }
-
-                    if (deviceInfoSetHandleAfterUpdate != IntPtr.Zero && deviceInfoSetHandleAfterUpdate != new IntPtr(-1))
-                        SetupApi.SetupDiDestroyDeviceInfoList(deviceInfoSetHandleAfterUpdate);
-
-                    deviceConfig.Clear();
-                }
-
-                // apply profile
-                if (localSettings.Values["MsiProfile"] != null)
-                {
-                    await Task.Run(() => Process.Start(new ProcessStartInfo(@"C:\Program Files (x86)\MSI Afterburner\MSIAfterburner.exe") { Arguments = "/Profile1 /q" })?.WaitForExit());
-                }
-
-                // launch obs studio
-                if (!(localSettings.Values["OBS"] as int? == 0))
-                {
-                    await Task.Run(() => Process.Start(new ProcessStartInfo("cmd.exe") { Arguments = @"/c del ""%APPDATA%\obs-studio\.sentinel"" /s /f /q", CreateNoWindow = true, WindowStyle = ProcessWindowStyle.Hidden, UseShellExecute = false })?.WaitForExit());
-                    await Task.Run(() => Process.Start(new ProcessStartInfo { FileName = @"C:\Program Files\obs-studio\bin\64bit\obs64.exe", Arguments = "--disable-updater --startreplaybuffer --minimize-to-tray", WorkingDirectory = @"C:\Program Files\obs-studio\bin\64bit" }));
-                }
-
-                NvidiaUpdateCheck.IsHitTestVisible = true;
-                NvidiaUpdateCheck.IsChecked = false;
-                NvidiaUpdateCheck.Content = "Checking for updates";
-                NvidiaUpdateCheck.IsChecked = true;
-            }
-            else
-            {
-                NvidiaUpdateCheck.IsChecked = false;
-
-                var dialog = new ContentDialog
-                {
-                    Title = "Services & Drivers are disabled",
-                    Content = "Please enable Services & Drivers before updating.",
-                    CloseButtonText = "OK",
-                    DefaultButton = ContentDialogButton.Close,
-                    XamlRoot = App.MainWindow.Content.XamlRoot
-                };
-                await dialog.ShowAsync();
-            }
-        }
-        else
-        {
-            NvidiaUpdateCheck.CheckedContent = "Checking for updates...";
-
-            try
-            {
-                var (currentVersion, newestVersion, newestDownloadUrl) = await NvidiaHelper.CheckUpdate();
-
-                // delay
-                await Task.Delay(800);
-
-                // check if update is needed
-                if (string.Compare(newestVersion, currentVersion, StringComparison.Ordinal) > 0)
-                {
-                    NvidiaUpdateCheck.IsChecked = false;
-                    NvidiaUpdateCheck.Content = "Update to " + newestVersion;
-                }
-                else if (string.Compare(newestVersion, currentVersion, StringComparison.Ordinal) == 0)
-                {
-                    NvidiaUpdateCheck.IsChecked = false;
-                    NvidiaUpdateCheck.Content = "No updates available";
-                }
-            }
-            catch
-            {
-                // delay
-                await Task.Delay(800);
-
-                NvidiaUpdateCheck.IsChecked = false;
-                NvidiaUpdateCheck.Content = "Failed to check for updates";
-            }
-        }
-    }
-
-    public async Task RunDownload(string url, string path, string file)
-    {
-        var uiContext = SynchronizationContext.Current;
-
-        var download = DownloadBuilder.New()
-            .WithUrl(url)
-            .WithDirectory(path)
-            .WithFileName(file)
-            .WithConfiguration(new DownloadConfiguration())
-            .Build();
-
-        double speedMB = 0.0;
-        double receivedMB = 0.0;
-        double totalMB = 0.0;
-        double percentage = 0.0;
-
-        DateTime lastLoggedTime = DateTime.MinValue;
-
-        download.DownloadProgressChanged += (sender, e) =>
-        {
-            if ((DateTime.Now - lastLoggedTime).TotalMilliseconds < 50) return;
-
-            lastLoggedTime = DateTime.Now;
-
-            speedMB = e.BytesPerSecondSpeed / (1024.0 * 1024.0);
-            receivedMB = e.ReceivedBytesSize / (1024.0 * 1024.0);
-            totalMB = e.TotalBytesToReceive / (1024.0 * 1024.0);
-            percentage = e.ProgressPercentage;
-
-            uiContext?.Post(_ =>
-            {
-                NvidiaUpdateCheck.IsIndeterminate = false;
-                NvidiaUpdateCheck.Progress = percentage;
-            }, null);
-        };
-
-        download.DownloadFileCompleted += (sender, e) =>
-        {
-            uiContext?.Post(_ =>
-            {
-                NvidiaUpdateCheck.Progress = 100;
-                NvidiaUpdateCheck.IsIndeterminate = true;
-            }, null);
-        };
-
-        await download.StartAsync();
-    }
-    private async void AmdUpdateCheck_Checked(object sender, RoutedEventArgs e)
-    {
-        //if (AmdUpdateCheck.Content.ToString().Contains("Update to"))
-        //{
-        //    if (new ServiceController("Beep").Status == ServiceControllerStatus.Running)
-        //    {
-        //        var dialog = new ContentDialog
-        //        {
-        //            Title = "Not implemented yet",
-        //            Content = "AMD Driver Update functionality has not been added yet.",
-        //            CloseButtonText = "OK",
-        //            DefaultButton = ContentDialogButton.Close,
-        //            XamlRoot = App.MainWindow.Content.XamlRoot
-        //        };
-        //        await dialog.ShowAsync();
-
-        //        AmdUpdateCheck.IsHitTestVisible = true;
-        //        AmdUpdateCheck.IsChecked = false;
-        //        AmdUpdateCheck.Content = "Checking for updates";
-        //        AmdUpdateCheck.IsChecked = true;
-        //    }
-        //    else
-        //    {
-        //        AmdUpdateCheck.IsChecked = false;
-
-        //        var dialog = new ContentDialog
-        //        {
-        //            Title = "Services & Drivers are disabled",
-        //            Content = "Please enable Services & Drivers before updating.",
-        //            CloseButtonText = "OK",
-        //            DefaultButton = ContentDialogButton.Close,
-        //            XamlRoot = App.MainWindow.Content.XamlRoot
-        //        };
-        //        await dialog.ShowAsync();
-        //    }
-        //}
-        //else
-        //{
-        //    AmdUpdateCheck.CheckedContent = "Checking for updates...";
-
-        //    try
-        //    {
-        //        var (currentVersion, newestVersion, newestDownloadUrl) = await AmdHelper.CheckUpdate();
-
-        //        // delay
-        //        await Task.Delay(800);
-
-        //        // check if update is needed
-        //        if (string.Compare(newestVersion, currentVersion, StringComparison.Ordinal) > 0)
-        //        {
-        //            AmdUpdateCheck.IsChecked = false;
-        //            AmdUpdateCheck.Content = "Update to " + newestVersion;
-        //        }
-        //        else if (string.Compare(newestVersion, currentVersion, StringComparison.Ordinal) == 0)
-        //        {
-        //            AmdUpdateCheck.IsChecked = false;
-        //            AmdUpdateCheck.Content = "No updates available";
-        //        }
-        //    }
-        //    catch
-        //    {
-        //        // delay
-        //        await Task.Delay(800);
-
-        //        AmdUpdateCheck.IsChecked = false;
-        //        AmdUpdateCheck.Content = "Failed to check for updates";
-        //    }
-        //}
-    }
-
-    private async void IntelUpdateCheck_Checked(object sender, RoutedEventArgs e)
-    {
-        if (IntelUpdateCheck.Content.ToString().Contains("Update to"))
-        {
-            if (new ServiceController("Beep").Status == ServiceControllerStatus.Running)
-            {
-                var (_, newestVersion, newestDownloadUrl) = await IntelHelper.CheckUpdate();
-
-                IntelUpdateCheck.IsHitTestVisible = false;
-
-                // download the nvidia driver   
-                IntelUpdateCheck.CheckedContent = "Downloading the INTEL driver...";
-                await RunDownload(newestDownloadUrl, Path.GetTempPath(), "driver.exe");
-
-                // extract the driver
-                IntelUpdateCheck.CheckedContent = "Extracting the INTEL driver...";
-                await ProcessActions.RunExtract(Path.Combine(Path.GetTempPath(), "driver.exe"), Path.Combine(Path.GetTempPath(), "driver"));
-
-                // close obs studio
-                if (Process.GetProcessesByName("obs64").Length > 0)
-                {
-                    foreach (var process in Process.GetProcessesByName("obs64"))
-                    {
-                        process.Kill();
-                        process.WaitForExit();
-                    }
-                }
-
-                // save config
-                var gpuDevices = DeviceDetectionService.FindDevicesByType(DeviceType.GPU);
-                IntPtr deviceInfoSetHandle = IntPtr.Zero;
-                foreach (var device in gpuDevices)
-                {
-                    if (deviceInfoSetHandle == IntPtr.Zero)
-                        deviceInfoSetHandle = device.DeviceInfoSet;
-
-                    if (device.RegistryKey != null)
-                    {
-                        string deviceKey = !string.IsNullOrEmpty(device.PnpDeviceId) ? device.PnpDeviceId : device.DevObjName ?? string.Empty;
-
-                        var settings = RegistryService.ReadDeviceSettings(device.RegistryKey, device.MaxMSILimit);
-                        deviceConfig[deviceKey] = (settings, device.DevObjName ?? string.Empty);
-                    }
-                }
-
-                foreach (var device in gpuDevices)
-                    device.RegistryKey?.Close();
-
-                if (deviceInfoSetHandle != IntPtr.Zero && deviceInfoSetHandle != new IntPtr(-1))
-                    SetupApi.SetupDiDestroyDeviceInfoList(deviceInfoSetHandle);
-
-                // update driver
-                NvidiaUpdateCheck.CheckedContent = "Updating the NVIDIA driver...";
-                await ProcessActions.RunNsudo("CurrentUser", @"""%TEMP%\driver\Installer.exe"" /silent");
-                await ProcessActions.Sleep(3000);
-                LoadGpus();
-
-                // reapply config
-                if (deviceConfig.Count > 0)
-                {
-                    NvidiaUpdateCheck.CheckedContent = "Reapplying Affinity...";
-                    await Task.Delay(1000);
-                    var changedDevices = new List<DeviceInfo>();
-                    var gpuDevicesAfterUpdate = DeviceDetectionService.FindDevicesByType(DeviceType.GPU);
-                    IntPtr deviceInfoSetHandleAfterUpdate = IntPtr.Zero;
-
-                    foreach (var device in gpuDevicesAfterUpdate)
-                    {
-                        if (deviceInfoSetHandleAfterUpdate == IntPtr.Zero)
-                            deviceInfoSetHandleAfterUpdate = device.DeviceInfoSet;
-
-                        if (device.RegistryKey == null)
-                            continue;
-
-                        string deviceKey = !string.IsNullOrEmpty(device.PnpDeviceId) ? device.PnpDeviceId : device.DevObjName ?? string.Empty;
-
-                        if (!string.IsNullOrEmpty(deviceKey) && deviceConfig.TryGetValue(deviceKey, out var savedData))
-                        {
-                            var savedSettings = savedData.settings;
-                            var currentSettings = RegistryService.ReadDeviceSettings(device.RegistryKey, device.MaxMSILimit);
-                            bool settingsChanged = currentSettings.DevicePolicy != savedSettings.DevicePolicy || currentSettings.DevicePriority != savedSettings.DevicePriority || currentSettings.AssignmentSetOverride != savedSettings.AssignmentSetOverride;
-
-                            if (settingsChanged)
-                            {
-                                RegistryService.SetAffinityPolicy(device.RegistryKey, savedSettings.DevicePolicy, savedSettings.DevicePriority, savedSettings.AssignmentSetOverride);
-                                changedDevices.Add(device);
-                            }
-                        }
-                    }
-
-                    if (changedDevices.Count > 0)
-                    {
-                        await Task.Run(() =>
-                        {
-                            foreach (var device in changedDevices)
-                            {
-                                if (device.DeviceInfoSet != IntPtr.Zero)
-                                {
-                                    DeviceSettingsService.RestartDevice(device);
-                                }
-                            }
-                        });
-                    }
-
-                    foreach (var device in gpuDevicesAfterUpdate)
-                    {
-                        device.RegistryKey?.Close();
-                    }
-
-                    if (deviceInfoSetHandleAfterUpdate != IntPtr.Zero && deviceInfoSetHandleAfterUpdate != new IntPtr(-1))
-                        SetupApi.SetupDiDestroyDeviceInfoList(deviceInfoSetHandleAfterUpdate);
-
-                    deviceConfig.Clear();
-                }
-
-                // apply profile
-                if (localSettings.Values["MsiProfile"] != null)
-                {
-                    await Task.Run(() => Process.Start(new ProcessStartInfo(@"C:\Program Files (x86)\MSI Afterburner\MSIAfterburner.exe") { Arguments = "/Profile1 /q" })?.WaitForExit());
-                }
-
-                // launch obs studio
-                if (!(localSettings.Values["OBS"] as int? == 0))
-                {
-                    await Task.Run(() => Process.Start(new ProcessStartInfo("cmd.exe") { Arguments = @"/c del ""%APPDATA%\obs-studio\.sentinel"" /s /f /q", CreateNoWindow = true, WindowStyle = ProcessWindowStyle.Hidden, UseShellExecute = false })?.WaitForExit());
-                    await Task.Run(() => Process.Start(new ProcessStartInfo { FileName = @"C:\Program Files\obs-studio\bin\64bit\obs64.exe", Arguments = "--disable-updater --startreplaybuffer --minimize-to-tray", WorkingDirectory = @"C:\Program Files\obs-studio\bin\64bit" }));
-                }
-
-                IntelUpdateCheck.IsHitTestVisible = true;
-                IntelUpdateCheck.IsChecked = false;
-                IntelUpdateCheck.Content = "Checking for updates";
-                IntelUpdateCheck.IsChecked = true;
-            }
-            else
-            {
-                IntelUpdateCheck.IsChecked = false;
-
-                var dialog = new ContentDialog
-                {
-                    Title = "Services & Drivers are disabled",
-                    Content = "Please enable Services & Drivers before updating.",
-                    CloseButtonText = "OK",
-                    DefaultButton = ContentDialogButton.Close,
-                    XamlRoot = App.MainWindow.Content.XamlRoot
-                };
-                await dialog.ShowAsync();
-            }
-        }
-        else
-        {
-            IntelUpdateCheck.CheckedContent = "Checking for updates...";
-
-            try
-            {
-                var (currentVersion, newestVersion, newestDownloadUrl) = await IntelHelper.CheckUpdate();
-
-                // check if update is needed
-                if (string.Compare(newestVersion, currentVersion, StringComparison.Ordinal) > 0)
-                {
-                    IntelUpdateCheck.IsChecked = false;
-                    IntelUpdateCheck.Content = "Update to " + newestVersion;
-                }
-                else if (string.Compare(newestVersion, currentVersion, StringComparison.Ordinal) == 0)
-                {
-                    IntelUpdateCheck.IsChecked = false;
-                    IntelUpdateCheck.Content = "No updates available";
-                }
-            }
-            catch
-            {
-                IntelUpdateCheck.IsChecked = false;
-                IntelUpdateCheck.Content = "Failed to check for updates";
-            }
-        }
-    }
-
-    private void GetHDCPState()
-    {
-        // get registry values
-        for (int i = 0; i <= 9; i++)
-        {
-            if (Registry.GetValue($@"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Class\{{4d36e968-e325-11ce-bfc1-08002be10318}}\000{i}", "ProviderName", null)?.ToString() == "NVIDIA" &&
-                (int?)Registry.GetValue($@"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Class\{{4d36e968-e325-11ce-bfc1-08002be10318}}\000{i}", "RMHdcpKeyglobZero", null) == 0)
-            {
-                HDCP.IsOn = true;
-            }
-        }
         isInitializingHDCPState = false;
+        isInitializingHDMIDPAudioState = false;
+    }
+
+    public async void GetGpus()
+    {
+        var detectedGpus = await GpuHelper.DetectGPUs();
+
+        GPUs.Clear();
+
+        foreach (var gpu in detectedGpus)
+        {
+            GPUs.Add(gpu);
+
+            if (!gpu.IsInstalled)
+            {
+                if (localSettings.Values.TryGetValue($"HDCP_{gpu.PnPDeviceId}", out var hdcp))
+                    gpu.HDCP = Convert.ToBoolean(hdcp);
+
+                if (localSettings.Values.TryGetValue($"HDMIDPAudio_{gpu.PnPDeviceId}", out var hdmidpaudio))
+                    gpu.HDMIDPAudio = Convert.ToBoolean(hdmidpaudio);
+            }
+        }
+    }
+
+    private async void ProgressButton_Loaded(object sender, RoutedEventArgs e)
+    {
+        ProgressButton progressButton = (ProgressButton)sender;
+
+        progressButton.IsChecked = true;
+    }
+
+    private async void ProgressButton_Checked(object sender, RoutedEventArgs e)
+    {
+        
+        string newestVersion = string.Empty;
+        string newestDownloadUrl = string.Empty;
+
+        ProgressButton progressButton = (ProgressButton)sender;
+        GpuModel gpu = (GpuModel)progressButton.DataContext;
+
+        progressButton.IsHitTestVisible = false;
+
+        try
+        {
+            // update logic
+            if (progressButton.Content?.ToString().Contains("Update to") == true)
+            {
+                if (new ServiceController("Beep").Status == ServiceControllerStatus.Running)
+                {
+                    // save affinity
+                    var savedConfig = SaveAffinity();
+
+                    // close obs studio
+                    if (Process.GetProcessesByName("obs64").Length > 0)
+                    {
+                        foreach (var process in Process.GetProcessesByName("obs64"))
+                        {
+                            process.Kill();
+                            process.WaitForExit();
+                        }
+                    }
+
+                    switch (gpu.VendorId)
+                    {
+                        case "10de":
+                            (newestVersion, newestDownloadUrl) = await NvidiaHelper.CheckUpdate(gpu);
+                            var nvidiaActions = new List<(string Title, Func<Task> Action, Func<bool> Condition)>();
+                            nvidiaActions = NvidiaHelper.DriverActions(gpu, newestDownloadUrl, progressButton);
+                            await RunActions(progressButton, nvidiaActions);
+                            break;
+                        case "1002":
+                            (newestVersion, newestDownloadUrl) = await AmdHelper.CheckUpdate(gpu);
+                            var amdActions = new List<(string Title, Func<Task> Action, Func<bool> Condition)>();
+                            amdActions = AmdHelper.DriverActions(gpu, newestDownloadUrl, progressButton);
+                            await RunActions(progressButton, amdActions);
+                            break;
+                        case "8086":
+                            (newestVersion, newestDownloadUrl) = await IntelHelper.CheckUpdate(gpu);
+                            var intelActions = new List<(string Title, Func<Task> Action, Func<bool> Condition)>();
+                            intelActions = IntelHelper.DriverActions(gpu, newestDownloadUrl, progressButton);
+                            await RunActions(progressButton, intelActions);
+                            break;
+                    }
+
+                    // reapply affinity
+                    await ReapplyAffinity(savedConfig, progressButton);
+
+                    // apply profile
+                    if (localSettings.Values["MsiProfile"] != null)
+                    {
+                        await Task.Run(() => Process.Start(new ProcessStartInfo(@"C:\Program Files (x86)\MSI Afterburner\MSIAfterburner.exe") { Arguments = "/Profile1 /q" })?.WaitForExit());
+                    }
+
+                    // launch obs studio
+                    if (!(localSettings.Values["OBS"] as int? == 0))
+                    {
+                        await Task.Run(() => Process.Start(new ProcessStartInfo("cmd.exe") { Arguments = @"/c del ""%APPDATA%\obs-studio\.sentinel"" /s /f /q", CreateNoWindow = true, WindowStyle = ProcessWindowStyle.Hidden, UseShellExecute = false })?.WaitForExit());
+                        await Task.Run(() => Process.Start(new ProcessStartInfo { FileName = @"C:\Program Files\obs-studio\bin\64bit\obs64.exe", Arguments = "--disable-updater --startreplaybuffer --minimize-to-tray", WorkingDirectory = @"C:\Program Files\obs-studio\bin\64bit" }));
+                    }
+                }
+                else
+                {
+                    progressButton.IsChecked = false;
+
+                    var dialog = new ContentDialog
+                    {
+                        Title = "Services & Drivers are disabled",
+                        Content = "Please enable Services & Drivers before updating.",
+                        CloseButtonText = "OK",
+                        DefaultButton = ContentDialogButton.Close,
+                        XamlRoot = App.MainWindow.Content.XamlRoot
+                    };
+                    await dialog.ShowAsync();
+                }
+
+                progressButton.IsChecked = false;
+                return;
+            }
+            // install logic
+            else if (progressButton.Content?.ToString().Contains("Install") == true)
+            {
+                if (new ServiceController("Beep").Status == ServiceControllerStatus.Running)
+                {
+                    // close obs studio
+                    if (Process.GetProcessesByName("obs64").Length > 0)
+                    {
+                        foreach (var process in Process.GetProcessesByName("obs64"))
+                        {
+                            process.Kill();
+                            process.WaitForExit();
+                        }
+                    }
+
+                    switch (gpu.VendorId)
+                    {
+                        case "10de":
+                            (newestVersion, newestDownloadUrl) = await NvidiaHelper.CheckUpdate(gpu);
+                            var nvidiaActions = new List<(string Title, Func<Task> Action, Func<bool> Condition)>();
+                            nvidiaActions = NvidiaHelper.DriverActions(gpu, newestDownloadUrl, progressButton);
+                            await RunActions(progressButton, nvidiaActions);
+                            break;
+                        case "1002":
+                            (newestVersion, newestDownloadUrl) = await AmdHelper.CheckUpdate(gpu);
+                            var amdActions = new List<(string Title, Func<Task> Action, Func<bool> Condition)>();
+                            amdActions = AmdHelper.DriverActions(gpu, newestDownloadUrl, progressButton);
+                            await RunActions(progressButton, amdActions);
+                            break;
+                        case "8086":
+                            (newestVersion, newestDownloadUrl) = await IntelHelper.CheckUpdate(gpu);
+                            var intelActions = new List<(string Title, Func<Task> Action, Func<bool> Condition)>();
+                            intelActions = IntelHelper.DriverActions(gpu, newestDownloadUrl, progressButton);
+                            await RunActions(progressButton, intelActions);
+                            break;
+                    }
+
+                    // apply profile
+                    if (localSettings.Values["MsiProfile"] != null)
+                    {
+                        await Task.Run(() => Process.Start(new ProcessStartInfo(@"C:\Program Files (x86)\MSI Afterburner\MSIAfterburner.exe") { Arguments = "/Profile1 /q" })?.WaitForExit());
+                    }
+
+                    // launch obs studio
+                    if (!(localSettings.Values["OBS"] as int? == 0))
+                    {
+                        await Task.Run(() => Process.Start(new ProcessStartInfo("cmd.exe") { Arguments = @"/c del ""%APPDATA%\obs-studio\.sentinel"" /s /f /q", CreateNoWindow = true, WindowStyle = ProcessWindowStyle.Hidden, UseShellExecute = false })?.WaitForExit());
+                        await Task.Run(() => Process.Start(new ProcessStartInfo { FileName = @"C:\Program Files\obs-studio\bin\64bit\obs64.exe", Arguments = "--disable-updater --startreplaybuffer --minimize-to-tray", WorkingDirectory = @"C:\Program Files\obs-studio\bin\64bit" }));
+                    }
+                }
+                else
+                {
+                    progressButton.IsChecked = false;
+
+                    var dialog = new ContentDialog
+                    {
+                        Title = "Services & Drivers are disabled",
+                        Content = "Please enable Services & Drivers before installing.",
+                        CloseButtonText = "OK",
+                        DefaultButton = ContentDialogButton.Close,
+                        XamlRoot = App.MainWindow.Content.XamlRoot
+                    };
+                    await dialog.ShowAsync();
+                }
+
+                progressButton.IsChecked = false;
+                return;
+            }
+
+            // update check logic
+            progressButton.CheckedContent = gpu.IsInstalled ? "Checking for updates..." : "Checking for latest version...";
+
+            switch (gpu.VendorId)
+            {
+                case "10de":
+                    (newestVersion, newestDownloadUrl) = await NvidiaHelper.CheckUpdate(gpu);
+                    break;
+                case "1002":
+                    (newestVersion, newestDownloadUrl) = await AmdHelper.CheckUpdate(gpu);
+                    break;
+                case "8086":
+                    (newestVersion, newestDownloadUrl) = await IntelHelper.CheckUpdate(gpu);
+                    break;
+            }
+
+            if (gpu.IsInstalled)
+            {
+                await Task.Delay(500);
+
+                if (string.Compare(newestVersion, gpu.CurrentVersion, StringComparison.Ordinal) > 0)
+                {
+                    progressButton.Content = $"Update to {newestVersion}";
+                }
+                else
+                {
+                    progressButton.Content = "No updates available";
+                }
+            }
+            else if (!gpu.IsInstalled)
+            {
+                await Task.Delay(500);
+
+                progressButton.Content = $"Install {newestVersion}";
+            }
+        }
+        finally
+        {
+            progressButton.IsChecked = false;
+            progressButton.IsHitTestVisible = true;
+        }
+    }
+
+    public static async Task RunActions(ProgressButton progressButton, List<(string Title, Func<Task> Action, Func<bool> Condition)> actions)
+    {
+        if (actions == null || actions.Count == 0) return;
+
+        var filteredActions = actions.Where(a => a.Condition == null || a.Condition()).ToList();
+        if (filteredActions.Count == 0) return;
+
+        List<Func<Task>> currentGroup = [];
+        string previousTitle = string.Empty;
+
+        foreach (var (title, action, _) in filteredActions)
+        {
+            if (!string.IsNullOrEmpty(previousTitle) && previousTitle != title && currentGroup.Count > 0)
+            {
+                progressButton.CheckedContent = previousTitle;
+
+                foreach (var groupedAction in currentGroup)
+                {
+                    await groupedAction();
+                }
+
+                currentGroup.Clear();
+                await Task.Delay(250);
+            }
+
+            currentGroup.Add(action);
+            previousTitle = title;
+        }
+
+        if (currentGroup.Count > 0)
+        {
+            progressButton.CheckedContent = previousTitle;
+            foreach (var groupedAction in currentGroup)
+            {
+                await groupedAction();
+            }
+            await Task.Delay(250);
+        }
+
+        progressButton.IsHitTestVisible = true;
+        progressButton.IsChecked = false;
+        progressButton.Content = "Checking for updates";
+        progressButton.IsChecked = true;
+    }
+
+    public static Dictionary<string, (DeviceSettings settings, string devObjName)> SaveAffinity()
+    {
+        var deviceConfig = new Dictionary<string, (DeviceSettings, string)>();
+        var gpuDevices = DeviceDetectionService.FindDevicesByType(DeviceType.GPU);
+        IntPtr deviceInfoSetHandle = IntPtr.Zero;
+
+        foreach (var device in gpuDevices)
+        {
+            if (deviceInfoSetHandle == IntPtr.Zero)
+                deviceInfoSetHandle = device.DeviceInfoSet;
+
+            if (device.RegistryKey != null)
+            {
+                string deviceKey = !string.IsNullOrEmpty(device.PnpDeviceId) ? device.PnpDeviceId : device.DevObjName ?? string.Empty;
+
+                var settings = RegistryService.ReadDeviceSettings(device.RegistryKey, device.MaxMSILimit);
+                deviceConfig[deviceKey] = (settings, device.DevObjName ?? string.Empty);
+            }
+        }
+
+        foreach (var device in gpuDevices)
+            device.RegistryKey?.Close();
+
+        if (deviceInfoSetHandle != IntPtr.Zero && deviceInfoSetHandle != new IntPtr(-1))
+            SetupDiDestroyDeviceInfoList(deviceInfoSetHandle);
+
+        return deviceConfig;
+    }
+    
+    public static async Task ReapplyAffinity(Dictionary<string, (DeviceSettings settings, string devObjName)> deviceConfig, ProgressButton progressButton)
+    {
+        if (deviceConfig == null || deviceConfig.Count == 0)
+            return;
+
+        progressButton.CheckedContent = "Reapplying GPU Affinity...";
+        await Task.Delay(500);
+
+        var changedDevices = new List<DeviceInfo>();
+        var gpuDevicesAfterUpdate = DeviceDetectionService.FindDevicesByType(DeviceType.GPU);
+        IntPtr deviceInfoSetHandleAfterUpdate = IntPtr.Zero;
+
+        foreach (var device in gpuDevicesAfterUpdate)
+        {
+            if (deviceInfoSetHandleAfterUpdate == IntPtr.Zero)
+                deviceInfoSetHandleAfterUpdate = device.DeviceInfoSet;
+
+            if (device.RegistryKey == null) continue;
+
+            string deviceKey = !string.IsNullOrEmpty(device.PnpDeviceId) ? device.PnpDeviceId : device.DevObjName ?? string.Empty;
+
+            if (!string.IsNullOrEmpty(deviceKey) && deviceConfig.TryGetValue(deviceKey, out var savedData))
+            {
+                var savedSettings = savedData.settings;
+                var currentSettings = RegistryService.ReadDeviceSettings(device.RegistryKey, device.MaxMSILimit);
+
+                bool settingsChanged = currentSettings.DevicePolicy != savedSettings.DevicePolicy || currentSettings.DevicePriority != savedSettings.DevicePriority || currentSettings.AssignmentSetOverride != savedSettings.AssignmentSetOverride;
+
+                if (settingsChanged)
+                {
+                    RegistryService.SetAffinityPolicy(device.RegistryKey, savedSettings.DevicePolicy, savedSettings.DevicePriority, savedSettings.AssignmentSetOverride);
+                    changedDevices.Add(device);
+                }
+            }
+        }
+
+        if (changedDevices.Count > 0)
+        {
+            await Task.Run(() =>
+            {
+                foreach (var device in changedDevices)
+                {
+                    if (device.DeviceInfoSet != IntPtr.Zero)
+                        DeviceSettingsService.RestartDevice(device);
+                }
+            });
+        }
+
+        foreach (var device in gpuDevicesAfterUpdate)
+            device.RegistryKey?.Close();
+
+        if (deviceInfoSetHandleAfterUpdate != IntPtr.Zero && deviceInfoSetHandleAfterUpdate != new IntPtr(-1))
+            SetupDiDestroyDeviceInfoList(deviceInfoSetHandleAfterUpdate);
+
+        progressButton.CheckedContent = null;
     }
 
     private async void HDCP_Toggled(object sender, RoutedEventArgs e)
@@ -634,8 +397,17 @@ public sealed partial class GraphicsPage : Page
         // return if still initializing
         if (isInitializingHDCPState) return;
 
+        ToggleSwitch toggleSwitch = (ToggleSwitch)sender;
+        GpuModel gpu = (GpuModel)toggleSwitch.DataContext;
+        var GpuInfo = FindParent<StackPanel>(toggleSwitch).FindName("GpuInfo") as StackPanel;
+        if (!gpu.IsInstalled)
+        {
+            localSettings.Values[$"HDCP_{gpu.PnPDeviceId}"] = toggleSwitch.IsOn;
+            return;
+        }
+
         // disable hittestvisible to avoid double-clicking
-        HDCP.IsHitTestVisible = false;
+        toggleSwitch.IsHitTestVisible = false;
 
         // remove infobar
         GpuInfo.Children.Clear();
@@ -643,32 +415,27 @@ public sealed partial class GraphicsPage : Page
         // add infobar
         GpuInfo.Children.Add(new InfoBar
         {
-            Title = HDCP.IsOn ? "Enabling High-Bandwidth Digital Content Protection (HDCP)..." : "Disabling High-Bandwidth Digital Content Protection (HDCP)...",
+            Title = toggleSwitch.IsOn ? "Enabling High-Bandwidth Digital Content Protection (HDCP)..." : "Disabling High-Bandwidth Digital Content Protection (HDCP)...",
             IsClosable = false,
             IsOpen = true,
-            Severity = InfoBarSeverity.Informational,
-            Margin = new Thickness(4, -4, 4, 12)
+            Severity = InfoBarSeverity.Informational
         });
 
         // toggle hdcp
-        for (int i = 0; i <= 9; i++)
+        if (gpu.VendorId == "10de")
         {
-            var path = $@"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Class\{{4d36e968-e325-11ce-bfc1-08002be10318}}\000{i}";
-            if (Registry.GetValue(path, "ProviderName", null)?.ToString() == "NVIDIA")
+            if (toggleSwitch.IsOn)
             {
-                if (HDCP.IsOn)
-                {
-                    Registry.SetValue(path, "RMHdcpKeyglobZero", 0, RegistryValueKind.DWord);
-                    using var key = Registry.LocalMachine.OpenSubKey($@"SYSTEM\CurrentControlSet\Control\Class\{{4d36e968-e325-11ce-bfc1-08002be10318}}\000{i}", true);
-                    key?.DeleteValue("RmDisableHdcp22", false);
-                    key?.DeleteValue("RmSkipHdcp22Init", false);
-                }
-                else
-                {
-                    Registry.SetValue(path, "RMHdcpKeyglobZero", 1, RegistryValueKind.DWord);
-                    Registry.SetValue(path, "RmDisableHdcp22", 1, RegistryValueKind.DWord);
-                    Registry.SetValue(path, "RmSkipHdcp22Init", 1, RegistryValueKind.DWord);
-                }
+                Registry.SetValue(gpu.RegistryPath, "RMHdcpKeyglobZero", 0, RegistryValueKind.DWord);
+                using var key = Registry.LocalMachine.OpenSubKey(gpu.RegistryPath.Substring("HKEY_LOCAL_MACHINE\\".Length), writable: true);
+                key?.DeleteValue("RmDisableHdcp22", false);
+                key?.DeleteValue("RmSkipHdcp22Init", false);
+            }
+            else
+            {
+                Registry.SetValue(gpu.RegistryPath, "RMHdcpKeyglobZero", 1, RegistryValueKind.DWord);
+                Registry.SetValue(gpu.RegistryPath, "RmDisableHdcp22", 1, RegistryValueKind.DWord);
+                Registry.SetValue(gpu.RegistryPath, "RmSkipHdcp22Init", 1, RegistryValueKind.DWord);
             }
         }
 
@@ -702,7 +469,7 @@ public sealed partial class GraphicsPage : Page
         }
 
         // re-enable hittestvisible
-        HDCP.IsHitTestVisible = true;
+        toggleSwitch.IsHitTestVisible = true;
 
         // remove infobar
         GpuInfo.Children.Clear();
@@ -710,11 +477,10 @@ public sealed partial class GraphicsPage : Page
         // add infobar
         var infoBar = new InfoBar
         {
-            Title = HDCP.IsOn ? "Successfully enabled High-Bandwidth Digital Content Protection (HDCP)." : "Successfully disabled High-Bandwidth Digital Content Protection (HDCP).",
+            Title = toggleSwitch.IsOn ? "Successfully enabled High-Bandwidth Digital Content Protection (HDCP)." : "Successfully disabled High-Bandwidth Digital Content Protection (HDCP).",
             IsClosable = false,
             IsOpen = true,
-            Severity = InfoBarSeverity.Success,
-            Margin = new Thickness(4, -4, 4, 12)
+            Severity = InfoBarSeverity.Success
         };
         GpuInfo.Children.Add(infoBar);
 
@@ -725,23 +491,22 @@ public sealed partial class GraphicsPage : Page
         GpuInfo.Children.Clear();
     }
 
-    private void GetHDMIDPAudioState()
-    {
-        var devices = new ManagementObjectSearcher(@"SELECT DeviceID, ConfigManagerErrorCode FROM Win32_PnPEntity WHERE Name LIKE '%High Definition Audio Controller%'").Get().Cast<ManagementObject>().ToArray();
-
-        NVIDIA_HDMIDPAudio.IsOn = devices.Any(o => o["DeviceID"]?.ToString().Contains("VEN_10DE", StringComparison.OrdinalIgnoreCase) == true && Convert.ToInt32(o["ConfigManagerErrorCode"]) == 0);
-        AMD_HDMIDPAudio.IsOn = devices.Any(o => o["DeviceID"]?.ToString().Contains("VEN_1002", StringComparison.OrdinalIgnoreCase) == true && Convert.ToInt32(o["ConfigManagerErrorCode"]) == 0);
-        INTEL_HDMIDPAudio.IsOn = devices.Any(o => o["DeviceID"]?.ToString().Contains("VEN_8086", StringComparison.OrdinalIgnoreCase) == true && Convert.ToInt32(o["ConfigManagerErrorCode"]) == 0);
-
-        isInitializingHDMIDPAudioState = false;
-    }
-
     private async void HDMIDPAudio_Toggled(object sender, RoutedEventArgs e)
     {
         // return if still initializing
         if (isInitializingHDMIDPAudioState) return;
 
-        var toggle = sender as ToggleSwitch;
+        ToggleSwitch toggleSwitch = (ToggleSwitch)sender;
+        GpuModel gpu = (GpuModel)toggleSwitch.DataContext;
+        var GpuInfo = FindParent<StackPanel>(toggleSwitch).FindName("GpuInfo") as StackPanel;
+        if (!gpu.IsInstalled)
+        {
+            localSettings.Values[$"HDMIDPAudio_{gpu.PnPDeviceId}"] = toggleSwitch.IsOn;
+            return;
+        }
+
+        // disable hittestvisible to avoid double-clicking
+        toggleSwitch.IsHitTestVisible = false;
 
         // remove infobar
         GpuInfo.Children.Clear();
@@ -749,40 +514,24 @@ public sealed partial class GraphicsPage : Page
         // add infobar
         GpuInfo.Children.Add(new InfoBar
         {
-            Title = toggle.IsOn ? "Enabling High-Definition Multimedia Interface (HDMI)/DisplayPort (DP) Audio..." : "Disabling High-Definition Multimedia Interface (HDMI)/DisplayPort (DP) Audio...",
+            Title = toggleSwitch.IsOn ? "Enabling High-Definition Multimedia Interface (HDMI)/DisplayPort (DP) Audio..." : "Disabling High-Definition Multimedia Interface (HDMI)/DisplayPort (DP) Audio...",
             IsClosable = false,
             IsOpen = true,
-            Severity = InfoBarSeverity.Informational,
-            Margin = new Thickness(4, -4, 4, 12)
+            Severity = InfoBarSeverity.Informational
         });
 
         // toggle hdmi/dp audio
-        bool isOn = toggle.IsOn;
-
-        if (toggle == NVIDIA_HDMIDPAudio)
-        {
-            foreach (ManagementObject obj in new ManagementObjectSearcher(@"SELECT * FROM Win32_PnPEntity WHERE Name LIKE '%High Definition Audio Controller%' AND DeviceID LIKE '%VEN_10DE%'").Get().Cast<ManagementObject>().ToArray())
-            {
-                obj.InvokeMethod(isOn ? "Enable" : "Disable", null, null);
-            }
-        }
-        else if (toggle == AMD_HDMIDPAudio)
-        {
-            foreach (ManagementObject obj in new ManagementObjectSearcher(@"SELECT * FROM Win32_PnPEntity WHERE Name LIKE '%High Definition Audio Controller%' AND DeviceID LIKE '%VEN_1002%'").Get().Cast<ManagementObject>().ToArray())
-            {
-                obj.InvokeMethod(isOn ? "Enable" : "Disable", null, null);
-            }
-        }
-        else if (toggle == INTEL_HDMIDPAudio)
-        {
-            foreach (ManagementObject obj in new ManagementObjectSearcher(@"SELECT * FROM Win32_PnPEntity WHERE Name LIKE '%High Definition Audio Controller%' AND DeviceID LIKE '%VEN_8086%'").Get().Cast<ManagementObject>().ToArray())
-            {
-                obj.InvokeMethod(isOn ? "Enable" : "Disable", null, null);
-            }
-        }
+        new ManagementObjectSearcher("SELECT DeviceID, ConfigManagerErrorCode FROM Win32_PnPEntity WHERE Name LIKE '%High Definition Audio Controller%'")
+            .Get().OfType<ManagementObject>()
+            .Where(obj => obj["DeviceID"]?.ToString().Contains(gpu.PnPDeviceId[(gpu.PnPDeviceId.LastIndexOf('\\') + 1)..gpu.PnPDeviceId.LastIndexOf('&')], StringComparison.OrdinalIgnoreCase) == true)
+            .ToList()
+            .ForEach(obj => obj.InvokeMethod(toggleSwitch.IsOn ? "Enable" : "Disable", null, null));
 
         // delay
-        await Task.Delay(400);
+        await Task.Delay(500);
+
+        // re-enable hittestvisible
+        toggleSwitch.IsHitTestVisible = true;
 
         // remove infobar
         GpuInfo.Children.Clear();
@@ -790,11 +539,10 @@ public sealed partial class GraphicsPage : Page
         // add infobar
         var infoBar = new InfoBar
         {
-            Title = toggle.IsOn ? "Successfully enabled High-Definition Multimedia Interface (HDMI)/DisplayPort (DP) Audio." : "Successfully disabled High-Definition Multimedia Interface (HDMI)/DisplayPort (DP) Audio.",
+            Title = toggleSwitch.IsOn ? "Successfully enabled High-Definition Multimedia Interface (HDMI)/DisplayPort (DP) Audio." : "Successfully disabled High-Definition Multimedia Interface (HDMI)/DisplayPort (DP) Audio.",
             IsClosable = false,
             IsOpen = true,
-            Severity = InfoBarSeverity.Success,
-            Margin = new Thickness(4, -4, 4, 12)
+            Severity = InfoBarSeverity.Success
         };
         GpuInfo.Children.Add(infoBar);
 
@@ -820,8 +568,7 @@ public sealed partial class GraphicsPage : Page
             Title = "Please select a MSI Afterburner profile (.cfg).",
             IsClosable = false,
             IsOpen = true,
-            Severity = InfoBarSeverity.Informational,
-            Margin = new Thickness(4, -4, 4, 12)
+            Severity = InfoBarSeverity.Informational
         });
 
         // delay
@@ -832,7 +579,7 @@ public sealed partial class GraphicsPage : Page
         {
             ShowAllFilesOption = false
         };
-        picker.FileTypeChoices.Add("MSI Afterburner profile", new List<string> { "*.cfg" });
+        picker.FileTypeChoices.Add("MSI Afterburner profile", ["*.cfg"]);
         var file = await picker.PickSingleFileAsync();
 
         if (file != null)
@@ -853,8 +600,7 @@ public sealed partial class GraphicsPage : Page
                     Title = "Applying the MSI Afterburner profile...",
                     IsClosable = false,
                     IsOpen = true,
-                    Severity = InfoBarSeverity.Informational,
-                    Margin = new Thickness(4, -4, 4, 12)
+                    Severity = InfoBarSeverity.Informational
                 });
 
                 // delay
@@ -881,8 +627,7 @@ public sealed partial class GraphicsPage : Page
                     Title = "Successfully applied the MSI Afterburner profile.",
                     IsClosable = false,
                     IsOpen = true,
-                    Severity = InfoBarSeverity.Success,
-                    Margin = new Thickness(4, -4, 4, 12)
+                    Severity = InfoBarSeverity.Success
                 });
 
                 // delay
@@ -905,8 +650,7 @@ public sealed partial class GraphicsPage : Page
                     Title = "The selected file is not a valid MSI Afterburner profile.",
                     IsClosable = false,
                     IsOpen = true,
-                    Severity = InfoBarSeverity.Error,
-                    Margin = new Thickness(4, -4, 4, 12)
+                    Severity = InfoBarSeverity.Error
                 });
 
                 // delay
@@ -937,8 +681,7 @@ public sealed partial class GraphicsPage : Page
             Title = "Launching MSI Afterburner...",
             IsClosable = false,
             IsOpen = true,
-            Severity = InfoBarSeverity.Informational,
-            Margin = new Thickness(4, -4, 4, 12)
+            Severity = InfoBarSeverity.Informational
         });
 
         // launch
@@ -953,8 +696,7 @@ public sealed partial class GraphicsPage : Page
             Title = "Successfully launched MSI Afterburner.",
             IsClosable = false,
             IsOpen = true,
-            Severity = InfoBarSeverity.Success,
-            Margin = new Thickness(4, -4, 4, 12)
+            Severity = InfoBarSeverity.Success
         });
 
         // delay
@@ -1047,5 +789,15 @@ public sealed partial class GraphicsPage : Page
 
         // remove infobar
         ObsStudioInfo.Children.Clear();
+    }
+
+    public static T FindParent<T>(DependencyObject child) where T : DependencyObject
+    {
+        DependencyObject parent = VisualTreeHelper.GetParent(child);
+
+        while (parent != null && parent is not T)
+            parent = VisualTreeHelper.GetParent(parent);
+
+        return parent as T;
     }
 }

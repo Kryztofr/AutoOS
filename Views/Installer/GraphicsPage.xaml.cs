@@ -1,24 +1,22 @@
-﻿using System.Management;
+﻿using AutoOS.Helpers.GPU;
+using System.Collections.ObjectModel;
+using System.Text.Json;
 using Windows.Storage;
 
 namespace AutoOS.Views.Installer;
 
 public sealed partial class GraphicsPage : Page
 {
-    private bool isInitializingHDCPState = true;
-    private bool isInitializingHDMIDPAudioState = true;
     private bool isInitializingOBSState = true;
-    private static readonly HttpClient httpClient = new();
     private readonly ApplicationDataContainer localSettings = ApplicationData.Current.LocalSettings;
-
+    public ObservableCollection<GpuModel> GPUs { get; } = [];
     public GraphicsPage()
     {
         InitializeComponent();
-        GetGPUs();
-        GetHDCPState();
-        GetHDMIDPAudioState();
+        GetGpus();
         GetMsiProfile();
         GetOBSState();
+        Unloaded += GraphicsPage_Unloaded;
     }
 
     protected override void OnNavigatedTo(NavigationEventArgs e)
@@ -28,159 +26,41 @@ public sealed partial class GraphicsPage : Page
         MainWindow.Instance.CheckAllPagesVisited();
     }
 
-    private async void GetGPUs()
+    private void GraphicsPage_Unloaded(object sender, RoutedEventArgs e)
     {
-        var detectedGPUs = new List<string>();
-        string pciPath = Path.Combine(PathHelper.GetAppDataFolderPath(), "pci.ids");
-
-        if (!File.Exists(pciPath))
-            await File.WriteAllBytesAsync(pciPath, await httpClient.GetByteArrayAsync("https://raw.githubusercontent.com/pciutils/pciids/master/pci.ids"));
-
-        var pciDb = new Dictionary<string, (string Vendor, Dictionary<string, string> Devices)>(StringComparer.OrdinalIgnoreCase);
-        string currentVendor = null;
-
-        foreach (var line in File.ReadLines(pciPath))
-        {
-            if (string.IsNullOrWhiteSpace(line) || line.StartsWith('#')) continue;
-
-            if (!char.IsWhiteSpace(line[0]))
-            {
-                var parts = line.Split([' '], 2);
-                if (parts.Length < 2) continue;
-                currentVendor = parts[0].ToLowerInvariant();
-                pciDb[currentVendor] = (parts[1].Trim(), new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase));
-            }
-            else if (line.StartsWith('\t') && (line.Length < 2 || line[1] != '\t') && currentVendor != null)
-            {
-                var parts = line.Trim().Split([' '], 2);
-                if (parts.Length < 2) continue;
-                pciDb[currentVendor].Devices[parts[0].ToLowerInvariant()] = parts[1].Trim();
-            }
-        }
-
-        static string Normalize(string s) => s.Replace(" ", "").Replace("-", "").ToLowerInvariant();
-
-        foreach (ManagementObject obj in new ManagementObjectSearcher("SELECT * FROM Win32_PnPEntity WHERE PNPClass='Display'").Get().Cast<ManagementObject>().ToArray())
-        {
-            string pnpDeviceId = obj["PNPDeviceID"]?.ToString();
-            if (string.IsNullOrEmpty(pnpDeviceId) || !pnpDeviceId.StartsWith("PCI\\VEN_") || !pnpDeviceId.Contains("&DEV_"))
-                continue;
-
-            string vendorId = pnpDeviceId.Substring(pnpDeviceId.IndexOf("VEN_") + 4, 4).ToLowerInvariant();
-            string deviceId = pnpDeviceId.Substring(pnpDeviceId.IndexOf("DEV_") + 4, 4).ToLowerInvariant();
-
-            if (!pciDb.TryGetValue(vendorId, out var vendor)) continue;
-            if (!vendor.Devices.TryGetValue(deviceId, out var rawDeviceName)) continue;
-
-            string deviceName = rawDeviceName.Split('[', ']') is { Length: > 1 } parts ? parts[1] : rawDeviceName;
-            string codename = rawDeviceName.Split('[')[0].Trim();
-
-            switch (vendorId)
-            {
-                case "10de":
-                    Nvidia_SettingsGroup.Visibility = Visibility.Visible;
-                    Nvidia_SettingsGroup.Header = $"NVIDIA {deviceName}";
-                    detectedGPUs.Add("NVIDIA");
-                    break;
-
-                case "1002":
-                    string[] amdRx = { "Navi 10", "Navi 14", "Navi 21", "Navi 22", "Navi 23", "Navi 31", "Navi 32", "Navi 33", "Navi 44", "Navi 48" };
-                    if (amdRx.Any(c => Normalize(codename).Contains(Normalize(c))))
-                    {
-                        Amd_SettingsGroup.Visibility = Visibility.Visible;
-                        Amd_SettingsGroup.Header = $"AMD {deviceName}";
-                        detectedGPUs.Add("AMD Radeon™ RX 5000 - 9000 series");
-                    }
-                    break;
-
-                case "8086":
-                    Intel_SettingsGroup.Visibility = Visibility.Visible;
-                    Intel_SettingsGroup.Header = $"INTEL {deviceName}";
-
-                    string[] intel6th = { "Skylake", "Apollo Lake" };
-                    string[] intel7to10 = { "Kaby Lake", "Coffee Lake", "Whiskey Lake", "Comet Lake", "Ice Lake", "Lakefield", "Elkhart Lake" };
-                    string[] intel11to14 = { "Tiger Lake", "Alder Lake", "Raptor Lake", "DG1" };
-                    string[] intelArc = { "Battlemage", "Meteor Lake", "Lunar Lake", "Arrow Lake", "Panther Lake" };
-
-                    if (intel6th.Any(c => Normalize(codename).Contains(Normalize(c))) || intel7to10.Any(c => Normalize(codename).Contains(Normalize(c))) || intel11to14.Any(c => Normalize(codename).Contains(Normalize(c))) || intelArc.Any(c => Normalize(codename).Contains(Normalize(c))))
-                    {
-                        Intel_SettingsGroup.Visibility = Visibility.Visible;
-                        Intel_SettingsGroup.Header = $"INTEL {deviceName}";
-
-                        if (intel6th.Any(c => Normalize(codename).Contains(Normalize(c))))
-                            detectedGPUs.Add("Intel® 6th Gen Processor Graphics");
-                        else if (intel7to10.Any(c => Normalize(codename).Contains(Normalize(c))))
-                            detectedGPUs.Add("Intel® 7th-10th Gen Processor Graphics");
-                        else if (intel11to14.Any(c => Normalize(codename).Contains(Normalize(c))))
-                            detectedGPUs.Add("Intel® 11th-14th Gen Processor Graphics");
-                        else if (intelArc.Any(c => Normalize(codename).Contains(Normalize(c))))
-                            detectedGPUs.Add("Intel® Arc™ Graphics");
-                    }
-                    break;
-            }
-        }
-
-        localSettings.Values["GpuBrand"] = string.Join(", ", detectedGPUs);
+        localSettings.Values["GPUs"] = JsonSerializer.Serialize(GPUs);
     }
 
-    private void GetHDCPState()
+    public async void GetGpus()
     {
-        if (!localSettings.Values.TryGetValue("HighBandwidthDigitalContentProtection", out object value))
+        GPUs.Clear();
+
+        List<GpuModel> savedGpus = null;
+
+        if (localSettings.Values.TryGetValue("GPUs", out object savedObj))
         {
-            localSettings.Values["HighBandwidthDigitalContentProtection"] = 0;
-        }
-        else
-        {
-            HDCP.IsOn = Convert.ToInt32(value) == 1;
-        }
-
-        isInitializingHDCPState = false;
-    }
-
-    private void HDCP_Toggled(object sender, RoutedEventArgs e)
-    {
-        if (isInitializingHDCPState) return;
-
-        localSettings.Values["HighBandwidthDigitalContentProtection"] = HDCP.IsOn ? 1 : 0;
-    }
-
-    private void GetHDMIDPAudioState()
-    {
-        var toggleSettings = new (ToggleSwitch toggle, string key)[]
-        {
-            (NVIDIA_HDMIDPAudio, "NVIDIAHighDefinitionMultimediaInterface/DisplayPortAudio"),
-            (AMD_HDMIDPAudio, "AMDHighDefinitionMultimediaInterface/DisplayPortAudio"),
-            (INTEL_HDMIDPAudio, "INTELHighDefinitionMultimediaInterface/DisplayPortAudio")
-        };
-
-        foreach (var (toggle, key) in toggleSettings)
-        {
-            if (!localSettings.Values.TryGetValue(key, out object value))
+            try
             {
-                localSettings.Values[key] = 1;
-                toggle.IsOn = true;
+                savedGpus = JsonSerializer.Deserialize<List<GpuModel>>(savedObj.ToString());
             }
-            else
-            {
-                toggle.IsOn = Convert.ToInt32(value) == 1;
-            }
+            catch { }
         }
 
-        isInitializingHDMIDPAudioState = false;
-    }
+        var detected = await GpuHelper.DetectGPUs();
 
-    private void HDMIDPAudio_Toggled(object sender, RoutedEventArgs e)
-    {
-        if (isInitializingHDMIDPAudioState) return;
+        foreach (var gpu in detected)
+        {
+            var saved = savedGpus?.FirstOrDefault(x => x.PnPDeviceId == gpu.PnPDeviceId);
 
-        ToggleSwitch toggle = sender as ToggleSwitch;
+            if (saved != null)
+            {
+                gpu.Install = saved.Install;
+                gpu.HDCP = saved.HDCP;
+                gpu.HDMIDPAudio = saved.HDMIDPAudio;
+            }
 
-        if (toggle == NVIDIA_HDMIDPAudio)
-            localSettings.Values["NVIDIAHighDefinitionMultimediaInterface/DisplayPortAudio"] = toggle.IsOn ? 1 : 0;
-        else if (toggle == AMD_HDMIDPAudio)
-            localSettings.Values["AMDHighDefinitionMultimediaInterface/DisplayPortAudio"] = toggle.IsOn ? 1 : 0;
-        else if (toggle == INTEL_HDMIDPAudio)
-            localSettings.Values["INTELHighDefinitionMultimediaInterface/DisplayPortAudio"] = toggle.IsOn ? 1 : 0;
+            GPUs.Add(gpu);
+        }
     }
 
     private void GetMsiProfile()

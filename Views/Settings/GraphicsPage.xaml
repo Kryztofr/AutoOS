@@ -2,10 +2,12 @@
 <Page x:Class="AutoOS.Views.Settings.GraphicsPage"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:converters="using:CommunityToolkit.WinUI.Converters"
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:dev="using:DevWinUI"
       xmlns:local="using:AutoOS"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:models="using:AutoOS.Helpers.GPU"
       xmlns:views="using:AutoOS.Views"
       mc:Ignorable="d">
     <Grid>
@@ -22,75 +24,53 @@
             <StackPanel Margin="{ThemeResource ContentPageMargin}"
                         Padding="{ThemeResource ContentPagePadding}"
                         dev:PanelAttach.ChildrenTransitions="Default">
-                <dev:SettingsGroup x:Name="Nvidia_SettingsGroup"
-                                   Margin="0,0,0,12"
-                                   Header="NVIDIA Driver"
-                                   HeaderIcon="{dev:BitmapIcon Source=Assets/Fluent/Nvidia.png}"
-                                   Visibility="Collapsed">
-                    <dev:SettingsGroup.Content>
-                        <dev:ProgressButton x:Name="NvidiaUpdateCheck"
-                                            Checked="NvidiaUpdateCheck_Checked"
-                                            CheckedContent="Checking for updates..."
-                                            Content="No updates available"
-                                            IsIndeterminate="True"
-                                            Style="{ThemeResource AccentProgressButtonStyle}" />
-                    </dev:SettingsGroup.Content>
-                    <dev:SettingsGroup.Items>
-                        <dev:SettingsCard Description="Disabling HDCP breaks Netflix and other protected video streaming services."
-                                          Header="High-Bandwidth Digital Content Protection (HDCP)">
-                            <ToggleSwitch x:Name="HDCP"
-                                          Toggled="HDCP_Toggled" />
-                        </dev:SettingsCard>
-                        <dev:SettingsCard Description="Disabling HDMI/DP Audio prevents audio devices connected to the graphics card from showing up."
-                                          Header="High-Definition Multimedia Interface (HDMI)/DisplayPort (DP) Audio">
-                            <ToggleSwitch x:Name="NVIDIA_HDMIDPAudio"
-                                          Toggled="HDMIDPAudio_Toggled" />
-                        </dev:SettingsCard>
-                    </dev:SettingsGroup.Items>
-                </dev:SettingsGroup>
-                <dev:SettingsGroup x:Name="Amd_SettingsGroup"
-                                   Margin="0,0,0,12"
-                                   Header="AMD Driver"
-                                   HeaderIcon="{dev:BitmapIcon Source=Assets/Fluent/Amd.png}"
-                                   Visibility="Collapsed">
-                    <dev:SettingsGroup.Content>
-                        <dev:ProgressButton x:Name="AmdUpdateCheck"
-                                            Checked="AmdUpdateCheck_Checked"
-                                            CheckedContent="Checking for updates..."
-                                            Content="No updates available"
-                                            IsIndeterminate="True"
-                                            Style="{ThemeResource AccentProgressButtonStyle}" />
-                    </dev:SettingsGroup.Content>
-                    <dev:SettingsGroup.Items>
-                        <dev:SettingsCard Description="Disabling HDMI/DP Audio prevents audio devices connected to the graphics card from showing up."
-                                          Header="High-Definition Multimedia Interface (HDMI)/DisplayPort (DP) Audio">
-                            <ToggleSwitch x:Name="AMD_HDMIDPAudio"
-                                          Toggled="HDMIDPAudio_Toggled" />
-                        </dev:SettingsCard>
-                    </dev:SettingsGroup.Items>
-                </dev:SettingsGroup>
-                <dev:SettingsGroup x:Name="Intel_SettingsGroup"
-                                   Margin="0,0,0,12"
-                                   Header="Intel Driver"
-                                   HeaderIcon="{dev:BitmapIcon Source=Assets/Fluent/Intel.png}"
-                                   Visibility="Collapsed">
-                    <dev:SettingsGroup.Content>
-                        <dev:ProgressButton x:Name="IntelUpdateCheck"
-                                            Checked="IntelUpdateCheck_Checked"
-                                            CheckedContent="Checking for updates..."
-                                            Content="No updates available"
-                                            IsIndeterminate="True"
-                                            Style="{ThemeResource AccentProgressButtonStyle}" />
-                    </dev:SettingsGroup.Content>
-                    <dev:SettingsGroup.Items>
-                        <dev:SettingsCard Description="Disabling HDMI/DP Audio prevents audio devices connected to the graphics card from showing up."
-                                          Header="High-Definition Multimedia Interface (HDMI)/DisplayPort (DP) Audio">
-                            <ToggleSwitch x:Name="INTEL_HDMIDPAudio"
-                                          Toggled="HDMIDPAudio_Toggled" />
-                        </dev:SettingsCard>
-                    </dev:SettingsGroup.Items>
-                </dev:SettingsGroup>
-                <StackPanel x:Name="GpuInfo" />
+                <ItemsRepeater x:Name="GpuRepeater"
+                               ItemsSource="{x:Bind GPUs, Mode=OneWay}">
+                    <ItemsRepeater.ItemTemplate>
+                        <DataTemplate x:DataType="models:GpuModel">
+                            <StackPanel>
+                                <dev:SettingsGroup Margin="0,0,0,12"
+                                                   Description="{x:Bind CurrentVersion, Mode=OneWay}"
+                                                   Header="{x:Bind DeviceName, Mode=OneWay}"
+                                                   HeaderIcon="{x:Bind VendorId, Converter={StaticResource VendorIdToBitmapIconConverter}}">
+                                    <dev:SettingsGroup.Content>
+                                        <StackPanel Orientation="Horizontal"
+                                                    Spacing="8">
+                                            <dev:ProgressButton x:Name="ProgressButton"
+                                                                Checked="ProgressButton_Checked"
+                                                                DataContext="{x:Bind}"
+                                                                IsIndeterminate="True"
+                                                                Loaded="ProgressButton_Loaded"
+                                                                Style="{ThemeResource AccentProgressButtonStyle}" />
+                                            <dev:ProgressButton CheckedContent="Uninstalling"
+                                                                Content="Uninstall"
+                                                                DataContext="{x:Bind}"
+                                                                IsIndeterminate="True"
+                                                                Visibility="Collapsed" />
+                                        </StackPanel>
+                                    </dev:SettingsGroup.Content>
+                                    <dev:SettingsGroup.Items>
+                                        <dev:SettingsCard Description="Disabling HDCP breaks Netflix and other protected video streaming services."
+                                                          Header="High-Bandwidth Digital Content Protection (HDCP)"
+                                                          Visibility="{x:Bind NVIDIA, Converter={StaticResource BoolToVisibilityConverter}}">
+                                            <ToggleSwitch DataContext="{x:Bind}"
+                                                          IsOn="{x:Bind HDCP, Mode=TwoWay}"
+                                                          Toggled="HDCP_Toggled" />
+                                        </dev:SettingsCard>
+                                        <dev:SettingsCard Description="Disabling HDMI/DP Audio prevents audio devices connected to the graphics card from showing up."
+                                                          Header="High-Definition Multimedia Interface (HDMI)/DisplayPort (DP) Audio">
+                                            <ToggleSwitch DataContext="{x:Bind}"
+                                                          IsOn="{x:Bind HDMIDPAudio, Mode=TwoWay}"
+                                                          Toggled="HDMIDPAudio_Toggled" />
+                                        </dev:SettingsCard>
+                                    </dev:SettingsGroup.Items>
+                                </dev:SettingsGroup>
+                                <StackPanel x:Name="GpuInfo"
+                                            Margin="4,-4,4,12" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </ItemsRepeater.ItemTemplate>
+                </ItemsRepeater>
                 <dev:SettingsGroup Margin="0,0,0,12"
                                    Description="Overclock your graphics card, remove power limits, set custom fan curves, and more."
                                    Header="MSI Afterburner"
@@ -109,7 +89,8 @@
                         </dev:SettingsCard>
                     </dev:SettingsGroup.Items>
                 </dev:SettingsGroup>
-                <StackPanel x:Name="MsiAfterburnerInfo" />
+                <StackPanel x:Name="MsiAfterburnerInfo"
+                            Margin="4,-4,4,12" />
                 <dev:SettingsGroup Margin="0,0,0,36"
                                    Description="Launch OBS Studio on startup and start the replay buffer."
                                    Header="OBS Studio"
@@ -124,4 +105,8 @@
             </StackPanel>
         </ScrollViewer>
     </Grid>
+    <Page.Resources>
+        <models:VendorIdToBitmapIconConverter x:Key="VendorIdToBitmapIconConverter" />
+        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+    </Page.Resources>
 </Page>
