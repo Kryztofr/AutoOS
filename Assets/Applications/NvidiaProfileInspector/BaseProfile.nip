@@ -343,7 +343,7 @@
       <ProfileSetting>
         <SettingNameInfo>Enable Ansel</SettingNameInfo>
         <SettingID>276158834</SettingID>
-        <SettingValue>0</SettingValue>
+        <SettingValue>1</SettingValue>
         <ValueType>Dword</ValueType>
       </ProfileSetting>
       <ProfileSetting>
