@@ -1,4 +1,5 @@
 ﻿using AutoOS.Helpers.GPU;
+using AutoOS.Helpers.Monitor;
 using AutoOS.Views.Installer.Actions;
 using Microsoft.UI.Xaml.Media;
 using System.Diagnostics;
@@ -47,8 +48,8 @@ public static class GraphicsStage
 
             // set the highest supported refresh rate for every monitor
             ("Setting the highest supported refresh rate for every monitor", async () => await Task.Delay(1000), null),
-            ("Setting the highest supported refresh rate for every monitor", async () => await ProcessActions.SetHighestRefreshRates(), null),
-            ("Setting the highest supported refresh rate for every monitor", async () => await Task.Delay(2000), null),
+            ("Setting the highest supported refresh rate for every monitor", async () => MonitorHelper.SetHighestRefreshRates(), null),
+            ("Setting the highest supported refresh rate for every monitor", async () => await Task.Delay(3000), null),
 
             // download msi afterburner
             ("Downloading MSI Afterburner", async () => await ProcessActions.RunDownload("https://www.dl.dropboxusercontent.com/scl/fi/6dvl62kgm3z38x49752bt/MSI-Afterburner.zip?rlkey=h2m2riyjisrb3ph0i8j0q4eu5&st=l87whmmi&dl=0", Path.GetTempPath(), "MSI Afterburner.zip"), null),
