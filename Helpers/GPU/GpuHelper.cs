@@ -1,16 +1,17 @@
 using AutoOS.Views.Settings.Scheduling.Services;
 using Microsoft.UI.Xaml.Data;
 using Microsoft.Win32;
-using System.ComponentModel;
 using System.Management;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using static AutoOS.Views.Settings.Scheduling.Services.SetupApi;
 
 namespace AutoOS.Helpers.GPU
 {
-    public partial class GpuModel : INotifyPropertyChanged
+    using System.ComponentModel;
+    using System.Runtime.CompilerServices;
+
+    public partial class GpuInfo : INotifyPropertyChanged
     {
         private string deviceName;
         public string DeviceName
@@ -88,9 +89,9 @@ namespace AutoOS.Helpers.GPU
     {
         private static readonly HttpClient httpClient = new();
 
-        public static async Task<List<GpuModel>> DetectGPUs()
+        public static async Task<List<GpuInfo>> DetectGPUs()
         {
-            var gpus = new List<GpuModel>();
+            var gpus = new List<GpuInfo>();
             string deviceName = string.Empty;
             string codename = string.Empty;
             Dictionary<string, (string Vendor, Dictionary<string, string> Devices)> pciDb = null;
@@ -197,7 +198,7 @@ namespace AutoOS.Helpers.GPU
                         continue;
                     }
 
-                    gpus.Add(new GpuModel
+                    gpus.Add(new GpuInfo
                     {
                         PnPDeviceId = pnpDeviceId,
                         DeviceName = deviceName,
@@ -220,7 +221,7 @@ namespace AutoOS.Helpers.GPU
             return gpus;
         }
 
-        public static async Task RefreshGpu(GpuModel gpu)
+        public static async Task RefreshGpu(GpuInfo gpu)
         {
             var all = await DetectGPUs();
 

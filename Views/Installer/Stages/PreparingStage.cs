@@ -87,7 +87,7 @@ public static class PreparingStage
     public static bool? FiveM;
     public static bool? FACEIT;
 
-    public static List<GpuModel> GPUs { get; set; } = [];
+    public static List<GpuInfo> GPUs { get; set; } = [];
     public static bool? MSI;
     public static bool? CRU;
 
@@ -232,7 +232,7 @@ public static class PreparingStage
             FiveM = (localSettings.Values["Launchers"]?.ToString().Contains("FiveM") ?? false);
             FACEIT = (localSettings.Values["Launchers"]?.ToString().Contains("FACEIT") ?? false);
 
-            GPUs = JsonSerializer.Deserialize<List<GpuModel>>(localSettings.Values["GPUs"]?.ToString() ?? "[]") ?? [];
+            GPUs = JsonSerializer.Deserialize<List<GpuInfo>>(localSettings.Values["GPUs"]?.ToString() ?? "[]") ?? [];
             MSI = (localSettings.Values["MsiProfile"] != null);
             CRU = (localSettings.Values["CruProfile"] != null);
 

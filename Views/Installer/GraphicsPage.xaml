@@ -28,7 +28,7 @@
                 <ItemsRepeater x:Name="GpuRepeater"
                                ItemsSource="{x:Bind GPUs, Mode=OneWay}">
                     <ItemsRepeater.ItemTemplate>
-                        <DataTemplate x:DataType="models:GpuModel">
+                        <DataTemplate x:DataType="models:GpuInfo">
                             <dev:SettingsGroup Margin="0,0,0,12"
                                                Description="{x:Bind CurrentVersion}"
                                                Header="{x:Bind DeviceName}"

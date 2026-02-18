@@ -9,7 +9,7 @@ public sealed partial class GraphicsPage : Page
 {
     private bool isInitializingOBSState = true;
     private readonly ApplicationDataContainer localSettings = ApplicationData.Current.LocalSettings;
-    public ObservableCollection<GpuModel> GPUs { get; } = [];
+    public ObservableCollection<GpuInfo> GPUs { get; } = [];
     public GraphicsPage()
     {
         InitializeComponent();
@@ -35,13 +35,13 @@ public sealed partial class GraphicsPage : Page
     {
         GPUs.Clear();
 
-        List<GpuModel> savedGpus = null;
+        List<GpuInfo> savedGpus = null;
 
         if (localSettings.Values.TryGetValue("GPUs", out object savedObj))
         {
             try
             {
-                savedGpus = JsonSerializer.Deserialize<List<GpuModel>>(savedObj.ToString());
+                savedGpus = JsonSerializer.Deserialize<List<GpuInfo>>(savedObj.ToString());
             }
             catch { }
         }

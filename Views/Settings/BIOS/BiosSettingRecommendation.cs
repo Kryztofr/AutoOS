@@ -22,16 +22,6 @@ public static class BiosSettingRecommendationsList
         .Cast<ManagementObject>()
         .Any(mo => mo["Name"].ToString().Contains("X3D"));
 
-    public static readonly bool DDR4 = new ManagementObjectSearcher("SELECT SMBIOSMemoryType FROM Win32_PhysicalMemory")
-        .Get()
-        .Cast<ManagementObject>()
-        .Any(mo => Convert.ToInt32(mo["SMBIOSMemoryType"]) == 26);
-
-    public static readonly bool DDR5 = new ManagementObjectSearcher("SELECT SMBIOSMemoryType FROM Win32_PhysicalMemory")
-        .Get()
-        .Cast<ManagementObject>()
-        .Any(mo => Convert.ToInt32(mo["SMBIOSMemoryType"]) == 34);
-
     public static readonly List<BiosSettingRecommendation> Rules =
     [
         // INTEL

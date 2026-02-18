@@ -7,7 +7,7 @@ namespace AutoOS.Helpers.GPU
 {
     public static class IntelHelper
     {
-        public static async Task<(string newestVersion, string newestDownloadUrl)> CheckUpdate(GpuModel gpu)
+        public static async Task<(string newestVersion, string newestDownloadUrl)> CheckUpdate(GpuInfo gpu)
         {
             string deviceId = gpu.DeviceId;
             string codename = gpu.Codename;
@@ -60,7 +60,7 @@ namespace AutoOS.Helpers.GPU
             return (newestVersion, newestDownloadUrl);
         }
 
-        public static List<(string Title, Func<Task> Action, Func<bool> Condition)> DriverActions(GpuModel gpu, string newestDownloadUrl, ProgressButton progressButton = null)
+        public static List<(string Title, Func<Task> Action, Func<bool> Condition)> DriverActions(GpuInfo gpu, string newestDownloadUrl, ProgressButton progressButton = null)
         {
             string codename = gpu.Codename;
             static string Normalize(string s) => s.Replace(" ", "").Replace("-", "").ToLowerInvariant();

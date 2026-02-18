@@ -8,7 +8,7 @@ namespace AutoOS.Helpers.GPU
     {
         private static readonly HttpClient httpClient = new();
 
-        public static async Task<(string newestVersion, string newestDownloadUrl)> CheckUpdate(GpuModel gpu)
+        public static async Task<(string newestVersion, string newestDownloadUrl)> CheckUpdate(GpuInfo gpu)
         {
             string deviceId = gpu.DeviceId;
             string newestVersion = null;
@@ -59,7 +59,7 @@ namespace AutoOS.Helpers.GPU
             return (newestVersion, newestDownloadUrl);
         }
 
-        public static List<(string Title, Func<Task> Action, Func<bool> Condition)> DriverActions(GpuModel gpu, string newestDownloadUrl, ProgressButton progressButton = null)
+        public static List<(string Title, Func<Task> Action, Func<bool> Condition)> DriverActions(GpuInfo gpu, string newestDownloadUrl, ProgressButton progressButton = null)
         {
             var actions = new List<(string Title, Func<Task> Action, Func<bool> Condition)>
             {

@@ -19,7 +19,7 @@ public sealed partial class GraphicsPage : Page
     private bool isInitializingHDCPState = true;
     private bool isInitializingHDMIDPAudioState = true;
     private bool isInitializingOBSState = true;
-    public ObservableCollection<GpuModel> GPUs { get; } = [];
+    public ObservableCollection<GpuInfo> GPUs { get; } = [];
     public GraphicsPage()
     {
         InitializeComponent();
@@ -69,7 +69,7 @@ public sealed partial class GraphicsPage : Page
         string newestDownloadUrl = string.Empty;
 
         ProgressButton progressButton = (ProgressButton)sender;
-        GpuModel gpu = (GpuModel)progressButton.DataContext;
+        GpuInfo gpu = (GpuInfo)progressButton.DataContext;
 
         progressButton.IsHitTestVisible = false;
 
@@ -398,7 +398,7 @@ public sealed partial class GraphicsPage : Page
         if (isInitializingHDCPState) return;
 
         ToggleSwitch toggleSwitch = (ToggleSwitch)sender;
-        GpuModel gpu = (GpuModel)toggleSwitch.DataContext;
+        GpuInfo gpu = (GpuInfo)toggleSwitch.DataContext;
         var GpuInfo = FindParent<StackPanel>(toggleSwitch).FindName("GpuInfo") as StackPanel;
         if (!gpu.IsInstalled)
         {
@@ -497,7 +497,7 @@ public sealed partial class GraphicsPage : Page
         if (isInitializingHDMIDPAudioState) return;
 
         ToggleSwitch toggleSwitch = (ToggleSwitch)sender;
-        GpuModel gpu = (GpuModel)toggleSwitch.DataContext;
+        GpuInfo gpu = (GpuInfo)toggleSwitch.DataContext;
         var GpuInfo = FindParent<StackPanel>(toggleSwitch).FindName("GpuInfo") as StackPanel;
         if (!gpu.IsInstalled)
         {

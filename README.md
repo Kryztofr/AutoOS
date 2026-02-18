@@ -93,7 +93,7 @@ AutoOS is a WinUI 3 application that automates Windows setup and optimization wi
 - Cleans up temporary files
 
 ## ⚠️ Current Issues
-- **Blank screen after installing the Graphics Driver:** You may experience a blank screen in the App after installing the Graphics Driver. To fix this, resize the window from the left side until it rerenders the UI.
+- **Blank screen after installing the Graphics Driver:** You may experience a blank screen in the App after installing the Graphics Driver. To fix this, resize the window, click the navigation pane button a few times or just wait until it rerenders the UI.
 
 ## 🚀 Getting Started
 

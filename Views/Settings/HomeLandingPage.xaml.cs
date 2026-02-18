@@ -1,4 +1,7 @@
-﻿using AutoOS.Views.Installer.Actions;
+﻿using AutoOS.Helpers.GPU;
+using AutoOS.Helpers.Monitor;
+using AutoOS.Helpers.RAM;
+using AutoOS.Views.Installer.Actions;
 using CommunityToolkit.WinUI.Controls;
 using Downloader;
 using Microsoft.UI.Text;
@@ -6,7 +9,6 @@ using Microsoft.UI.Xaml.Documents;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.Win32;
 using System.Diagnostics;
-using System.Management;
 using System.Net;
 using System.Text;
 using System.Text.Json;
@@ -194,6 +196,8 @@ namespace AutoOS.Views.Settings
 
             string previousTitle = string.Empty;
 
+            bool NVIDIA = (await GpuHelper.DetectGPUs()).Any(g => g.VendorId == "10de" && g.IsInstalled);
+
             var actions = new List<(string Title, Func<Task> Action, Func<bool> Condition)>
             {
                 // remove capabilities 
@@ -208,6 +212,20 @@ namespace AutoOS.Views.Settings
                 ("Disabling Language Hotkeys", async () => await ProcessActions.RunNsudo("CurrentUser", @"reg add ""HKEY_CURRENT_USER\Keyboard Layout\Toggle"" /v ""Hotkey"" /t REG_SZ /d 3 /f"), null),
                 ("Disabling Language Hotkeys", async () => await ProcessActions.RunNsudo("CurrentUser", @"reg add ""HKEY_CURRENT_USER\Keyboard Layout\Toggle"" /v ""Language Hotkey"" /t REG_SZ /d 3 /f"), null),
                 ("Disabling Language Hotkeys", async () => await ProcessActions.RunNsudo("CurrentUser", @"reg add ""HKEY_CURRENT_USER\Keyboard Layout\Toggle"" /v ""Layout Hotkey"" /t REG_SZ /d 3 /f"), null),
+
+                // download windhawk data
+                ("Downloading Windhawk data", async () => await RunDownload("https://www.dl.dropboxusercontent.com/scl/fi/6r6fnkthdy3n3c7le1bsd/mod-status.zip?rlkey=d0b6y8kw7d5i63lj8b9e9leg6&st=3giojfxw&dl=0", Path.GetTempPath(), "mod-status.zip"), null),
+
+                // extract windhawk data
+                ("Extract Windhawk data", async () => await ProcessActions.RunNsudo("CurrentUser", @"sc stop Windhawk"), null),
+                ("Extract Windhawk data", async () => await ProcessActions.RunExtract(Path.Combine(Path.GetTempPath(), "mod-status.zip"), @"C:\ProgramData\Windhawk\Engine\ModsWritable\mod-status"), null),
+
+                // install windhawk data
+                ("Install Windhawk data", async () => await ProcessActions.RunNsudo("CurrentUser", @"sc start Windhawk"), null),
+                ("Install Windhawk data", async () => await ProcessActions.RunPowerShell("Stop-Process -Name explorer -Force"), null),
+
+                // import optimized nvidia profile
+                ("Importing optimized NVIDIA profile", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Applications", "NvidiaProfileInspector", "nvidiaProfileInspector.exe"), Arguments = $"-silentimport \"{Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Applications", "NvidiaProfileInspector", "BaseProfile.nip")}\"", CreateNoWindow = true })!.WaitForExitAsync(), () => NVIDIA == true)
             };
 
             var filteredActions = actions.Where(a => a.Condition == null || a.Condition.Invoke()).ToList();
@@ -357,22 +375,27 @@ namespace AutoOS.Views.Settings
 
         public static async Task LogDiscordUser()
         {
-            var cpuObj = new ManagementObjectSearcher("SELECT Name FROM Win32_Processor")
-                            .Get()
-                            .Cast<ManagementObject>()
-                            .FirstOrDefault();
-            string cpuName = cpuObj?["Name"]?.ToString() ?? "";
+            string cpuName = Registry.GetValue(@"HKEY_LOCAL_MACHINE\HARDWARE\DESCRIPTION\System\CentralProcessor\0", "ProcessorNameString", "")?.ToString() ?? "";
 
-            var boardObj = new ManagementObjectSearcher("SELECT Manufacturer, Product FROM Win32_BaseBoard")
-                              .Get()
-                              .Cast<ManagementObject>()
-                              .FirstOrDefault();
-            string motherboard = boardObj != null ? $"{boardObj["Manufacturer"]} {boardObj["Product"]}" : "";
+            string manufacturer = Registry.GetValue(@"HKEY_LOCAL_MACHINE\HARDWARE\DESCRIPTION\System\BIOS", "BaseBoardManufacturer", "")?.ToString() ?? "";
 
-            var gpuObjs = new ManagementObjectSearcher("SELECT Name FROM Win32_VideoController")
-                              .Get()
-                              .Cast<ManagementObject>();
-            string gpus = string.Join(", ", gpuObjs.Select(g => g["Name"]?.ToString() ?? ""));
+            string product = Registry.GetValue(@"HKEY_LOCAL_MACHINE\HARDWARE\DESCRIPTION\System\BIOS", "BaseBoardProduct", "")?.ToString() ?? "";
+
+            string motherboard = $"{manufacturer} {product}".Trim();
+
+            string ram = $"{(RamHelper.GetRamDetails() is var r ? $"{r.CapacityGB:N1} GB {r.DDRVersion} @ {r.MaxSpeedMHz} MHz" : "")}";
+
+            string gpus = string.Join(", ",
+                (await GpuHelper.DetectGPUs()).Select(g =>
+                    $"{g.DeviceName} (DeviceId: {g.DeviceId}, {g.CurrentVersion})"
+                )
+            );
+
+            string monitors = string.Join(", ",
+                MonitorHelper.GetMonitors().Select(m =>
+                    $"{m.DeviceName} ({m.Resolution.Width}x{m.Resolution.Height} @ {m.RefreshRate} Hz)"
+                )
+            );
 
             using var key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion");
             string build = key.GetValue("CurrentBuild")?.ToString() ?? "";
@@ -407,7 +430,17 @@ namespace AutoOS.Views.Settings
 
             using var multipart = new MultipartFormDataContent
             {
-                { new StringContent($"<@{discordId}>\n{discordUsername}\n{cpuName}\n{motherboard}\n{gpus}\n{osVersion}\n{ProcessInfoHelper.Version}"), "content" }
+                { new StringContent(
+                    $"<@{discordId}>\n" +
+                    $"{discordUsername}\n" +
+                    $"{motherboard}\n" +
+                    $"{cpuName}\n" +
+                    $"{ram}\n" +
+                    $"{gpus}\n" +
+                    $"{monitors}\n" +
+                    $"{osVersion}\n" +
+                    $"{ProcessInfoHelper.Version}"
+                ), "content" }
             };
 
             await client.PostAsync("https://discord.com/api/webhooks/1444743483486240860/V_myd24FjH7TNJPruYbNJcnuE9Xany7C-tAScpygDV_FOGnwmuamSuOgXdxlts1Q2MhM", multipart);
