@@ -1,5 +1,6 @@
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using Windows.Win32;
+using Windows.Win32.System.SystemInformation;
 
 namespace AutoOS.Helpers.RAM
 {
@@ -12,54 +13,30 @@ namespace AutoOS.Helpers.RAM
 
     public static partial class RamHelper
     {
-        [StructLayout(LayoutKind.Sequential)]
-        private struct MEMORYSTATUSEX
-        {
-            public uint dwLength;
-            public uint dwMemoryLoad;
-            public ulong ullTotalPhys;
-            public ulong ullAvailPhys;
-            public ulong ullTotalPageFile;
-            public ulong ullAvailPageFile;
-            public ulong ullTotalVirtual;
-            public ulong ullAvailVirtual;
-            public ulong ullAvailExtendedVirtual;
-            public MEMORYSTATUSEX()
-            {
-                dwLength = (uint)Marshal.SizeOf<MEMORYSTATUSEX>();
-                dwMemoryLoad = 0;
-                ullTotalPhys = 0;
-                ullAvailPhys = 0;
-                ullTotalPageFile = 0;
-                ullAvailPageFile = 0;
-                ullTotalVirtual = 0;
-                ullAvailVirtual = 0;
-                ullAvailExtendedVirtual = 0;
-            }
-        }
-
-        [LibraryImport("kernel32.dll", SetLastError = true)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        private static partial bool GlobalMemoryStatusEx(ref MEMORYSTATUSEX lpBuffer);
-
-        [LibraryImport("kernel32.dll", SetLastError = true)]
-        private static partial uint GetSystemFirmwareTable(uint firmwareTableProviderSignature, uint firmwareTableID, ref byte pFirmwareTableBuffer, uint bufferSize);
-
         private const uint RSMB = 0x52534D42;
 
-        public static RamInfo GetRamDetails()
+        public static unsafe RamInfo GetRam()
         {
             var info = new RamInfo();
 
-            var memStatus = new MEMORYSTATUSEX();
-            if (GlobalMemoryStatusEx(ref memStatus))
-                info.CapacityGB = Math.Round(memStatus.ullTotalPhys / 1024.0 / 1024.0 / 1024.0, 1);
+            MEMORYSTATUSEX memStatus = new MEMORYSTATUSEX();
+            memStatus.dwLength = (uint)Marshal.SizeOf<MEMORYSTATUSEX>();
 
-            uint bufferSize = GetSystemFirmwareTable(RSMB, 0, ref Unsafe.AsRef<byte>(ref MemoryMarshal.GetReference(Memory<byte>.Empty.Span)), 0);
+            if (PInvoke.GlobalMemoryStatusEx(ref memStatus))
+            {
+                info.CapacityGB = Math.Round(memStatus.ullTotalPhys / 1024.0 / 1024.0 / 1024.0, 1);
+            }
+
+            var provider = (FIRMWARE_TABLE_PROVIDER)RSMB;
+
+            uint bufferSize = PInvoke.GetSystemFirmwareTable(provider, 0, null, 0);
             if (bufferSize == 0) return info;
 
             byte[] buffer = new byte[bufferSize];
-            GetSystemFirmwareTable(RSMB, 0, ref buffer[0], bufferSize);
+            fixed (byte* pBuffer = buffer)
+            {
+                PInvoke.GetSystemFirmwareTable(provider, 0, pBuffer, bufferSize);
+            }
 
             int offset = 8;
             while (offset + 4 < buffer.Length)
@@ -86,7 +63,7 @@ namespace AutoOS.Helpers.RAM
                         0x18 => "DDR3",
                         0x1A => "DDR4",
                         0x22 => "DDR5",
-                        _ => "DDRx"
+                        _ => info.DDRVersion == "" ? "DDRx" : info.DDRVersion
                     };
                 }
 

@@ -10,7 +10,8 @@ using Windows.Win32.System.Com;
 using Windows.Win32.UI.Shell;
 using Windows.Win32;
 using Windows.Win32.Foundation;
-namespace AutoOS;
+
+namespace AutoOS.Helpers.Picker;
 
 public partial class FolderPicker
 {

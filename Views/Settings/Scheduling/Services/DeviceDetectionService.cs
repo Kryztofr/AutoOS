@@ -1,8 +1,10 @@
-using System.Management;
-using System.Runtime.InteropServices;
 using AutoOS.Views.Settings.Scheduling.Models;
 using Microsoft.Win32;
-using Microsoft.Win32.SafeHandles;
+using System.Management;
+using System.Runtime.InteropServices;
+using Windows.Win32;
+using Windows.Win32.Devices.DeviceAndDriverInstallation;
+using Windows.Win32.Foundation;
 
 namespace AutoOS.Views.Settings.Scheduling.Services;
 
@@ -15,23 +17,18 @@ public enum DeviceType
 
 public class DeviceDetectionService
 {
-    public static List<DeviceInfo> FindDevicesByType(DeviceType deviceType)
+    public unsafe static List<DeviceInfo> FindDevicesByType(DeviceType deviceType)
     {
         var devices = new List<DeviceInfo>();
 
         var pnpDeviceIds = GetPnpDeviceIdsFromWmi(deviceType);
 
-        IntPtr deviceInfoSet = SetupApi.SetupDiGetClassDevs(
-            IntPtr.Zero,
-            IntPtr.Zero,
-            IntPtr.Zero,
-            DIGCF.DIGCF_ALLCLASSES | DIGCF.DIGCF_PRESENT
+        using var deviceInfoSetHandle = PInvoke.SetupDiGetClassDevs(
+            null,
+            null,
+            HWND.Null,
+            SETUP_DI_GET_CLASS_DEVS_FLAGS.DIGCF_ALLCLASSES | SETUP_DI_GET_CLASS_DEVS_FLAGS.DIGCF_PRESENT
         );
-
-        if (deviceInfoSet == IntPtr.Zero || deviceInfoSet == new IntPtr(-1))
-        {
-            return devices;
-        }
 
         uint index = 0;
         while (true)
@@ -41,16 +38,15 @@ public class DeviceDetectionService
                 cbSize = (uint)Marshal.SizeOf(typeof(SP_DEVINFO_DATA))
             };
 
-            if (!SetupApi.SetupDiEnumDeviceInfo(deviceInfoSet, index, ref deviceInfoData))
+            if (!PInvoke.SetupDiEnumDeviceInfo(deviceInfoSetHandle, index, ref deviceInfoData))
             {
-                int error = Marshal.GetLastWin32Error();
-                if (error == 259)
+                if ((uint)Marshal.GetLastPInvokeError() == 259)
                     break;
             }
 
             index++;
 
-            var device = GetDeviceInfo(deviceInfoSet, ref deviceInfoData);
+            var device = GetDeviceInfo(deviceInfoSetHandle, deviceInfoData);
             if (device == null)
                 continue;
 
@@ -93,7 +89,7 @@ public class DeviceDetectionService
                     continue;
             }
 
-            device.DeviceInfoSet = deviceInfoSet;
+            device.DeviceInfoSet = new HDEVINFO(deviceInfoSetHandle.DangerousGetHandle());
             device.DeviceInfoData = deviceInfoData;
             devices.Add(device);
         }
@@ -123,77 +119,62 @@ public class DeviceDetectionService
         return pnpDeviceIds;
     }
 
-    private static DeviceInfo GetDeviceInfo(IntPtr deviceInfoSet, ref SP_DEVINFO_DATA deviceInfoData)
+    private unsafe static DeviceInfo GetDeviceInfo(SafeHandle deviceInfoSetHandle, SP_DEVINFO_DATA deviceInfoData)
     {
+        var deviceInfoSet = new HDEVINFO(deviceInfoSetHandle.DangerousGetHandle());
         var device = new DeviceInfo
         {
             DeviceInfoData = deviceInfoData,
-            DevObjName = GetDeviceRegistryPropertyString(deviceInfoSet, ref deviceInfoData, SPDRP.SPDRP_PHYSICAL_DEVICE_OBJECT_NAME),
-            DeviceDesc = GetDeviceRegistryPropertyString(deviceInfoSet, ref deviceInfoData, SPDRP.SPDRP_DEVICEDESC)
+            DevObjName = GetDeviceRegistryPropertyString(deviceInfoSet, &deviceInfoData, SETUP_DI_REGISTRY_PROPERTY.SPDRP_PHYSICAL_DEVICE_OBJECT_NAME),
+            DeviceDesc = GetDeviceRegistryPropertyString(deviceInfoSet, &deviceInfoData, SETUP_DI_REGISTRY_PROPERTY.SPDRP_DEVICEDESC)
         };
 
         if (string.IsNullOrEmpty(device.DeviceDesc))
             return null;
 
-        device.FriendlyName = GetDeviceRegistryPropertyString(deviceInfoSet, ref deviceInfoData, SPDRP.SPDRP_FRIENDLYNAME);
-        device.LocationInformation = GetDeviceRegistryPropertyString(deviceInfoSet, ref deviceInfoData, SPDRP.SPDRP_LOCATION_INFORMATION);
+        device.FriendlyName = GetDeviceRegistryPropertyString(deviceInfoSet, &deviceInfoData, SETUP_DI_REGISTRY_PROPERTY.SPDRP_FRIENDLYNAME);
+        device.LocationInformation = GetDeviceRegistryPropertyString(deviceInfoSet, &deviceInfoData, SETUP_DI_REGISTRY_PROPERTY.SPDRP_LOCATION_INFORMATION);
 
-        var hardwareIds = GetDeviceRegistryPropertyMultiString(deviceInfoSet, ref deviceInfoData, SPDRP.SPDRP_HARDWAREID);
+        var hardwareIds = GetDeviceRegistryPropertyMultiString(deviceInfoSet, &deviceInfoData, SETUP_DI_REGISTRY_PROPERTY.SPDRP_HARDWAREID);
         if (hardwareIds?.Length > 0)
         {
             device.PnpDeviceId = hardwareIds[0];
             if (string.IsNullOrEmpty(device.PnpDeviceId))
             {
-                var compatibleIds = GetDeviceRegistryPropertyMultiString(deviceInfoSet, ref deviceInfoData, SPDRP.SPDRP_COMPATIBLEIDS);
+                var compatibleIds = GetDeviceRegistryPropertyMultiString(deviceInfoSet, &deviceInfoData, SETUP_DI_REGISTRY_PROPERTY.SPDRP_COMPATIBLEIDS);
                 device.PnpDeviceId = compatibleIds?.Length > 0 ? compatibleIds[0] : string.Empty;
             }
         }
 
-        IntPtr regKeyHandle = SetupApi.SetupDiOpenDevRegKey(
-            deviceInfoSet,
-            ref deviceInfoData,
-            DICS_FLAG.DICS_FLAG_GLOBAL,
+        var regKeyHandle = PInvoke.SetupDiOpenDevRegKey(
+            deviceInfoSetHandle,
+            deviceInfoData,
+            (uint)SETUP_DI_PROPERTY_CHANGE_SCOPE.DICS_FLAG_GLOBAL,
             0,
-            DIREG.DIREG_DEV,
+            (uint)DIREG.DIREG_DEV,
             0x00020019
         );
 
-        if (regKeyHandle != IntPtr.Zero && regKeyHandle != new IntPtr(-1))
+        if (!regKeyHandle.IsInvalid)
         {
-            var safeHandle = new SafeRegistryHandle(regKeyHandle, ownsHandle: true);
-            device.RegistryKey = RegistryKey.FromHandle(safeHandle);
+            device.RegistryKey = RegistryKey.FromHandle(regKeyHandle);
         }
 
-        uint propertyType = 0;
+        Windows.Win32.Devices.Properties.DEVPROPTYPE propertyType;
         uint requiredSize = 0;
         byte[] buffer = new byte[16];
+        var msiKey = PInvoke.DEVPKEY_PciDevice_InterruptMessageMaximum;
 
-        if (SetupApi.SetupDiGetDeviceProperty(
-            deviceInfoSet,
-            ref deviceInfoData,
-            ref SetupApi.DEVPKEY_PciDevice_InterruptMessageMaximum,
-            out propertyType,
-            buffer,
-            (uint)buffer.Length,
-            out requiredSize,
-            0))
+        fixed (byte* pBuffer = buffer)
         {
-            if (requiredSize >= 4)
-            {
-                device.MaxMSILimit = BitConverter.ToUInt32(buffer, 0);
-            }
-        }
-        else if (Marshal.GetLastWin32Error() == 122)
-        {
-            buffer = new byte[requiredSize];
-            if (SetupApi.SetupDiGetDeviceProperty(
+            if (PInvoke.SetupDiGetDeviceProperty(
                 deviceInfoSet,
-                ref deviceInfoData,
-                ref SetupApi.DEVPKEY_PciDevice_InterruptMessageMaximum,
-                out propertyType,
-                buffer,
+                &deviceInfoData,
+                &msiKey,
+                &propertyType,
+                pBuffer,
                 (uint)buffer.Length,
-                out requiredSize,
+                &requiredSize,
                 0))
             {
                 if (requiredSize >= 4)
@@ -201,92 +182,106 @@ public class DeviceDetectionService
                     device.MaxMSILimit = BitConverter.ToUInt32(buffer, 0);
                 }
             }
+            else if (Marshal.GetLastPInvokeError() == 122)
+            {
+                buffer = new byte[requiredSize];
+                fixed (byte* pBufferRetry = buffer)
+                {
+                    if (PInvoke.SetupDiGetDeviceProperty(
+                        deviceInfoSet,
+                        &deviceInfoData,
+                        &msiKey,
+                        &propertyType,
+                        pBufferRetry,
+                        (uint)buffer.Length,
+                        &requiredSize,
+                        0))
+                    {
+                        if (requiredSize >= 4)
+                        {
+                            device.MaxMSILimit = BitConverter.ToUInt32(buffer, 0);
+                        }
+                    }
+                }
+            }
         }
 
         return device;
     }
 
-    private static string GetDeviceRegistryPropertyString(IntPtr deviceInfoSet, ref SP_DEVINFO_DATA deviceInfoData, SPDRP property)
+    private unsafe static string GetDeviceRegistryPropertyString(HDEVINFO deviceInfoSet, SP_DEVINFO_DATA* deviceInfoData, SETUP_DI_REGISTRY_PROPERTY property)
     {
-        SetupApi.SetupDiGetDeviceRegistryProperty(
+        uint requiredSize;
+        uint regType;
+
+        PInvoke.SetupDiGetDeviceRegistryProperty(
             deviceInfoSet,
-            ref deviceInfoData,
+            deviceInfoData,
             property,
-            out _,
-            IntPtr.Zero,
+            &regType,
+            null,
             0,
-            out var requiredSize
+            &requiredSize
         );
 
         if (requiredSize == 0)
             return string.Empty;
 
-        IntPtr buffer = Marshal.AllocHGlobal((int)requiredSize);
-        try
-        {
-            if (SetupApi.SetupDiGetDeviceRegistryProperty(
+        byte* buffer = stackalloc byte[(int)requiredSize];
+        if (PInvoke.SetupDiGetDeviceRegistryProperty(
                 deviceInfoSet,
-                ref deviceInfoData,
+                deviceInfoData,
                 property,
-                out _,
+                &regType,
                 buffer,
                 requiredSize,
-                out _))
-            {
-                return Marshal.PtrToStringUni(buffer) ?? string.Empty;
-            }
-        }
-        finally
+                null))
         {
-            Marshal.FreeHGlobal(buffer);
+            return new string((char*)buffer);
         }
 
         return string.Empty;
     }
 
-    private static string[] GetDeviceRegistryPropertyMultiString(IntPtr deviceInfoSet, ref SP_DEVINFO_DATA deviceInfoData, SPDRP property)
+    private unsafe static string[] GetDeviceRegistryPropertyMultiString(HDEVINFO deviceInfoSet, SP_DEVINFO_DATA* deviceInfoData, SETUP_DI_REGISTRY_PROPERTY property)
     {
-        SetupApi.SetupDiGetDeviceRegistryProperty(
+        uint requiredSize;
+        uint regType;
+
+        PInvoke.SetupDiGetDeviceRegistryProperty(
             deviceInfoSet,
-            ref deviceInfoData,
+            deviceInfoData,
             property,
-            out _,
-            IntPtr.Zero,
+            &regType,
+            null,
             0,
-            out var requiredSize
+            &requiredSize
         );
 
         if (requiredSize == 0)
             return null;
 
-        IntPtr buffer = Marshal.AllocHGlobal((int)requiredSize);
-        try
-        {
-            if (SetupApi.SetupDiGetDeviceRegistryProperty(
+        byte* buffer = stackalloc byte[(int)requiredSize];
+        if (PInvoke.SetupDiGetDeviceRegistryProperty(
                 deviceInfoSet,
-                ref deviceInfoData,
+                deviceInfoData,
                 property,
-                out _,
+                &regType,
                 buffer,
                 requiredSize,
-                out _))
-            {
-                var result = new List<string>();
-                IntPtr ptr = buffer;
-                while (true)
-                {
-                    string str = Marshal.PtrToStringUni(ptr);
-                    if (string.IsNullOrEmpty(str))
-                        break;
-                    result.Add(str);
-                    ptr = IntPtr.Add(ptr, (str.Length + 1) * 2);
-                }
-                return [.. result];
-            }
-        }
-        finally
+                null))
         {
-            Marshal.FreeHGlobal(buffer);
+            var result = new List<string>();
+            char* ptr = (char*)buffer;
+
+            while (*ptr != '\0')
+            {
+                string str = new string(ptr);
+                result.Add(str);
+                ptr += str.Length + 1;
+            }
+
+            return [.. result];
         }
 
         return null;

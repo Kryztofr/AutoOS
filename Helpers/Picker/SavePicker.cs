@@ -1,19 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Runtime.InteropServices;
 using Windows.Storage;
 using WinRT.Interop;
 using Windows.Win32.System.Com;
 using Windows.Win32.UI.Shell;
 using Windows.Win32.UI.Shell.Common;
-using System.IO;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 
-namespace AutoOS;
+namespace AutoOS.Helpers.Picker;
 
 public partial class SavePicker
 {

@@ -4,6 +4,10 @@ using System.Runtime.InteropServices;
 using AutoOS.Views.Settings.Power;
 using CommunityToolkit.WinUI.Controls;
 using Microsoft.UI.Text;
+using Windows.Win32;
+using Windows.Win32.Foundation;
+using Windows.Win32.System.Power;
+using AutoOS.Helpers.Picker;
 
 namespace AutoOS.Views.Settings
 {
@@ -42,17 +46,20 @@ namespace AutoOS.Views.Settings
             CompareTreeView.IsHitTestVisible = false;
         }
 
-        private void LoadPowerPlans()
+        private unsafe void LoadPowerPlans()
         {
             var plansList = new List<PowerPlan>();
             uint index = 0;
 
             while (true)
             {
-                uint size = (uint)Marshal.SizeOf<Guid>();
+                uint size = (uint)sizeof(Guid);
                 byte[] buffer = new byte[size];
 
-                uint res = PowerApi.PowerEnumerate(IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, PowerDataAccessor.AccessScheme, index++, buffer, ref size);
+                uint res;
+                {
+                    res = (uint)PInvoke.PowerEnumerate(default, null, null, POWER_DATA_ACCESSOR.ACCESS_SCHEME, index++, (Span<byte>)buffer, ref size);
+                }
                 if (res != 0) break;
 
                 Guid schemeGuid = new(buffer);
@@ -64,9 +71,10 @@ namespace AutoOS.Views.Settings
                 });
             }
 
-            PowerApi.PowerGetActiveScheme(IntPtr.Zero, out var activePtr);
-            Guid activeScheme = Marshal.PtrToStructure<Guid>(activePtr);
-            PowerApi.LocalFree(activePtr);
+            Guid* activePtr;
+            PInvoke.PowerGetActiveScheme(default, out activePtr);
+            Guid activeScheme = activePtr != null ? *activePtr : Guid.Empty;
+            if (activePtr != null) PInvoke.LocalFree((HLOCAL)activePtr);
 
             foreach (var plan in plansList.OrderBy(p => p.Name, StringComparer.CurrentCultureIgnoreCase))
             {
@@ -93,13 +101,13 @@ namespace AutoOS.Views.Settings
         {
             var result = await Task.Run(() =>
             {
-                IntPtr schemePtr = PowerApi.AllocGuid(scheme);
-                var allSubgroupsList = new List<PowerSubgroup>();
-                var compareSubgroupsList = new List<PowerCompareSubgroup>();
+                    var allSubgroupsList = new List<PowerSubgroup>();
+                    var compareSubgroupsList = new List<PowerCompareSubgroup>();
 
-                try
-                {
+                    try
+                    {
                     Guid noneSubgroupGuid = new("fea3413e-7e05-4911-9a71-700331f1c294");
+                    uint guidSize = (uint)Marshal.SizeOf<Guid>();
                     var noneSubgroup = new PowerSubgroup
                     {
                         Guid = noneSubgroupGuid,
@@ -115,14 +123,16 @@ namespace AutoOS.Views.Settings
                     };
 
                     uint settingIndex = 0;
-                    uint guidSize = (uint)Marshal.SizeOf<Guid>();
 
+                    uint res;
                     while (true)
                     {
                         byte[] setBuffer = new byte[guidSize];
                         uint size = guidSize;
 
-                        uint res = PowerApi.PowerEnumerate(IntPtr.Zero, schemePtr, IntPtr.Zero, PowerDataAccessor.AccessIndividualSetting, settingIndex++, setBuffer, ref size);
+                        {
+                            res = (uint)PInvoke.PowerEnumerate(default, (Guid?)scheme, null, POWER_DATA_ACCESSOR.ACCESS_INDIVIDUAL_SETTING, settingIndex++, (Span<byte>)setBuffer, ref size);
+                        }
                         if (res != 0) break;
 
                         Guid settingGuid = new(setBuffer);
@@ -176,7 +186,6 @@ namespace AutoOS.Views.Settings
                             IsDcDifferent = false,
                             IsVisible = true
                         };
-                        noneCompareSubgroup.Settings.Add(compareSetting);
                     }
 
                     allSubgroupsList.Add(noneSubgroup);
@@ -188,7 +197,9 @@ namespace AutoOS.Views.Settings
                         byte[] sgBuffer = new byte[guidSize];
                         uint size = guidSize;
 
-                        uint res = PowerApi.PowerEnumerate(IntPtr.Zero, schemePtr, IntPtr.Zero, PowerDataAccessor.AccessSubgroup, subgroupIndex++, sgBuffer, ref size);
+                        {
+                            res = (uint)PInvoke.PowerEnumerate(default, (Guid?)scheme, null, POWER_DATA_ACCESSOR.ACCESS_SUBGROUP, subgroupIndex++, (Span<byte>)sgBuffer, ref size);
+                        }
                         if (res != 0) break;
 
                         Guid subgroupGuid = new(sgBuffer);
@@ -206,17 +217,18 @@ namespace AutoOS.Views.Settings
                             IsVisible = true
                         };
 
-                        IntPtr subgroupPtr = PowerApi.AllocGuid(subgroupGuid);
-                        try
-                        {
+                            try
+                            {
                             uint settingIdx = 0;
                             while (true)
                             {
                                 byte[] setBuffer = new byte[guidSize];
                                 size = guidSize;
 
-                                res = PowerApi.PowerEnumerate(IntPtr.Zero, schemePtr, subgroupPtr, PowerDataAccessor.AccessIndividualSetting, settingIdx++, setBuffer, ref size);
-                                if (res != 0) break;
+                                 {
+                                     res = (uint)PInvoke.PowerEnumerate(default, (Guid?)scheme, (Guid?)subgroupGuid, POWER_DATA_ACCESSOR.ACCESS_INDIVIDUAL_SETTING, settingIdx++, (Span<byte>)setBuffer, ref size);
+                                 }
+                                 if (res != 0) break;
 
                                 Guid settingGuid = new(setBuffer);
                                 var setting = new PowerSetting
@@ -274,7 +286,6 @@ namespace AutoOS.Views.Settings
                         }
                         finally
                         {
-                            Marshal.FreeHGlobal(subgroupPtr);
                         }
 
                         allSubgroupsList.Add(subgroup);
@@ -284,7 +295,6 @@ namespace AutoOS.Views.Settings
                 }
                 finally
                 {
-                    Marshal.FreeHGlobal(schemePtr);
                 }
 
                 return (allSubgroupsList, compareSubgroupsList);
@@ -367,7 +377,7 @@ namespace AutoOS.Views.Settings
             if (PowerPlanComboBox.SelectedItem is PowerPlan selectedPlan)
             {
                 var schemeGuid = selectedPlan.Guid;
-                PowerApi.PowerSetActiveScheme(IntPtr.Zero, ref schemeGuid);
+                PowerApi.PowerSetActiveScheme(schemeGuid);
 
                 foreach (var subgroup in _allSubgroups)
                 {
@@ -634,6 +644,23 @@ namespace AutoOS.Views.Settings
             ComparePowerPlanComboBox.SelectedItem = _comparePlans.First(p => p.Guid == Guid.Empty);
         }
 
+        private static unsafe Guid ImportPowerSchemeUnsafe(string filePath)
+        {
+            Guid* destSchemePtr = null;
+            uint res = (uint)PInvoke.PowerImportPowerScheme(default, filePath, ref destSchemePtr);
+            if (res != 0 || destSchemePtr == null)
+                return Guid.Empty;
+
+            try
+            {
+                return *destSchemePtr;
+            }
+            finally
+            {
+                PInvoke.LocalFree((HLOCAL)destSchemePtr);
+            }
+        }
+
         private async void Import_Click(object sender, RoutedEventArgs e)
         {
             var picker = new FilePicker(App.MainWindow)
@@ -646,21 +673,11 @@ namespace AutoOS.Views.Settings
             if (file == null)
                 return;
 
-            uint res = PowerApi.PowerImportPowerScheme(IntPtr.Zero, file.Path, out var destSchemePtr);
-            if (res != 0 || destSchemePtr == IntPtr.Zero)
+            Guid importedGuid = ImportPowerSchemeUnsafe(file.Path);
+            if (importedGuid == Guid.Empty)
                 return;
 
-            Guid importedGuid;
-            try
-            {
-                importedGuid = Marshal.PtrToStructure<Guid>(destSchemePtr);
-            }
-            finally
-            {
-                PowerApi.LocalFree(destSchemePtr);
-            }
-
-            PowerApi.PowerSetActiveScheme(IntPtr.Zero, ref importedGuid);
+            PowerApi.PowerSetActiveScheme(importedGuid);
 
             var plan = new PowerPlan
             {
@@ -760,22 +777,9 @@ namespace AutoOS.Views.Settings
                     uint newAcValue = dialog.GetAcValue();
                     uint newDcValue = dialog.GetDcValue();
 
-                    IntPtr schemePtr = PowerApi.AllocGuid(activeScheme);
-                    IntPtr subgroupPtr = PowerApi.AllocGuid(setting.SubgroupGuid);
-                    IntPtr settingPtr = PowerApi.AllocGuid(setting.Guid);
-
-                    try
-                    {
-                        PowerApi.PowerWriteACValueIndex(IntPtr.Zero, schemePtr, subgroupPtr, settingPtr, newAcValue);
-                        PowerApi.PowerWriteDCValueIndex(IntPtr.Zero, schemePtr, subgroupPtr, settingPtr, newDcValue);
-                        PowerApi.PowerSetActiveScheme(IntPtr.Zero, ref activeScheme);
-                    }
-                    finally
-                    {
-                        Marshal.FreeHGlobal(schemePtr);
-                        Marshal.FreeHGlobal(subgroupPtr);
-                        Marshal.FreeHGlobal(settingPtr);
-                    }
+                    PowerApi.WriteACValueIndex(activeScheme, setting.SubgroupGuid, setting.Guid, newAcValue);
+                    PowerApi.WriteDCValueIndex(activeScheme, setting.SubgroupGuid, setting.Guid, newDcValue);
+                    PowerApi.PowerSetActiveScheme(activeScheme);
 
                     setting.AcValueIndex = newAcValue;
                     setting.DcValueIndex = newDcValue;
@@ -828,22 +832,9 @@ namespace AutoOS.Views.Settings
                     uint newAcValue = dialog.GetAcValue();
                     uint newDcValue = dialog.GetDcValue();
 
-                    IntPtr schemePtr = PowerApi.AllocGuid(activeScheme);
-                    IntPtr subgroupPtr = PowerApi.AllocGuid(compareSettings.SubgroupGuid);
-                    IntPtr settingPtr = PowerApi.AllocGuid(compareSettings.Guid);
-
-                    try
-                    {
-                        PowerApi.PowerWriteACValueIndex(IntPtr.Zero, schemePtr, subgroupPtr, settingPtr, newAcValue);
-                        PowerApi.PowerWriteDCValueIndex(IntPtr.Zero, schemePtr, subgroupPtr, settingPtr, newDcValue);
-                        PowerApi.PowerSetActiveScheme(IntPtr.Zero, ref activeScheme);
-                    }
-                    finally
-                    {
-                        Marshal.FreeHGlobal(schemePtr);
-                        Marshal.FreeHGlobal(subgroupPtr);
-                        Marshal.FreeHGlobal(settingPtr);
-                    }
+                    PowerApi.WriteACValueIndex(activeScheme, compareSettings.SubgroupGuid, compareSettings.Guid, newAcValue);
+                    PowerApi.WriteDCValueIndex(activeScheme, compareSettings.SubgroupGuid, compareSettings.Guid, newDcValue);
+                    PowerApi.PowerSetActiveScheme(activeScheme);
 
                     compareSettings.Plan1AcValue = newAcValue;
                     compareSettings.Plan1DcValue = newDcValue;

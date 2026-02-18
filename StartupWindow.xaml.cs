@@ -1,13 +1,13 @@
 ﻿using AutoOS.Views.Startup.Stages;
 using Microsoft.UI.Windowing;
-using System.Runtime.InteropServices;
+using Windows.Win32;
+using Windows.Win32.Foundation;
+using WinRT.Interop;
 
 namespace AutoOS.Views
 {
     public sealed partial class StartupWindow : Window
     {
-        [DllImport("user32.dll")]
-        static extern uint GetDpiForWindow(IntPtr hWnd);
         public string TitleBarName { get; set; }
         public static TextBlock Status { get; private set; }
         public static ProgressBar Progress { get; private set; }
@@ -21,8 +21,7 @@ namespace AutoOS.Views
             AppWindow.IsShownInSwitchers = false;
             new ModernSystemMenu(this);
 
-            var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
-            uint dpi = GetDpiForWindow(hwnd);
+            uint dpi = PInvoke.GetDpiForWindow((HWND)WindowNative.GetWindowHandle(App.MainWindow));
             App.Scaling = dpi / 96.0;
 
             ((OverlappedPresenter)AppWindow.Presenter).PreferredMaximumWidth = (int)(340 * App.Scaling);

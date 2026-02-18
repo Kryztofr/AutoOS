@@ -2,6 +2,7 @@
 using System.Collections.ObjectModel;
 using System.Text.Json;
 using Windows.Storage;
+using AutoOS.Helpers.Picker;
 
 namespace AutoOS.Views.Installer;
 
@@ -31,7 +32,7 @@ public sealed partial class GraphicsPage : Page
         localSettings.Values["GPUs"] = JsonSerializer.Serialize(GPUs);
     }
 
-    public async void GetGpus()
+    public void GetGpus()
     {
         GPUs.Clear();
 
@@ -46,7 +47,7 @@ public sealed partial class GraphicsPage : Page
             catch { }
         }
 
-        var detected = await GpuHelper.DetectGPUs();
+        var detected = GpuHelper.GetGPUs();
 
         foreach (var gpu in detected)
         {

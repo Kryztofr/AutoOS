@@ -2,13 +2,14 @@
 using Microsoft.Win32;
 using System.Runtime.InteropServices;
 using Windows.Storage;
+using Windows.System;
+using Windows.Win32;
+using Windows.Win32.UI.Input.KeyboardAndMouse;
 
 namespace AutoOS.Views.Installer
 {
     public sealed partial class HomeLandingPage : Page
     {
-        [LibraryImport("user32.dll")]
-        private static partial void keybd_event(byte bVk, byte bScan, uint dwFlags, UIntPtr dwExtraInfo);
         private static readonly HttpClient httpClient = new();
 
         private readonly ApplicationDataContainer localSettings = ApplicationData.Current.LocalSettings;
@@ -69,10 +70,10 @@ namespace AutoOS.Views.Installer
             // switch keyboard layout
             if (!(localSettings.Values["HasChangedLayout"] as bool? == true))
             {
-                keybd_event(0x5B, 0, 0x0001, UIntPtr.Zero);
-                keybd_event(0x20, 0, 0x0001, UIntPtr.Zero);
-                keybd_event(0x20, 0, 0x0002, UIntPtr.Zero);
-                keybd_event(0x5B, 0, 0x0002, UIntPtr.Zero);
+                PInvoke.keybd_event((byte)VIRTUAL_KEY.VK_LWIN, 0, KEYBD_EVENT_FLAGS.KEYEVENTF_EXTENDEDKEY, 0);
+                PInvoke.keybd_event((byte)VIRTUAL_KEY.VK_SPACE, 0, KEYBD_EVENT_FLAGS.KEYEVENTF_EXTENDEDKEY, 0);
+                PInvoke.keybd_event((byte)VIRTUAL_KEY.VK_SPACE, 0, KEYBD_EVENT_FLAGS.KEYEVENTF_KEYUP, 0);
+                PInvoke.keybd_event((byte)VIRTUAL_KEY.VK_LWIN, 0, KEYBD_EVENT_FLAGS.KEYEVENTF_KEYUP, 0);
                 localSettings.Values["HasChangedLayout"] = true;
             }
 

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 
-namespace AutoOS;
+namespace AutoOS.Helpers.Picker;
 
 internal static partial class PickerHelper
 {

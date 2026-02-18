@@ -1,6 +1,8 @@
-﻿using System.Runtime.InteropServices;
-using AutoOS.Views.Settings.Scheduling.Models;
+﻿using AutoOS.Views.Settings.Scheduling.Models;
 using Microsoft.Win32;
+using System.Runtime.InteropServices;
+using Windows.Win32;
+using Windows.Win32.Devices.DeviceAndDriverInstallation;
 
 namespace AutoOS.Views.Settings.Scheduling.Services;
 
@@ -120,70 +122,70 @@ public class DeviceSettingsService
         classKey.SetValue("*RssMaxProcNumber", maxThread.ToString(), RegistryValueKind.String);
     }
 
-    public static bool RestartDevice(DeviceInfo device)
+    public unsafe static bool RestartDevice(DeviceInfo device)
     {
-        if (device.DeviceInfoSet == IntPtr.Zero)
+        if (device.DeviceInfoSet.Value == 0)
             return false;
 
-        var propChangeParams = new SP_PROPCHANGE_PARAMS
+        var hDevInfo = device.DeviceInfoSet;
+
+        var propChangeParams = new Windows.Win32.Devices.DeviceAndDriverInstallation.SP_PROPCHANGE_PARAMS
         {
-            ClassInstallHeader = new SP_CLASSINSTALL_HEADER
+            ClassInstallHeader = new Windows.Win32.Devices.DeviceAndDriverInstallation.SP_CLASSINSTALL_HEADER
             {
-                cbSize = (uint)Marshal.SizeOf(typeof(SP_CLASSINSTALL_HEADER)),
-                InstallFunction = DI_FUNCTION.DIF_PROPERTYCHANGE
+                cbSize = (uint)Marshal.SizeOf(typeof(Windows.Win32.Devices.DeviceAndDriverInstallation.SP_CLASSINSTALL_HEADER)),
+                InstallFunction = Windows.Win32.Devices.DeviceAndDriverInstallation.DI_FUNCTION.DIF_PROPERTYCHANGE
             },
-            StateChange = DICS_STATE.DICS_PROPCHANGE,
-            Scope = DICS_FLAG.DICS_FLAG_GLOBAL,
+            StateChange = (Windows.Win32.Devices.DeviceAndDriverInstallation.SETUP_DI_STATE_CHANGE)DICS_STATE.DICS_PROPCHANGE,
+            Scope = (Windows.Win32.Devices.DeviceAndDriverInstallation.SETUP_DI_PROPERTY_CHANGE_SCOPE)DICS_FLAG.DICS_FLAG_GLOBAL,
             HwProfile = 0
         };
 
         var deviceInfoData = device.DeviceInfoData;
 
-        if (!SetupApi.SetupDiSetClassInstallParams(
-            device.DeviceInfoSet,
-            ref deviceInfoData,
-            ref propChangeParams.ClassInstallHeader,
-            (uint)Marshal.SizeOf(typeof(SP_PROPCHANGE_PARAMS))))
+        if (!PInvoke.SetupDiSetClassInstallParams(
+            hDevInfo,
+            &deviceInfoData,
+            (Windows.Win32.Devices.DeviceAndDriverInstallation.SP_CLASSINSTALL_HEADER*)&propChangeParams,
+            (uint)sizeof(Windows.Win32.Devices.DeviceAndDriverInstallation.SP_PROPCHANGE_PARAMS)))
         {
             return false;
         }
 
-        if (!SetupApi.SetupDiCallClassInstaller(
-            DI_FUNCTION.DIF_PROPERTYCHANGE,
-            device.DeviceInfoSet,
-            ref deviceInfoData))
+        if (!PInvoke.SetupDiCallClassInstaller(
+            Windows.Win32.Devices.DeviceAndDriverInstallation.DI_FUNCTION.DIF_PROPERTYCHANGE,
+            hDevInfo,
+            &deviceInfoData))
         {
             return false;
         }
 
-        if (!SetupApi.SetupDiSetClassInstallParams(
-            device.DeviceInfoSet,
-            ref deviceInfoData,
-            ref propChangeParams.ClassInstallHeader,
-            (uint)Marshal.SizeOf(typeof(SP_PROPCHANGE_PARAMS))))
+        if (!PInvoke.SetupDiSetClassInstallParams(
+            hDevInfo,
+            &deviceInfoData,
+            (Windows.Win32.Devices.DeviceAndDriverInstallation.SP_CLASSINSTALL_HEADER*)&propChangeParams,
+            (uint)sizeof(Windows.Win32.Devices.DeviceAndDriverInstallation.SP_PROPCHANGE_PARAMS)))
         {
             return false;
         }
 
-        if (!SetupApi.SetupDiCallClassInstaller(
-            DI_FUNCTION.DIF_PROPERTYCHANGE,
-            device.DeviceInfoSet,
-            ref deviceInfoData))
+        if (!PInvoke.SetupDiCallClassInstaller(
+            Windows.Win32.Devices.DeviceAndDriverInstallation.DI_FUNCTION.DIF_PROPERTYCHANGE,
+            hDevInfo,
+            &deviceInfoData))
         {
             return false;
         }
 
-        var installParams = new SP_DEVINSTALL_PARAMS
-        {
-            cbSize = (uint)Marshal.SizeOf(typeof(SP_DEVINSTALL_PARAMS))
-        };
+        SP_DEVINSTALL_PARAMS_W installParams = default;
+        installParams.cbSize = (uint)sizeof(SP_DEVINSTALL_PARAMS_W);
 
-        if (SetupApi.SetupDiGetDeviceInstallParams(
-            device.DeviceInfoSet,
-            ref deviceInfoData,
-            ref installParams))
+        if (PInvoke.SetupDiGetDeviceInstallParams(
+            hDevInfo,
+            &deviceInfoData,
+            &installParams))
         {
-            if ((installParams.Flags & SetupApi.DI_NEEDREBOOT) != 0)
+            if ((installParams.Flags & SETUP_DI_DEVICE_INSTALL_FLAGS.DI_NEEDREBOOT) != 0)
             {
                 return false;
             }

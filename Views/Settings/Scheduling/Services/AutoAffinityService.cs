@@ -1,5 +1,7 @@
 ﻿using AutoOS.Views.Settings.Scheduling.Models;
 using AutoOS.Views.Settings.Scheduling.ViewModels;
+using Windows.Win32;
+using Windows.Win32.Devices.DeviceAndDriverInstallation;
 
 namespace AutoOS.Views.Settings.Scheduling.Services;
 
@@ -88,17 +90,17 @@ public static class AutoAffinityService
 
     private static void CleanupDevices(List<DeviceInfo> devices)
     {
-        IntPtr handle = IntPtr.Zero;
+        HDEVINFO handle = default;
         foreach (var device in devices)
         {
-            if (handle == IntPtr.Zero)
+            if (handle.Value == 0)
                 handle = device.DeviceInfoSet;
             if (device.RegistryKey != null)
                 device.RegistryKey.Close();
         }
 
-        if (handle != IntPtr.Zero && handle != new IntPtr(-1))
-            SetupApi.SetupDiDestroyDeviceInfoList(handle);
+        if (handle.Value != 0 && handle.Value != (nint)(-1))
+            PInvoke.SetupDiDestroyDeviceInfoList(handle);
     }
 
     private static DeviceSettingsService.ApplyResult ApplyAffinityOnly(List<DeviceInfo> devices, ulong assignmentSetOverride, DeviceType deviceType)
@@ -142,7 +144,7 @@ public static class AutoAffinityService
         {
             foreach (var device in devices)
             {
-                if (device.DeviceInfoSet != IntPtr.Zero)
+                if (device.DeviceInfoSet.Value != 0)
                 {
                     DeviceSettingsService.RestartDevice(device);
                 }

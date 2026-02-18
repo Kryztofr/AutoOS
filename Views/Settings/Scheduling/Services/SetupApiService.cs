@@ -1,5 +1,4 @@
 ﻿using System.Runtime.InteropServices;
-using System.Text;
 
 namespace AutoOS.Views.Settings.Scheduling.Services;
 
@@ -95,15 +94,6 @@ public struct SP_PROPCHANGE_PARAMS
 }
 
 [StructLayout(LayoutKind.Sequential)]
-public struct SP_DEVINFO_DATA
-{
-    public uint cbSize;
-    public Guid ClassGuid;
-    public uint DevInst;
-    public IntPtr Reserved;
-}
-
-[StructLayout(LayoutKind.Sequential)]
 public struct SP_DEVINSTALL_PARAMS
 {
     public uint cbSize;
@@ -121,86 +111,6 @@ public struct SP_DEVINSTALL_PARAMS
 
 public static class SetupApi
 {
-    private const string SetupApiDll = "setupapi.dll";
-
-    [DllImport("setupapi.dll", CharSet = CharSet.Unicode, SetLastError = true)]
-    public static extern IntPtr SetupDiGetClassDevs(
-        ref Guid ClassGuid,
-        IntPtr Enumerator,
-        IntPtr hwndParent,
-        DIGCF Flags
-    );
-
-    [DllImport("setupapi.dll", CharSet = CharSet.Unicode, SetLastError = true)]
-    public static extern IntPtr SetupDiGetClassDevs(
-        IntPtr ClassGuid,
-        IntPtr Enumerator,
-        IntPtr hwndParent,
-        DIGCF Flags
-    );
-
-    [DllImport(SetupApiDll, CharSet = CharSet.Unicode, SetLastError = true)]
-    public static extern bool SetupDiEnumDeviceInfo(
-        IntPtr DeviceInfoSet,
-        uint MemberIndex,
-        ref SP_DEVINFO_DATA DeviceInfoData
-    );
-
-    [DllImport(SetupApiDll, SetLastError = true)]
-    public static extern bool SetupDiDestroyDeviceInfoList(IntPtr DeviceInfoSet);
-
-    [DllImport(SetupApiDll, CharSet = CharSet.Unicode, SetLastError = true)]
-    public static extern bool SetupDiGetDeviceRegistryProperty(
-        IntPtr DeviceInfoSet,
-        ref SP_DEVINFO_DATA DeviceInfoData,
-        SPDRP Property,
-        out uint PropertyRegDataType,
-        IntPtr PropertyBuffer,
-        uint PropertyBufferSize,
-        out uint RequiredSize
-    );
-
-    [DllImport(SetupApiDll, CharSet = CharSet.Auto, SetLastError = true)]
-    public static extern bool SetupDiGetDeviceInstanceId(
-        IntPtr DeviceInfoSet,
-        ref SP_DEVINFO_DATA DeviceInfoData,
-        StringBuilder DeviceInstanceId,
-        int DeviceInstanceIdSize,
-        out int RequiredSize
-    );
-
-    [DllImport(SetupApiDll, CharSet = CharSet.Unicode, SetLastError = true)]
-    public static extern IntPtr SetupDiOpenDevRegKey(
-        IntPtr DeviceInfoSet,
-        ref SP_DEVINFO_DATA DeviceInfoData,
-        DICS_FLAG Scope,
-        uint HwProfile,
-        DIREG KeyType,
-        uint samDesired
-    );
-
-    [DllImport(SetupApiDll, SetLastError = true)]
-    public static extern bool SetupDiSetClassInstallParams(
-        IntPtr DeviceInfoSet,
-        ref SP_DEVINFO_DATA DeviceInfoData,
-        ref SP_CLASSINSTALL_HEADER ClassInstallParams,
-        uint ClassInstallParamsSize
-    );
-
-    [DllImport(SetupApiDll, SetLastError = true)]
-    public static extern bool SetupDiCallClassInstaller(
-        DI_FUNCTION InstallFunction,
-        IntPtr DeviceInfoSet,
-        ref SP_DEVINFO_DATA DeviceInfoData
-    );
-
-    [DllImport(SetupApiDll, SetLastError = true)]
-    public static extern bool SetupDiGetDeviceInstallParams(
-        IntPtr DeviceInfoSet,
-        ref SP_DEVINFO_DATA DeviceInfoData,
-        ref SP_DEVINSTALL_PARAMS DeviceInstallParams
-    );
-
     public const uint DI_NEEDREBOOT = 0x00000100;
 
     [StructLayout(LayoutKind.Sequential)]
@@ -221,17 +131,5 @@ public static class SetupApi
         fmtid = new Guid("A8B865DD-2E3D-4094-AD97-E593A70C75D6"),
         pid = 3
     };
-
-    [DllImport(SetupApiDll, CharSet = CharSet.Unicode, SetLastError = true)]
-    public static extern bool SetupDiGetDeviceProperty(
-        IntPtr DeviceInfoSet,
-        ref SP_DEVINFO_DATA DeviceInfoData,
-        ref DEVPROPKEY PropertyKey,
-        out uint PropertyType,
-        byte[] PropertyBuffer,
-        uint PropertyBufferSize,
-        out uint RequiredSize,
-        uint Flags
-    );
 }
 

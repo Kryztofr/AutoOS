@@ -1,12 +1,14 @@
-﻿using AutoOS.Views.Settings.Scheduling.Services;
-using Microsoft.Win32;
+﻿using Microsoft.Win32;
+using Windows.Win32.Devices.DeviceAndDriverInstallation;
+using AutoOS.Views.Settings.Scheduling.Services;
+using Windows.Win32;
 
 namespace AutoOS.Views.Settings.Scheduling.Models;
 
 public class DeviceInfo
 {
-    public IntPtr DeviceInfoSet { get; set; }
-    public SP_DEVINFO_DATA DeviceInfoData { get; set; }
+    internal HDEVINFO DeviceInfoSet { get; set; }
+    internal SP_DEVINFO_DATA DeviceInfoData { get; set; }
     public RegistryKey RegistryKey { get; set; }
     public string DeviceDesc { get; set; } = string.Empty;
     public string DevObjName { get; set; } = string.Empty;
@@ -15,4 +17,3 @@ public class DeviceInfo
     public string PnpDeviceId { get; set; } = string.Empty;
     public uint MaxMSILimit { get; set; }
 }
-

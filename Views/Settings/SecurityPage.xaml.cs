@@ -3,8 +3,8 @@ using Microsoft.UI.Xaml.Documents;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.Win32;
 using System.Diagnostics;
-using System.Runtime.InteropServices;
 using System.ServiceProcess;
+using Windows.Win32;
 
 namespace AutoOS.Views.Settings;
 
@@ -22,9 +22,7 @@ public sealed partial class SecurityPage : Page
     private bool isInitializingVBSState = true;
 	private bool isInitializingSpectreMeltdownState = true;
     private bool isInitializingProcessMitigationsState = true;
-
-    [DllImport("kernel32.dll")]
-    static extern int GetSystemDEPPolicy();
+    
     public SecurityPage()
     {
         InitializeComponent();
@@ -400,7 +398,7 @@ public sealed partial class SecurityPage : Page
     private void GetDEPState()
     {
         // get active state
-        int policy = GetSystemDEPPolicy();
+        int policy = (int)PInvoke.GetSystemDEPPolicy();
 
         // get state
         var output = Process.Start(new ProcessStartInfo("cmd.exe", "/c bcdedit /enum {current}") { CreateNoWindow = true, RedirectStandardOutput = true }).StandardOutput.ReadToEnd();
@@ -471,7 +469,7 @@ public sealed partial class SecurityPage : Page
         DEP.IsHitTestVisible = false;
 
         // get active state
-        int policy = GetSystemDEPPolicy();
+        int policy = (int)PInvoke.GetSystemDEPPolicy();
 
         // remove infobar
         WindowsDefenderInfo.Children.Clear();

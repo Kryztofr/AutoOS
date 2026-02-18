@@ -2,6 +2,10 @@
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Windows.Storage;
+using Windows.Win32;
+using Windows.Win32.Foundation;
+using Windows.Win32.System.Com;
+using Windows.Win32.UI.WindowsAndMessaging;
 
 namespace AutoOS.Views.Installer;
 
@@ -25,25 +29,6 @@ public sealed partial class PersonalizationPage : Page
 
     [UnmanagedFunctionPointer(CallingConvention.Winapi)]
     private delegate int ApplyThemeFunc(IntPtr pThis, [MarshalAs(UnmanagedType.BStr)] string themePath);
-
-    [DllImport("ole32.dll", CharSet = CharSet.Unicode, PreserveSig = true)]
-    private static extern int CoCreateInstance(
-        ref Guid rclsid,
-        IntPtr pUnkOuter,
-        uint dwClsContext,
-        ref Guid riid,
-        out IntPtr ppv);
-
-    [DllImport("user32.dll", CharSet = CharSet.Unicode)]
-    private static extern IntPtr SendMessageTimeoutW(
-        IntPtr hWnd,
-        uint Msg,
-        UIntPtr wParam,
-        string lParam,
-        uint fuFlags,
-        uint uTimeout,
-        out UIntPtr lpdwResult);
-
     public PersonalizationPage()
     {
         InitializeComponent();
@@ -68,7 +53,7 @@ public sealed partial class PersonalizationPage : Page
         public string DarkTheme { get; set; }
     }
 
-    public static Task ApplyTheme(string themePath)
+    public unsafe static Task ApplyTheme(string themePath)
     {
         return Task.Run(() =>
         {
@@ -77,20 +62,37 @@ public sealed partial class PersonalizationPage : Page
                 Guid clsid = CLSID_IThemeManager;
                 Guid iid = IID_IThemeManager;
 
-                int hr = CoCreateInstance(ref clsid, IntPtr.Zero, CLSCTX_INPROC_SERVER,
-                                          ref iid, out IntPtr pThemeManager);
-                if (hr != 0 || pThemeManager == IntPtr.Zero) return;
+                void* pThemeManager;
+                HRESULT hr = PInvoke.CoCreateInstance(
+                    in clsid,
+                    null,
+                    CLSCTX.CLSCTX_INPROC_SERVER,
+                    in iid,
+                    out pThemeManager);
 
-                IntPtr vtable = Marshal.ReadIntPtr(pThemeManager);
+                if (hr.Failed || pThemeManager == null) return;
+
+                IntPtr handle = (IntPtr)pThemeManager;
+                IntPtr vtable = Marshal.ReadIntPtr(handle);
                 IntPtr applyThemePtr = Marshal.ReadIntPtr(vtable, IntPtr.Size * 4);
 
                 var applyTheme = (ApplyThemeFunc)Marshal.GetDelegateForFunctionPointer(applyThemePtr, typeof(ApplyThemeFunc));
-                applyTheme(pThemeManager, themePath);
+                applyTheme(handle, themePath);
 
-                SendMessageTimeoutW(HWND_BROADCAST, WM_SETTINGCHANGE, UIntPtr.Zero, "ImmersiveColorSet",
-                                    SMTO_ABORTIFHUNG, 100, out _);
+                fixed (char* pMessage = "ImmersiveColorSet")
+                {
+                    nuint result;
+                    PInvoke.SendMessageTimeout(
+                        (HWND)(nint)0xffff,
+                        PInvoke.WM_SETTINGCHANGE,
+                        new WPARAM(0),
+                        new LPARAM((nint)pMessage),
+                        SEND_MESSAGE_TIMEOUT_FLAGS.SMTO_ABORTIFHUNG,
+                        100,
+                        &result);
+                }
 
-                Marshal.Release(pThemeManager);
+                Marshal.Release(handle);
             });
 
             thread.SetApartmentState(ApartmentState.STA);

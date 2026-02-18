@@ -1,22 +1,13 @@
 ﻿using AutoOS.Views.Installer.Actions;
 using Microsoft.UI.Xaml.Media;
-using System.Runtime.InteropServices;
 using System.Text.Json;
 using WinRT.Interop;
+using AutoOS.Helpers.Monitor;
 
 namespace AutoOS.Views.Installer.Stages;
 
 public static partial class GamesStage
 {
-    [LibraryImport("user32.dll")]
-    private static partial IntPtr GetDC(IntPtr hwnd);
-
-    [LibraryImport("gdi32.dll")]
-    private static partial int GetDeviceCaps(IntPtr hdc, int nIndex);
-
-    [LibraryImport("user32.dll")]
-    private static partial int ReleaseDC(IntPtr hwnd, IntPtr hdc);
-
     public static IntPtr WindowHandle { get; private set; }
     public static async Task Run()
     {
@@ -38,7 +29,7 @@ public static partial class GamesStage
         var actions = new List<(string Title, Func<Task> Action, Func<bool> Condition)>
         {
             // setting fortnite frame rate
-            ("Setting Fortnite Frame Rate", async () => iniHelper.AddValue("FrameRateLimit", $"{GetDeviceCaps(GetDC(IntPtr.Zero), 116)}.000000", "/Script/FortniteGame.FortGameUserSettings"), () => Fortnite == true),
+            ("Setting Fortnite Frame Rate", async () => iniHelper.AddValue("FrameRateLimit", $"{MonitorHelper.GetMonitors().Max(m => m.RefreshRate)}.000000", "/Script/FortniteGame.FortGameUserSettings"), () => Fortnite == true),
             ("Setting Fortnite Frame Rate", async () => await Task.Delay(1000), () => Fortnite == true),
             
             // setting fortnite rendering mode

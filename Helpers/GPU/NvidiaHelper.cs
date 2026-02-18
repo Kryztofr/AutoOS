@@ -135,7 +135,7 @@ namespace AutoOS.Helpers.GPU
                 // update/install nvidia driver
                 (gpu.IsInstalled ? "Updating NVIDIA driver" : "Installing NVIDIA driver", async () => await ProcessActions.RunNsudo("CurrentUser", $@"""%TEMP%\driver\setup.exe"" /s{(gpu.IsInstalled ? " /clean" : "")}"), null),
                 (gpu.IsInstalled ? "Updating NVIDIA driver" : "Installing NVIDIA driver", async () => await Task.Delay(3000), null),
-                (gpu.IsInstalled ? "Updating NVIDIA driver" : "Installing NVIDIA driver", async () => await GpuHelper.RefreshGpu(gpu), null),
+                (gpu.IsInstalled ? "Updating NVIDIA driver" : "Installing NVIDIA driver", async () => GpuHelper.RefreshGpu(gpu), null),
 
                 // disable nvidia tray icon
                 (@"Disabling ""Show Notification Tray Icon""", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SOFTWARE\NVIDIA Corporation\NvTray"" /v StartOnLogin /t REG_DWORD /d 0 /f"), null),

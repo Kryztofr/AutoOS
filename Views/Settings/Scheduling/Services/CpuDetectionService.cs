@@ -1,6 +1,8 @@
-﻿using System.Runtime.InteropServices;
-using AutoOS.Views.Settings.Scheduling.Models;
+﻿using AutoOS.Views.Settings.Scheduling.Models;
 using Microsoft.Win32;
+using System.Runtime.InteropServices;
+using Windows.Win32;
+using Windows.Win32.Foundation;
 
 namespace AutoOS.Views.Settings.Scheduling.Services;
 
@@ -40,20 +42,6 @@ public enum CPU_SET_INFORMATION_TYPE
     CpuSetInformation = 0
 }
 
-public static class Kernel32
-{
-    private const string Kernel32Dll = "kernel32.dll";
-
-    [DllImport(Kernel32Dll, SetLastError = true)]
-    public static extern uint GetSystemCpuSetInformation(
-        IntPtr Information,
-        uint BufferLength,
-        out uint ReturnedLength,
-        IntPtr Process,
-        uint Flags
-    );
-}
-
 public class CpuDetectionService
 {
     public class CpuSetsInfo
@@ -74,7 +62,7 @@ public class CpuDetectionService
         return vendor.Contains("GenuineIntel", StringComparison.OrdinalIgnoreCase);
     }
 
-    public static CpuSetsInfo GetCpuSets()
+    public unsafe static CpuSetsInfo GetCpuSets()
     {
         var info = new CpuSetsInfo();
         List<CpuSet> cpuSets;
@@ -97,15 +85,15 @@ public class CpuDetectionService
         try
         {
             uint returnedLength = 0;
-            uint result = Kernel32.GetSystemCpuSetInformation(
-                buffer,
+            BOOL success = PInvoke.GetSystemCpuSetInformation(
+                (Windows.Win32.System.SystemInformation.SYSTEM_CPU_SET_INFORMATION*)buffer,
                 (uint)bufferSize,
-                out returnedLength,
-                IntPtr.Zero,
+                &returnedLength,
+                HANDLE.Null,
                 0
             );
 
-            if (result == 0)
+            if (success)
             {
                 int lastError = Marshal.GetLastWin32Error();
                 if (lastError == 122)
@@ -114,11 +102,11 @@ public class CpuDetectionService
                     bufferSize = (int)returnedLength;
                     buffer = Marshal.AllocHGlobal(bufferSize);
 
-                    result = Kernel32.GetSystemCpuSetInformation(
-                        buffer,
+                    success = PInvoke.GetSystemCpuSetInformation(
+                        (Windows.Win32.System.SystemInformation.SYSTEM_CPU_SET_INFORMATION*)buffer,
                         (uint)bufferSize,
-                        out returnedLength,
-                        IntPtr.Zero,
+                        &returnedLength,
+                        HANDLE.Null,
                         0
                     );
                 }

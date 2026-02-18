@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Management;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
+using AutoOS.Helpers.Picker;
 
 namespace AutoOS.Views.Settings;
 

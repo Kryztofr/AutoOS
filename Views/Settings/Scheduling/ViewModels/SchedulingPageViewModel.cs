@@ -1,7 +1,9 @@
+using AutoOS.Views.Settings.Scheduling.Services;
+using Microsoft.UI.Dispatching;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using Microsoft.UI.Dispatching;
-using AutoOS.Views.Settings.Scheduling.Services;
+using Windows.Win32;
+using Windows.Win32.Devices.DeviceAndDriverInstallation;
 
 namespace AutoOS.Views.Settings.Scheduling.ViewModels;
 
@@ -37,20 +39,21 @@ public class SchedulingPageViewModel : INotifyPropertyChanged
     private void LoadDeviceGroup(DeviceType deviceType)
     {
         var devices = DeviceDetectionService.FindDevicesByType(deviceType);
-        IntPtr handle = IntPtr.Zero;
+        HDEVINFO handle = default;
         var viewModels = new List<DeviceItemViewModel>();
 
         foreach (var device in devices)
         {
-            if (handle == IntPtr.Zero)
+            if (handle.Value == 0)
                 handle = device.DeviceInfoSet;
+
             viewModels.Add(new DeviceItemViewModel(deviceType, device));
             device.RegistryKey?.Close();
         }
 
-        if (handle != IntPtr.Zero && handle != new IntPtr(-1))
+        if (handle.Value != 0 && handle.Value != (nint)(-1))
         {
-            SetupApi.SetupDiDestroyDeviceInfoList(handle);
+            PInvoke.SetupDiDestroyDeviceInfoList(handle);
         }
 
         var collection = GetCollection(deviceType);
@@ -110,9 +113,9 @@ public class SchedulingPageViewModel : INotifyPropertyChanged
         if (devices.Count > 0)
         {
             var handle = devices[0].DeviceInfoSet;
-            if (handle != IntPtr.Zero && handle != new IntPtr(-1))
+            if (handle.Value != 0 && handle.Value != (nint)(-1))
             {
-                SetupApi.SetupDiDestroyDeviceInfoList(handle);
+                PInvoke.SetupDiDestroyDeviceInfoList(handle);
             }
         }
 

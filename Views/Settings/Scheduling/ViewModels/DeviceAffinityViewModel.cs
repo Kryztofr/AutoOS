@@ -3,6 +3,8 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using AutoOS.Views.Settings.Scheduling.Models;
 using AutoOS.Views.Settings.Scheduling.Services;
+using Windows.Win32;
+using Windows.Win32.Devices.DeviceAndDriverInstallation;
 
 namespace AutoOS.Views.Settings.Scheduling.ViewModels;
 
@@ -24,7 +26,7 @@ public class DeviceAffinityViewModel : INotifyPropertyChanged
     private List<DeviceInfo> Devices { get; set; } = [];
     private DeviceInfo SelectedDevice { get; set; }
     private readonly string _targetDevObjName;
-    private IntPtr _deviceInfoSet = IntPtr.Zero;
+    private HDEVINFO _deviceInfoSet = default;
 
     public bool MsiSupported
     {
@@ -130,10 +132,10 @@ public class DeviceAffinityViewModel : INotifyPropertyChanged
 
     public void Cleanup()
     {
-        if (_deviceInfoSet != IntPtr.Zero && _deviceInfoSet != new IntPtr(-1))
+        if (_deviceInfoSet.Value != 0 && _deviceInfoSet.Value != (nint)(-1))
         {
-            SetupApi.SetupDiDestroyDeviceInfoList(_deviceInfoSet);
-            _deviceInfoSet = IntPtr.Zero;
+            PInvoke.SetupDiDestroyDeviceInfoList(_deviceInfoSet);
+            _deviceInfoSet = default;
         }
 
         foreach (var device in Devices)

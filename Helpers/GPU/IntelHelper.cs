@@ -101,7 +101,7 @@ namespace AutoOS.Helpers.GPU
                 // update/install intel driver
                 (gpu.IsInstalled ?  "Updating INTEL driver" : "Installing INTEL driver", async () => await ProcessActions.RunNsudo("CurrentUser", @"""%TEMP%\driver\Installer.exe"" /silent"), null),
                 (gpu.IsInstalled ?  "Updating INTEL driver" : "Installing INTEL driver", async () => await Task.Delay(3000), null),
-                (gpu.IsInstalled ? "Updating INTEL driver" : "Installing INTEL driver", async () => await GpuHelper.RefreshGpu(gpu), null),
+                (gpu.IsInstalled ? "Updating INTEL driver" : "Installing INTEL driver", async () => GpuHelper.RefreshGpu(gpu), null),
 
                 // download intel® graphics command center (beta)
                 ("Downloading Intel® Graphics Command Center (Beta)", async () => await ProcessActions.RunMicrosoftStoreDownload("AppUp.IntelGraphicsCommandCenterBeta", "20ad3d91-bf78-4dbd-86cd-e9d215cc9299", "appxBundle", 0, false), () => Intel_6th == true || Intel_7th_10th == true || Intel_11th_14th == true || Intel_11th_14th == true),

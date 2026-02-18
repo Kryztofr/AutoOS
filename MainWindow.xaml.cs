@@ -1,6 +1,7 @@
 ﻿using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml.Input;
-using System.Runtime.InteropServices;
+using Windows.Win32;
+using Windows.Win32.Foundation;
 using WinRT.Interop;
 
 namespace AutoOS.Views
@@ -108,15 +109,7 @@ namespace AutoOS.Views
 
         private void AppIcon_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            var hwnd = WindowNative.GetWindowHandle(App.MainWindow);
-
-            const int WM_SYSCOMMAND = 0x0112;
-            const int SC_MOUSEMENU = 0xF090;
-
-            PostMessage(hwnd, WM_SYSCOMMAND, new IntPtr(SC_MOUSEMENU), IntPtr.Zero);
+            PInvoke.PostMessage((HWND)WindowNative.GetWindowHandle(App.MainWindow), PInvoke.WM_SYSCOMMAND, 0xF090, 0);
         }
-
-        [DllImport("user32.dll")]
-        static extern bool PostMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
     }
 }

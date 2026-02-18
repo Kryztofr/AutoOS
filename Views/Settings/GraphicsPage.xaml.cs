@@ -8,7 +8,10 @@ using System.Diagnostics;
 using System.Management;
 using System.ServiceProcess;
 using Windows.Storage;
+using AutoOS.Helpers.Picker;
 using static AutoOS.Views.Settings.Scheduling.Services.SetupApi;
+using Windows.Win32;
+using Windows.Win32.Devices.DeviceAndDriverInstallation;
 
 namespace AutoOS.Views.Settings;
 
@@ -34,9 +37,9 @@ public sealed partial class GraphicsPage : Page
         isInitializingHDMIDPAudioState = false;
     }
 
-    public async void GetGpus()
+    public void GetGpus()
     {
-        var detectedGpus = await GpuHelper.DetectGPUs();
+        var detectedGpus = GpuHelper.GetGPUs();
 
         GPUs.Clear();
 
@@ -310,11 +313,11 @@ public sealed partial class GraphicsPage : Page
     {
         var deviceConfig = new Dictionary<string, (DeviceSettings, string)>();
         var gpuDevices = DeviceDetectionService.FindDevicesByType(DeviceType.GPU);
-        IntPtr deviceInfoSetHandle = IntPtr.Zero;
+        HDEVINFO deviceInfoSetHandle = default;
 
         foreach (var device in gpuDevices)
         {
-            if (deviceInfoSetHandle == IntPtr.Zero)
+            if (deviceInfoSetHandle.Value == 0)
                 deviceInfoSetHandle = device.DeviceInfoSet;
 
             if (device.RegistryKey != null)
@@ -329,8 +332,8 @@ public sealed partial class GraphicsPage : Page
         foreach (var device in gpuDevices)
             device.RegistryKey?.Close();
 
-        if (deviceInfoSetHandle != IntPtr.Zero && deviceInfoSetHandle != new IntPtr(-1))
-            SetupDiDestroyDeviceInfoList(deviceInfoSetHandle);
+        if (deviceInfoSetHandle.Value != 0 && deviceInfoSetHandle.Value != (nint)(-1))
+            PInvoke.SetupDiDestroyDeviceInfoList(deviceInfoSetHandle);
 
         return deviceConfig;
     }
@@ -345,11 +348,11 @@ public sealed partial class GraphicsPage : Page
 
         var changedDevices = new List<DeviceInfo>();
         var gpuDevicesAfterUpdate = DeviceDetectionService.FindDevicesByType(DeviceType.GPU);
-        IntPtr deviceInfoSetHandleAfterUpdate = IntPtr.Zero;
+        HDEVINFO deviceInfoSetHandleAfterUpdate = default;
 
         foreach (var device in gpuDevicesAfterUpdate)
         {
-            if (deviceInfoSetHandleAfterUpdate == IntPtr.Zero)
+            if (deviceInfoSetHandleAfterUpdate.Value == 0)
                 deviceInfoSetHandleAfterUpdate = device.DeviceInfoSet;
 
             if (device.RegistryKey == null) continue;
@@ -377,7 +380,7 @@ public sealed partial class GraphicsPage : Page
             {
                 foreach (var device in changedDevices)
                 {
-                    if (device.DeviceInfoSet != IntPtr.Zero)
+                    if (device.DeviceInfoSet.Value != 0)
                         DeviceSettingsService.RestartDevice(device);
                 }
             });
@@ -386,8 +389,8 @@ public sealed partial class GraphicsPage : Page
         foreach (var device in gpuDevicesAfterUpdate)
             device.RegistryKey?.Close();
 
-        if (deviceInfoSetHandleAfterUpdate != IntPtr.Zero && deviceInfoSetHandleAfterUpdate != new IntPtr(-1))
-            SetupDiDestroyDeviceInfoList(deviceInfoSetHandleAfterUpdate);
+        if (deviceInfoSetHandleAfterUpdate.Value != 0 && deviceInfoSetHandleAfterUpdate.Value != (nint)(-1))
+            PInvoke.SetupDiDestroyDeviceInfoList(deviceInfoSetHandleAfterUpdate);
 
         progressButton.CheckedContent = null;
     }
