@@ -22,14 +22,20 @@ namespace AutoOS.Helpers.GPU
             string[] intelArc = ["Arc", "Battlemage", "Meteor Lake", "Lunar Lake", "Arrow Lake", "Panther Lake"];
 
             bool is6thGen = intel6th.Any(c => Normalize(codename).Contains(Normalize(c)));
+            bool is7to10 = intel7to10.Any(c => Normalize(codename).Contains(Normalize(c)));
+            bool is11to14 = intel11to14.Any(c => Normalize(codename).Contains(Normalize(c)));
+            bool isArc = intelArc.Any(c => Normalize(codename).Contains(Normalize(c)));
+
             if (is6thGen)
                 driverPageUrl = "https://www.intel.com/content/www/us/en/download/762755/intel-6th-gen-processor-graphics-windows.html";
-            else if (intel7to10.Any(c => Normalize(codename).Contains(Normalize(c))))
+            else if (is7to10)
                 driverPageUrl = "https://www.intel.com/content/www/us/en/download/776137/intel-7th-10th-gen-processor-graphics-windows.html";
-            else if (intel11to14.Any(c => Normalize(codename).Contains(Normalize(c))))
+            else if (is11to14)
                 driverPageUrl = "https://www.intel.com/content/www/us/en/download/864990/intel-11th-14th-gen-processor-graphics-windows.html";
-            else if (intelArc.Any(c => Normalize(codename).Contains(Normalize(c))))
+            else if (isArc)
                 driverPageUrl = "https://www.intel.com/content/www/us/en/download/785597/intel-arc-graphics-windows.html";
+            else
+                throw new InvalidOperationException($"Unsupported Codename: {codename}");
 
             await using var browser = await Puppeteer.LaunchAsync(new LaunchOptions
             {

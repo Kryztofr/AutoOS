@@ -86,6 +86,7 @@ public partial class VendorIdToBitmapIconConverter : IValueConverter
 public static class GpuHelper
 {
     private static readonly HttpClient httpClient = new();
+
     public unsafe static List<GpuInfo> GetGPUs()
     {
         var gpus = new List<GpuInfo>();
@@ -94,15 +95,8 @@ public static class GpuHelper
         Dictionary<string, (string Vendor, Dictionary<string, string> Devices)> pciDb = null;
 
         Guid guid = new("4d36e968-e325-11ce-bfc1-08002be10318");
-
-        HDEVINFO hDevInfo;
-        unsafe
-        {
-            hDevInfo = PInvoke.SetupDiGetClassDevs(&guid, null, HWND.Null, SETUP_DI_GET_CLASS_DEVS_FLAGS.DIGCF_PRESENT);
-        }
-
-        if (hDevInfo.Value == (nint)(-1))
-            return gpus;
+        HDEVINFO hDevInfo = PInvoke.SetupDiGetClassDevs(&guid, null, HWND.Null, SETUP_DI_GET_CLASS_DEVS_FLAGS.DIGCF_PRESENT);
+        if (hDevInfo.Value == (nint)(-1)) return gpus;
 
         try
         {
@@ -112,23 +106,19 @@ public static class GpuHelper
             while (moreDevices)
             {
                 string pnpDeviceId = string.Empty;
-                SP_DEVINFO_DATA devInfo = new() { cbSize = (uint)Marshal.SizeOf<SP_DEVINFO_DATA>() };
+                SP_DEVINFO_DATA devInfo = new() { cbSize = (uint)sizeof(SP_DEVINFO_DATA) };
 
-                unsafe
+                if (PInvoke.SetupDiEnumDeviceInfo(hDevInfo, index, &devInfo))
                 {
-                    devInfo.cbSize = (uint)sizeof(SP_DEVINFO_DATA);
-                    if (PInvoke.SetupDiEnumDeviceInfo(hDevInfo, index, &devInfo))
-                    {
-                        char* idBuffer = stackalloc char[512];
-                        uint requiredSize = 0;
-                        PInvoke.SetupDiGetDeviceInstanceId(hDevInfo, &devInfo, idBuffer, 512, &requiredSize);
-                        pnpDeviceId = new string(idBuffer);
-                    }
-                    else
-                    {
-                        moreDevices = false;
-                        continue;
-                    }
+                    char* idBuffer = stackalloc char[512];
+                    uint requiredSize;
+                    PInvoke.SetupDiGetDeviceInstanceId(hDevInfo, &devInfo, idBuffer, 512, &requiredSize);
+                    pnpDeviceId = new string(idBuffer);
+                }
+                else
+                {
+                    moreDevices = false;
+                    continue;
                 }
 
                 index++;
@@ -146,6 +136,7 @@ public static class GpuHelper
                 if (isInstalled && (vendorId == "10de" || vendorId == "1002" || vendorId == "8086"))
                 {
                     deviceName = GetDeviceName(hDevInfo, devInfo);
+
                     if (vendorId == "10de")
                     {
                         var versionParts = currentVersion.Split('.');
@@ -154,13 +145,50 @@ public static class GpuHelper
                     }
                     else if (vendorId == "1002")
                     {
-                        currentVersion = (Registry.GetValue(registryPath, "RadeonSoftwareVersion", null) ?? Registry.GetValue(registryPath, "FireproSoftwareVersion", null))?.ToString();
+                        currentVersion = (Registry.GetValue(registryPath, "RadeonSoftwareVersion", null)
+                                       ?? Registry.GetValue(registryPath, "FireproSoftwareVersion", null))?.ToString();
                     }
                     else if (vendorId == "8086")
                     {
                         var versionParts = currentVersion?.Split('.');
                         currentVersion = versionParts?.Length >= 4 ? versionParts[2] + "." + versionParts[3] : currentVersion;
                     }
+
+                    if (vendorId == "8086")
+                    {
+                        if (pciDb == null)
+                        {
+                            string pciPath = Path.Combine(PathHelper.GetAppDataFolderPath(), "pci.ids");
+                            if (!File.Exists(pciPath))
+                                File.WriteAllBytes(pciPath, httpClient.GetByteArrayAsync("https://raw.githubusercontent.com/pciutils/pciids/master/pci.ids").GetAwaiter().GetResult());
+
+                            pciDb = new Dictionary<string, (string Vendor, Dictionary<string, string> Devices)>(StringComparer.OrdinalIgnoreCase);
+                            string currentVendor = null;
+
+                            foreach (var line in File.ReadLines(pciPath))
+                            {
+                                if (string.IsNullOrWhiteSpace(line) || line.StartsWith("#")) continue;
+
+                                if (!char.IsWhiteSpace(line[0]))
+                                {
+                                    var parts = line.Split(' ', 2);
+                                    if (parts.Length < 2) continue;
+                                    currentVendor = parts[0].ToLowerInvariant();
+                                    pciDb[currentVendor] = (parts[1].Trim(), new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase));
+                                }
+                                else if (line.StartsWith("\t") && currentVendor != null)
+                                {
+                                    var parts = line.Trim().Split(' ', 2);
+                                    if (parts.Length < 2) continue;
+                                    pciDb[currentVendor].Devices[parts[0].ToLowerInvariant()] = parts[1].Trim();
+                                }
+                            }
+                        }
+
+                        if (pciDb.TryGetValue(vendorId, out var vendor) && vendor.Devices.TryGetValue(deviceId, out var name))
+                            codename = name.Split('[')[0].Trim();
+                    }
+
                     Guid systemGuid = new("4d36e97d-e325-11ce-bfc1-08002be10318");
                     HDEVINFO hAudioDevInfo = PInvoke.SetupDiGetClassDevs(&systemGuid, null, HWND.Null, SETUP_DI_GET_CLASS_DEVS_FLAGS.DIGCF_PRESENT);
                     if (hAudioDevInfo.Value != (nint)(-1))
@@ -186,7 +214,6 @@ public static class GpuHelper
                                 {
                                     CM_DEVNODE_STATUS_FLAGS status;
                                     CM_PROB problem;
-
                                     if (PInvoke.CM_Get_DevNode_Status(out status, out problem, devInst, 0) == CONFIGRET.CR_SUCCESS)
                                     {
                                         hdmidpaudio = (status & CM_DEVNODE_STATUS_FLAGS.DN_STARTED) != 0;
@@ -206,42 +233,42 @@ public static class GpuHelper
                     if (pciDb == null)
                     {
                         string pciPath = Path.Combine(PathHelper.GetAppDataFolderPath(), "pci.ids");
-
                         if (!File.Exists(pciPath))
                             File.WriteAllBytes(pciPath, httpClient.GetByteArrayAsync("https://raw.githubusercontent.com/pciutils/pciids/master/pci.ids").GetAwaiter().GetResult());
 
                         pciDb = new Dictionary<string, (string Vendor, Dictionary<string, string> Devices)>(StringComparer.OrdinalIgnoreCase);
-
                         string currentVendor = null;
+
                         foreach (var line in File.ReadLines(pciPath))
                         {
-                            if (!string.IsNullOrWhiteSpace(line) && !line.StartsWith("#"))
+                            if (string.IsNullOrWhiteSpace(line) || line.StartsWith("#")) continue;
+
+                            if (!char.IsWhiteSpace(line[0]))
                             {
-                                if (!char.IsWhiteSpace(line[0]))
-                                {
-                                    var parts = line.Split(' ', 2);
-                                    if (parts.Length < 2) continue;
-                                    currentVendor = parts[0].ToLowerInvariant();
-                                    pciDb[currentVendor] = (parts[1].Trim(), new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase));
-                                }
-                                else if (line.StartsWith("\t") && currentVendor != null)
-                                {
-                                    var parts = line.Trim().Split(' ', 2);
-                                    if (parts.Length < 2) continue;
-                                    pciDb[currentVendor].Devices[parts[0].ToLowerInvariant()] = parts[1].Trim();
-                                }
+                                var parts = line.Split(' ', 2);
+                                if (parts.Length < 2) continue;
+                                currentVendor = parts[0].ToLowerInvariant();
+                                pciDb[currentVendor] = (parts[1].Trim(), new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase));
+                            }
+                            else if (line.StartsWith("\t") && currentVendor != null)
+                            {
+                                var parts = line.Trim().Split(' ', 2);
+                                if (parts.Length < 2) continue;
+                                pciDb[currentVendor].Devices[parts[0].ToLowerInvariant()] = parts[1].Trim();
                             }
                         }
                     }
 
-                    if (pciDb != null && pciDb.TryGetValue(vendorId, out var vendor) && vendor.Devices.TryGetValue(deviceId, out var name))
+                    if (pciDb.TryGetValue(vendorId, out var vendor) && vendor.Devices.TryGetValue(deviceId, out var name))
                     {
                         deviceName = name.Split('[', ']') is { Length: > 1 } parts ? parts[1] : name;
                         if (vendorId == "10de") deviceName = $"NVIDIA {deviceName}";
                         else if (vendorId == "1002") deviceName = $"AMD {deviceName}";
                         else if (vendorId == "8086") deviceName = $"INTEL {deviceName}";
 
-                        codename = name.Split('[')[0].Trim();
+                        if (vendorId == "8086")
+                            codename = name.Split('[')[0].Trim();
+
                         currentVersion = "N/A";
                     }
                 }
