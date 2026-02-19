@@ -63,7 +63,7 @@ public static class PreparingStage
     public static bool? Python;
     public static bool? Nodejs;
     public static bool? Trello;
-    
+
     public static bool? AppleMusic;
     public static bool? Tidal;
     public static bool? Qobuz;
@@ -120,6 +120,7 @@ public static class PreparingStage
         InstallPage.Progress.Foreground = (Brush)Application.Current.Resources["SystemFillColorCautionBrush"];
         TaskbarHelper.SetProgressState(WindowHandle, TaskbarStates.Paused);
         InstallPage.ProgressRingControl.Foreground = (Brush)Application.Current.Resources["SystemFillColorCautionBrush"];
+        localSettings.Values["Install_Start"] = DateTimeOffset.Now.ToString("O");
 
         await Task.Run(() =>
         {
@@ -240,7 +241,7 @@ public static class PreparingStage
             UserAccountControl = (localSettings.Values["UserAccountControl"]?.ToString() == "1");
             DEP = (localSettings.Values["DataExecutionPrevention"]?.ToString() == "1");
             MemoryIntegrity = (localSettings.Values["MemoryIntegrity"]?.ToString() == "1");
-			VirtualizationBasedSecurity = (localSettings.Values["VirtualizationBasedSecurity"]?.ToString() == "1");
+            VirtualizationBasedSecurity = (localSettings.Values["VirtualizationBasedSecurity"]?.ToString() == "1");
             SpectreMeltdownMitigations = (localSettings.Values["SpectreMeltdownMitigations"]?.ToString() == "1");
             ProcessMitigations = (localSettings.Values["ProcessMitigations"]?.ToString() == "1");
 

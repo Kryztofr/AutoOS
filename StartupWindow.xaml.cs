@@ -21,7 +21,7 @@ namespace AutoOS.Views
             AppWindow.IsShownInSwitchers = false;
             new ModernSystemMenu(this);
 
-            uint dpi = PInvoke.GetDpiForWindow((HWND)WindowNative.GetWindowHandle(App.MainWindow));
+            uint dpi = PInvoke.GetDpiForWindow((HWND)WindowNative.GetWindowHandle(this));
             App.Scaling = dpi / 96.0;
 
             ((OverlappedPresenter)AppWindow.Presenter).PreferredMaximumWidth = (int)(340 * App.Scaling);

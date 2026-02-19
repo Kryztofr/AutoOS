@@ -1,7 +1,5 @@
 ﻿using Microsoft.Win32;
 using Windows.Win32.Devices.DeviceAndDriverInstallation;
-using AutoOS.Views.Settings.Scheduling.Services;
-using Windows.Win32;
 
 namespace AutoOS.Views.Settings.Scheduling.Models;
 

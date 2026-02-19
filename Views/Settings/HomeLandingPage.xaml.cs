@@ -148,7 +148,7 @@ namespace AutoOS.Views.Settings
                 StatusText.Text = "Update complete.";
                 ProgressBar.Foreground = new SolidColorBrush((Windows.UI.Color)Application.Current.Resources["SystemFillColorSuccess"]);
                 localSettings.Values["Version"] = currentVersion;
-                await LogDiscordUser();
+                await ProcessActions.Log();
                 //StatusText.Text = "Restarting in 3...";
                 //await Task.Delay(1000);
                 //StatusText.Text = "Restarting in 2...";
@@ -371,79 +371,6 @@ namespace AutoOS.Views.Settings
             };
 
             await download.StartAsync();
-        }
-
-        public static async Task LogDiscordUser()
-        {
-            string cpuName = Registry.GetValue(@"HKEY_LOCAL_MACHINE\HARDWARE\DESCRIPTION\System\CentralProcessor\0", "ProcessorNameString", "")?.ToString() ?? "";
-
-            string manufacturer = Registry.GetValue(@"HKEY_LOCAL_MACHINE\HARDWARE\DESCRIPTION\System\BIOS", "BaseBoardManufacturer", "")?.ToString() ?? "";
-
-            string product = Registry.GetValue(@"HKEY_LOCAL_MACHINE\HARDWARE\DESCRIPTION\System\BIOS", "BaseBoardProduct", "")?.ToString() ?? "";
-
-            string motherboard = $"{manufacturer} {product}".Trim();
-
-            string ram = $"{(RamHelper.GetRam() is var r ? $"{r.CapacityGB:N1} GB {r.DDRVersion} @ {r.MaxSpeedMHz} MHz" : "")}";
-
-            string gpus = string.Join(", ",
-                (GpuHelper.GetGPUs()).Select(g =>
-                    $"{g.DeviceName} (DeviceId: {g.DeviceId}, {g.CurrentVersion})"
-                )
-            );
-
-            string monitors = string.Join(", ",
-                MonitorHelper.GetMonitors().Select(m =>
-                    $"{m.DeviceName} ({m.Resolution.Width}x{m.Resolution.Height} @ {m.RefreshRate} Hz)"
-                )
-            );
-
-            using var key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion");
-            string build = key.GetValue("CurrentBuild")?.ToString() ?? "";
-            string ubr = key.GetValue("UBR")?.ToString() ?? "";
-            string osVersion = $"{build}.{ubr}";
-
-            string discordId = "Failed to get Discord account id";
-            string discordUsername = "Failed to get Discord username";
-
-            string discordJsonPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "discord", "sentry", "scope_v3.json");
-            if (File.Exists(discordJsonPath))
-            {
-                try
-                {
-                    string jsonText = File.ReadAllText(discordJsonPath);
-                    using JsonDocument doc = JsonDocument.Parse(jsonText);
-
-                    if (doc.RootElement.TryGetProperty("scope", out var scope) &&
-                        scope.TryGetProperty("user", out var user))
-                    {
-                        discordId = user.GetProperty("id").GetString() ?? discordId;
-                        discordUsername = user.GetProperty("username").GetString() ?? discordUsername;
-                    }
-                }
-                catch
-                {
-
-                }
-            }
-
-            using var client = new HttpClient();
-
-            using var multipart = new MultipartFormDataContent
-            {
-                { new StringContent(
-                    $"<@{discordId}>\n" +
-                    $"{discordUsername}\n" +
-                    $"{motherboard}\n" +
-                    $"{cpuName}\n" +
-                    $"{ram}\n" +
-                    $"{gpus}\n" +
-                    $"{monitors}\n" +
-                    $"{osVersion}\n" +
-                    $"{ProcessInfoHelper.Version}"
-                ), "content" }
-            };
-
-            await client.PostAsync("https://discord.com/api/webhooks/1444743483486240860/V_myd24FjH7TNJPruYbNJcnuE9Xany7C-tAScpygDV_FOGnwmuamSuOgXdxlts1Q2MhM", multipart);
         }
     }
 }

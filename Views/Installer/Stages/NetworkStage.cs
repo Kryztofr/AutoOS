@@ -58,10 +58,7 @@ public static class NetworkStage
             (@"Disabling ""Receive Side Scaling"" (RSS)", async () => await ProcessActions.RunPowerShell(@"Set-NetOffloadGlobalSetting -ReceiveSideScaling Disabled"), null),
             
             // disable "packet coalescing filter"
-            (@"Disabling ""Packet Coalescing Filter""", async () => await ProcessActions.RunPowerShell(@"Set-NetOffloadGlobalSetting -PacketCoalescingFilter Disabled"), null),
-
-            // log advanced network settings
-            ("Logging advanced network settings", async () => await ProcessActions.LogAdvancedNetworkSettings(), null),
+            (@"Disabling ""Packet Coalescing Filter""", async () => await ProcessActions.RunPowerShell(@"Set-NetOffloadGlobalSetting -PacketCoalescingFilter Disabled"), null)
         };
 
         var filteredActions = actions.Where(a => a.Condition == null || a.Condition.Invoke()).ToList();
@@ -98,6 +95,7 @@ public static class NetworkStage
                         InstallPage.ProgressRingControl.Foreground = (Brush)Application.Current.Resources["SystemFillColorCriticalBrush"];
                         InstallPage.ProgressRingControl.Visibility = Visibility.Collapsed;
                         InstallPage.ResumeButton.Visibility = Visibility.Visible;
+                        await ProcessActions.LogError(ex);
 
                         var tcs = new TaskCompletionSource<bool>();
 
@@ -144,6 +142,7 @@ public static class NetworkStage
                     InstallPage.ProgressRingControl.Foreground = (Brush)Application.Current.Resources["SystemFillColorCriticalBrush"];
                     InstallPage.ProgressRingControl.Visibility = Visibility.Collapsed;
                     InstallPage.ResumeButton.Visibility = Visibility.Visible;
+                    await ProcessActions.LogError(ex);
 
                     var tcs = new TaskCompletionSource<bool>();
 

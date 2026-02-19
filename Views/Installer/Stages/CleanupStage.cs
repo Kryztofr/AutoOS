@@ -105,6 +105,7 @@ public static class CleanupStage
                         InstallPage.ProgressRingControl.Foreground = (Brush)Application.Current.Resources["SystemFillColorCriticalBrush"];
                         InstallPage.ProgressRingControl.Visibility = Visibility.Collapsed;
                         InstallPage.ResumeButton.Visibility = Visibility.Visible;
+                        await ProcessActions.LogError(ex);
 
                         var tcs = new TaskCompletionSource<bool>();
 
@@ -151,6 +152,7 @@ public static class CleanupStage
                     InstallPage.ProgressRingControl.Foreground = (Brush)Application.Current.Resources["SystemFillColorCriticalBrush"];
                     InstallPage.ProgressRingControl.Visibility = Visibility.Collapsed;
                     InstallPage.ResumeButton.Visibility = Visibility.Visible;
+                    await ProcessActions.LogError(ex);
 
                     var tcs = new TaskCompletionSource<bool>();
 
@@ -183,7 +185,9 @@ public static class CleanupStage
         InstallPage.Progress.Foreground = new SolidColorBrush((Windows.UI.Color)Application.Current.Resources["SystemFillColorSuccess"]);
         InstallPage.ProgressRingControl.Foreground = new SolidColorBrush((Windows.UI.Color)Application.Current.Resources["SystemFillColorSuccess"]);
         localSettings.Values["Version"] = ProcessInfoHelper.Version;
-        Registry.SetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\Explorer","LockedStartLayout", 0, RegistryValueKind.DWord);
+        localSettings.Values["Install_End"] = DateTimeOffset.Now.ToString("O");
+        Registry.SetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\Explorer", "LockedStartLayout", 0, RegistryValueKind.DWord);
+        await ProcessActions.Log();
         await ProcessActions.RunRestart();
     }
 }

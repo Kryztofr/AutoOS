@@ -61,7 +61,7 @@ public static class AutoAffinityService
                 }
             }
             
-            await RestartDevicesSilentlyAsync(allChangedDevices.Select(d => d.device).ToList());
+            await RestartDevicesSilentlyAsync([.. allChangedDevices.Select(d => d.device)]);
         }
 
         CleanupDevices(allDevices);

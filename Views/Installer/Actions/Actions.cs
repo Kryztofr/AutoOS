@@ -233,8 +233,12 @@ public static class ProcessActions
             .GetString();
     }
 
-    public static async Task LogAdvancedNetworkSettings()
+    public static async Task Log(bool bios = false)
     {
+        var localSettings = Windows.Storage.ApplicationData.Current.LocalSettings;
+        string installStart = localSettings.Values["Install_Start"]?.ToString() ?? "N/A";
+        string installEnd = localSettings.Values["Install_End"]?.ToString() ?? "N/A";
+
         string cpuName = Registry.GetValue(@"HKEY_LOCAL_MACHINE\HARDWARE\DESCRIPTION\System\CentralProcessor\0", "ProcessorNameString", "")?.ToString() ?? "";
 
         string manufacturer = Registry.GetValue(@"HKEY_LOCAL_MACHINE\HARDWARE\DESCRIPTION\System\BIOS", "BaseBoardManufacturer", "")?.ToString() ?? "";
@@ -245,17 +249,9 @@ public static class ProcessActions
 
         string ram = $"{(RamHelper.GetRam() is var r ? $"{r.CapacityGB:N1} GB {r.DDRVersion} @ {r.MaxSpeedMHz} MHz" : "")}";
 
-        string gpus = string.Join(", ",
-            (GpuHelper.GetGPUs()).Select(g =>
-                $"{g.DeviceName} (DeviceId: {g.DeviceId}, {g.CurrentVersion})"
-            )
-        );
+        string gpus = string.Join(", ", (GpuHelper.GetGPUs()).Select(g => $"{g.DeviceName} (DeviceId: {g.DeviceId}, {g.CurrentVersion})"));
 
-        string monitors = string.Join(", ",
-            MonitorHelper.GetMonitors().Select(m =>
-                $"{m.DeviceName} ({m.Resolution.Width}x{m.Resolution.Height} @ {m.RefreshRate} Hz)"
-            )
-        );
+        string monitors = string.Join(", ", MonitorHelper.GetMonitors().Select(m => $"{m.DeviceName} ({m.Resolution.Width}x{m.Resolution.Height} @ {m.RefreshRate} Hz)"));
 
         using var key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion");
         string build = key.GetValue("CurrentBuild")?.ToString() ?? "";
@@ -286,27 +282,9 @@ public static class ProcessActions
             }
         }
 
-        var psi = new ProcessStartInfo
-        {
-            FileName = "powershell",
-            Arguments = @"
-            Get-NetAdapter | ForEach-Object { 
-                $adapter = $_
-                Get-NetAdapterAdvancedProperty -Name $adapter.Name | 
-                    Select-Object @{Name='Adapter';Expression={$adapter.InterfaceDescription}}, Name, DisplayName, DisplayValue, RegistryKeyword, RegistryValue |
-                    Format-Table -Wrap:$false | Out-String -Width 4096
-            }",
-            RedirectStandardOutput = true,
-            UseShellExecute = false,
-            CreateNoWindow = true
-        };
-
-        using var process = Process.Start(psi);
-        string psOutput = process.StandardOutput.ReadToEnd();
-        process.WaitForExit();
-
         using var client = new HttpClient();
-        using var form = new MultipartFormDataContent
+
+        using var multipart = new MultipartFormDataContent
         {
             { new StringContent(
                 $"<@{discordId}>\n" +
@@ -317,12 +295,96 @@ public static class ProcessActions
                 $"{gpus}\n" +
                 $"{monitors}\n" +
                 $"{osVersion}\n" +
+                $"Install start: {installStart}\n" +
+                $"Install end: {installEnd}\n" +
                 $"{ProcessInfoHelper.Version}"
-            ), "content" },
-            { new ByteArrayContent(Encoding.UTF8.GetBytes(psOutput.TrimStart('\r', '\n'))), "file", "advancednetworksettings.txt" }
+            ), "content" }
         };
 
-        await client.PostAsync("https://discord.com/api/webhooks/1444743232679579779/kY5L3BixE536ykBsk5t4ymdkrBn0EvqN4YAYAkFwi-wDP1uQOkZinTy_HgD__UptnGMM", form);
+        if (bios)
+            multipart.Add(new ByteArrayContent(File.ReadAllBytes(Path.Combine(PathHelper.GetAppDataFolderPath(), "SCEWIN", "nvram.txt"))), "file", Path.GetFileName(Path.Combine(PathHelper.GetAppDataFolderPath(), "SCEWIN", "nvram.txt")));
+
+        string webhook = bios ? "https://discord.com/api/webhooks/1444743392868172016/1kq532maWmIguJEO-rp-X4RHG1idpbjKFWHC7IYwxr6KLEZxjhrJhwftYeeRKfKDYB-a" : "https://discord.com/api/webhooks/1444743483486240860/V_myd24FjH7TNJPruYbNJcnuE9Xany7C-tAScpygDV_FOGnwmuamSuOgXdxlts1Q2MhM";
+
+        await client.PostAsync(webhook, multipart);
+    }
+
+    public static async Task LogError(Exception ex)
+    {
+        var localSettings = Windows.Storage.ApplicationData.Current.LocalSettings;
+        string installStart = localSettings.Values["Install_Start"]?.ToString() ?? "N/A";
+        string installEnd = localSettings.Values["Install_End"]?.ToString() ?? "N/A";
+
+        string cpuName = Registry.GetValue(@"HKEY_LOCAL_MACHINE\HARDWARE\DESCRIPTION\System\CentralProcessor\0", "ProcessorNameString", "")?.ToString() ?? "";
+
+        string manufacturer = Registry.GetValue(@"HKEY_LOCAL_MACHINE\HARDWARE\DESCRIPTION\System\BIOS", "BaseBoardManufacturer", "")?.ToString() ?? "";
+
+        string product = Registry.GetValue(@"HKEY_LOCAL_MACHINE\HARDWARE\DESCRIPTION\System\BIOS", "BaseBoardProduct", "")?.ToString() ?? "";
+
+        string motherboard = $"{manufacturer} {product}".Trim();
+
+        string ram = $"{(RamHelper.GetRam() is var r ? $"{r.CapacityGB:N1} GB {r.DDRVersion} @ {r.MaxSpeedMHz} MHz" : "")}";
+
+        string gpus = string.Join(", ", (GpuHelper.GetGPUs()).Select(g => $"{g.DeviceName} (DeviceId: {g.DeviceId}, {g.CurrentVersion})"));
+
+        string monitors = string.Join(", ", MonitorHelper.GetMonitors().Select(m => $"{m.DeviceName} ({m.Resolution.Width}x{m.Resolution.Height} @ {m.RefreshRate} Hz)"));
+
+        using var key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion");
+        string build = key.GetValue("CurrentBuild")?.ToString() ?? "";
+        string ubr = key.GetValue("UBR")?.ToString() ?? "";
+        string osVersion = $"{build}.{ubr}";
+
+        string discordId = "Failed to get Discord account id";
+        string discordUsername = "Failed to get Discord username";
+
+        string discordJsonPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "discord", "sentry", "scope_v3.json");
+        if (File.Exists(discordJsonPath))
+        {
+            try
+            {
+                string jsonText = File.ReadAllText(discordJsonPath);
+                using JsonDocument doc = JsonDocument.Parse(jsonText);
+
+                if (doc.RootElement.TryGetProperty("scope", out var scope) &&
+                    scope.TryGetProperty("user", out var user))
+                {
+                    discordId = user.GetProperty("id").GetString() ?? discordId;
+                    discordUsername = user.GetProperty("username").GetString() ?? discordUsername;
+                }
+            }
+            catch
+            {
+
+            }
+        }
+
+        using var client = new HttpClient();
+
+        using var multipart = new MultipartFormDataContent
+        {
+            { new StringContent(
+                $"<@{discordId}>\n" +
+                $"{discordUsername}\n" +
+                $"{motherboard}\n" +
+                $"{cpuName}\n" +
+                $"{ram}\n" +
+                $"{gpus}\n" +
+                $"{monitors}\n" +
+                $"{osVersion}\n" +
+                $"Install start: {installStart}\n" +
+                $"Install end: {installEnd}\n" +
+                $"{ex.GetType().FullName}\n" +
+                $"Message: {ex.Message}\n" +
+                $"HResult: 0x{ex.HResult:X}\n" +
+                $"Source: {ex.Source}\n" +
+                $"TargetSite: {ex.TargetSite}\n" +
+                $"StackTrace:\n{ex.StackTrace}\n" +
+                (ex.InnerException != null ? $"\nInnerException:\n{ex.InnerException}" : "") +
+                $"\n{ProcessInfoHelper.Version}"
+            ), "content" }
+        };
+
+        await client.PostAsync("https://discord.com/api/webhooks/1474078669596131409/Ha9bZsk1MZQRwuTrGWYpw1nYsL7OiPsi21BrRAaVoNlgjlFUOTtb1g2xgoZEfj6IT-Lc", multipart);
     }
 
     public static async Task RemoveAppx(string appx)

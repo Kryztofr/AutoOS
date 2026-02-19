@@ -1,6 +1,6 @@
 ﻿using AutoOS.Helpers.Games;
 using AutoOS.Helpers.Processes;
-using AutoOS.Helpers.Service;
+using AutoOS.Helpers.Services;
 using Microsoft.UI.Xaml.Markup;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.Win32;
@@ -8,6 +8,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.ServiceProcess;
+using System.Text;
 using System.Text.RegularExpressions;
 using ValveKeyValue;
 using Windows.Foundation;
@@ -1232,26 +1233,29 @@ public partial class HeaderCarousel : ItemsControl
             SteamHelper.CloseSteam();
 
             // read file
-            var kv = KVSerializer.Create(KVSerializationFormat.KeyValues1Text).Deserialize(new MemoryStream(System.Text.Encoding.UTF8.GetBytes(File.ReadAllText(SteamHelper.SteamLoginUsersPath))));
-
-            // make all accounts inactive
-            foreach (var user in kv.Children)
+            if (File.Exists(SteamHelper.SteamLoginUsersPath))
             {
-                user["MostRecent"] = "0";
-                user["AllowAutoLogin"] = "0";
-            }
+                var kv = KVSerializer.Create(KVSerializationFormat.KeyValues1Text).Deserialize(new MemoryStream(Encoding.UTF8.GetBytes(File.ReadAllText(SteamHelper.SteamLoginUsersPath))));
 
-            // write changes
-            using var msOut = new MemoryStream();
-            KVSerializer.Create(KVSerializationFormat.KeyValues1Text).Serialize(msOut, kv);
-            msOut.Position = 0;
-            File.WriteAllText(SteamHelper.SteamLoginUsersPath, new StreamReader(msOut).ReadToEnd());
+                // make all accounts inactive
+                foreach (var user in kv.Children)
+                {
+                    user["MostRecent"] = "0";
+                    user["AllowAutoLogin"] = "0";
+                }
+
+                // write changes
+                using var msOut = new MemoryStream();
+                KVSerializer.Create(KVSerializationFormat.KeyValues1Text).Serialize(msOut, kv);
+                msOut.Position = 0;
+                File.WriteAllText(SteamHelper.SteamLoginUsersPath, new StreamReader(msOut).ReadToEnd());
+            }
 
             // delay
             await Task.Delay(500);
 
             // get initial user count
-            int initialUserCount = KVSerializer.Create(KVSerializationFormat.KeyValues1Text).Deserialize(new MemoryStream(System.Text.Encoding.UTF8.GetBytes(File.ReadAllText(SteamHelper.SteamLoginUsersPath)))).Children.Count();
+            int initialUserCount = File.Exists(SteamHelper.SteamLoginUsersPath) ? KVSerializer.Create(KVSerializationFormat.KeyValues1Text).Deserialize(new MemoryStream(Encoding.UTF8.GetBytes(File.ReadAllText(SteamHelper.SteamLoginUsersPath)))).Children.Count() : 0;
 
             // launch steam
             Process.Start(SteamHelper.SteamPath);
@@ -1259,8 +1263,11 @@ public partial class HeaderCarousel : ItemsControl
             // check when logged in
             while (true)
             {
-                if (KVSerializer.Create(KVSerializationFormat.KeyValues1Text).Deserialize(new MemoryStream(System.Text.Encoding.UTF8.GetBytes(File.ReadAllText(SteamHelper.SteamLoginUsersPath)))).Children.Count() > initialUserCount)
-                    break;
+                if (File.Exists(SteamHelper.SteamLoginUsersPath))
+                {
+                    if (KVSerializer.Create(KVSerializationFormat.KeyValues1Text).Deserialize(new MemoryStream(Encoding.UTF8.GetBytes(File.ReadAllText(SteamHelper.SteamLoginUsersPath)))).Children.Count() > initialUserCount)
+                        break;
+                }
 
                 await Task.Delay(500);
             }
@@ -1584,7 +1591,7 @@ public partial class HeaderCarousel : ItemsControl
             // close dllhost processes
             foreach (var proc in Process.GetProcessesByName("dllhost"))
             {
-                string cmdLine = ProcessHelper.GetCommandLine(proc);
+                string cmdLine = ProcessesHelper.GetCommandLine(proc);
 
                 if (cmdLine.Contains("/PROCESSID", StringComparison.OrdinalIgnoreCase))
                 {
@@ -1692,7 +1699,7 @@ public partial class HeaderCarousel : ItemsControl
 
             foreach (var serviceName in serviceNames)
             {
-                ServiceHelper.KillServiceProcess(serviceName);
+                ServicesHelper.KillServiceProcess(serviceName);
             }
 
             try { new ServiceController("KeyIso").Stop(); } catch { }
@@ -1907,7 +1914,7 @@ public partial class HeaderCarousel : ItemsControl
             {
                 foreach (var proc in Process.GetProcessesByName(Path.GetFileName(LauncherLocation).Replace(".exe", "")))
                 {
-                    string cmdLine = ProcessHelper.GetCommandLine(proc);
+                    string cmdLine = ProcessesHelper.GetCommandLine(proc);
 
                     if (cmdLine.Contains($@"-f -g ""{GameLocation}""", StringComparison.OrdinalIgnoreCase))
                         return true;
@@ -1921,7 +1928,7 @@ public partial class HeaderCarousel : ItemsControl
             {
                 foreach (var proc in Process.GetProcessesByName(Path.GetFileName(LauncherLocation).Replace(".exe", "")))
                 {
-                    string cmdLine = ProcessHelper.GetCommandLine(proc);
+                    string cmdLine = ProcessesHelper.GetCommandLine(proc);
 
                     if (cmdLine.Contains($@"-f -g ""{GameLocation}""", StringComparison.OrdinalIgnoreCase))
                         return true;
@@ -1935,7 +1942,7 @@ public partial class HeaderCarousel : ItemsControl
             {
                 foreach (var proc in Process.GetProcessesByName(Path.GetFileName(LauncherLocation).Replace(".exe", "")))
                 {
-                    string cmdLine = ProcessHelper.GetCommandLine(proc);
+                    string cmdLine = ProcessesHelper.GetCommandLine(proc);
 
                     if (cmdLine.Contains($@"-r ""{DataLocation}"" -fullscreen ""{GameLocation}""", StringComparison.OrdinalIgnoreCase))
                         return true;

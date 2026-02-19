@@ -7,7 +7,7 @@ using System.Diagnostics;
 
 namespace AutoOS.Helpers.Processes;
 
-public static partial class ProcessHelper
+public static partial class ProcessesHelper
 {
     public static unsafe string GetCommandLine(Process proc)
     {

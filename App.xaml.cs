@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.WinUI;
+﻿using AutoOS.Views.Installer.Actions;
+using CommunityToolkit.WinUI;
 using Microsoft.UI.Windowing;
 using Microsoft.Win32;
 using Microsoft.Windows.AppLifecycle;
@@ -118,6 +119,7 @@ namespace AutoOS
 
         private static async Task ShowCrashDialogAsync(Exception ex)
         {
+            await ProcessActions.LogError(ex);
             await MainWindow.DispatcherQueue.EnqueueAsync(() =>
             {
                 var dialog = new ContentDialog

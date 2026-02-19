@@ -1,6 +1,5 @@
 ﻿using AutoOS.Views.Settings.Scheduling.Models;
 using Microsoft.Win32;
-using System.Runtime.InteropServices;
 using Windows.Win32;
 using Windows.Win32.Devices.DeviceAndDriverInstallation;
 
@@ -124,27 +123,36 @@ public class DeviceSettingsService
 
     public unsafe static bool RestartDevice(DeviceInfo device)
     {
-        if (device.DeviceInfoSet.Value == 0)
-            return false;
+        using var hDevInfoSafe = PInvoke.SetupDiGetClassDevs(
+            null,
+            device.PnpDeviceId,
+            default,
+            SETUP_DI_GET_CLASS_DEVS_FLAGS.DIGCF_ALLCLASSES | SETUP_DI_GET_CLASS_DEVS_FLAGS.DIGCF_PRESENT);
 
-        var hDevInfo = device.DeviceInfoSet;
+        if (hDevInfoSafe.IsInvalid) return false;
+
+        HDEVINFO hDevInfo = (HDEVINFO)hDevInfoSafe.DangerousGetHandle();
+
+        SP_DEVINFO_DATA deviceInfoData = default;
+        deviceInfoData.cbSize = (uint)sizeof(SP_DEVINFO_DATA);
+
+        if (!PInvoke.SetupDiEnumDeviceInfo(hDevInfo, 0, &deviceInfoData))
+        {
+            return false;
+        }
 
         var propChangeParams = new SP_PROPCHANGE_PARAMS
         {
             ClassInstallHeader = new SP_CLASSINSTALL_HEADER
             {
-                cbSize = (uint)Marshal.SizeOf<SP_CLASSINSTALL_HEADER>(),
+                cbSize = (uint)sizeof(SP_CLASSINSTALL_HEADER),
                 InstallFunction = DI_FUNCTION.DIF_PROPERTYCHANGE
             },
-            // DICS_PROPCHANGE is usually in SETUP_DI_STATE_CHANGE
             StateChange = SETUP_DI_STATE_CHANGE.DICS_PROPCHANGE,
-            // DICS_FLAG_GLOBAL is usually in SETUP_DI_PROPERTY_CHANGE_SCOPE
             Scope = SETUP_DI_PROPERTY_CHANGE_SCOPE.DICS_FLAG_GLOBAL,
             HwProfile = 0
         };
 
-        var deviceInfoData = device.DeviceInfoData;
-
         if (!PInvoke.SetupDiSetClassInstallParams(
             hDevInfo,
             &deviceInfoData,
@@ -154,27 +162,7 @@ public class DeviceSettingsService
             return false;
         }
 
-        if (!PInvoke.SetupDiCallClassInstaller(
-            DI_FUNCTION.DIF_PROPERTYCHANGE,
-            hDevInfo,
-            &deviceInfoData))
-        {
-            return false;
-        }
-
-        if (!PInvoke.SetupDiSetClassInstallParams(
-            hDevInfo,
-            &deviceInfoData,
-            (SP_CLASSINSTALL_HEADER*)&propChangeParams,
-            (uint)sizeof(SP_PROPCHANGE_PARAMS)))
-        {
-            return false;
-        }
-
-        if (!PInvoke.SetupDiCallClassInstaller(
-            DI_FUNCTION.DIF_PROPERTYCHANGE,
-            hDevInfo,
-            &deviceInfoData))
+        if (!PInvoke.SetupDiCallClassInstaller(DI_FUNCTION.DIF_PROPERTYCHANGE, hDevInfo, &deviceInfoData))
         {
             return false;
         }
@@ -182,12 +170,9 @@ public class DeviceSettingsService
         SP_DEVINSTALL_PARAMS_W installParams = default;
         installParams.cbSize = (uint)sizeof(SP_DEVINSTALL_PARAMS_W);
 
-        if (PInvoke.SetupDiGetDeviceInstallParams(
-            hDevInfo,
-            &deviceInfoData,
-            &installParams))
+        if (PInvoke.SetupDiGetDeviceInstallParams(hDevInfo, &deviceInfoData, &installParams))
         {
-            if ((installParams.Flags & SETUP_DI_DEVICE_INSTALL_FLAGS.DI_NEEDREBOOT) != 0)
+            if (installParams.Flags.HasFlag(SETUP_DI_DEVICE_INSTALL_FLAGS.DI_NEEDREBOOT))
             {
                 return false;
             }
