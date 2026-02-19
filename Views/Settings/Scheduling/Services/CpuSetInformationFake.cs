@@ -1,4 +1,4 @@
-﻿using AutoOS.Views.Settings.Scheduling.Models;
+﻿using AutoOS.Helpers.CPU;
 
 namespace AutoOS.Views.Settings.Scheduling.Services
 {

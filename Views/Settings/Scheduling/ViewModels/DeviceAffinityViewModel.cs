@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using AutoOS.Views.Settings.Scheduling.Models;
+using AutoOS.Helpers.CPU;
 using AutoOS.Views.Settings.Scheduling.Services;
 using Windows.Win32;
 using Windows.Win32.Devices.DeviceAndDriverInstallation;

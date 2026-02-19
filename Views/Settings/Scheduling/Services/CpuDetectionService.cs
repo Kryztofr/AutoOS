@@ -1,4 +1,4 @@
-﻿using AutoOS.Views.Settings.Scheduling.Models;
+﻿using AutoOS.Helpers.CPU;
 using Microsoft.Win32;
 using System.Runtime.InteropServices;
 using Windows.Win32;
@@ -249,14 +249,15 @@ public class CpuDetectionService
 
         foreach (var cpuSet in cpuSets.OrderBy(c => c.LogicalProcessorIndex))
         {
-            if (!cores.ContainsKey(cpuSet.CoreIndex))
+            if (!cores.TryGetValue(cpuSet.CoreIndex, out (CpuCore Core, int SequentialNumber) value))
             {
                 var core = new CpuCore
                 {
                     CoreIndex = cpuSet.CoreIndex,
                     Name = $"Core {coreCount}"
                 };
-                cores[cpuSet.CoreIndex] = (core, coreCount);
+                value = (core, coreCount);
+                cores[cpuSet.CoreIndex] = value;
                 coreCount++;
             }
 
@@ -268,8 +269,7 @@ public class CpuDetectionService
                 Name = $"Thread {cpuSet.LogicalProcessorIndex}",
                 BitMask = bitMask
             };
-
-            cores[cpuSet.CoreIndex].Core.Threads.Add(thread);
+            value.Core.Threads.Add(thread);
         }
 
         return [.. cores.Values.OrderBy(c => c.SequentialNumber).Select(c => c.Core)];

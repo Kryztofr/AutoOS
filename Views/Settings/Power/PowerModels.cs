@@ -5,7 +5,7 @@ using Microsoft.UI.Text;
 
 namespace AutoOS.Views.Settings.Power
 {
-    public sealed class PowerPlan : INotifyPropertyChanged
+    public sealed partial class PowerPlan : INotifyPropertyChanged
     {
         public Guid Guid { get; set; }
 
@@ -28,7 +28,7 @@ namespace AutoOS.Views.Settings.Power
             => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
-    public sealed class PowerSubgroup : INotifyPropertyChanged
+    public sealed partial class PowerSubgroup : INotifyPropertyChanged
     {
         public Guid Guid { get; set; }
         public string Name { get; set; }

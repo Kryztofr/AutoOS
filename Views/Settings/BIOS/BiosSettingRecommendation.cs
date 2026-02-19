@@ -771,6 +771,7 @@ public static class BiosSettingRecommendationsList
         new BiosSettingRecommendation { SetupQuestion = "L2 Up/Down Prefetcher", Type = "Option", RecommendedOption = "Enable" },
         new BiosSettingRecommendation { SetupQuestion = "L3 DFLL Stretch Mode", Type = "Option", RecommendedOption = "Disabled" },
         new BiosSettingRecommendation { SetupQuestion = "LCLK DPM", Type = "Option", RecommendedOption = "Disabled" },
+        new BiosSettingRecommendation { SetupQuestion = "LED Lighting", Type = "Option", RecommendedOption = "Disabled" },
         new BiosSettingRecommendation { SetupQuestion = "LN2 Mode", Type = "Option", RecommendedOption = "Disable" },
         new BiosSettingRecommendation { SetupQuestion = "LN2 Mode", Type = "Option", RecommendedOption = "Disabled" },
         new BiosSettingRecommendation { SetupQuestion = "LN2 Mode 1", Type = "Option", RecommendedOption = "Disabled" },
@@ -996,7 +997,7 @@ public static class BiosSettingRecommendationsList
         new BiosSettingRecommendation { SetupQuestion = "Serial(COM) Port0", Type = "Value", RecommendedOption = "0" },
         new BiosSettingRecommendation { SetupQuestion = "Suspend to RAM", Type = "Option", RecommendedOption = "Disabled" }, // already disabled on INTEL
         new BiosSettingRecommendation { SetupQuestion = "UFS Support", Type = "Option", RecommendedOption = "Disabled" },
-        //new BiosSettingRecommendation { SetupQuestion = "USB power delivery in Soft Off state (S5)", Type = "Option", RecommendedOption = "Disabled" },
+        new BiosSettingRecommendation { SetupQuestion = "USB power delivery in Soft Off state (S5)", Type = "Option", RecommendedOption = "Enabled" },
         new BiosSettingRecommendation { SetupQuestion = "Unpopulated Links", Type = "Option", RecommendedOption = "Keep Link ON" },
         new BiosSettingRecommendation { SetupQuestion = "XHCI Hand-off", Type = "Option", RecommendedOption = "Enabled" },
 

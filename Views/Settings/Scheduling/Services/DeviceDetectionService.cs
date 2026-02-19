@@ -35,7 +35,7 @@ public class DeviceDetectionService
         {
             var deviceInfoData = new SP_DEVINFO_DATA
             {
-                cbSize = (uint)Marshal.SizeOf(typeof(SP_DEVINFO_DATA))
+                cbSize = (uint)Marshal.SizeOf<SP_DEVINFO_DATA>()
             };
 
             if (!PInvoke.SetupDiEnumDeviceInfo(deviceInfoSetHandle, index, ref deviceInfoData))
@@ -151,7 +151,7 @@ public class DeviceDetectionService
             deviceInfoData,
             (uint)SETUP_DI_PROPERTY_CHANGE_SCOPE.DICS_FLAG_GLOBAL,
             0,
-            (uint)DIREG.DIREG_DEV,
+            PInvoke.DIREG_DEV,
             0x00020019
         );
 

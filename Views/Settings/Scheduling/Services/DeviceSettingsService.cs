@@ -129,15 +129,17 @@ public class DeviceSettingsService
 
         var hDevInfo = device.DeviceInfoSet;
 
-        var propChangeParams = new Windows.Win32.Devices.DeviceAndDriverInstallation.SP_PROPCHANGE_PARAMS
+        var propChangeParams = new SP_PROPCHANGE_PARAMS
         {
-            ClassInstallHeader = new Windows.Win32.Devices.DeviceAndDriverInstallation.SP_CLASSINSTALL_HEADER
+            ClassInstallHeader = new SP_CLASSINSTALL_HEADER
             {
-                cbSize = (uint)Marshal.SizeOf(typeof(Windows.Win32.Devices.DeviceAndDriverInstallation.SP_CLASSINSTALL_HEADER)),
-                InstallFunction = Windows.Win32.Devices.DeviceAndDriverInstallation.DI_FUNCTION.DIF_PROPERTYCHANGE
+                cbSize = (uint)Marshal.SizeOf<SP_CLASSINSTALL_HEADER>(),
+                InstallFunction = DI_FUNCTION.DIF_PROPERTYCHANGE
             },
-            StateChange = (Windows.Win32.Devices.DeviceAndDriverInstallation.SETUP_DI_STATE_CHANGE)DICS_STATE.DICS_PROPCHANGE,
-            Scope = (Windows.Win32.Devices.DeviceAndDriverInstallation.SETUP_DI_PROPERTY_CHANGE_SCOPE)DICS_FLAG.DICS_FLAG_GLOBAL,
+            // DICS_PROPCHANGE is usually in SETUP_DI_STATE_CHANGE
+            StateChange = SETUP_DI_STATE_CHANGE.DICS_PROPCHANGE,
+            // DICS_FLAG_GLOBAL is usually in SETUP_DI_PROPERTY_CHANGE_SCOPE
+            Scope = SETUP_DI_PROPERTY_CHANGE_SCOPE.DICS_FLAG_GLOBAL,
             HwProfile = 0
         };
 
@@ -146,14 +148,14 @@ public class DeviceSettingsService
         if (!PInvoke.SetupDiSetClassInstallParams(
             hDevInfo,
             &deviceInfoData,
-            (Windows.Win32.Devices.DeviceAndDriverInstallation.SP_CLASSINSTALL_HEADER*)&propChangeParams,
-            (uint)sizeof(Windows.Win32.Devices.DeviceAndDriverInstallation.SP_PROPCHANGE_PARAMS)))
+            (SP_CLASSINSTALL_HEADER*)&propChangeParams,
+            (uint)sizeof(SP_PROPCHANGE_PARAMS)))
         {
             return false;
         }
 
         if (!PInvoke.SetupDiCallClassInstaller(
-            Windows.Win32.Devices.DeviceAndDriverInstallation.DI_FUNCTION.DIF_PROPERTYCHANGE,
+            DI_FUNCTION.DIF_PROPERTYCHANGE,
             hDevInfo,
             &deviceInfoData))
         {
@@ -163,14 +165,14 @@ public class DeviceSettingsService
         if (!PInvoke.SetupDiSetClassInstallParams(
             hDevInfo,
             &deviceInfoData,
-            (Windows.Win32.Devices.DeviceAndDriverInstallation.SP_CLASSINSTALL_HEADER*)&propChangeParams,
-            (uint)sizeof(Windows.Win32.Devices.DeviceAndDriverInstallation.SP_PROPCHANGE_PARAMS)))
+            (SP_CLASSINSTALL_HEADER*)&propChangeParams,
+            (uint)sizeof(SP_PROPCHANGE_PARAMS)))
         {
             return false;
         }
 
         if (!PInvoke.SetupDiCallClassInstaller(
-            Windows.Win32.Devices.DeviceAndDriverInstallation.DI_FUNCTION.DIF_PROPERTYCHANGE,
+            DI_FUNCTION.DIF_PROPERTYCHANGE,
             hDevInfo,
             &deviceInfoData))
         {

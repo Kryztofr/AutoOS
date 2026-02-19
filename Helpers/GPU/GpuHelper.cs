@@ -399,15 +399,25 @@ public static class GpuHelper
                 if (!instanceId.Contains(fragment, StringComparison.OrdinalIgnoreCase))
                     continue;
 
-                fixed (char* p = instanceId)
+                var propChangeParams = new SP_PROPCHANGE_PARAMS
                 {
-                    if (PInvoke.CM_Locate_DevNode(out uint devInst, new PWSTR(p), CM_LOCATE_DEVNODE_FLAGS.CM_LOCATE_DEVNODE_NORMAL) != CONFIGRET.CR_SUCCESS)
-                        continue;
+                    ClassInstallHeader = new SP_CLASSINSTALL_HEADER
+                    {
+                        cbSize = (uint)sizeof(SP_CLASSINSTALL_HEADER),
+                        InstallFunction = DI_FUNCTION.DIF_PROPERTYCHANGE
+                    },
+                    StateChange = enable ? SETUP_DI_STATE_CHANGE.DICS_ENABLE : SETUP_DI_STATE_CHANGE.DICS_DISABLE,
+                    Scope = SETUP_DI_PROPERTY_CHANGE_SCOPE.DICS_FLAG_GLOBAL,
+                    HwProfile = 0
+                };
 
-                    if (enable)
-                        PInvoke.CM_Enable_DevNode(devInst, 0);
-                    else
-                        PInvoke.CM_Disable_DevNode(devInst, 0);
+                if (PInvoke.SetupDiSetClassInstallParams(
+                    hDevInfo,
+                    &devInfo,
+                    (SP_CLASSINSTALL_HEADER*)&propChangeParams,
+                    (uint)sizeof(SP_PROPCHANGE_PARAMS)))
+                {
+                    PInvoke.SetupDiCallClassInstaller(DI_FUNCTION.DIF_PROPERTYCHANGE, hDevInfo, &devInfo);
                 }
             }
         }

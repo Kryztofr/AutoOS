@@ -196,7 +196,7 @@ namespace AutoOS.Views.Settings
 
             string previousTitle = string.Empty;
 
-            bool NVIDIA = (await GpuHelper.DetectGPUs()).Any(g => g.VendorId == "10de" && g.IsInstalled);
+            bool NVIDIA = (GpuHelper.GetGPUs()).Any(g => g.VendorId == "10de" && g.IsInstalled);
 
             var actions = new List<(string Title, Func<Task> Action, Func<bool> Condition)>
             {
@@ -383,10 +383,10 @@ namespace AutoOS.Views.Settings
 
             string motherboard = $"{manufacturer} {product}".Trim();
 
-            string ram = $"{(RamHelper.GetRamDetails() is var r ? $"{r.CapacityGB:N1} GB {r.DDRVersion} @ {r.MaxSpeedMHz} MHz" : "")}";
+            string ram = $"{(RamHelper.GetRam() is var r ? $"{r.CapacityGB:N1} GB {r.DDRVersion} @ {r.MaxSpeedMHz} MHz" : "")}";
 
             string gpus = string.Join(", ",
-                (await GpuHelper.DetectGPUs()).Select(g =>
+                (GpuHelper.GetGPUs()).Select(g =>
                     $"{g.DeviceName} (DeviceId: {g.DeviceId}, {g.CurrentVersion})"
                 )
             );

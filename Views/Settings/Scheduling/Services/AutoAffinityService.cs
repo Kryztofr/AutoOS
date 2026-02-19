@@ -2,6 +2,7 @@
 using AutoOS.Views.Settings.Scheduling.ViewModels;
 using Windows.Win32;
 using Windows.Win32.Devices.DeviceAndDriverInstallation;
+using AutoOS.Helpers.CPU;
 
 namespace AutoOS.Views.Settings.Scheduling.Services;
 
