@@ -1,5 +1,5 @@
-using System.Text;
 using Microsoft.Win32;
+using System.Text;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.Graphics.Gdi;
@@ -8,7 +8,8 @@ namespace AutoOS.Helpers.Monitor;
 
 public class MonitorInfo
 {
-    public string DeviceName { get; set; } = "";
+    public string DeviceName { get; set; } = ""; 
+    public string DevicePath { get; set; } = "";
     public (uint Width, uint Height) Resolution { get; set; }
     public uint RefreshRate { get; set; }
 }
@@ -24,7 +25,7 @@ public static unsafe partial class MonitorHelper
         DISPLAY_DEVICEW adapter = new() { cb = (uint)sizeof(DISPLAY_DEVICEW) };
         uint i = 0;
 
-        while (PInvoke.EnumDisplayDevices((string)null, i++, ref adapter, 0))
+        while (PInvoke.EnumDisplayDevices(null, i++, ref adapter, 0))
         {
             string adapterPath = adapter.DeviceName.ToString();
             DISPLAY_DEVICEW monitorDevice = new() { cb = (uint)sizeof(DISPLAY_DEVICEW) };
@@ -44,6 +45,7 @@ public static unsafe partial class MonitorHelper
                         monitors.Add(new MonitorInfo
                         {
                             DeviceName = hardwareNames.TryGetValue(hwId, out var name) ? name : deviceString,
+                            DevicePath = adapterPath,
                             Resolution = (dm.dmPelsWidth, dm.dmPelsHeight),
                             RefreshRate = dm.dmDisplayFrequency
                         });
@@ -52,42 +54,6 @@ public static unsafe partial class MonitorHelper
             }
         }
         return monitors;
-    }
-
-    public static void SetHighestRefreshRates()
-    {
-        DISPLAY_DEVICEW adapter = new() { cb = (uint)sizeof(DISPLAY_DEVICEW) };
-        uint i = 0;
-
-        while (PInvoke.EnumDisplayDevices((string)null, i++, ref adapter, 0))
-        {
-            string adapterPath = adapter.DeviceName.ToString();
-            DEVMODEW current = new() { dmSize = (ushort)sizeof(DEVMODEW) };
-
-            if (!PInvoke.EnumDisplaySettings(adapterPath, ENUM_DISPLAY_SETTINGS_MODE.ENUM_CURRENT_SETTINGS, ref current)) continue;
-
-            DEVMODEW best = current;
-            for (int j = 0; ; j++)
-            {
-                DEVMODEW test = new() { dmSize = (ushort)sizeof(DEVMODEW) };
-                if (!PInvoke.EnumDisplaySettings(adapterPath, (ENUM_DISPLAY_SETTINGS_MODE)j, ref test)) break;
-
-                if (test.dmPelsWidth == current.dmPelsWidth &&
-                    test.dmPelsHeight == current.dmPelsHeight &&
-                    test.dmDisplayFrequency > best.dmDisplayFrequency)
-                {
-                    best = test;
-                }
-            }
-
-            if (best.dmDisplayFrequency > current.dmDisplayFrequency)
-            {
-                fixed (char* pAdapterPath = adapterPath)
-                {
-                    PInvoke.ChangeDisplaySettingsEx(pAdapterPath, &best, HWND.Null, CDS_TYPE.CDS_UPDATEREGISTRY | CDS_TYPE.CDS_GLOBAL, null);
-                }
-            }
-        }
     }
 
     private static Dictionary<string, string> GetModelNamesFromRegistry()
@@ -136,5 +102,41 @@ public static unsafe partial class MonitorHelper
             }
         }
         return "";
+    }
+
+    public static void SetHighestRefreshRates()
+    {
+        DISPLAY_DEVICEW adapter = new() { cb = (uint)sizeof(DISPLAY_DEVICEW) };
+        uint i = 0;
+
+        while (PInvoke.EnumDisplayDevices((string)null, i++, ref adapter, 0))
+        {
+            string adapterPath = adapter.DeviceName.ToString();
+            DEVMODEW current = new() { dmSize = (ushort)sizeof(DEVMODEW) };
+
+            if (!PInvoke.EnumDisplaySettings(adapterPath, ENUM_DISPLAY_SETTINGS_MODE.ENUM_CURRENT_SETTINGS, ref current)) continue;
+
+            DEVMODEW best = current;
+            for (int j = 0; ; j++)
+            {
+                DEVMODEW test = new() { dmSize = (ushort)sizeof(DEVMODEW) };
+                if (!PInvoke.EnumDisplaySettings(adapterPath, (ENUM_DISPLAY_SETTINGS_MODE)j, ref test)) break;
+
+                if (test.dmPelsWidth == current.dmPelsWidth &&
+                    test.dmPelsHeight == current.dmPelsHeight &&
+                    test.dmDisplayFrequency > best.dmDisplayFrequency)
+                {
+                    best = test;
+                }
+            }
+
+            if (best.dmDisplayFrequency > current.dmDisplayFrequency)
+            {
+                fixed (char* pAdapterPath = adapterPath)
+                {
+                    PInvoke.ChangeDisplaySettingsEx(pAdapterPath, &best, HWND.Null, CDS_TYPE.CDS_UPDATEREGISTRY | CDS_TYPE.CDS_GLOBAL, null);
+                }
+            }
+        }
     }
 }

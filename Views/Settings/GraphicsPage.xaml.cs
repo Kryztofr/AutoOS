@@ -522,7 +522,7 @@ public sealed partial class GraphicsPage : Page
         });
 
         // toggle hdmi/dp audio
-        GpuHelper.ToggleHdmiDpAudio(gpu.PnPDeviceId, toggleSwitch.IsOn);
+        GpuHelper.ToggleHdmiDpAudio(gpu, toggleSwitch.IsOn);
         
         // delay
         await Task.Delay(500);

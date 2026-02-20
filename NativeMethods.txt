@@ -42,10 +42,8 @@ CM_Enable_DevNode
 CM_Disable_DevNode
 CM_Locate_DevNode
 CM_Get_DevNode_Status
-DEVINST
 CONFIGRET
 CM_LOCATE_DEVNODE_FLAGS
-SPDRP_
 
 EnumDisplayDevices
 EnumDisplaySettings
@@ -86,7 +84,6 @@ GetSystemFirmwareTable
 FIRMWARE_TABLE_PROVIDER
 GetSystemDEPPolicy
 OpenProcess
-GetProcesses
 NtQueryInformationProcess
 ReadProcessMemory
 PROCESS_ACCESS_RIGHTS

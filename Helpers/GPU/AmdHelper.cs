@@ -237,7 +237,7 @@ public static class AmdHelper
             ("Disabling unnecessary services", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"cmd /c reg add ""HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\amdlog"" /v Start /t REG_DWORD /d 4 /f & sc stop ""amdlog"""), null),
 
             // disable high-definition multimedia interface (hdmi)/displayport (dp) audio
-            ("Disabling High-Definition Multimedia Interface (HDMI)/DisplayPort (DP) Audio", async () => GpuHelper.ToggleHdmiDpAudio(gpu.PnPDeviceId, false), () => gpu.HDMIDPAudio == false)
+            ("Disabling High-Definition Multimedia Interface (HDMI)/DisplayPort (DP) Audio", async () => GpuHelper.ToggleHdmiDpAudio(gpu, false), () => gpu.HDMIDPAudio == false)
         };
 
         return actions;

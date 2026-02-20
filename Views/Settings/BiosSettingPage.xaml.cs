@@ -1,7 +1,4 @@
-﻿using AutoOS.Helpers.GPU;
-using AutoOS.Helpers.Monitor;
-using AutoOS.Helpers.Picker;
-using AutoOS.Helpers.RAM;
+﻿using AutoOS.Helpers.Picker;
 using AutoOS.Views.Installer.Actions;
 using AutoOS.Views.Settings.BIOS;
 using Microsoft.Win32;
@@ -9,7 +6,6 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using System.Text.Json;
 
 namespace AutoOS.Views.Settings;
 

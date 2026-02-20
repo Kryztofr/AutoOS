@@ -249,7 +249,7 @@ public static class ProcessActions
 
         string ram = $"{(RamHelper.GetRam() is var r ? $"{r.CapacityGB:N1} GB {r.DDRVersion} @ {r.MaxSpeedMHz} MHz" : "")}";
 
-        string gpus = string.Join(", ", (GpuHelper.GetGPUs()).Select(g => $"{g.DeviceName} (DeviceId: {g.DeviceId}, {g.CurrentVersion})"));
+        string gpus = string.Join(", ", (GpuHelper.GetGPUs()).Select(g => $"{g.DeviceName} (DeviceId: {g.DeviceId}, Install: {g.Install}, {g.CurrentVersion})"));
 
         string monitors = string.Join(", ", MonitorHelper.GetMonitors().Select(m => $"{m.DeviceName} ({m.Resolution.Width}x{m.Resolution.Height} @ {m.RefreshRate} Hz)"));
 
@@ -325,7 +325,7 @@ public static class ProcessActions
 
         string ram = $"{(RamHelper.GetRam() is var r ? $"{r.CapacityGB:N1} GB {r.DDRVersion} @ {r.MaxSpeedMHz} MHz" : "")}";
 
-        string gpus = string.Join(", ", (GpuHelper.GetGPUs()).Select(g => $"{g.DeviceName} (DeviceId: {g.DeviceId}, {g.CurrentVersion})"));
+        string gpus = string.Join(", ", (GpuHelper.GetGPUs()).Select(g => $"{g.DeviceName} (DeviceId: {g.DeviceId}, Install: {g.Install}, {g.CurrentVersion})"));
 
         string monitors = string.Join(", ", MonitorHelper.GetMonitors().Select(m => $"{m.DeviceName} ({m.Resolution.Width}x{m.Resolution.Height} @ {m.RefreshRate} Hz)"));
 

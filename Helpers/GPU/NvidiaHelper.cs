@@ -622,7 +622,7 @@ namespace AutoOS.Helpers.GPU
                 ("Disabling High-Bandwidth Digital Content Protection (HDCP)", async () => await ProcessActions.RunNsudo("TrustedInstaller", $@"reg add ""{gpu.RegistryPath}"" /v ""RmSkipHdcp22Init"" /t REG_DWORD /d 1 /f"), null),
 
                 // disable high-definition multimedia interface (hdmi)/displayport (dp) audio
-                ("Disabling High-Definition Multimedia Interface (HDMI)/DisplayPort (DP) Audio", async () => GpuHelper.ToggleHdmiDpAudio(gpu.PnPDeviceId, false), () => gpu.HDMIDPAudio == false)
+                ("Disabling High-Definition Multimedia Interface (HDMI)/DisplayPort (DP) Audio", async () => GpuHelper.ToggleHdmiDpAudio(gpu, false), () => gpu.HDMIDPAudio == false)
             };
 
             return actions;
