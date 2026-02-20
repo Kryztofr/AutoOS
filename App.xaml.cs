@@ -117,7 +117,7 @@ namespace AutoOS
                 _ = ShowCrashDialogAsync(e.Exception);
         }
 
-        private static async Task ShowCrashDialogAsync(Exception ex)
+        internal static async Task ShowCrashDialogAsync(Exception ex)
         {
             await ProcessActions.LogError(ex);
             await MainWindow.DispatcherQueue.EnqueueAsync(() =>
@@ -125,7 +125,7 @@ namespace AutoOS
                 var dialog = new ContentDialog
                 {
                     Title = "Unexpected Error",
-                    Content = $"AutoOS encountered an error:\n{ex.Message}",
+                    Content = ex.Message,
                     CloseButtonText = "OK",
                     DefaultButton = ContentDialogButton.Close,
                     XamlRoot = MainWindow.Content.XamlRoot

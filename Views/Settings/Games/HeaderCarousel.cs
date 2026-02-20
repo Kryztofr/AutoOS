@@ -1787,13 +1787,17 @@ public partial class HeaderCarousel : ItemsControl
                 catch { }
             }
 
-            Process.Start(new ProcessStartInfo
-            {
-                FileName = @"C:\Program Files\Everything 1.5a\Everything.exe",
-                WindowStyle = ProcessWindowStyle.Hidden,
-                Arguments = "-startup",
-            });
+            string filePath = @"C:\Program Files\Everything 1.5a\Everything.exe";
 
+            if (File.Exists(filePath))
+            {
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = filePath,
+                    WindowStyle = ProcessWindowStyle.Hidden,
+                    Arguments = "-startup",
+                });
+            }
         });
 
         // re-enable hittestvisible

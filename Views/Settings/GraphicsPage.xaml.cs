@@ -579,12 +579,37 @@ public sealed partial class GraphicsPage : Page
         picker.FileTypeChoices.Add("MSI Afterburner profile", ["*.cfg"]);
         var file = await picker.PickSingleFileAsync();
 
-        if (file != null)
+        if (file?.Path != null)
         {
             string fileContent = await FileIO.ReadTextAsync(file);
 
             if (fileContent.Contains("[Startup]"))
             {
+                if (file.Path.Contains(@"C:\Program Files (x86)\MSI Afterburner\Profiles", StringComparison.OrdinalIgnoreCase))
+                {
+                    // re-enable the button
+                    senderButton.IsEnabled = true;
+
+                    // remove infobar
+                    MsiAfterburnerInfo.Children.Clear();
+
+                    // add infobar
+                    MsiAfterburnerInfo.Children.Add(new InfoBar
+                    {
+                        Title = "The selected MSI Afterburner profile is already imported.",
+                        IsClosable = false,
+                        IsOpen = true,
+                        Severity = InfoBarSeverity.Error
+                    });
+
+                    // delay
+                    await Task.Delay(2000);
+
+                    // remove infobar
+                    MsiAfterburnerInfo.Children.Clear();
+                    return;
+                }
+
                 // re-enable the button
                 senderButton.IsEnabled = true;
 
@@ -655,6 +680,7 @@ public sealed partial class GraphicsPage : Page
 
                 // remove infobar
                 MsiAfterburnerInfo.Children.Clear();
+                return;
             }
         }
         else
