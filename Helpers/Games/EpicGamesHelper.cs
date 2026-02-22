@@ -518,18 +518,24 @@ public static class EpicGamesHelper
 
                     // return if not a game
                     if (itemJson?["bIsApplication"]?.GetValue<bool>() != true) return;
+                    string catalogItemId = itemJson["MainGameCatalogItemId"]?.GetValue<string>();
+                    string catalogNamespace = itemJson["MainGameCatalogNamespace"]?.GetValue<string>();
 
                     // return if not in library
-                    if (!libraryData.Any(x => x?["catalogItemId"]?.ToString() == itemJson["MainGameCatalogItemId"]?.GetValue<string>()))
+                    if (!libraryData.Any(x => x?["catalogItemId"]?.ToString() == catalogItemId))
                         return;
 
                     // get offer id
-                    var itemOfferData = JsonNode.Parse(await httpClient.GetStringAsync($"https://api.egdata.app/items/{itemJson["MainGameCatalogItemId"]?.GetValue<string>()}/offer", token).ConfigureAwait(false));
+                    var itemOfferData = JsonNode.Parse(await httpClient.GetStringAsync($"https://api.egdata.app/items/{catalogItemId}/offer", token).ConfigureAwait(false));
                     var offerId = itemOfferData?["id"]?.GetValue<string>();
 
-                    if (itemJson["MainGameCatalogItemId"]?.GetValue<string>() == "4fe75bbc5a674f4f9b356b5c90567da5")
+                    if (catalogItemId == "4fe75bbc5a674f4f9b356b5c90567da5")
                     {
                         offerId = "09176f4ff7564bbbb499bbe20bd6348f";
+                    }
+                    else if (catalogItemId == "d398f3033c5e4b90b09dcbb4b962be80")
+                    {
+                        offerId = "e880a70ecac84bc185fea9d354a157cc";
                     }
 
                     // get offer id
@@ -552,7 +558,7 @@ public static class EpicGamesHelper
                     // get metadata
                     //var itemTask = httpClient.GetStringAsync($"https://api.egdata.app/items/{itemJson["MainGameCatalogItemId"]?.GetValue<string>()}", token);
                     //var offerTask = httpClient.GetStringAsync($"https://api.egdata.app/offers/{offerId}", token);
-                    var manifestTask = loginClient.GetStringAsync($"https://catalog-public-service-prod06.ol.epicgames.com/catalog/api/shared/namespace/{itemJson["MainGameCatalogNamespace"]?.GetValue<string>()}/bulk/items?id={itemJson["CatalogItemId"]?.GetValue<string>()}&includeDLCDetails=false&includeMainGameDetails=true&country=US&locale=en-US", token);
+                    var manifestTask = loginClient.GetStringAsync($"https://catalog-public-service-prod06.ol.epicgames.com/catalog/api/shared/namespace/{catalogNamespace}/bulk/items?id={catalogItemId}&includeDLCDetails=false&includeMainGameDetails=true&country=US&locale=en-US", token);
                     var offerTask = loginClient.GetStringAsync($"https://catalog-public-service-prod06.ol.epicgames.com/catalog/api/shared/bulk/offers?id={offerId}&returnItemDetails=true&country=US&locale=en-US", token);
                     var ratingTask = httpClient.GetStringAsync($"https://api.egdata.app/offers/{offerId}/polls", token);
                     var genresTask = httpClient.GetStringAsync($"https://api.egdata.app/offers/{offerId}/genres", token);
@@ -596,15 +602,15 @@ public static class EpicGamesHelper
 
                     if (offerData[offerId]?["offerType"]?.GetValue<string>() != "BASE_GAME")
                     {
-                        description = manifestData[itemJson["MainGameCatalogItemId"]?.GetValue<string>()]?["description"]?.GetValue<string>();
+                        description = manifestData[catalogItemId]?["description"]?.GetValue<string>();
                     }
 
                     // get key images
-                    var keyImages = manifestData[itemJson["MainGameCatalogItemId"]?.GetValue<string>()]?["keyImages"]?.AsArray() ?? [];
+                    var keyImages = manifestData[catalogItemId]?["keyImages"]?.AsArray() ?? [];
 
                     // get artifactid
                     //string artifactId = itemData?["releaseInfo"]?[0]?["appId"]?.ToString();
-                    string artifactId = manifestData[itemJson["MainGameCatalogItemId"]?.GetValue<string>()]?["releaseInfo"]?[0]?["appId"]?.ToString();
+                    string artifactId = manifestData[catalogItemId]?["releaseInfo"]?[0]?["appId"]?.ToString();
 
                     // read playtime json data
                     var totalSeconds = playTimeData?.GetValueOrDefault(artifactId) ?? 0;
@@ -627,8 +633,8 @@ public static class EpicGamesHelper
                         GamesPage.Instance.Games.Items.Add(new Views.Settings.Games.HeaderCarouselItem
                         {
                             Launcher = "Epic Games",
-                            CatalogNamespace = itemJson["MainGameCatalogNamespace"]?.GetValue<string>(),
-                            CatalogItemId = itemJson["MainGameCatalogItemId"]?.GetValue<string>(),
+                            CatalogNamespace = catalogNamespace,
+                            CatalogItemId = catalogItemId,
                             AppName = itemJson["MainGameAppName"]?.GetValue<string>(),
                             InstallLocation = itemJson["InstallLocation"]?.GetValue<string>(),
                             LaunchCommand = itemJson["LaunchCommand"]?.GetValue<string>(),
