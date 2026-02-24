@@ -239,7 +239,7 @@ public sealed partial class GraphicsPage : Page
             {
                 await Task.Delay(500);
 
-                var currentVersion = gpu.CurrentVersion.Replace("Current Version:", "", StringComparison.OrdinalIgnoreCase);
+                var currentVersion = gpu.CurrentVersion.Replace("Current Version: ", "", StringComparison.OrdinalIgnoreCase);
 
                 if (string.Compare(newestVersion, currentVersion, StringComparison.Ordinal) > 0)
                 {

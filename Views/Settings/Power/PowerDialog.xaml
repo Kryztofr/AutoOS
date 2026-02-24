@@ -29,10 +29,8 @@
                               Visibility="{x:Bind State.IsOption, Converter={StaticResource BoolToVisibilityConverter}}">
                         <ComboBox.ItemTemplate>
                             <DataTemplate x:DataType="local:PowerSettingValueInfo">
-                                <TextBlock Text="{x:Bind FriendlyName}">
-                                    <ToolTipService.ToolTip>
-                                        <TextBlock Text="{x:Bind Description}" />
-                                    </ToolTipService.ToolTip>
+                                <TextBlock Text="{x:Bind FriendlyName}"
+                                           ToolTipService.ToolTip="{x:Bind Description}">
                                 </TextBlock>
                             </DataTemplate>
                         </ComboBox.ItemTemplate>
@@ -40,10 +38,8 @@
                     <!--  Value  -->
                     <TextBox HorizontalAlignment="Stretch"
                              Text="{x:Bind State.AcValueText, Mode=TwoWay}"
+                             ToolTipService.ToolTip="{x:Bind State.ValueToolTip}"
                              Visibility="{x:Bind State.IsValue, Converter={StaticResource BoolToVisibilityConverter}}">
-                        <ToolTipService.ToolTip>
-                            <TextBlock Text="{x:Bind State.ValueToolTip}" />
-                        </ToolTipService.ToolTip>
                     </TextBox>
                 </Grid>
             </Grid>
@@ -63,10 +59,8 @@
                               Visibility="{x:Bind State.IsOption, Converter={StaticResource BoolToVisibilityConverter}}">
                         <ComboBox.ItemTemplate>
                             <DataTemplate x:DataType="local:PowerSettingValueInfo">
-                                <TextBlock Text="{x:Bind FriendlyName}">
-                                    <ToolTipService.ToolTip>
-                                        <TextBlock Text="{x:Bind Description}" />
-                                    </ToolTipService.ToolTip>
+                                <TextBlock Text="{x:Bind FriendlyName}"
+                                           ToolTipService.ToolTip="{x:Bind Description}">
                                 </TextBlock>
                             </DataTemplate>
                         </ComboBox.ItemTemplate>
@@ -74,10 +68,8 @@
                     <!--  Value  -->
                     <TextBox HorizontalAlignment="Stretch"
                              Text="{x:Bind State.DcValueText, Mode=TwoWay}"
+                             ToolTipService.ToolTip="{x:Bind State.ValueToolTip}"
                              Visibility="{x:Bind State.IsValue, Converter={StaticResource BoolToVisibilityConverter}}">
-                        <ToolTipService.ToolTip>
-                            <TextBlock Text="{x:Bind State.ValueToolTip}" />
-                        </ToolTipService.ToolTip>
                     </TextBox>
                 </Grid>
             </Grid>

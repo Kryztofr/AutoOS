@@ -45,10 +45,8 @@
                       x:DataType="local:PowerPlan">
             <TextBlock Text="{x:Bind Name}"
                        TextTrimming="CharacterEllipsis"
-                       TextWrapping="NoWrap">
-                <ToolTipService.ToolTip>
-                    <TextBlock Text="{x:Bind Description}" />
-                </ToolTipService.ToolTip>
+                       TextWrapping="NoWrap"
+                       ToolTipService.ToolTip="{x:Bind Description}">
             </TextBlock>
         </DataTemplate>
         <DataTemplate x:Key="CompareSubgroupTemplate"
