@@ -191,6 +191,10 @@ public static class SteamHelper
                     //int totalPositive = reviewData.GetProperty("total_positive").GetInt32();
                     //int totalNegative = reviewData.GetProperty("total_negative").GetInt32();
 
+                    // skip if coming soon
+                    bool comingSoon = gameData.GetProperty("data").GetProperty("release_date").GetProperty("coming_soon").GetBoolean();
+                    if (comingSoon) continue;
+
                     // get age rating
                     string rating = null;
                     string descriptors = null;
