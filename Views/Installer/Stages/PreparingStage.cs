@@ -143,6 +143,11 @@ public static class PreparingStage
                 CreateNoWindow = true
             }).StandardOutput.ReadToEnd();
 
+            if (output.Contains("SSD"))
+            {
+                SSD = true;
+            }
+
             string sourcePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Applications", "Chiptool");
             string destinationPath = Path.Combine(PathHelper.GetAppDataFolderPath(), "Chiptool");
 
@@ -161,11 +166,6 @@ public static class PreparingStage
                 CreateNoWindow = true,
                 WindowStyle = ProcessWindowStyle.Hidden
             });
-
-            if (output.Contains("SSD"))
-            {
-                SSD = true;
-            }
 
             ScheduleMode = localSettings.Values["ScheduleMode"]?.ToString();
             LightTime = localSettings.Values["LightTime"]?.ToString();
@@ -245,7 +245,7 @@ public static class PreparingStage
             ProcessMitigations = (localSettings.Values["ProcessMitigations"]?.ToString() == "1");
 
             var cpuSetsInfo = CpuDetectionService.GetCpuSets();
-            var (pCores, eCores) = CpuDetectionService.GroupCpuSetsByEfficiencyClass(cpuSetsInfo);
+            var (pCores, _) = CpuDetectionService.GroupCpuSetsByEfficiencyClass(cpuSetsInfo);
             PCores = pCores.Count;
             HyperThreading = cpuSetsInfo.HyperThreading;
 
@@ -283,7 +283,7 @@ public static class PreparingStage
                 {
                     string jsonContent = await File.ReadAllTextAsync(file.FullName);
                     var jsonObject = JsonNode.Parse(jsonContent);
-                    var installationList = jsonObject?["InstallationList"] as JsonArray;
+                    JsonArray installationList = jsonObject?["InstallationList"] as JsonArray;
                     return installationList != null && installationList.Count > 0;
                 })
                 .Select(t => t.Result)
@@ -355,7 +355,6 @@ public static class PreparingStage
                 string serviceName = ndiKey?.GetValue("Service")?.ToString()?.TrimEnd('.');
                 using var serviceKey = Registry.LocalMachine.OpenSubKey($@"SYSTEM\CurrentControlSet\Services\{serviceName}");
                 string imagePath = serviceKey?.GetValue("ImagePath") as string;
-
                 string systemRoot = Environment.GetEnvironmentVariable("SystemRoot")!;
                 string resolved = Environment.ExpandEnvironmentVariables(imagePath.StartsWith(@"\??\") ? imagePath[4..] : imagePath);
 

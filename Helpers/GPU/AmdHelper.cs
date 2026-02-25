@@ -16,6 +16,7 @@ public static class AmdHelper
         var endpoints = new[]
         {
             "https://www2.ati.com/drivers/installer/json/DrvDldDetails_Consumer_Legacy_Win10.json",
+            "https://www2.ati.com/drivers/installer/json/DrvDldDetails_Consumer_WHQL_Win11.json",
             "https://www2.ati.com/drivers/installer/json/DrvDldDetails_Consumer_WHQL_Win11_p.json",
             "https://www2.ati.com/drivers/installer/json/drvdlddetails_ws_maintenance_win11.json",
             "https://www2.ati.com/drivers/installer/json/DrvDldDetails_WS_Legacy_Win10.json"
