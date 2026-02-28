@@ -1,6 +1,6 @@
-﻿using Microsoft.Win32;
+﻿using AutoOS.Helpers.Device;
+using Microsoft.Win32;
 using System.Diagnostics;
-using System.Management;
 using Windows.Storage;
 
 namespace AutoOS.Views.Settings;
@@ -101,7 +101,7 @@ public sealed partial class DevicesPage : Page
             {
                 using var key = Registry.LocalMachine.OpenSubKey($@"SYSTEM\CurrentControlSet\Services\{service}", writable: true);
                 if (key == null) continue;
-                
+
                 Registry.SetValue($@"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\{service}", "Start", Bluetooth.IsOn ? group.Item2 : 4);
             }
         }
@@ -148,22 +148,10 @@ public sealed partial class DevicesPage : Page
         }
     }
 
-    private async void GetHIDState()
+    private void GetHIDState()
     {
-        HID.IsOn = await Task.Run(() =>
-        {
-            return new ManagementObjectSearcher("SELECT * FROM Win32_PnPEntity WHERE Description LIKE '%HID%'")
-                .Get()
-                .Cast<ManagementObject>()
-                .Any(device => device["Status"]?.ToString() == "OK" &&
-                new[] {
-                    "HID-compliant consumer control device",
-                    "HID-compliant device",
-                    "HID-compliant game controller",
-                    "HID-compliant system controller",
-                    "HID-compliant vendor-defined device"
-                }.Contains(device["Description"]?.ToString()));
-        });
+        var devices = DeviceHelper.GetDevices(DeviceType.HID);
+        HID.IsOn = devices.Any(device => device.State == DeviceState.Enabled && (device.DeviceDescription?.Contains("HID-compliant") ?? false));
 
         isInitializingHIDState = false;
     }
@@ -193,21 +181,18 @@ public sealed partial class DevicesPage : Page
         // toggle hid devices
         bool isOn = HID.IsOn;
 
-        await Task.Run(() =>
-        {
-            var process = new Process
-            {
-                StartInfo = new ProcessStartInfo
-                {
-                    FileName = "powershell.exe",
-                    Arguments = @$"-ExecutionPolicy Bypass -Command ""Get-PnpDevice -Class HIDClass | Where-Object {{ $_.FriendlyName -match 'HID-compliant (consumer control device|device|game controller|system controller|vendor-defined device)' -and $_.FriendlyName -notmatch 'Mouse|Keyboard' }} | {(isOn ? "Enable" : "Disable")}-PnpDevice -Confirm:$false""",
-                    CreateNoWindow = true
-                }
-            };
+        var devices = DeviceHelper.GetDevices(DeviceType.HID);
 
-            process.Start();
-            process.WaitForExit();
-        });
+        foreach (var device in devices)
+        {
+            if (device.DeviceDescription.Contains("HID-compliant"))
+            {
+                await Task.Run(() => DeviceHelper.SetDeviceState(device, isOn));
+            }
+        }
+
+        // delay
+        await Task.Delay(500);
 
         // re-enable hittestvisible
         HID.IsHitTestVisible = true;

@@ -1,7 +1,7 @@
 ﻿using AutoOS.Views.Installer.Actions;
 using Microsoft.UI.Xaml.Media;
 using WinRT.Interop;
-using AutoOS.Views.Settings.Scheduling.Services;
+using AutoOS.Helpers.Scheduling;
 
 namespace AutoOS.Views.Installer.Stages;
 
@@ -22,7 +22,7 @@ public static class SchedulingStage
         {
             // optimize affinities
             ("Optimizing Affinities", async () => await Task.Delay(1000), () => PCores >= 4),
-            ("Optimizing Affinities", async () => await AutoAffinityService.ApplyAutoAffinities(), () => PCores >= 4),
+            ("Optimizing Affinities", async () => await SchedulingHelper.OptimizeAffinities(), () => PCores >= 4),
             ("Optimizing Affinities", async () => await Task.Delay(2000), () => PCores >= 4),
 
             // disable interrupt steering

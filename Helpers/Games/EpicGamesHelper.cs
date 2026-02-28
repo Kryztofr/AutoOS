@@ -519,7 +519,7 @@ public static class EpicGamesHelper
                     // return if not a game
                     if (itemJson?["bIsApplication"]?.GetValue<bool>() != true) return;
                     string catalogItemId = itemJson["MainGameCatalogItemId"]?.GetValue<string>();
-                    string catalogNamespace = itemJson["MainGameCatalogNamespace"]?.GetValue<string>();
+                    string catalogNamespace = itemJson["CatalogNamespace"]?.GetValue<string>();
 
                     // return if not in library
                     if (!libraryData.Any(x => x?["catalogItemId"]?.ToString() == catalogItemId))
@@ -533,13 +533,17 @@ public static class EpicGamesHelper
                     {
                         offerId = "09176f4ff7564bbbb499bbe20bd6348f";
                     }
+                    else if (catalogItemId == "1e8bda5cfbb641b9a9aea8bd62285f73")
+                    {
+                        offerId = "38a7aa439bad42fa8c708bf80e47ed8b";
+                    }
                     else if (catalogItemId == "d398f3033c5e4b90b09dcbb4b962be80")
                     {
                         offerId = "e880a70ecac84bc185fea9d354a157cc";
                     }
 
                     // get offer id
-                    //var itemOfferTask = loginClient.PostAsync("https://graphql.unrealengine.com/ue/graphql", new StringContent(JsonSerializer.Serialize(new { query = itemOfferQuery, variables = new { allowCountries = "US", country = "US", locale = "en-US", count = 1, withPrice = true, withPromotions = true, sortBy = "releaseDate", sortDir = "DESC", @namespace = itemJson["MainGameCatalogNamespace"]?.GetValue<string>(), category = "games/edition/base" } }), Encoding.UTF8, "application/json"), token);
+                    //var itemOfferTask = loginClient.PostAsync("https://graphql.unrealengine.com/ue/graphql", new StringContent(JsonSerializer.Serialize(new { query = itemOfferQuery, variables = new { allowCountries = "US", country = "US", locale = "en-US", count = 1, withPrice = true, withPromotions = true, sortBy = "releaseDate", sortDir = "DESC", @namespace = itemJson["CatalogNamespace"]?.GetValue<string>(), category = "games/edition/base" } }), Encoding.UTF8, "application/json"), token);
 
                     //var itemOfferData = JsonNode.Parse(await (await itemOfferTask.ConfigureAwait(false)).Content.ReadAsStringAsync(token).ConfigureAwait(false));
 

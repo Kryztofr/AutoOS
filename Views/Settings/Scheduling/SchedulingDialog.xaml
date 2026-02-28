@@ -10,9 +10,10 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <TextBlock Margin="0,0,0,24"
-                   Style="{StaticResource TitleTextBlockStyle}"
-                   Text="{x:Bind Title, Mode=OneWay}" />
+        <TextBlock Margin="0,-8,0,24"
+                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                   Style="{StaticResource BodyTextBlockStyle}"
+                   Text="{x:Bind Location, Mode=OneWay}" />
         <ScrollViewer Grid.Row="1"
                       HorizontalAlignment="Stretch"
                       VerticalScrollBarVisibility="Auto"
@@ -29,24 +30,20 @@
                         <StackPanel Spacing="12">
                             <CheckBox Content="MSI Mode:"
                                       IsChecked="{x:Bind ViewModel.MsiSupported, Mode=TwoWay}" />
-
                             <Grid ColumnSpacing="8">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto" />
                                     <ColumnDefinition Width="*" />
                                 </Grid.ColumnDefinitions>
-
                                 <TextBlock Grid.Column="0"
                                            VerticalAlignment="Center"
                                            Text="MSI Limit:" />
-
                                 <NumberBox Grid.Column="1"
                                            IsEnabled="{x:Bind ViewModel.IsMsiLimitEnabled, Mode=OneWay}"
-                                           Maximum="{x:Bind ViewModel.EffectiveMaxMSILimit, Mode=OneWay}"
+                                           Maximum="{x:Bind ViewModel.EffectiveMaxMsiLimit, Mode=OneWay}"
                                            Minimum="0"
                                            SpinButtonPlacementMode="Inline"
-                                           ValueChanged="MessageNumberLimit_ValueChanged"
-                                           Value="{x:Bind ViewModel.MessageNumberLimit, Mode=TwoWay}" />
+                                           Value="{x:Bind ViewModel.MsiLimit, Mode=TwoWay}" />
                             </Grid>
                         </StackPanel>
                     </dev:Card>
@@ -63,7 +60,6 @@
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
-
                             <TextBlock Grid.Row="0"
                                        Grid.Column="0"
                                        VerticalAlignment="Center"

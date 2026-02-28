@@ -1,16 +1,15 @@
-﻿using AutoOS.Helpers.GPU;
-using AutoOS.Views.Settings.Scheduling.Services;
+﻿using AutoOS.Helpers.CPU;
+using AutoOS.Helpers.Device;
+using AutoOS.Helpers.GPU;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.Win32;
 using System.Diagnostics;
-using System.Management;
-using System.Text;
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using ValveKeyValue;
 using Windows.Storage;
 using WinRT.Interop;
-using System.Text.Json;
 
 namespace AutoOS.Views.Installer.Stages;
 
@@ -122,17 +121,16 @@ public static class PreparingStage
         InstallPage.ProgressRingControl.Foreground = (Brush)Application.Current.Resources["SystemFillColorCautionBrush"];
         localSettings.Values["Install_Start"] = DateTimeOffset.Now.ToString("O");
 
-        await Task.Run(() =>
+        await Task.Run(async () =>
         {
-            string cpuVendor = (string)Registry.GetValue(@"HKEY_LOCAL_MACHINE\HARDWARE\DESCRIPTION\System\CentralProcessor\0", "VendorIdentifier", null);
+            using var cpuKey = Registry.LocalMachine.OpenSubKey(@"HARDWARE\DESCRIPTION\System\CentralProcessor\0", writable: false);
 
-            if (!string.IsNullOrEmpty(cpuVendor))
-            {
-                if (cpuVendor.Contains("GenuineIntel"))
-                    INTELCPU = true;
-                else if (cpuVendor.Contains("AuthenticAMD"))
-                    AMDCPU = true;
-            }
+            var cpuVendor = cpuKey.GetValue("VendorIdentifier") as string;
+
+            if (cpuVendor.Contains("GenuineIntel"))
+                INTELCPU = true;
+            else if (cpuVendor.Contains("AuthenticAMD"))
+                AMDCPU = true;
 
             var output = Process.Start(new ProcessStartInfo
             {
@@ -244,8 +242,8 @@ public static class PreparingStage
             SpectreMeltdownMitigations = (localSettings.Values["SpectreMeltdownMitigations"]?.ToString() == "1");
             ProcessMitigations = (localSettings.Values["ProcessMitigations"]?.ToString() == "1");
 
-            var cpuSetsInfo = CpuDetectionService.GetCpuSets();
-            var (pCores, _) = CpuDetectionService.GroupCpuSetsByEfficiencyClass(cpuSetsInfo);
+            var cpuSetsInfo = CpuHelper.GetCpuSets();
+            var (pCores, _) = CpuHelper.GroupCpuSetsByEfficiencyClass(cpuSetsInfo);
             PCores = pCores.Count;
             HyperThreading = cpuSetsInfo.HyperThreading;
 
@@ -303,73 +301,10 @@ public static class PreparingStage
                 })
                 .FirstOrDefault(false);
 
-            var adapters = new ManagementObjectSearcher("SELECT * FROM Win32_NetworkAdapter").Get().Cast<ManagementObject>().ToArray();
-            var activeAdapters = adapters.Where(a => (ushort?)a["NetConnectionStatus"] == 2).ToArray();
-
-            foreach (var adapter in adapters)
-            {
-                string pnpDeviceId = adapter["PNPDeviceID"]?.ToString();
-                if (string.IsNullOrEmpty(pnpDeviceId))
-                    continue;
-
-                using var key = Registry.LocalMachine.OpenSubKey($@"SYSTEM\CurrentControlSet\Enum\{pnpDeviceId}");
-                string driver = key?.GetValue("Driver") as string;
-                using var classKey = Registry.LocalMachine.OpenSubKey($@"SYSTEM\CurrentControlSet\Control\Class\{driver}");
-
-                var physicalMediaType = classKey?.GetValue("*PhysicalMediaType")?.ToString();
-
-                if (physicalMediaType == "9")
-                {
-                    Wifi = true;
-                    break;
-                }
-            }
-
-            foreach (var adapter in adapters)
-            {
-                string pnpDeviceId = adapter["PNPDeviceID"]?.ToString();
-                if (string.IsNullOrEmpty(pnpDeviceId))
-                    continue;
-
-                using var key = Registry.LocalMachine.OpenSubKey($@"SYSTEM\CurrentControlSet\Enum\{pnpDeviceId}");
-                string driver = key?.GetValue("Driver") as string;
-                using var classKey = Registry.LocalMachine.OpenSubKey($@"SYSTEM\CurrentControlSet\Control\Class\{driver}");
-
-                if (classKey?.GetValue("TxIntDelay") != null)
-                {
-                    TxIntDelay = true;
-                    break;
-                }
-            }
-
-            foreach (var adapter in activeAdapters)
-            {
-                string pnpDeviceId = adapter["PNPDeviceID"]?.ToString();
-                if (string.IsNullOrEmpty(pnpDeviceId))
-                    continue;
-
-                using var key = Registry.LocalMachine.OpenSubKey($@"SYSTEM\CurrentControlSet\Enum\{pnpDeviceId}");
-                string driver = key?.GetValue("Driver") as string;
-                using var classKey = Registry.LocalMachine.OpenSubKey($@"SYSTEM\CurrentControlSet\Control\Class\{driver}");
-                using var ndiKey = classKey?.OpenSubKey("Ndi");
-                string serviceName = ndiKey?.GetValue("Service")?.ToString()?.TrimEnd('.');
-                using var serviceKey = Registry.LocalMachine.OpenSubKey($@"SYSTEM\CurrentControlSet\Services\{serviceName}");
-                string imagePath = serviceKey?.GetValue("ImagePath") as string;
-                string systemRoot = Environment.GetEnvironmentVariable("SystemRoot")!;
-                string resolved = Environment.ExpandEnvironmentVariables(imagePath.StartsWith(@"\??\") ? imagePath[4..] : imagePath);
-
-                resolved = resolved.StartsWith(@"\SystemRoot", StringComparison.OrdinalIgnoreCase)
-                    ? resolved.Replace(@"\SystemRoot", systemRoot, StringComparison.OrdinalIgnoreCase)
-                    : resolved.StartsWith("System32", StringComparison.OrdinalIgnoreCase)
-                        ? Path.Combine(systemRoot, resolved)
-                        : resolved;
-
-                if (Encoding.ASCII.GetString(File.ReadAllBytes(resolved)).Contains("NetAdapter", StringComparison.OrdinalIgnoreCase))
-                {
-                    NetAdapterCx = true;
-                    break;
-                }
-            }
+            var nics = DeviceHelper.GetDevices(DeviceType.NIC);
+            Wifi = nics.Any(device => device.NicType == NicDeviceType.WiFi);
+			TxIntDelay = nics.Any(device => Registry.LocalMachine.OpenSubKey(device.RegistryPath).GetValue("TxIntDelay") != null);
+			NetAdapterCx = nics.Any(device => device.IsActive && device.DriverType == NicDriverType.NetAdapterCx);
         });
 
         InstallPage.Info.Severity = InfoBarSeverity.Informational;

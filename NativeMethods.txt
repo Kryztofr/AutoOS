@@ -25,9 +25,11 @@ SetupDiGetDeviceRegistryProperty
 SetupDiGetDeviceInstanceId
 SetupDiOpenDevRegKey
 SetupDiSetClassInstallParams
+SetupDiCreateDeviceInfoList
 SetupDiCallClassInstaller
 SetupDiGetDeviceInstallParams
 SetupDiGetDeviceProperty
+SetupDiOpenDeviceInfo
 SP_PROPCHANGE_PARAMS
 SP_CLASSINSTALL_HEADER
 SP_DEVINSTALL_PARAMS_W
@@ -42,8 +44,18 @@ CM_Enable_DevNode
 CM_Disable_DevNode
 CM_Locate_DevNode
 CM_Get_DevNode_Status
+CM_Get_First_Log_Conf
+CM_Get_Next_Res_Des
+CM_Get_Res_Des_Data
+CM_Get_Res_Des_Data_Size
+CM_Free_Log_Conf_Handle
+CM_Free_Res_Des_Handle
+CM_RESTYPE
 CONFIGRET
 CM_LOCATE_DEVNODE_FLAGS
+DI_FUNCTION
+SETUP_DI_STATE_CHANGE
+SETUP_DI_PROPERTY_CHANGE_SCOPE
 
 EnumDisplayDevices
 EnumDisplaySettings
@@ -97,3 +109,7 @@ SC_ENUM_TYPE
 SC_HANDLE
 ENUM_SERVICE_TYPE
 ENUM_SERVICE_STATE
+
+GetAdaptersAddresses
+IP_ADAPTER_ADDRESSES_LH
+IF_OPER_STATUS

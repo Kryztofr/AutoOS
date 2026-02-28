@@ -1,23 +1,23 @@
-﻿using AutoOS.Views.Settings.Scheduling.Services;
-using AutoOS.Views.Settings.Scheduling.ViewModels;
+﻿using AutoOS.Views.Settings.Scheduling.ViewModels;
+using AutoOS.Helpers.CPU;
 
 namespace AutoOS.Views.Settings.Scheduling;
 
 public sealed partial class SchedulingDialog : Page
 {
     public DeviceAffinityViewModel ViewModel { get; }
-    public string Title { get; }
 
-    public SchedulingDialog(DeviceType deviceType, string title, string targetDevObjName)
+    public string Location { get; }
+
+    public SchedulingDialog()
     {
         InitializeComponent();
-        Title = title;
-        ViewModel = new DeviceAffinityViewModel(deviceType, targetDevObjName);
     }
 
-    private void MessageNumberLimit_ValueChanged(NumberBox _, NumberBoxValueChangedEventArgs args)
+    internal SchedulingDialog(SchedulingItem device, CpuSetsInfo cpuSetsInfo)
     {
-        ViewModel.MessageNumberLimit = args.NewValue;
+        Location = device.Location;
+        ViewModel = new DeviceAffinityViewModel(device, cpuSetsInfo);
+        InitializeComponent();
     }
 }
-

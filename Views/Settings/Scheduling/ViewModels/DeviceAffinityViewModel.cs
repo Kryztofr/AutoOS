@@ -1,92 +1,102 @@
 ﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using AutoOS.Views.Settings.Scheduling.Models;
+using AutoOS.Helpers.Device;
 using AutoOS.Helpers.CPU;
-using AutoOS.Views.Settings.Scheduling.Services;
-using Windows.Win32;
-using Windows.Win32.Devices.DeviceAndDriverInstallation;
 
 namespace AutoOS.Views.Settings.Scheduling.ViewModels;
 
-public class IrqPolicyItem
+public sealed class IrqPolicyItem
 {
     public uint Value { get; set; }
     public string Name { get; set; } = string.Empty;
 }
 
-public class IrqPriorityItem
+public sealed class IrqPriorityItem
 {
     public uint Value { get; set; }
     public string Name { get; set; } = string.Empty;
 }
 
-public class DeviceAffinityViewModel : INotifyPropertyChanged
+public partial class DeviceAffinityViewModel : INotifyPropertyChanged
 {
-    private DeviceType DeviceType { get; set; }
-    private List<DeviceInfo> Devices { get; set; } = [];
-    private DeviceInfo SelectedDevice { get; set; }
-    private readonly string _targetDevObjName;
-    private HDEVINFO _deviceInfoSet = default;
+    private readonly SchedulingItem _selectedItem;
 
+    private bool _msiSupported;
     public bool MsiSupported
     {
-        get;
+        get => _msiSupported;
         set
         {
-            if (SetProperty(ref field, value))
+            if (SetProperty(ref _msiSupported, value))
                 OnPropertyChanged(nameof(IsMsiLimitEnabled));
         }
     }
 
-    public double MessageNumberLimit
+    private double _MsiLimit;
+    public double MsiLimit
     {
-        get;
-        set => SetProperty(ref field, value);
+        get => _MsiLimit;
+        set => SetProperty(ref _MsiLimit, value);
     }
 
     public bool IsMsiLimitEnabled => MsiSupported;
 
+    private int _devicePriority;
     public int DevicePriority
     {
-        get;
-        set => SetProperty(ref field, value);
+        get => _devicePriority;
+        set => SetProperty(ref _devicePriority, value);
     }
 
+    private int _devicePolicy;
     public int DevicePolicy
     {
-        get;
+        get => _devicePolicy;
         set
         {
-            if (SetProperty(ref field, value))
+            if (SetProperty(ref _devicePolicy, value))
                 OnPropertyChanged(nameof(IsCoreSelectionEnabled));
         }
     }
 
     public bool IsCoreSelectionEnabled => DevicePolicy == 4;
 
-    public ObservableCollection<CpuCore> PCores { get; set; } = [];
-    public ObservableCollection<CpuCore> ECores { get; set; } = [];
+    private ObservableCollection<CpuCore> _pCores = [];
+    public ObservableCollection<CpuCore> PCores
+    {
+        get => _pCores;
+        set => SetProperty(ref _pCores, value);
+    }
 
+    private ObservableCollection<CpuCore> _eCores = [];
+    public ObservableCollection<CpuCore> ECores
+    {
+        get => _eCores;
+        set => SetProperty(ref _eCores, value);
+    }
+
+    private ulong _processMask;
     public ulong ProcessMask
     {
-        get;
-        set => SetProperty(ref field, value);
+        get => _processMask;
+        set => SetProperty(ref _processMask, value);
     }
 
     public bool HasEfficiencyClass { get; private set; }
 
-    public uint MaxMSILimit
+    private uint _MaxMsiLimit;
+    public uint MaxMsiLimit
     {
-        get;
+        get => _MaxMsiLimit;
         private set
         {
-            if (SetProperty(ref field, value))
-                OnPropertyChanged(nameof(EffectiveMaxMSILimit));
+            if (SetProperty(ref _MaxMsiLimit, value))
+                OnPropertyChanged(nameof(EffectiveMaxMsiLimit));
         }
     }
 
-    public double EffectiveMaxMSILimit => MaxMSILimit > 0 ? MaxMSILimit : 2048;
+    public double EffectiveMaxMsiLimit => MaxMsiLimit > 0 ? MaxMsiLimit : 2048;
 
     public ObservableCollection<IrqPolicyItem> IrqPolicies { get; } = [];
     public ObservableCollection<IrqPriorityItem> IrqPriorities { get; } = [];
@@ -94,12 +104,12 @@ public class DeviceAffinityViewModel : INotifyPropertyChanged
     public GridLength ECoreColumnWidth => HasEfficiencyClass ? new GridLength(1, GridUnitType.Star) : GridLength.Auto;
     public double ColumnSpacing => HasEfficiencyClass ? 12 : 0;
 
-    public DeviceAffinityViewModel(DeviceType deviceType, string targetDevObjName = null)
+    public DeviceAffinityViewModel(SchedulingItem selectedItem, CpuSetsInfo cpuSetsInfo)
     {
-        DeviceType = deviceType;
-        _targetDevObjName = targetDevObjName;
+        _selectedItem = selectedItem;
         InitializeIrqOptions();
-        LoadDevices();
+        LoadCpuInformation(cpuSetsInfo);
+        LoadCurrentSettings();
     }
 
     private void InitializeIrqOptions()
@@ -117,66 +127,23 @@ public class DeviceAffinityViewModel : INotifyPropertyChanged
         IrqPriorities.Add(new IrqPriorityItem { Value = 3, Name = "High" });
     }
 
-    private void LoadDevices()
-    {
-        Devices = DeviceDetectionService.FindDevicesByType(DeviceType);
-
-        if (Devices.Count > 0)
-            _deviceInfoSet = Devices[0].DeviceInfoSet;
-
-        if (!string.IsNullOrWhiteSpace(_targetDevObjName))
-            SelectedDevice = Devices.FirstOrDefault(d => string.Equals(d.DevObjName, _targetDevObjName, StringComparison.OrdinalIgnoreCase));
-
-        SelectedDevice ??= Devices.FirstOrDefault(d => d.RegistryKey != null) ?? Devices.FirstOrDefault();
-        LoadCurrentSettings();
-    }
-
-    public void Cleanup()
-    {
-        if (_deviceInfoSet.Value != 0 && _deviceInfoSet.Value != (nint)(-1))
-        {
-            PInvoke.SetupDiDestroyDeviceInfoList(_deviceInfoSet);
-            _deviceInfoSet = default;
-        }
-
-        foreach (var device in Devices)
-            if (device.RegistryKey != null)
-                device.RegistryKey.Close();
-    }
-
     private void LoadCurrentSettings()
     {
-        LoadCpuInformation();
-
-        if (SelectedDevice == null || SelectedDevice.RegistryKey == null)
-            return;
-
-        var settings = RegistryService.ReadDeviceSettings(SelectedDevice.RegistryKey, SelectedDevice.MaxMSILimit);
-
-        MsiSupported = settings.MsiSupported == 1u;
-        MessageNumberLimit = settings.MessageNumberLimit;
-        DevicePolicy = (int)settings.DevicePolicy;
-        DevicePriority = (int)settings.DevicePriority;
-        ProcessMask = settings.AssignmentSetOverride;
-        MaxMSILimit = settings.MaxMSILimit;
+        MsiSupported = _selectedItem.MsiSupported == 1u;
+        MsiLimit = _selectedItem.MsiLimit;
+        DevicePolicy = (int)_selectedItem.DevicePolicy;
+        DevicePriority = (int)_selectedItem.DevicePriority;
+        ProcessMask = _selectedItem.AssignmentSetOverride;
+        MaxMsiLimit = _selectedItem.MaxMsiLimit;
 
         SetCpuSelectionFromMask(ProcessMask);
     }
 
-    private void LoadCpuInformation()
+    private void LoadCpuInformation(CpuSetsInfo cpuSetsInfo)
     {
-        //CpuSetInformationFake.Fake13600KF();
-        //CpuSetInformationFake.Fake13900();
-        //CpuSetInformationFake.Fake13900WithoutHT();
-        //CpuSetInformationFake.Fake5900x();
-        //CpuSetInformationFake.Fake8Threads();
-        //CpuSetInformationFake.FakeNumaCCD12Core();
-        //CpuSetInformationFake.Fake2CCD12CoreHT();
-
-        var cpuSetsInfo = CpuDetectionService.GetCpuSets();
         HasEfficiencyClass = cpuSetsInfo.EfficiencyClass;
 
-        var (pCores, eCores) = CpuDetectionService.GroupCpuSetsByEfficiencyClass(cpuSetsInfo);
+        var (pCores, eCores) = CpuHelper.GroupCpuSetsByEfficiencyClass(cpuSetsInfo);
 
         PCores = new ObservableCollection<CpuCore>(pCores);
         ECores = new ObservableCollection<CpuCore>(eCores);
@@ -201,39 +168,27 @@ public class DeviceAffinityViewModel : INotifyPropertyChanged
 
     public void ApplySettings()
     {
-        if (SelectedDevice == null)
-        {
-            if (OnSettingsApplied != null)
-                OnSettingsApplied(new DeviceSettingsService.ApplyResult
-            {
-                Success = false,
-                NeedsRestart = false,
-                Message = "No device selected to apply settings to."
-            });
-            return;
-        }
-
-        var result = DeviceSettingsService.ApplySettingsToDevices(
-            [SelectedDevice],
+        var targetDevice = DeviceHelper.GetDevices(_selectedItem.DeviceType).FirstOrDefault(device => string.Equals(device.PnpDeviceId, _selectedItem.PnpDeviceId, StringComparison.OrdinalIgnoreCase));
+        
+        var result = DeviceHelper.ApplySettingsToDevices(
+            [targetDevice],
             MsiSupported,
-            (uint)MessageNumberLimit,
+            (uint)MsiLimit,
             (uint)DevicePolicy,
             (uint)DevicePriority,
-        ProcessMask,
-        DeviceType
+            ProcessMask,
+            _selectedItem.DeviceType
         );
 
-        if (OnSettingsApplied != null)
-            OnSettingsApplied(result);
+        OnSettingsApplied?.Invoke(result);
     }
 
-    public event Action<DeviceSettingsService.ApplyResult> OnSettingsApplied;
+    internal event Action<DeviceHelper.ApplyResult> OnSettingsApplied;
     public event PropertyChangedEventHandler PropertyChanged;
 
     protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
     {
-        if (PropertyChanged != null)
-            PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
     protected bool SetProperty<T>(ref T field, T value, [CallerMemberName] string propertyName = null)

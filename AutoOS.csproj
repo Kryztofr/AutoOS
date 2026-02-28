@@ -92,7 +92,6 @@
     <PackageReference Include="nucs.JsonSettings" Version="2.0.2" />
     <PackageReference Include="nucs.JsonSettings.AutoSaveGenerator" Version="2.0.4" />
     <PackageReference Include="PuppeteerSharp" Version="21.1.1" />
-    <PackageReference Include="System.Management" Version="11.0.0-preview.1.26104.118" />
     <PackageReference Include="System.ServiceProcess.ServiceController" Version="11.0.0-preview.1.26104.118" />
     <PackageReference Include="ValveKeyValue" Version="0.20.0.417" />
   </ItemGroup>

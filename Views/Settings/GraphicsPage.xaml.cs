@@ -1,6 +1,5 @@
 ﻿using AutoOS.Helpers.GPU;
-using AutoOS.Views.Settings.Scheduling.Models;
-using AutoOS.Views.Settings.Scheduling.Services;
+using AutoOS.Helpers.Device;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.Win32;
 using System.Collections.ObjectModel;
@@ -8,8 +7,6 @@ using System.Diagnostics;
 using System.ServiceProcess;
 using Windows.Storage;
 using AutoOS.Helpers.Picker;
-using Windows.Win32;
-using Windows.Win32.Devices.DeviceAndDriverInstallation;
 
 namespace AutoOS.Views.Settings;
 
@@ -309,36 +306,21 @@ public sealed partial class GraphicsPage : Page
         progressButton.IsChecked = true;
     }
 
-    public static Dictionary<string, (DeviceSettings settings, string devObjName)> SaveAffinity()
+    internal static Dictionary<string, DeviceInfo> SaveAffinity()
     {
-        var deviceConfig = new Dictionary<string, (DeviceSettings, string)>();
-        var gpuDevices = DeviceDetectionService.FindDevicesByType(DeviceType.GPU);
-        HDEVINFO deviceInfoSetHandle = default;
+        var deviceConfig = new Dictionary<string, DeviceInfo>();
+        var gpuDevices = DeviceHelper.GetDevices(DeviceType.GPU);
 
         foreach (var device in gpuDevices)
         {
-            if (deviceInfoSetHandle.Value == 0)
-                deviceInfoSetHandle = device.DeviceInfoSet;
-
-            if (device.RegistryKey != null)
-            {
-                string deviceKey = !string.IsNullOrEmpty(device.PnpDeviceId) ? device.PnpDeviceId : device.DevObjName ?? string.Empty;
-
-                var settings = RegistryService.ReadDeviceSettings(device.RegistryKey, device.MaxMSILimit);
-                deviceConfig[deviceKey] = (settings, device.DevObjName ?? string.Empty);
-            }
+            string deviceKey = !string.IsNullOrEmpty(device.PnpDeviceId) ? device.PnpDeviceId : device.DevObjName ?? string.Empty;
+            deviceConfig[deviceKey] = device;
         }
-
-        foreach (var device in gpuDevices)
-            device.RegistryKey?.Close();
-
-        if (deviceInfoSetHandle.Value != 0 && deviceInfoSetHandle.Value != (nint)(-1))
-            PInvoke.SetupDiDestroyDeviceInfoList(deviceInfoSetHandle);
 
         return deviceConfig;
     }
-    
-    public static async Task ReapplyAffinity(Dictionary<string, (DeviceSettings settings, string devObjName)> deviceConfig, ProgressButton progressButton)
+
+    internal static async Task ReapplyAffinity(Dictionary<string, DeviceInfo> deviceConfig, ProgressButton progressButton)
     {
         if (deviceConfig == null || deviceConfig.Count == 0)
             return;
@@ -347,28 +329,19 @@ public sealed partial class GraphicsPage : Page
         await Task.Delay(500);
 
         var changedDevices = new List<DeviceInfo>();
-        var gpuDevicesAfterUpdate = DeviceDetectionService.FindDevicesByType(DeviceType.GPU);
-        HDEVINFO deviceInfoSetHandleAfterUpdate = default;
+        var gpuDevicesAfterUpdate = DeviceHelper.GetDevices(DeviceType.GPU);
 
         foreach (var device in gpuDevicesAfterUpdate)
         {
-            if (deviceInfoSetHandleAfterUpdate.Value == 0)
-                deviceInfoSetHandleAfterUpdate = device.DeviceInfoSet;
-
-            if (device.RegistryKey == null) continue;
-
             string deviceKey = !string.IsNullOrEmpty(device.PnpDeviceId) ? device.PnpDeviceId : device.DevObjName ?? string.Empty;
 
-            if (!string.IsNullOrEmpty(deviceKey) && deviceConfig.TryGetValue(deviceKey, out var savedData))
+            if (!string.IsNullOrEmpty(deviceKey) && deviceConfig.TryGetValue(deviceKey, out var savedDevice))
             {
-                var savedSettings = savedData.settings;
-                var currentSettings = RegistryService.ReadDeviceSettings(device.RegistryKey, device.MaxMSILimit);
-
-                bool settingsChanged = currentSettings.DevicePolicy != savedSettings.DevicePolicy || currentSettings.DevicePriority != savedSettings.DevicePriority || currentSettings.AssignmentSetOverride != savedSettings.AssignmentSetOverride;
+                bool settingsChanged = device.DevicePolicy != savedDevice.DevicePolicy || device.DevicePriority != savedDevice.DevicePriority || device.AssignmentSetOverride != savedDevice.AssignmentSetOverride;
 
                 if (settingsChanged)
                 {
-                    RegistryService.SetAffinityPolicy(device.RegistryKey, savedSettings.DevicePolicy, savedSettings.DevicePriority, savedSettings.AssignmentSetOverride);
+                    DeviceHelper.SetAffinityPolicy(device.PnpDeviceId, savedDevice.DevicePolicy, savedDevice.DevicePriority, savedDevice.AssignmentSetOverride);
                     changedDevices.Add(device);
                 }
             }
@@ -376,21 +349,11 @@ public sealed partial class GraphicsPage : Page
 
         if (changedDevices.Count > 0)
         {
-            await Task.Run(() =>
+            foreach (var device in changedDevices)
             {
-                foreach (var device in changedDevices)
-                {
-                    if (device.DeviceInfoSet.Value != 0)
-                        DeviceSettingsService.RestartDevice(device);
-                }
-            });
+                await Task.Run(() => DeviceHelper.RestartDevice(device));
+            }
         }
-
-        foreach (var device in gpuDevicesAfterUpdate)
-            device.RegistryKey?.Close();
-
-        if (deviceInfoSetHandleAfterUpdate.Value != 0 && deviceInfoSetHandleAfterUpdate.Value != (nint)(-1))
-            PInvoke.SetupDiDestroyDeviceInfoList(deviceInfoSetHandleAfterUpdate);
 
         progressButton.CheckedContent = null;
     }

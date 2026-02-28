@@ -39,15 +39,15 @@
         },
         {
           "UniqueId": "AutoOS.Views.Installer.DisplayPage",
-          "Title": "Display",
-          "Subtitle": "Manage your CRU profiles",
+          "Title": "Displays",
+          "Subtitle": "Sisplays",
           "ImagePath": "ms-appx:///Assets/Fluent/Display.png",
           "HideItem": true
         },
         {
           "UniqueId": "AutoOS.Views.Installer.GraphicsPage",
-          "Title": "Graphics Card",
-          "Subtitle": "Graphics Card",
+          "Title": "Graphics Cards",
+          "Subtitle": "Graphics Cards",
           "ImagePath": "ms-appx:///Assets/Fluent/Gpu.png",
           "HideItem": true
         },

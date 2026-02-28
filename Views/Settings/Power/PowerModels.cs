@@ -122,7 +122,7 @@ namespace AutoOS.Views.Settings.Power
         public string Description { get; set; }
     }
 
-    public sealed class PowerItemTemplateSelector : DataTemplateSelector
+    public sealed partial class PowerItemTemplateSelector : DataTemplateSelector
     {
         public DataTemplate SubgroupTemplate { get; set; }
         public DataTemplate SettingTemplate { get; set; }

@@ -18,15 +18,15 @@
         },
         {
           "UniqueId": "AutoOS.Views.Settings.DisplayPage",
-          "Title": "Display",
-          "Subtitle": "Display",
+          "Title": "Displays",
+          "Subtitle": "Displays",
           "ImagePath": "ms-appx:///Assets/Fluent/Display.png",
           "HideItem": true
         },
         {
           "UniqueId": "AutoOS.Views.Settings.GraphicsPage",
-          "Title": "Graphics Card",
-          "Subtitle": "Graphics Card",
+          "Title": "Graphics Cards",
+          "Subtitle": "Graphics Cards",
           "ImagePath": "ms-appx:///Assets/Fluent/Gpu.png",
           "HideItem": true
         },

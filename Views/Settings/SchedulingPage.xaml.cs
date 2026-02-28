@@ -1,111 +1,188 @@
-﻿using AutoOS.Views.Settings.Scheduling.Services;
-using AutoOS.Views.Settings.Scheduling.ViewModels;
+﻿using System.Collections.ObjectModel;
+using AutoOS.Helpers.CPU;
+using AutoOS.Helpers.Device;
+using AutoOS.Helpers.Scheduling;
 using AutoOS.Views.Settings.Scheduling;
 
 namespace AutoOS.Views.Settings;
 
 public sealed partial class SchedulingPage : Page
 {
-    public SchedulingPageViewModel ViewModel { get; } = new();
+    public ObservableCollection<SchedulingGroup> Nodes { get; } = [];
+    private CpuSetsInfo _cpuSetsInfo;
 
     public SchedulingPage()
     {
         InitializeComponent();
-        DataContext = ViewModel;
+        Loaded += SchedulingPage_Loaded;
+    }
+
+    private void SchedulingPage_Loaded(object sender, RoutedEventArgs e)
+    {
+        _cpuSetsInfo = CpuHelper.GetCpuSets();
+        Nodes.Clear();
+        var gpuGroup = new SchedulingGroup { Name = "Graphics Cards", IsExpanded = true };
+        LoadDeviceGroup(DeviceType.GPU, gpuGroup);
+        if (gpuGroup.SubItems.Count > 0) Nodes.Add(gpuGroup);
+
+        var xhciGroup = new SchedulingGroup { Name = "XHCI Controllers", IsExpanded = true };
+        LoadDeviceGroup(DeviceType.XHCI, xhciGroup);
+        if (xhciGroup.SubItems.Count > 0) Nodes.Add(xhciGroup);
+
+        var nicGroup = new SchedulingGroup { Name = "Network Interface Controllers", IsExpanded = true };
+        LoadDeviceGroup(DeviceType.NIC, nicGroup);
+        if (nicGroup.SubItems.Count > 0) Nodes.Add(nicGroup);
+
+        var otherGroup = new SchedulingGroup { Name = "Other", IsExpanded = false };
+        LoadDeviceGroup(DeviceType.Other, otherGroup);
+        if (otherGroup.SubItems.Count > 0) Nodes.Add(otherGroup);
+    }
+
+    private static void LoadDeviceGroup(DeviceType type, SchedulingGroup group)
+    {
+        var devices = DeviceHelper.GetDevices(type);
+
+        var items = devices
+            .Select(device => new SchedulingItem
+            {
+                DeviceType = type,
+                DeviceDescription = device.DeviceDescription,
+                FriendlyName = device.FriendlyName,
+                DevObjName = device.DevObjName,
+                PnpDeviceId = device.PnpDeviceId,
+                Location = device.Location,
+                MsiSupported = device.MsiSupported,
+                MsiLimit = device.MsiLimit,
+                MaxMsiLimit = device.MaxMsiLimit,
+                DevicePolicy = device.DevicePolicy,
+                DevicePriority = device.DevicePriority,
+                AssignmentSetOverride = device.AssignmentSetOverride,
+            })
+            .OrderBy(i => i.Name, StringComparer.CurrentCultureIgnoreCase)
+            .ToList();
+
+        foreach (var item in items)
+        {
+            group.SubItems.Add(item);
+        }
+    }
+
+    public void UpdateDevice(DeviceType deviceType, string pnpDeviceId, DeviceInfo targetDevice = null)
+    {
+        var item = Nodes.SelectMany(g => g.SubItems).FirstOrDefault(d => string.Equals(d.PnpDeviceId, pnpDeviceId, StringComparison.OrdinalIgnoreCase));
+        if (item == null) return;
+
+        targetDevice ??= DeviceHelper.GetDevices(item.DeviceType).FirstOrDefault(d => string.Equals(d.PnpDeviceId, pnpDeviceId, StringComparison.OrdinalIgnoreCase));
+        if (targetDevice == null) return;
+
+        item.MsiSupported = targetDevice.MsiSupported;
+        item.MsiLimit = targetDevice.MsiLimit;
+        item.MaxMsiLimit = targetDevice.MaxMsiLimit;
+        item.DevicePolicy = targetDevice.DevicePolicy;
+        item.DevicePriority = targetDevice.DevicePriority;
+        item.AssignmentSetOverride = targetDevice.AssignmentSetOverride;
     }
 
     private async void Optimize_Checked(object sender, RoutedEventArgs e)
     {
         await Task.Delay(1000);
-        await AutoAffinityService.ApplyAutoAffinities(ViewModel);
+        await SchedulingHelper.OptimizeAffinities(this);
         Optimize.IsChecked = false;
     }
 
-    private async Task ShowAffinityDialog(DeviceItemViewModel device, SettingsCard senderControl)
+    private async void TreeView_ItemInvoked(object sender, TreeViewItemInvokedEventArgs args)
     {
-        senderControl.IsEnabled = false;
-        try
+        if (args.InvokedItem is SchedulingGroup group)
         {
-            var schedulingDialog = new SchedulingDialog(device.DeviceType, device.DisplayName, device.DevObjName);
-            var contentDialog = new ContentDialog
-            {
-                Content = schedulingDialog,
-                PrimaryButtonText = "Apply",
-                CloseButtonText = "Cancel",
-                DefaultButton = ContentDialogButton.Close,
-                XamlRoot = XamlRoot,
-            };
-
-            contentDialog.Resources["ContentDialogMaxWidth"] = 1350;
-            contentDialog.Resources["ContentDialogMaxHeight"] = 900;
-
-            DeviceSettingsService.ApplyResult applyResult = null;
-            var applyEventCompleted = new TaskCompletionSource<bool>();
-            
-            schedulingDialog.ViewModel.OnSettingsApplied += result =>
-            {
-                applyResult = result;
-                applyEventCompleted.TrySetResult(true);
-            };
-
-            contentDialog.PrimaryButtonClick += async (_, _) =>
-            {
-                schedulingDialog.ViewModel.ApplySettings();
-                await applyEventCompleted.Task;
-                
-                if (applyResult != null && applyResult.Success)
-                {
-                    var devObjName = device.DevObjName ?? string.Empty;
-                    ViewModel.UpdateDevice(device.DeviceType, devObjName);
-                }
-            };
-
-            var result = await contentDialog.ShowAsync();
-
-            if (result == ContentDialogResult.Primary && applyResult != null && applyResult.Success && applyResult.NeedsRestart)
-            {
-                var restartDialog = new ContentDialog
-                {
-                    Title = "Restart Device?",
-                    Content = "Your changes will not take effect until the device is restarted.\nWould you like to attempt to restart the device now?",
-                    PrimaryButtonText = "Yes",
-                    CloseButtonText = "No",
-                    DefaultButton = ContentDialogButton.Close,
-                    XamlRoot = XamlRoot
-                };
-
-                if (await restartDialog.ShowAsync() == ContentDialogResult.Primary)
-                {
-                    var restartDevicesResult = await DeviceSettingsService.RestartDevicesAsync(applyResult.ChangedDevices);
-                    
-                    var message = restartDevicesResult.SuccessCount > 0 && restartDevicesResult.FailedCount == 0
-                        ? "Device successfully restarted."
-                        : restartDevicesResult.SuccessCount > 0
-                        ? "Device was restarted. A reboot may be required."
-                        : "Device could not be restarted. Changes will take effect the next time you reboot.";
-
-                    await new ContentDialog
-                    {
-                        Title = "Device Restart",
-                        Content = message,
-                        PrimaryButtonText = "OK",
-                        DefaultButton = ContentDialogButton.Primary,
-                        XamlRoot = XamlRoot
-                    }.ShowAsync();
-                }
-            }
+            group.IsExpanded = !group.IsExpanded;
         }
-        finally
+        else if (args.InvokedItem is SchedulingItem device)
         {
-            senderControl.IsEnabled = true;
+            await ShowAffinityDialog(device);
         }
     }
 
-    private async void DeviceCard_Click(object sender, RoutedEventArgs e)
+    private async Task ShowAffinityDialog(SchedulingItem device)
     {
-        if (sender is SettingsCard card && card.DataContext is DeviceItemViewModel device)
+        var schedulingDialog = new SchedulingDialog(device, _cpuSetsInfo);
+        var contentDialog = new ContentDialog
         {
-            await ShowAffinityDialog(device, card);
+            Title = device.Name,
+            Content = schedulingDialog,
+            PrimaryButtonText = "Apply",
+            CloseButtonText = "Cancel",
+            DefaultButton = ContentDialogButton.Close,
+            XamlRoot = XamlRoot,
+        };
+
+        contentDialog.Resources["ContentDialogMaxWidth"] = 1350;
+        contentDialog.Resources["ContentDialogMaxHeight"] = 900;
+
+        DeviceHelper.ApplyResult applyResult = null;
+        var applyEventCompleted = new TaskCompletionSource<bool>();
+
+        schedulingDialog.ViewModel.OnSettingsApplied += result =>
+        {
+            applyResult = result;
+            applyEventCompleted.TrySetResult(true);
+        };
+
+        contentDialog.PrimaryButtonClick += async (_, _) =>
+        {
+            schedulingDialog.ViewModel.ApplySettings();
+            await applyEventCompleted.Task;
+
+            if (applyResult != null)
+            {
+                if (applyResult.AppliedSettings.TryGetValue(device.PnpDeviceId, out var updatedDevice))
+                {
+                    device.MsiSupported = updatedDevice.MsiSupported;
+                    device.MsiLimit = updatedDevice.MsiLimit;
+                    device.MaxMsiLimit = updatedDevice.MaxMsiLimit;
+                    device.DevicePolicy = updatedDevice.DevicePolicy;
+                    device.DevicePriority = updatedDevice.DevicePriority;
+                    device.AssignmentSetOverride = updatedDevice.AssignmentSetOverride;
+                }
+                else
+                {
+                    UpdateDevice(device.DeviceType, device.PnpDeviceId);
+                }
+            }
+        };
+
+        var result = await contentDialog.ShowAsync();
+
+        if (result == ContentDialogResult.Primary && applyResult != null && applyResult.Success && applyResult.NeedsRestart)
+        {
+            var restartDialog = new ContentDialog
+            {
+                Title = "Restart Device?",
+                Content = "Your changes will not take effect until the device is restarted.\nWould you like to attempt to restart the device now?",
+                PrimaryButtonText = "Yes",
+                CloseButtonText = "No",
+                DefaultButton = ContentDialogButton.Close,
+                XamlRoot = XamlRoot
+            };
+
+            if (await restartDialog.ShowAsync() == ContentDialogResult.Primary)
+            {
+                var restartDevicesResult = await DeviceHelper.RestartDevicesAsync(applyResult.ChangedDevices);
+
+                var message = restartDevicesResult.SuccessCount > 0 && restartDevicesResult.FailedCount == 0
+                    ? "Device successfully restarted."
+                    : restartDevicesResult.SuccessCount > 0
+                    ? "Device was restarted. A reboot may be required."
+                    : "Device could not be restarted. Changes will take effect the next time you reboot.";
+
+                await new ContentDialog
+                {
+                    Title = "Device Restart",
+                    Content = message,
+                    PrimaryButtonText = "OK",
+                    DefaultButton = ContentDialogButton.Primary,
+                    XamlRoot = XamlRoot
+                }.ShowAsync();
+            }
         }
     }
 }

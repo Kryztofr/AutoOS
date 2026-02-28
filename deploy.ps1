@@ -271,8 +271,8 @@ $ExistingPartitions = @()
 
 foreach ($p in $Partitions) {
     try {
-        $items = @(Get-ChildItem "$($p.DriveLetter):\" -Force -ErrorAction Stop)
-        $userItems = $items | Where-Object { $_.Name -notin @('System Volume Information', '$RECYCLE.BIN') }
+        $items = @(Get-ChildItem "$($p.DriveLetter):\" -Force)
+        $userItems = $items | Where-Object { $_.Name -notin @('System Volume Information', '$RECYCLE.BIN', 'desktop.ini') }
         if ($userItems.Count -eq 0) {
             $ExistingPartitions += $p
         }

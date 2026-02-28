@@ -1,7 +1,4 @@
-﻿using AutoOS.Helpers.GPU;
-using AutoOS.Helpers.Monitor;
-using AutoOS.Helpers.RAM;
-using AutoOS.Views.Installer.Actions;
+﻿using AutoOS.Views.Installer.Actions;
 using CommunityToolkit.WinUI.Controls;
 using Downloader;
 using Microsoft.UI.Text;
@@ -31,13 +28,14 @@ namespace AutoOS.Views.Settings
         {
             Margin = new Thickness(0, 12, 0, 0)
         };
+
         public HomeLandingPage()
         {
             InitializeComponent();
-			#if !DEBUG
+            #if !DEBUG
                 Loaded += GetChangeLog;
             #endif
-		}
+        }
 
         private async void GetChangeLog(object sender, RoutedEventArgs e)
         {
@@ -196,36 +194,8 @@ namespace AutoOS.Views.Settings
 
             string previousTitle = string.Empty;
 
-            bool NVIDIA = (GpuHelper.GetGPUs()).Any(g => g.VendorId == "10de" && g.IsInstalled);
-
             var actions = new List<(string Title, Func<Task> Action, Func<bool> Condition)>
             {
-                // remove capabilities 
-                (@"Removing ""App.StepsRecorder"" capability", async () => await ProcessActions.RunPowerShell(@"Remove-WindowsCapability -Online -Name (Get-WindowsCapability -Online | Where Name -like ""App.StepsRecorder*"").Name"), null),
-                (@"Removing ""Browser.InternetExplorer"" capability", async () => await ProcessActions.RunPowerShell(@"Remove-WindowsCapability -Online -Name (Get-WindowsCapability -Online | Where Name -like ""Browser.InternetExplorer*"").Name"), null),
-                (@"Removing ""Media.WindowsMediaPlayer"" capability", async () => await ProcessActions.RunPowerShell(@"Remove-WindowsCapability -Online -Name (Get-WindowsCapability -Online | Where Name -like ""Media.WindowsMediaPlayer*"").Name"), null),
-                (@"Removing ""Microsoft.Windows.PowerShell.ISE"" capability", async () => await ProcessActions.RunPowerShell(@"Remove-WindowsCapability -Online -Name (Get-WindowsCapability -Online | Where Name -like ""Microsoft.Windows.PowerShell.ISE*"").Name"), null),
-                (@"Removing ""Microsoft.Windows.WordPad"" capability", async () => await ProcessActions.RunPowerShell(@"Remove-WindowsCapability -Online -Name (Get-WindowsCapability -Online | Where Name -like ""Microsoft.Windows.WordPad**"").Name"), null),
-                (@"Removing ""VBSCRIPT"" capability", async () => await ProcessActions.RunPowerShell(@"Remove-WindowsCapability -Online -Name (Get-WindowsCapability -Online | Where Name -like ""VBSCRIPT*"").Name"), null),
-                
-                // disable language hotkeys
-                ("Disabling Language Hotkeys", async () => await ProcessActions.RunNsudo("CurrentUser", @"reg add ""HKEY_CURRENT_USER\Keyboard Layout\Toggle"" /v ""Hotkey"" /t REG_SZ /d 3 /f"), null),
-                ("Disabling Language Hotkeys", async () => await ProcessActions.RunNsudo("CurrentUser", @"reg add ""HKEY_CURRENT_USER\Keyboard Layout\Toggle"" /v ""Language Hotkey"" /t REG_SZ /d 3 /f"), null),
-                ("Disabling Language Hotkeys", async () => await ProcessActions.RunNsudo("CurrentUser", @"reg add ""HKEY_CURRENT_USER\Keyboard Layout\Toggle"" /v ""Layout Hotkey"" /t REG_SZ /d 3 /f"), null),
-
-                // download windhawk data
-                ("Downloading Windhawk data", async () => await RunDownload("https://www.dl.dropboxusercontent.com/scl/fi/6r6fnkthdy3n3c7le1bsd/mod-status.zip?rlkey=d0b6y8kw7d5i63lj8b9e9leg6&st=3giojfxw&dl=0", Path.GetTempPath(), "mod-status.zip"), null),
-
-                // extract windhawk data
-                ("Extract Windhawk data", async () => await ProcessActions.RunNsudo("CurrentUser", @"sc stop Windhawk"), null),
-                ("Extract Windhawk data", async () => await ProcessActions.RunExtract(Path.Combine(Path.GetTempPath(), "mod-status.zip"), @"C:\ProgramData\Windhawk\Engine\ModsWritable\mod-status"), null),
-
-                // install windhawk data
-                ("Install Windhawk data", async () => await ProcessActions.RunNsudo("CurrentUser", @"sc start Windhawk"), null),
-                ("Install Windhawk data", async () => await ProcessActions.RunPowerShell("Stop-Process -Name explorer -Force"), null),
-
-                // import optimized nvidia profile
-                ("Importing optimized NVIDIA profile", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Applications", "NvidiaProfileInspector", "nvidiaProfileInspector.exe"), Arguments = $"-silentimport \"{Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Applications", "NvidiaProfileInspector", "BaseProfile.nip")}\"", CreateNoWindow = true })!.WaitForExitAsync(), () => NVIDIA == true)
             };
 
             var filteredActions = actions.Where(a => a.Condition == null || a.Condition.Invoke()).ToList();

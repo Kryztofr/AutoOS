@@ -118,17 +118,14 @@ public static class GpuHelper
                     }
                 }
 
-                if (string.IsNullOrEmpty(pnpDeviceId)) continue;
-
                 string registryPath = GetRegistryPath(hDevInfo, devInfo);
                 string vendorId = pnpDeviceId.Substring(pnpDeviceId.IndexOf("VEN_") + 4, 4).ToLowerInvariant();
                 string deviceId = pnpDeviceId.Substring(pnpDeviceId.IndexOf("DEV_") + 4, 4).ToLowerInvariant();
 
                 string currentVersion = GetDriverVersion(hDevInfo, devInfo);
-                bool isInstalled = !string.IsNullOrEmpty(currentVersion) &&
-                                  (!currentVersion.StartsWith("10.0.") || !currentVersion.EndsWith(".1"));
+                bool isInstalled = !string.IsNullOrEmpty(currentVersion) && (!currentVersion.StartsWith("10.0.") || !currentVersion.EndsWith(".1"));
 
-                string deviceName = "Unknown GPU";
+                string deviceName = string.Empty;
                 string codename = string.Empty;
                 bool hdcp = false;
                 bool hdmidpaudio = true;
@@ -152,8 +149,7 @@ public static class GpuHelper
                     }
                     else if (vendorId == "1002")
                     {
-                        currentVersion = (Registry.GetValue(registryPath, "RadeonSoftwareVersion", null)
-                                       ?? Registry.GetValue(registryPath, "FireproSoftwareVersion", null))?.ToString();
+                        currentVersion = (Registry.GetValue(registryPath, "RadeonSoftwareVersion", null) ?? Registry.GetValue(registryPath, "FireproSoftwareVersion", null))?.ToString();
                     }
                     else if (vendorId == "8086")
                     {
@@ -194,7 +190,10 @@ public static class GpuHelper
                                 }
                             }
                         }
-                        finally { PInvoke.SetupDiDestroyDeviceInfoList(hAudioInfo); }
+                        finally 
+                        { 
+                            PInvoke.SetupDiDestroyDeviceInfoList(hAudioInfo); 
+                        }
                     }
                 }
                 else if (!isInstalled && (vendorId == "10de" || vendorId == "1002" || vendorId == "8086"))
@@ -203,7 +202,10 @@ public static class GpuHelper
 
                     if (pciDb.TryGetValue(vendorId, out var vendor) && vendor.Devices.TryGetValue(deviceId, out var name))
                     {
-                        deviceName = name.Split('[', ']') is { Length: > 1 } p ? p[1] : name;
+                        if (vendorId == "8086")
+                            codename = name.Split('[')[0].Trim();
+
+                        deviceName = name.Split('[', ']') is { Length: > 1 } parts ? parts[1] : name;
                         deviceName = vendorId switch { "10de" => "NVIDIA " + deviceName, "1002" => "AMD " + deviceName, _ => "Intel " + deviceName };
                         currentVersion = "N/A";
                     }
@@ -354,13 +356,6 @@ public static class GpuHelper
         return string.Empty;
     }
 
-    private static string ExtractBusDevice(string location)
-    {
-        if (string.IsNullOrEmpty(location)) return string.Empty;
-        int functionIndex = location.IndexOf(", function");
-        return functionIndex > -1 ? location[..functionIndex] : location;
-    }
-
     private unsafe static string GetRegistryPath(HDEVINFO hDevInfo, SP_DEVINFO_DATA devInfo)
     {
         uint regType;
@@ -426,6 +421,9 @@ public static class GpuHelper
                 }
             }
         }
-        finally { PInvoke.SetupDiDestroyDeviceInfoList(hAudioInfo); }
+        finally 
+        { 
+            PInvoke.SetupDiDestroyDeviceInfoList(hAudioInfo); 
+        }
     }
 }
