@@ -65,7 +65,7 @@
                                           SelectionChanged="SwitchEmulator_Changed"
                                           SelectionMode="Single">
                                     <GridView.ItemTemplate>
-                                        <DataTemplate>
+                                        <DataTemplate x:DataType="views:SettingsGridViewItem">
                                             <Grid Height="75"
                                                   Margin="24">
                                                 <Grid.RowDefinitions>
@@ -74,10 +74,10 @@
                                                 <StackPanel VerticalAlignment="Center">
                                                     <Image Height="36"
                                                            Margin="0,0,0,8"
-                                                           Source="{Binding ImageSource}" />
+                                                           Source="{x:Bind ImageSource}" />
                                                     <TextBlock HorizontalAlignment="Center"
                                                                FontSize="14"
-                                                               Text="{Binding Text}"
+                                                               Text="{x:Bind Text}"
                                                                TextAlignment="Center"
                                                                TextTrimming="CharacterEllipsis"
                                                                TextWrapping="Wrap" />

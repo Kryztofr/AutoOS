@@ -32,7 +32,8 @@ public static partial class EdenHelper
             
             // get game list
             using var stream = File.OpenRead(Path.Combine(localSettings.Values["EdenDataLocation"]?.ToString(), "cache", "game_list", "game_metadata_cache.json"));
-            var config = await JsonSerializer.DeserializeAsync<Dictionary<string, JsonElement>>(stream);
+            using var configDoc = await JsonDocument.ParseAsync(stream);
+            var config = configDoc.RootElement;
 
             // read json database
             using var fs = File.OpenRead(Path.Combine(PathHelper.GetAppDataFolderPath(), "Switch", "US.en.json"));
@@ -50,7 +51,7 @@ public static partial class EdenHelper
                 }
             }
 
-            if (config.TryGetValue("entries", out var entries) && entries.ValueKind == JsonValueKind.Array)
+            if (config.TryGetProperty("entries", out var entries) && entries.ValueKind == JsonValueKind.Array)
 
             await Parallel.ForEachAsync(entries.EnumerateArray(), new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount * 2 }, async (edenEntry, _) =>
             {

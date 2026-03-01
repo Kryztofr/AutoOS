@@ -1,9 +1,11 @@
 ﻿using Microsoft.UI.Composition;
 using Microsoft.UI.Xaml.Hosting;
 using System.Numerics;
+using WinRT;
 
 namespace AutoOS.Views.Settings.Games;
 
+[GeneratedBindableCustomProperty]
 [TemplatePart(Name = nameof(PART_ShadowHost), Type = typeof(Grid))]
 public partial class HeaderCarouselItem : Button
 {

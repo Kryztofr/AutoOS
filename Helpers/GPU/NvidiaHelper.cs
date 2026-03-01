@@ -1,5 +1,7 @@
 ﻿using AutoOS.Views.Installer.Actions;
 using System.Diagnostics;
+using System.Net;
+using System.Net.Security;
 using System.Text.Json;
 using Windows.Win32.System.Power;
 using Windows.Win32;
@@ -8,7 +10,23 @@ namespace AutoOS.Helpers.GPU
 {
     public static class NvidiaHelper
     {
-        private static readonly HttpClient httpClient = new();
+        private static readonly HttpClient httpClient = new(new SocketsHttpHandler
+        {
+            SslOptions = new SslClientAuthenticationOptions
+            {
+                EnabledSslProtocols = System.Security.Authentication.SslProtocols.Tls12 | System.Security.Authentication.SslProtocols.Tls13
+            }
+        })
+        {
+            DefaultRequestHeaders =
+        {
+            UserAgent =
+            {
+                new System.Net.Http.Headers.ProductInfoHeaderValue("AutoOS", ProcessInfoHelper.Version)
+            }
+        }
+        };
+
         public static async Task<(string newestVersion, string newestDownloadUrl)> CheckUpdate(GpuInfo gpu)
         {
             string deviceName = gpu.DeviceName;
@@ -147,8 +165,8 @@ namespace AutoOS.Helpers.GPU
                 (@"Selecting ""Use the advanced 3D image settings""", async () => await ProcessActions.RunNsudo("CurrentUser", @"reg add ""HKEY_CURRENT_USER\SOFTWARE\NVIDIA Corporation\Global\NVTweak"" /v ""Gestalt"" /t REG_DWORD /d 515 /f"), null),
 
                 // import optimized nvidia profile
-                ("Importing optimized NVIDIA profile", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Applications", "NvidiaProfileInspector", "nvidiaProfileInspector.exe"), Arguments = $"-silentimport \"{Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Applications", "NvidiaProfileInspector", "BaseProfile.nip")}\"", CreateNoWindow = true })!.WaitForExitAsync(), null),
-
+                ("Importing optimized NVIDIA profile", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Applications", "NvidiaProfileInspector", "nvidiaProfileInspector.exe"), Arguments = $@"-silentimport ""{Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Applications", "NvidiaProfileInspector", "BaseProfile.nip")}""", CreateNoWindow = true }).WaitForExitAsync(), null),
+                
                 // configure physx to use gpu
                 ("Configuring PhysX to use GPU", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\nvlddmkm\Global\NVTweak"" /v ""NvCplPhysxAuto"" /t REG_DWORD /d 0 /f"), null),
 

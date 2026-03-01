@@ -1,6 +1,7 @@
 ﻿using AutoOS.Helpers.GPU;
 using System.Collections.ObjectModel;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using Windows.Storage;
 using AutoOS.Helpers.Picker;
 
@@ -29,20 +30,61 @@ public sealed partial class GraphicsPage : Page
 
     private void GraphicsPage_Unloaded(object sender, RoutedEventArgs e)
     {
-        localSettings.Values["GPUs"] = JsonSerializer.Serialize(GPUs);
+        var array = new JsonArray();
+        foreach (var gpu in GPUs)
+        {
+            array.Add((JsonNode)new JsonObject
+            {
+                ["Name"] = gpu.DeviceName,
+                ["PnPDeviceId"] = gpu.PnPDeviceId,
+                ["VendorId"] = gpu.VendorId,
+                ["DeviceId"] = gpu.DeviceId,
+                ["Codename"] = gpu.Codename,
+                ["Install"] = gpu.Install,
+                ["IsInstalled"] = gpu.IsInstalled,
+                ["RegistryPath"] = gpu.RegistryPath,
+                ["Location"] = gpu.Location,
+                ["HDCP"] = gpu.HDCP,
+                ["HDMIDPAudio"] = gpu.HDMIDPAudio
+            });
+        }
+        localSettings.Values["GPUs"] = array.ToJsonString();
     }
 
     public void GetGpus()
     {
         GPUs.Clear();
 
-        List<GpuInfo> savedGpus = null;
+        List<GpuInfo> savedGpus = [];
 
         if (localSettings.Values.TryGetValue("GPUs", out object savedObj))
         {
             try
             {
-                savedGpus = JsonSerializer.Deserialize<List<GpuInfo>>(savedObj.ToString());
+                var array = JsonNode.Parse(savedObj.ToString())?.AsArray();
+                if (array != null)
+                {
+                    foreach (var node in array)
+                    {
+                        var obj = node?.AsObject();
+                        if (obj == null) continue;
+
+                        savedGpus.Add(new GpuInfo
+                        {
+                            DeviceName = obj["Name"]?.ToString(),
+                            PnPDeviceId = obj["PnPDeviceId"]?.ToString(),
+                            VendorId = obj["VendorId"]?.ToString(),
+                            DeviceId = obj["DeviceId"]?.ToString(),
+                            Codename = obj["Codename"]?.ToString(),
+                            Install = obj["Install"]?.GetValue<bool>() ?? false,
+                            IsInstalled = obj["IsInstalled"]?.GetValue<bool>() ?? false,
+                            RegistryPath = obj["RegistryPath"]?.ToString(),
+                            Location = obj["Location"]?.ToString(),
+                            HDCP = obj["HDCP"]?.GetValue<bool>() ?? false,
+                            HDMIDPAudio = obj["HDMIDPAudio"]?.GetValue<bool>() ?? false
+                        });
+                    }
+                }
             }
             catch { }
         }

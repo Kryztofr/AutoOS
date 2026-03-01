@@ -51,7 +51,7 @@
                                          AutomationProperties.AccessibilityView="Raw"
                                          CornerRadius="{TemplateBinding CornerRadius}"
                                          IsCacheEnabled="True"
-                                         Source="{Binding ImageUrl, RelativeSource={RelativeSource TemplatedParent}}"
+                                         Source="{TemplateBinding ImageUrl}"
                                          Stretch="Fill" />
                         </Grid>
                     </Grid>

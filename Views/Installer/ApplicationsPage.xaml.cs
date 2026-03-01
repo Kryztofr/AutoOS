@@ -1,4 +1,5 @@
 ﻿using Windows.Storage;
+using WinRT;
 
 namespace AutoOS.Views.Installer;
 
@@ -28,12 +29,6 @@ public sealed partial class ApplicationsPage : Page
         base.OnNavigatedTo(e);
         MainWindow.Instance.MarkVisited(nameof(ApplicationsPage));
         MainWindow.Instance.CheckAllPagesVisited();
-    }
-
-    public class GridViewItem
-    {
-        public string Text { get; set; }
-        public string ImageSource { get; set; }
     }
 
     private void GetItems()
@@ -214,4 +209,11 @@ public sealed partial class ApplicationsPage : Page
 
         localSettings.Values["Launchers"] = string.Join(", ", selectedLaunchers);
     }
+}
+
+[GeneratedBindableCustomProperty]
+public partial class GridViewItem
+{
+    public string Text { get; set; }
+    public string ImageSource { get; set; }
 }

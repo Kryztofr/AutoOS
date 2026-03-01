@@ -3,16 +3,19 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using AutoOS.Helpers.Device;
 using AutoOS.Helpers.CPU;
+using WinRT;
 
 namespace AutoOS.Views.Settings.Scheduling.ViewModels;
 
-public sealed class IrqPolicyItem
+[GeneratedBindableCustomProperty]
+public sealed partial class IrqPolicyItem
 {
     public uint Value { get; set; }
     public string Name { get; set; } = string.Empty;
 }
 
-public sealed class IrqPriorityItem
+[GeneratedBindableCustomProperty]
+public sealed partial class IrqPriorityItem
 {
     public uint Value { get; set; }
     public string Name { get; set; } = string.Empty;

@@ -2,6 +2,8 @@
 using Windows.Media.Core;
 
 namespace AutoOS.Views.Settings.Games;
+
+[Microsoft.UI.Xaml.Data.Bindable]
 public partial class HeaderCarousel
 {
     public bool IsAutoScrollEnabled

@@ -16,16 +16,16 @@ public partial class SavePicker
     {
         this.hwnd = hwnd;
     }
-    public SavePicker(Microsoft.UI.Xaml.Window window) : this(WindowNative.GetWindowHandle(window)) { }
+    public SavePicker(Window window) : this(WindowNative.GetWindowHandle(window)) { }
     public PickerOptions Options { get; set; } = PickerOptions.None;
 
     public bool ShowDetailedExtension { get; set; } = true;
-    public string? CommitButtonText { get; set; }
-    public string? SuggestedFileName { get; set; }
-    public string? DefaultFileExtension { get; set; }
-    public string? InitialDirectory { get; set; }
+    public string CommitButtonText { get; set; }
+    public string SuggestedFileName { get; set; }
+    public string DefaultFileExtension { get; set; }
+    public string InitialDirectory { get; set; }
     public Microsoft.Windows.Storage.Pickers.PickerLocationId SuggestedStartLocation { get; set; } = Microsoft.Windows.Storage.Pickers.PickerLocationId.Unspecified;
-    public string? Title { get; set; }
+    public string Title { get; set; }
     public Dictionary<string, IList<string>> FileTypeChoices { get; set; } = new();
     public bool ShowAllFilesOption { get; set; } = true;
 
@@ -33,7 +33,7 @@ public partial class SavePicker
     /// Prompts the user to select a file to save and returns the selected file path as a string.
     /// </summary>
     /// <returns>Returns the path of the selected file or null if no file was selected.</returns>
-    public string? PickSaveFile()
+    public string PickSaveFile()
     {
         return SaveFileDialog();
     }
@@ -65,7 +65,7 @@ public partial class SavePicker
         }
     }
 
-    private unsafe string? SaveFileDialog()
+    private unsafe string SaveFileDialog()
     {
         int hr = PInvoke.CoCreateInstance<IFileSaveDialog>(
                                     typeof(FileSaveDialog).GUID,
@@ -147,7 +147,7 @@ public partial class SavePicker
             }
             catch (Exception ex) when ((uint)(ex.HResult) == 0x800704C7) // ERROR_CANCELLED
             {
-                // User canceled the dialog, return null
+                // User canceled the dialog, return string.Empty
                 return null;
             }
 

@@ -32,10 +32,11 @@ public static partial class RyujinxHelper
 
             // get game dirs
             using var stream = File.OpenRead(Path.Combine(localSettings.Values["RyujinxDataLocation"]?.ToString(), "Config.json"));
-            var config = await JsonSerializer.DeserializeAsync<Dictionary<string, JsonElement>>(stream);
+            using var configDoc = await JsonDocument.ParseAsync(stream);
+            var config = configDoc.RootElement;
 
             var gameDirs = new List<string>();
-            if (config != null && config.TryGetValue("game_dirs", out var dirs) && dirs.ValueKind == JsonValueKind.Array)
+            if (config.TryGetProperty("game_dirs", out var dirs) && dirs.ValueKind == JsonValueKind.Array)
                 foreach (var dir in dirs.EnumerateArray())
                     gameDirs.Add(dir.GetString() ?? "");
 
@@ -114,10 +115,11 @@ public static partial class RyujinxHelper
                 if (!File.Exists(metadataPath)) return;
 
                 var metadataText = await File.ReadAllTextAsync(metadataPath);
-                var metadataObj = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(metadataText);
+                using var metadataDoc = JsonDocument.Parse(metadataText);
+                var metadataObj = metadataDoc.RootElement;
 
                 string playTime = "0m";
-                if (metadataObj != null && metadataObj.TryGetValue("timespan_played", out var timespanElement) && TimeSpan.TryParse(timespanElement.GetString(), out TimeSpan ts))
+                if (metadataObj.TryGetProperty("timespan_played", out var timespanElement) && TimeSpan.TryParse(timespanElement.GetString(), out TimeSpan ts))
                 {
                     playTime = (int)ts.TotalHours > 0 ? $"{(int)ts.TotalHours}h {ts.Minutes}m" : $"{ts.Minutes}m";
                 }

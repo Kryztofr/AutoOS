@@ -51,7 +51,7 @@ public static class ScheduledTasksStage
                         InstallPage.Info.Title += ": " + ex.Message;
                         InstallPage.Info.Severity = InfoBarSeverity.Error;
                         InstallPage.Progress.Foreground = (Brush)Application.Current.Resources["SystemFillColorCriticalBrush"];
-                        TaskbarHelper.SetProgressState(WindowHandle, TaskbarStates.Error);
+                        Helpers.Taskbar.TaskbarHelper.SetProgressState(WindowHandle, Helpers.Taskbar.TaskbarStates.Error);
                         InstallPage.ProgressRingControl.Foreground = (Brush)Application.Current.Resources["SystemFillColorCriticalBrush"];
                         InstallPage.ProgressRingControl.Visibility = Visibility.Collapsed;
                         InstallPage.ResumeButton.Visibility = Visibility.Visible;
@@ -64,7 +64,7 @@ public static class ScheduledTasksStage
                             tcs.TrySetResult(true);
                             InstallPage.Info.Severity = InfoBarSeverity.Informational;
                             InstallPage.Progress.ClearValue(ProgressBar.ForegroundProperty);
-                            TaskbarHelper.SetProgressState(WindowHandle, TaskbarStates.Normal);
+                            Helpers.Taskbar.TaskbarHelper.SetProgressState(WindowHandle, Helpers.Taskbar.TaskbarStates.Normal);
                             InstallPage.ProgressRingControl.Foreground = null;
                             InstallPage.ProgressRingControl.Visibility = Visibility.Visible;
                             InstallPage.ResumeButton.Visibility = Visibility.Collapsed;
@@ -75,7 +75,7 @@ public static class ScheduledTasksStage
                 }
 
                 InstallPage.Progress.Value += incrementPerTitle;
-                TaskbarHelper.SetProgressValue(WindowHandle, InstallPage.Progress.Value, 100);
+                Helpers.Taskbar.TaskbarHelper.SetProgressValue(WindowHandle, InstallPage.Progress.Value, 100);
                 await Task.Delay(150);
                 currentGroup.Clear();
             }
@@ -98,7 +98,7 @@ public static class ScheduledTasksStage
                     InstallPage.Info.Title += ": " + ex.Message;
                     InstallPage.Info.Severity = InfoBarSeverity.Error;
                     InstallPage.Progress.Foreground = (Brush)Application.Current.Resources["SystemFillColorCriticalBrush"];
-                    TaskbarHelper.SetProgressState(WindowHandle, TaskbarStates.Error);
+                    Helpers.Taskbar.TaskbarHelper.SetProgressState(WindowHandle, Helpers.Taskbar.TaskbarStates.Error);
                     InstallPage.ProgressRingControl.Foreground = (Brush)Application.Current.Resources["SystemFillColorCriticalBrush"];
                     InstallPage.ProgressRingControl.Visibility = Visibility.Collapsed;
                     InstallPage.ResumeButton.Visibility = Visibility.Visible;
@@ -111,7 +111,7 @@ public static class ScheduledTasksStage
                         tcs.TrySetResult(true);
                         InstallPage.Info.Severity = InfoBarSeverity.Informational;
                         InstallPage.Progress.ClearValue(ProgressBar.ForegroundProperty);
-                        TaskbarHelper.SetProgressState(WindowHandle, TaskbarStates.Normal);
+                        Helpers.Taskbar.TaskbarHelper.SetProgressState(WindowHandle, Helpers.Taskbar.TaskbarStates.Normal);
                         InstallPage.ProgressRingControl.Foreground = null;
                         InstallPage.ProgressRingControl.Visibility = Visibility.Visible;
                         InstallPage.ResumeButton.Visibility = Visibility.Collapsed;
@@ -122,12 +122,12 @@ public static class ScheduledTasksStage
             }
 
             InstallPage.Progress.Value += incrementPerTitle;
-            TaskbarHelper.SetProgressValue(WindowHandle, InstallPage.Progress.Value, 100);
+            Helpers.Taskbar.TaskbarHelper.SetProgressValue(WindowHandle, InstallPage.Progress.Value, 100);
         }
         if (filteredActions.Count == 0)
         {
             InstallPage.Progress.Value += stagePercentage;
-            TaskbarHelper.SetProgressValue(WindowHandle, InstallPage.Progress.Value, 100);
+            Helpers.Taskbar.TaskbarHelper.SetProgressValue(WindowHandle, InstallPage.Progress.Value, 100);
         }
     }
 }

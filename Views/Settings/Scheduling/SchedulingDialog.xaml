@@ -13,7 +13,7 @@
         <TextBlock Margin="0,-8,0,24"
                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                    Style="{StaticResource BodyTextBlockStyle}"
-                   Text="{x:Bind Location, Mode=OneWay}" />
+                   Text="{x:Bind Location, Mode=OneTime}" />
         <ScrollViewer Grid.Row="1"
                       HorizontalAlignment="Stretch"
                       VerticalScrollBarVisibility="Auto"
@@ -69,8 +69,8 @@
                                       ItemsSource="{x:Bind ViewModel.IrqPriorities, Mode=OneWay}"
                                       SelectedIndex="{x:Bind ViewModel.DevicePriority, Mode=TwoWay}">
                                 <ComboBox.ItemTemplate>
-                                    <DataTemplate>
-                                        <TextBlock Text="{Binding Name}" />
+                                    <DataTemplate x:DataType="vm:IrqPriorityItem">
+                                        <TextBlock Text="{x:Bind Name}" />
                                     </DataTemplate>
                                 </ComboBox.ItemTemplate>
                             </ComboBox>
@@ -83,8 +83,8 @@
                                       ItemsSource="{x:Bind ViewModel.IrqPolicies, Mode=OneWay}"
                                       SelectedIndex="{x:Bind ViewModel.DevicePolicy, Mode=TwoWay}">
                                 <ComboBox.ItemTemplate>
-                                    <DataTemplate>
-                                        <TextBlock Text="{Binding Name}" />
+                                    <DataTemplate x:DataType="vm:IrqPolicyItem">
+                                        <TextBlock Text="{x:Bind Name}" />
                                     </DataTemplate>
                                 </ComboBox.ItemTemplate>
                             </ComboBox>

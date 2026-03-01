@@ -672,7 +672,6 @@
         </Setter>
     </Style>
 
-
     <Style x:Key="StoreCardStyle"
            TargetType="dev:Card">
         <Setter Property="Padding" Value="24" />

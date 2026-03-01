@@ -254,6 +254,10 @@ public sealed partial class GraphicsPage : Page
                 progressButton.Content = $"Install {newestVersion}";
             }
         }
+        catch
+        {
+            progressButton.Content = "Failed to check for updates";
+        }
         finally
         {
             progressButton.IsChecked = false;

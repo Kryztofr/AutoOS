@@ -9,14 +9,14 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       mc:Ignorable="d">
     <Page.Resources>
-        <DataTemplate x:Key="GroupTemplate">
-            <TreeViewItem IsExpanded="{Binding IsExpanded, Mode=TwoWay}"
-                          ItemsSource="{Binding SubItems}">
+        <DataTemplate x:Key="GroupTemplate" x:DataType="local:SchedulingGroup">
+            <TreeViewItem IsExpanded="{x:Bind IsExpanded, Mode=TwoWay}"
+                          ItemsSource="{x:Bind SubItems}">
                 <controls:DataRow>
                     <TextBlock />
                     <TextBlock Margin="-24,0,0,0"
                                FontWeight="SemiBold"
-                               Text="{Binding Name}" />
+                               Text="{x:Bind Name}" />
                     <TextBlock />
                     <TextBlock />
                     <TextBlock />
@@ -26,24 +26,24 @@
                 </controls:DataRow>
             </TreeViewItem>
         </DataTemplate>
-        <DataTemplate x:Key="ItemTemplate">
+        <DataTemplate x:Key="ItemTemplate" x:DataType="local:SchedulingItem">
             <TreeViewItem>
                 <controls:DataRow>
                     <TextBlock />
-                    <TextBlock Text="{Binding Name}"
-                               ToolTipService.ToolTip="{Binding Name}" />
+                    <TextBlock Text="{x:Bind Name, Mode=OneWay}"
+                               ToolTipService.ToolTip="{x:Bind Name, Mode=OneWay}" />
                     <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                               Text="{Binding MsiModeDisplay}" />
+                               Text="{x:Bind MsiModeDisplay, Mode=OneWay}" />
                     <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                               Text="{Binding MsiLimitDisplay}" />
+                               Text="{x:Bind MsiLimitDisplay, Mode=OneWay}" />
                     <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                               Text="{Binding MaxMsiLimitDisplay}" />
+                               Text="{x:Bind MaxMsiLimitDisplay, Mode=OneWay}" />
                     <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                               Text="{Binding DevicePolicyDisplay}" />
+                               Text="{x:Bind DevicePolicyDisplay, Mode=OneWay}" />
                     <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                               Text="{Binding DevicePriorityDisplay}" />
+                               Text="{x:Bind DevicePriorityDisplay, Mode=OneWay}" />
                     <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                               Text="{Binding SpecifiedProcessorsDisplay}" />
+                               Text="{x:Bind SpecifiedProcessorsDisplay, Mode=OneWay}" />
                 </controls:DataRow>
             </TreeViewItem>
         </DataTemplate>
@@ -75,7 +75,7 @@
                                             HorizontalAlignment="Left"
                                             Checked="Optimize_Checked"
                                             CheckedContent="Optimizing Affinities..."
-                                            Content="Optmize Affinities"
+                                            Content="Optimize Affinities"
                                             IsIndeterminate="True"
                                             Style="{ThemeResource AccentProgressButtonStyle}" />
                     </dev:SettingsGroup.Content>

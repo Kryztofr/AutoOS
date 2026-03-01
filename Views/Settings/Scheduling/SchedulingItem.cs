@@ -1,17 +1,38 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using AutoOS.Helpers.Device;
+using WinRT;
 
 namespace AutoOS.Views.Settings.Scheduling;
 
+[GeneratedBindableCustomProperty]
 public partial class SchedulingItem : INotifyPropertyChanged
 {
     public DeviceType DeviceType { get; set; }
-    public string DeviceDescription { get; set; }
-    public string FriendlyName { get; set; }
+ 
+    private string _deviceDescription;
+    public string DeviceDescription
+    {
+        get => _deviceDescription;
+        set { _deviceDescription = value; OnPropertyChanged(); OnPropertyChanged(nameof(Name)); }
+    }
+ 
+    private string _friendlyName;
+    public string FriendlyName
+    {
+        get => _friendlyName;
+        set { _friendlyName = value; OnPropertyChanged(); OnPropertyChanged(nameof(Name)); }
+    }
+ 
     public string DevObjName { get; set; }
     public string PnpDeviceId { get; set; }
-    public string Location { get; set; }
+ 
+    private string _location;
+    public string Location
+    {
+        get => _location;
+        set { _location = value; OnPropertyChanged(); }
+    }
 
     public string Name => string.IsNullOrWhiteSpace(FriendlyName) ? DeviceDescription : FriendlyName;
 

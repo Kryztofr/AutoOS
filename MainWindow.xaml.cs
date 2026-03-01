@@ -2,6 +2,7 @@
 using Microsoft.UI.Xaml.Input;
 using Windows.Win32;
 using Windows.Win32.Foundation;
+using WinRT;
 using WinRT.Interop;
 
 namespace AutoOS.Views
@@ -18,10 +19,11 @@ namespace AutoOS.Views
             ExtendsContentIntoTitleBar = true;
             SetTitleBar(AppTitleBar);
             AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Tall;
-            new ModernSystemMenu(this);
+            _ = new ModernSystemMenu(this);
 
-            ((OverlappedPresenter)AppWindow.Presenter).PreferredMinimumWidth = 660;
-            ((OverlappedPresenter)AppWindow.Presenter).PreferredMinimumHeight = 715;
+            var presenter = AppWindow.Presenter.As<OverlappedPresenter>();
+            presenter.PreferredMinimumWidth = 660;
+            presenter.PreferredMinimumHeight = 715;
 
             if (App.IsInstalled)
             {
@@ -46,7 +48,7 @@ namespace AutoOS.Views
                     .ConfigureBreadcrumbBar(BreadCrumbNav, BreadcrumbPageMappings.PageDictionary);
                 AppTitleBar.Title = "AutoOS Installer";
 
-                ((OverlappedPresenter)AppWindow.Presenter).Maximize();
+                presenter.Maximize();
             }
         }
 

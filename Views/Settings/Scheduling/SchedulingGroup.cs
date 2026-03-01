@@ -1,9 +1,11 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using WinRT;
 
 namespace AutoOS.Views.Settings.Scheduling;
 
+[GeneratedBindableCustomProperty]
 public partial class SchedulingGroup : INotifyPropertyChanged
 {
     public string Name { get; set; }

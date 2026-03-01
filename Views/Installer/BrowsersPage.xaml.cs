@@ -24,12 +24,6 @@ public sealed partial class BrowsersPage : Page
         MainWindow.Instance.CheckAllPagesVisited();
     }
 
-    public class GridViewItem
-    {
-        public string Text { get; set; }
-        public string ImageSource { get; set; }
-    }
-
     private void GetItems()
     {
         Browsers.ItemsSource = new List<GridViewItem>

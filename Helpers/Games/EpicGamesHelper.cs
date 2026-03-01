@@ -5,6 +5,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using System.Text.Json.Serialization;
 using Windows.Media.Core;
 
 namespace AutoOS.Helpers.Games;
@@ -347,17 +348,16 @@ public static class EpicGamesHelper
         string startTimeStr = startTime.ToString("o");
         string endTimeStr = endTime.ToString("o");
 
-        var payload = new
-        {
-            machineId = Guid.NewGuid().ToString(),
+        var payload = new PlaytimePayload(
+            Guid.NewGuid().ToString(),
             artifactId,
-            startTime = startTimeStr,
-            endTime = endTimeStr,
-            startSegment = true,
-            endSegment = true
-        };
+            startTimeStr,
+            endTimeStr,
+            true,
+            true
+        );
 
-        var json = JsonSerializer.Serialize(payload);
+        var json = JsonSerializer.Serialize(payload, PlaytimeJsonContext.Default.PlaytimePayload);
         var content = new StringContent(json, Encoding.UTF8, "application/json");
 
         using var response = loginClient.PutAsync(url, content).GetAwaiter().GetResult();
@@ -690,9 +690,21 @@ public static class EpicGamesHelper
                 }
                 catch (Exception ex)
                 {
-                    await App.ShowCrashDialogAsync(new Exception($"Failed to load game: {JsonNode.Parse(await File.ReadAllTextAsync(file.FullName, _).ConfigureAwait(false))["DisplayName"]?.ToString()}", ex));
+                    await App.ShowCrashDialogAsync(new Exception($"Failed to load game: {JsonNode.Parse(await File.ReadAllTextAsync(file.FullName).ConfigureAwait(false))["DisplayName"]?.ToString()}", ex));
                 }
             });
         }
     }
 }
+
+internal record PlaytimePayload(
+    string machineId,
+    string artifactId,
+    string startTime,
+    string endTime,
+    bool startSegment,
+    bool endSegment
+);
+
+[JsonSerializable(typeof(PlaytimePayload))]
+internal partial class PlaytimeJsonContext : JsonSerializerContext { }

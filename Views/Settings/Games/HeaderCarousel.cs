@@ -1,4 +1,4 @@
-﻿using AutoOS.Helpers.Games;
+using AutoOS.Helpers.Games;
 using AutoOS.Helpers.Processes;
 using AutoOS.Helpers.Services;
 using Microsoft.UI.Xaml.Markup;
@@ -13,6 +13,7 @@ using System.Text.RegularExpressions;
 using ValveKeyValue;
 using Windows.Foundation;
 using Windows.Storage;
+using WinRT;
 
 namespace AutoOS.Views.Settings.Games;
 
@@ -53,7 +54,7 @@ public partial class HeaderCarousel : ItemsControl
     private ComboBox EpicGamesAccounts;
     private Button AddEpicGamesAccount;
     private Button RemoveEpicGamesAccount;
-   
+
     private Button SteamButton;
     private ComboBox SteamAccounts;
     private Button AddSteamAccount;
@@ -106,6 +107,7 @@ public partial class HeaderCarousel : ItemsControl
         scrollViewer = GetTemplateChild(PART_ScrollViewer) as ScrollViewer;
         backDropImage = GetTemplateChild(PART_BackDropImage) as AnimatedImage;
         itemsRepeater = GetTemplateChild("PART_ItemsRepeater") as ItemsRepeater;
+        itemsRepeater.ItemsSource = InfoItems;
         itemsRepeater.ElementPrepared += ItemsRepeater_ElementPrepared;
 
         PageTitle = GetTemplateChild("PageTitle") as TextBlock;
@@ -330,7 +332,7 @@ public partial class HeaderCarousel : ItemsControl
         selectionTimer.Tick -= SelectionTimer_Tick;
         selectionTimer?.Stop();
         gameWatcherTimer?.Stop();
-        
+
         foreach (HeaderCarouselItem tile in Items.Cast<HeaderCarouselItem>())
         {
             tile.PointerEntered -= Tile_PointerEntered;
@@ -443,12 +445,12 @@ public partial class HeaderCarousel : ItemsControl
 
             //Metadata_ScrollViewer.Focus(FocusState.Programmatic);
             Metadata_ScrollViewer.ChangeView(null, 0, null);
-            
+
             Title = selectedTile?.Title;
             Developers = selectedTile?.Developers;
 
             UpdateIsAvailable = selectedTile?.UpdateIsAvailable ?? false;
-            
+
             Rating = selectedTile?.Rating != 0.0 ? selectedTile.Rating : Rating;
             RoundedRating = Math.Round((selectedTile?.Rating ?? 0.0), 1).ToString("0.0", CultureInfo.InvariantCulture);
             PlayTime = selectedTile?.PlayTime;
@@ -471,7 +473,7 @@ public partial class HeaderCarousel : ItemsControl
             InstallLocation = selectedTile?.InstallLocation;
 
             Launcher = selectedTile?.Launcher;
-            
+
             CatalogItemId = selectedTile?.CatalogItemId;
             CatalogNamespace = selectedTile?.CatalogNamespace;
             AppName = selectedTile?.AppName;
@@ -762,12 +764,14 @@ public partial class HeaderCarousel : ItemsControl
         ApplySort();
     }
 
+    [GeneratedRegex(@"(?:(\d+)h)?\s*(\d+)m", RegexOptions.Compiled)]
+    private static partial Regex PlayTimeMinutesRegex();
     private static int ParseMinutes(string time)
     {
         if (string.IsNullOrWhiteSpace(time))
             return 0;
 
-        var match = Regex.Match(time, @"(?:(\d+)h)?\s*(\d+)m");
+        var match = PlayTimeMinutesRegex().Match(time);
         if (match.Success)
         {
             int hours = match.Groups[1].Success ? int.Parse(match.Groups[1].Value) : 0;
@@ -1086,7 +1090,7 @@ public partial class HeaderCarousel : ItemsControl
 
             // remove all epic games titles
             foreach (var item in Items.OfType<HeaderCarouselItem>().Where(item => item.Launcher == "Epic Games").ToList())
-               Items.Remove(item);
+                Items.Remove(item);
         }
     }
 
@@ -1371,7 +1375,7 @@ public partial class HeaderCarousel : ItemsControl
         {
             if (!string.IsNullOrEmpty(item.Hyperlink))
             {
-                await Windows.System.Launcher.LaunchFolderPathAsync(item.Hyperlink);
+                await Windows.System.Launcher.LaunchFolderPathAsync(item.Hyperlink.Replace("/", "\\").Trim());
             }
         }
     }
@@ -1963,7 +1967,8 @@ public enum InfoIconType
     PathIcon
 }
 
-public class InfoItem
+[GeneratedBindableCustomProperty]
+public partial class InfoItem
 {
     public string Label { get; set; }
     public string Value { get; set; }

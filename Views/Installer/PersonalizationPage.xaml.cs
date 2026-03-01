@@ -6,6 +6,7 @@ using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.System.Com;
 using Windows.Win32.UI.WindowsAndMessaging;
+using WinRT;
 
 namespace AutoOS.Views.Installer;
 
@@ -34,7 +35,7 @@ public sealed partial class PersonalizationPage : Page
         InitializeComponent();
         GetItems();
         GetTheme();
-        GetSchedule();
+        _ = GetSchedule();
         GetContextMenuState();
         GetTaskbarAlignmentState();
         GetTrayIconsState();
@@ -45,12 +46,6 @@ public sealed partial class PersonalizationPage : Page
         base.OnNavigatedTo(e);
         MainWindow.Instance.MarkVisited(nameof(PersonalizationPage));
         MainWindow.Instance.CheckAllPagesVisited();
-    }
-
-    public class ThemeItem
-    {
-        public string LightTheme { get; set; }
-        public string DarkTheme { get; set; }
     }
 
     public unsafe static Task ApplyTheme(string themePath)
@@ -76,7 +71,7 @@ public sealed partial class PersonalizationPage : Page
                 IntPtr vtable = Marshal.ReadIntPtr(handle);
                 IntPtr applyThemePtr = Marshal.ReadIntPtr(vtable, IntPtr.Size * 4);
 
-                var applyTheme = (ApplyThemeFunc)Marshal.GetDelegateForFunctionPointer(applyThemePtr, typeof(ApplyThemeFunc));
+                var applyTheme = Marshal.GetDelegateForFunctionPointer<ApplyThemeFunc>(applyThemePtr);
                 applyTheme(handle, themePath);
 
                 fixed (char* pMessage = "ImmersiveColorSet")
@@ -321,4 +316,11 @@ public sealed partial class PersonalizationPage : Page
 
         TaskbarIcon.HeaderIcon = new SymbolIcon(icon);
     }
+}
+
+[GeneratedBindableCustomProperty]
+public partial class ThemeItem
+{
+    public string LightTheme { get; set; }
+    public string DarkTheme { get; set; }
 }

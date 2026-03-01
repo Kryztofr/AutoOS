@@ -2,6 +2,7 @@
 using Microsoft.UI.Xaml.Media;
 using System.Diagnostics;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using WinRT.Interop;
 
 namespace AutoOS.Views.Installer.Stages;
@@ -447,49 +448,49 @@ public static class BrowsersStage
             ("Optimizing Firefox settings", async () => await ProcessActions.RunNsudo("CurrentUser", @"cmd /c mkdir ""C:\Program Files\Mozilla Firefox\distribution"""), () => Firefox == true),
             ("Optimizing Firefox settings", async () => await Task.Run(() => File.WriteAllText(Path.Combine(@"C:\Program Files\Mozilla Firefox", "defaults", "pref", "autoconfig.js"), "pref(\"general.config.filename\", \"firefox.cfg\");\npref(\"general.config.obscure_value\", 0);")), () => Firefox == true),
             ("Optimizing Firefox settings", async () => await Task.Run(() => File.WriteAllText(Path.Combine(@"C:\Program Files\Mozilla Firefox", "firefox.cfg"), "defaultPref(\"app.shield.optoutstudies.enabled\", false);\ndefaultPref(\"browser.search.serpEventTelemetryCategorization.enabled\", false);\ndefaultPref(\"dom.security.unexpected_system_load_telemetry_enabled\", false);\ndefaultPref(\"identity.fxaccounts.telemetry.clientAssociationPing.enabled\", false);\ndefaultPref(\"network.trr.confirmation_telemetry_enabled\", false);\ndefaultPref(\"nimbus.telemetry.targetingContextEnabled\", false);\ndefaultPref(\"reader.parse-on-load.enabled\", false);\ndefaultPref(\"telemetry.fog.init_on_shutdown\", false);\ndefaultPref(\"default-browser-agent.enabled\", false);\ndefaultPref(\"widget.windows.mica\", true);\ndefaultPref(\"widget.windows.mica.popups\", 1);\ndefaultPref(\"widget.windows.mica.toplevel-backdrop\", 0);")), () => Firefox == true),
-            ("Optimizing Firefox settings", async () => await Task.Run(() => File.WriteAllText(Path.Combine(@"C:\Program Files\Mozilla Firefox", "distribution", "policies.json"), JsonSerializer.Serialize(new { policies = new { } }, new JsonSerializerOptions { WriteIndented = true }))), () => Firefox == true),
+            ("Optimizing Firefox settings", async () => await Task.Run(() => File.WriteAllText(Path.Combine(@"C:\Program Files\Mozilla Firefox", "distribution", "policies.json"), "{\r\n  \"policies\": {}\r\n}")), () => Firefox == true),
 
             // download arkenfox user.js
             ("Downloading Arkenfox user.js", async () => await ProcessActions.RunDownload("https://raw.githubusercontent.com/arkenfox/user.js/refs/heads/master/user.js", @"C:\Program Files\Mozilla Firefox", "user.js"), () => Firefox == true),
 
             // install ublock origin extension
-            ("Installing uBlock Origin Extension", async () => await Task.Run(() => { string policiesPath = @"C:\Program Files\Mozilla Firefox\distribution\policies.json"; string extensionUrl = "https://addons.mozilla.org/firefox/downloads/latest/ublock-origin"; var policiesContent = JsonSerializer.Deserialize<Dictionary<string, object>>(File.ReadAllText(policiesPath)); if (policiesContent.ContainsKey("policies")) { var policies = (JsonElement)policiesContent["policies"]; var policiesDict = JsonSerializer.Deserialize<Dictionary<string, object>>(policies.ToString()); if (!policiesDict.ContainsKey("Extensions")) { policiesDict["Extensions"] = new Dictionary<string, object> { { "Install", new string[] { extensionUrl } } }; } else { var extensions = (JsonElement)policiesDict["Extensions"]; var installArray = JsonSerializer.Deserialize<List<string>>(extensions.GetProperty("Install").ToString()); installArray.Add(extensionUrl); policiesDict["Extensions"] = new Dictionary<string, object> { { "Install", installArray.ToArray() } }; } policiesContent["policies"] = JsonSerializer.SerializeToElement(policiesDict); File.WriteAllText(policiesPath, JsonSerializer.Serialize(policiesContent, new JsonSerializerOptions { WriteIndented = true })); } }), () => Firefox == true && uBlock == true),
+            ("Installing uBlock Origin Extension", async () => await Task.Run(() => UpdatePolicies(@"C:\Program Files\Mozilla Firefox\distribution\policies.json", "https://addons.mozilla.org/firefox/downloads/latest/ublock-origin")), () => Firefox == true && uBlock == true),
             ("Installing uBlock Origin Extension", async () => await Task.Delay(500), () => Firefox == true && uBlock == true),
 
             // install sponsorblock extension
-            ("Installing SponsorBlock Extension", async () => await Task.Run(() => { string policiesPath = @"C:\Program Files\Mozilla Firefox\distribution\policies.json"; string extensionUrl = "https://addons.mozilla.org/firefox/downloads/latest/sponsorblock"; var policiesContent = JsonSerializer.Deserialize < Dictionary < string, object > >(File.ReadAllText(policiesPath)); if(policiesContent.ContainsKey("policies")) { var policies =(JsonElement) policiesContent["policies"]; var policiesDict = JsonSerializer.Deserialize < Dictionary < string, object > >(policies.ToString()); if(! policiesDict.ContainsKey("Extensions")) { policiesDict["Extensions"] = new Dictionary < string, object > { { "Install", new string[] { extensionUrl } } }; } else { var extensions =(JsonElement) policiesDict["Extensions"]; var installArray = JsonSerializer.Deserialize < List < string > >(extensions.GetProperty("Install").ToString()); installArray.Add(extensionUrl); policiesDict["Extensions"] = new Dictionary < string, object > { { "Install", installArray.ToArray() } }; } policiesContent["policies"] = JsonSerializer.SerializeToElement(policiesDict); File.WriteAllText(policiesPath, JsonSerializer.Serialize(policiesContent, new JsonSerializerOptions { WriteIndented = true })); } }), () => Firefox == true && SponsorBlock == true),
+            ("Installing SponsorBlock Extension", async () => await Task.Run(() => UpdatePolicies(@"C:\Program Files\Mozilla Firefox\distribution\policies.json", "https://addons.mozilla.org/firefox/downloads/latest/sponsorblock")), () => Firefox == true && SponsorBlock == true),
             ("Installing SponsorBlock Extension", async () => await Task.Delay(500), () => Firefox == true && SponsorBlock == true),
 
             // install return youtube dislike extension
-            ("Installing Return YouTube Dislike Extension", async () => await Task.Run(() => { string policiesPath = @"C:\Program Files\Mozilla Firefox\distribution\policies.json"; string extensionUrl = "https://addons.mozilla.org/firefox/downloads/latest/return-youtube-dislikes"; var policiesContent = JsonSerializer.Deserialize < Dictionary < string, object > >(File.ReadAllText(policiesPath)); if(policiesContent.ContainsKey("policies")) { var policies =(JsonElement) policiesContent["policies"]; var policiesDict = JsonSerializer.Deserialize < Dictionary < string, object > >(policies.ToString()); if(! policiesDict.ContainsKey("Extensions")) { policiesDict["Extensions"] = new Dictionary < string, object > { { "Install", new string[] { extensionUrl } } }; } else { var extensions =(JsonElement) policiesDict["Extensions"]; var installArray = JsonSerializer.Deserialize < List < string > >(extensions.GetProperty("Install").ToString()); installArray.Add(extensionUrl); policiesDict["Extensions"] = new Dictionary < string, object > { { "Install", installArray.ToArray() } }; } policiesContent["policies"] = JsonSerializer.SerializeToElement(policiesDict); File.WriteAllText(policiesPath, JsonSerializer.Serialize(policiesContent, new JsonSerializerOptions { WriteIndented = true })); } }), () => Firefox == true && SponsorBlock == true),
+            ("Installing Return YouTube Dislike Extension", async () => await Task.Run(() => UpdatePolicies(@"C:\Program Files\Mozilla Firefox\distribution\policies.json", "https://addons.mozilla.org/firefox/downloads/latest/return-youtube-dislikes")), () => Firefox == true && ReturnYouTubeDislike == true),
             ("Installing Return YouTube Dislike Extension", async () => await Task.Delay(500), () => Firefox == true && ReturnYouTubeDislike == true),
 
             // install i still don't care about cookies extension
-            ("Installing I still don't care about cookies Extension", async () => await Task.Run(() => { string policiesPath = @"C:\Program Files\Mozilla Firefox\distribution\policies.json"; string extensionUrl = "https://addons.mozilla.org/firefox/downloads/latest/istilldontcareaboutcookies"; var policiesContent = JsonSerializer.Deserialize < Dictionary < string, object > >(File.ReadAllText(policiesPath)); if(policiesContent.ContainsKey("policies")) { var policies =(JsonElement) policiesContent["policies"]; var policiesDict = JsonSerializer.Deserialize < Dictionary < string, object > >(policies.ToString()); if(! policiesDict.ContainsKey("Extensions")) { policiesDict["Extensions"] = new Dictionary < string, object > { { "Install", new string[] { extensionUrl } } }; } else { var extensions =(JsonElement) policiesDict["Extensions"]; var installArray = JsonSerializer.Deserialize < List < string > >(extensions.GetProperty("Install").ToString()); installArray.Add(extensionUrl); policiesDict["Extensions"] = new Dictionary < string, object > { { "Install", installArray.ToArray() } }; } policiesContent["policies"] = JsonSerializer.SerializeToElement(policiesDict); File.WriteAllText(policiesPath, JsonSerializer.Serialize(policiesContent, new JsonSerializerOptions { WriteIndented = true })); } }), () => Firefox == true && Cookies == true),
+            ("Installing I still don't care about cookies Extension", async () => await Task.Run(() => UpdatePolicies(@"C:\Program Files\Mozilla Firefox\distribution\policies.json", "https://addons.mozilla.org/firefox/downloads/latest/istilldontcareaboutcookies")), () => Firefox == true && Cookies == true),
             ("Installing I still don't care about cookies Extension", async () => await Task.Delay(500), () => Firefox == true && Cookies == true),
 
             // install dark reader extension
-            ("Installing Dark Reader Extension", async () => await Task.Run(() => { string policiesPath = @"C:\Program Files\Mozilla Firefox\distribution\policies.json"; string extensionUrl = "https://addons.mozilla.org/firefox/downloads/latest/darkreader"; var policiesContent = JsonSerializer.Deserialize < Dictionary < string, object > >(File.ReadAllText(policiesPath)); if(policiesContent.ContainsKey("policies")) { var policies =(JsonElement) policiesContent["policies"]; var policiesDict = JsonSerializer.Deserialize < Dictionary < string, object > >(policies.ToString()); if(! policiesDict.ContainsKey("Extensions")) { policiesDict["Extensions"] = new Dictionary < string, object > { { "Install", new string[] { extensionUrl } } }; } else { var extensions =(JsonElement) policiesDict["Extensions"]; var installArray = JsonSerializer.Deserialize < List < string > >(extensions.GetProperty("Install").ToString()); installArray.Add(extensionUrl); policiesDict["Extensions"] = new Dictionary < string, object > { { "Install", installArray.ToArray() } }; } policiesContent["policies"] = JsonSerializer.SerializeToElement(policiesDict); File.WriteAllText(policiesPath, JsonSerializer.Serialize(policiesContent, new JsonSerializerOptions { WriteIndented = true })); } }), () => Firefox == true && DarkReader == true),
+            ("Installing Dark Reader Extension", async () => await Task.Run(() => UpdatePolicies(@"C:\Program Files\Mozilla Firefox\distribution\policies.json", "https://addons.mozilla.org/firefox/downloads/latest/darkreader")), () => Firefox == true && DarkReader == true),
             ("Installing Dark Reader Extension", async () => await Task.Delay(500), () => Firefox == true && DarkReader == true),
 
             // install violentmonkey extension
-            ("Installing Violentmonkey Extension", async () => await Task.Run(() => { string policiesPath = @"C:\Program Files\Mozilla Firefox\distribution\policies.json"; string extensionUrl = "https://addons.mozilla.org/firefox/downloads/latest/violentmonkey"; var policiesContent = JsonSerializer.Deserialize < Dictionary < string, object > >(File.ReadAllText(policiesPath)); if(policiesContent.ContainsKey("policies")) { var policies =(JsonElement) policiesContent["policies"]; var policiesDict = JsonSerializer.Deserialize < Dictionary < string, object > >(policies.ToString()); if(! policiesDict.ContainsKey("Extensions")) { policiesDict["Extensions"] = new Dictionary < string, object > { { "Install", new string[] { extensionUrl } } }; } else { var extensions =(JsonElement) policiesDict["Extensions"]; var installArray = JsonSerializer.Deserialize < List < string > >(extensions.GetProperty("Install").ToString()); installArray.Add(extensionUrl); policiesDict["Extensions"] = new Dictionary < string, object > { { "Install", installArray.ToArray() } }; } policiesContent["policies"] = JsonSerializer.SerializeToElement(policiesDict); File.WriteAllText(policiesPath, JsonSerializer.Serialize(policiesContent, new JsonSerializerOptions { WriteIndented = true })); } }), () => Firefox == true && DarkReader == true),
+            ("Installing Violentmonkey Extension", async () => await Task.Run(() => UpdatePolicies(@"C:\Program Files\Mozilla Firefox\distribution\policies.json", "https://addons.mozilla.org/firefox/downloads/latest/violentmonkey")), () => Firefox == true && Violentmonkey == true),
             ("Installing Violentmonkey Extension", async () => await Task.Delay(500), () => Firefox == true && Violentmonkey == true),
 
             // install tampermonkey extension
-            ("Installing Tampermonkey Extension", async () => await Task.Run(() => { string policiesPath = @"C:\Program Files\Mozilla Firefox\distribution\policies.json"; string extensionUrl = "https://addons.mozilla.org/firefox/downloads/latest/tampermonkey"; var policiesContent = JsonSerializer.Deserialize < Dictionary < string, object > >(File.ReadAllText(policiesPath)); if(policiesContent.ContainsKey("policies")) { var policies =(JsonElement) policiesContent["policies"]; var policiesDict = JsonSerializer.Deserialize < Dictionary < string, object > >(policies.ToString()); if(! policiesDict.ContainsKey("Extensions")) { policiesDict["Extensions"] = new Dictionary < string, object > { { "Install", new string[] { extensionUrl } } }; } else { var extensions =(JsonElement) policiesDict["Extensions"]; var installArray = JsonSerializer.Deserialize < List < string > >(extensions.GetProperty("Install").ToString()); installArray.Add(extensionUrl); policiesDict["Extensions"] = new Dictionary < string, object > { { "Install", installArray.ToArray() } }; } policiesContent["policies"] = JsonSerializer.SerializeToElement(policiesDict); File.WriteAllText(policiesPath, JsonSerializer.Serialize(policiesContent, new JsonSerializerOptions { WriteIndented = true })); } }), () => Firefox == true && DarkReader == true),
+            ("Installing Tampermonkey Extension", async () => await Task.Run(() => UpdatePolicies(@"C:\Program Files\Mozilla Firefox\distribution\policies.json", "https://addons.mozilla.org/firefox/downloads/latest/tampermonkey")), () => Firefox == true && Tampermonkey == true),
             ("Installing TampermonkeyExtension", async () => await Task.Delay(500), () => Firefox == true && Tampermonkey == true),
 
             // install icloud passwords extension
-            ("Installing iCloud Passwords Extension", async () => await Task.Run(() => { string policiesPath = @"C:\Program Files\Mozilla Firefox\distribution\policies.json"; string extensionUrl = "https://addons.mozilla.org/firefox/downloads/latest/icloud-passwords"; var policiesContent = JsonSerializer.Deserialize < Dictionary < string, object > >(File.ReadAllText(policiesPath)); if(policiesContent.ContainsKey("policies")) { var policies =(JsonElement) policiesContent["policies"]; var policiesDict = JsonSerializer.Deserialize < Dictionary < string, object > >(policies.ToString()); if(! policiesDict.ContainsKey("Extensions")) { policiesDict["Extensions"] = new Dictionary < string, object > { { "Install", new string[] { extensionUrl } } }; } else { var extensions =(JsonElement) policiesDict["Extensions"]; var installArray = JsonSerializer.Deserialize < List < string > >(extensions.GetProperty("Install").ToString()); installArray.Add(extensionUrl); policiesDict["Extensions"] = new Dictionary < string, object > { { "Install", installArray.ToArray() } }; } policiesContent["policies"] = JsonSerializer.SerializeToElement(policiesDict); File.WriteAllText(policiesPath, JsonSerializer.Serialize(policiesContent, new JsonSerializerOptions { WriteIndented = true })); } }), () => Firefox == true && iCloud == true),
+            ("Installing iCloud Passwords Extension", async () => await Task.Run(() => UpdatePolicies(@"C:\Program Files\Mozilla Firefox\distribution\policies.json", "https://addons.mozilla.org/firefox/downloads/latest/icloud-passwords")), () => Firefox == true && iCloud == true),
             ("Installing iCloud Passwords Extension", async () => await Task.Delay(500), () => Firefox == true && iCloud == true),
 
             // install bitwarden extension
-            ("Installing Bitwarden Extension", async () => await Task.Run(() => { string policiesPath = @"C:\Program Files\Mozilla Firefox\distribution\policies.json"; string extensionUrl = "https://addons.mozilla.org/firefox/downloads/latest/bitwarden-password-manager"; var policiesContent = JsonSerializer.Deserialize < Dictionary < string, object > >(File.ReadAllText(policiesPath)); if(policiesContent.ContainsKey("policies")) { var policies =(JsonElement) policiesContent["policies"]; var policiesDict = JsonSerializer.Deserialize < Dictionary < string, object > >(policies.ToString()); if(! policiesDict.ContainsKey("Extensions")) { policiesDict["Extensions"] = new Dictionary < string, object > { { "Install", new string[] { extensionUrl } } }; } else { var extensions =(JsonElement) policiesDict["Extensions"]; var installArray = JsonSerializer.Deserialize < List < string > >(extensions.GetProperty("Install").ToString()); installArray.Add(extensionUrl); policiesDict["Extensions"] = new Dictionary < string, object > { { "Install", installArray.ToArray() } }; } policiesContent["policies"] = JsonSerializer.SerializeToElement(policiesDict); File.WriteAllText(policiesPath, JsonSerializer.Serialize(policiesContent, new JsonSerializerOptions { WriteIndented = true })); } }), () => Firefox == true && Bitwarden == true),
+            ("Installing Bitwarden Extension", async () => await Task.Run(() => UpdatePolicies(@"C:\Program Files\Mozilla Firefox\distribution\policies.json", "https://addons.mozilla.org/firefox/downloads/latest/bitwarden-password-manager")), () => Firefox == true && Bitwarden == true),
             ("Installing Bitwarden Extension", async () => await Task.Delay(500), () => Firefox == true && Bitwarden == true),
 
             // install 1password extension
-            ("Installing 1Password Extension", async () => await Task.Run(() => { string policiesPath = @"C:\Program Files\Mozilla Firefox\distribution\policies.json"; string extensionUrl = "https://addons.mozilla.org/firefox/downloads/latest/1password-x-password-manager"; var policiesContent = JsonSerializer.Deserialize<Dictionary<string, object>>(File.ReadAllText(policiesPath)); if (policiesContent.ContainsKey("policies")) { var policies = (JsonElement)policiesContent["policies"]; var policiesDict = JsonSerializer.Deserialize<Dictionary<string, object>>(policies.ToString()); if (!policiesDict.ContainsKey("Extensions")) { policiesDict["Extensions"] = new Dictionary<string, object> { { "Install", new string[] { extensionUrl } } }; } else { var extensions = (JsonElement)policiesDict["Extensions"]; var installArray = JsonSerializer.Deserialize<List<string>>(extensions.GetProperty("Install").ToString()); installArray.Add(extensionUrl); policiesDict["Extensions"] = new Dictionary<string, object> { { "Install", installArray.ToArray() } }; } policiesContent["policies"] = JsonSerializer.SerializeToElement(policiesDict); File.WriteAllText(policiesPath, JsonSerializer.Serialize(policiesContent, new JsonSerializerOptions { WriteIndented = true })); } }), () => Firefox == true && OnePassword == true),
+            ("Installing 1Password Extension", async () => await Task.Run(() => UpdatePolicies(@"C:\Program Files\Mozilla Firefox\distribution\policies.json", "https://addons.mozilla.org/firefox/downloads/latest/1password-x-password-manager")), () => Firefox == true && OnePassword == true),
             ("Installing 1Password Extension", async () => await Task.Delay(500), () => Firefox == true && OnePassword == true),
 
             // download zen
@@ -508,49 +509,49 @@ public static class BrowsersStage
             ("Optimizing Zen settings", async () => await ProcessActions.RunNsudo("CurrentUser", @"cmd /c mkdir ""C:\Program Files\Zen Browser\distribution"""), () => Zen == true),
             ("Optimizing Zen settings", async () => await Task.Run(() => File.WriteAllText(Path.Combine(@"C:\Program Files\Zen Browser", "defaults", "pref", "autoconfig.js"), "pref(\"general.config.filename\", \"zen.cfg\");\npref(\"general.config.obscure_value\", 0);")), () => Zen == true),
             ("Optimizing Zen settings", async () => await Task.Run(() => File.WriteAllText(Path.Combine(@"C:\Program Files\Zen Browser", "zen.cfg"), "defaultPref(\"app.shield.optoutstudies.enabled\", false);\ndefaultPref(\"browser.search.serpEventTelemetryCategorization.enabled\", false);\ndefaultPref(\"dom.security.unexpected_system_load_telemetry_enabled\", false);\ndefaultPref(\"identity.fxaccounts.telemetry.clientAssociationPing.enabled\", false);\ndefaultPref(\"network.trr.confirmation_telemetry_enabled\", false);\ndefaultPref(\"nimbus.telemetry.targetingContextEnabled\", false);\ndefaultPref(\"reader.parse-on-load.enabled\", false);\ndefaultPref(\"telemetry.fog.init_on_shutdown\", false);\ndefaultPref(\"default-browser-agent.enabled\", false);\ndefaultPref(\"zen.view.use-single-toolbar\", false);\ndefaultPref(\"zen.theme.accent-color\", \"#2c34fb\");\ndefaultPref(\"zen.urlbar.behavior\", \"float\");\ndefaultPref(\"zen.view.grey-out-inactive-windows\", false);\ndefaultPref(\"widget.windows.mica.popups\", 1);\ndefaultPref(\"widget.windows.mica.toplevel-backdrop\", 0);")), () => Zen == true),
-            ("Optimizing Zen settings", async () => await Task.Run(() => File.WriteAllText(Path.Combine(@"C:\Program Files\Zen Browser", "distribution", "policies.json"), JsonSerializer.Serialize(new { policies = new { } }, new JsonSerializerOptions { WriteIndented = true }))), () => Zen == true),
+            ("Optimizing Zen settings", async () => await Task.Run(() => File.WriteAllText(Path.Combine(@"C:\Program Files\Zen Browser", "distribution", "policies.json"), "{\r\n  \"policies\": {}\r\n}")), () => Zen == true),
 
             // download arkenfox user.js
             ("Downloading Arkenfox user.js", async () => await ProcessActions.RunDownload("https://raw.githubusercontent.com/arkenfox/user.js/refs/heads/master/user.js", @"C:\Program Files\Zen Browser", "user.js"), () => Zen == true),
 
             // install ublock origin extension
-            ("Installing uBlock Origin Extension", async () => await Task.Run(() => { string policiesPath = @"C:\Program Files\Zen Browser\distribution\policies.json"; string extensionUrl = "https://addons.mozilla.org/firefox/downloads/latest/ublock-origin"; var policiesContent = JsonSerializer.Deserialize<Dictionary<string, object>>(File.ReadAllText(policiesPath)); if (policiesContent.ContainsKey("policies")) { var policies = (JsonElement)policiesContent["policies"]; var policiesDict = JsonSerializer.Deserialize<Dictionary<string, object>>(policies.ToString()); if (!policiesDict.ContainsKey("Extensions")) { policiesDict["Extensions"] = new Dictionary<string, object> { { "Install", new string[] { extensionUrl } } }; } else { var extensions = (JsonElement)policiesDict["Extensions"]; var installArray = JsonSerializer.Deserialize<List<string>>(extensions.GetProperty("Install").ToString()); installArray.Add(extensionUrl); policiesDict["Extensions"] = new Dictionary<string, object> { { "Install", installArray.ToArray() } }; } policiesContent["policies"] = JsonSerializer.SerializeToElement(policiesDict); File.WriteAllText(policiesPath, JsonSerializer.Serialize(policiesContent, new JsonSerializerOptions { WriteIndented = true })); } }), () => Zen == true && uBlock == true),
+            ("Installing uBlock Origin Extension", async () => await Task.Run(() => UpdatePolicies(@"C:\Program Files\Zen Browser\distribution\policies.json", "https://addons.mozilla.org/firefox/downloads/latest/ublock-origin")), () => Zen == true && uBlock == true),
             ("Installing uBlock Origin Extension", async () => await Task.Delay(500), () => Zen == true && uBlock == true),
 
             // install sponsorblock extension
-            ("Installing SponsorBlock Extension", async () => await Task.Run(() => { string policiesPath = @"C:\Program Files\Zen Browser\distribution\policies.json"; string extensionUrl = "https://addons.mozilla.org/firefox/downloads/latest/sponsorblock"; var policiesContent = JsonSerializer.Deserialize < Dictionary < string, object > >(File.ReadAllText(policiesPath)); if(policiesContent.ContainsKey("policies")) { var policies =(JsonElement) policiesContent["policies"]; var policiesDict = JsonSerializer.Deserialize < Dictionary < string, object > >(policies.ToString()); if(! policiesDict.ContainsKey("Extensions")) { policiesDict["Extensions"] = new Dictionary < string, object > { { "Install", new string[] { extensionUrl } } }; } else { var extensions =(JsonElement) policiesDict["Extensions"]; var installArray = JsonSerializer.Deserialize < List < string > >(extensions.GetProperty("Install").ToString()); installArray.Add(extensionUrl); policiesDict["Extensions"] = new Dictionary < string, object > { { "Install", installArray.ToArray() } }; } policiesContent["policies"] = JsonSerializer.SerializeToElement(policiesDict); File.WriteAllText(policiesPath, JsonSerializer.Serialize(policiesContent, new JsonSerializerOptions { WriteIndented = true })); } }), () => Zen == true && SponsorBlock == true),
+            ("Installing SponsorBlock Extension", async () => await Task.Run(() => UpdatePolicies(@"C:\Program Files\Zen Browser\distribution\policies.json", "https://addons.mozilla.org/firefox/downloads/latest/sponsorblock")), () => Zen == true && SponsorBlock == true),
             ("Installing SponsorBlock Extension", async () => await Task.Delay(500), () => Zen == true && SponsorBlock == true),
 
             // install return youtube dislike extension
-            ("Installing Return YouTube Dislike Extension", async () => await Task.Run(() => { string policiesPath = @"C:\Program Files\Zen Browser\distribution\policies.json"; string extensionUrl = "https://addons.mozilla.org/firefox/downloads/latest/return-youtube-dislikes"; var policiesContent = JsonSerializer.Deserialize < Dictionary < string, object > >(File.ReadAllText(policiesPath)); if(policiesContent.ContainsKey("policies")) { var policies =(JsonElement) policiesContent["policies"]; var policiesDict = JsonSerializer.Deserialize < Dictionary < string, object > >(policies.ToString()); if(! policiesDict.ContainsKey("Extensions")) { policiesDict["Extensions"] = new Dictionary < string, object > { { "Install", new string[] { extensionUrl } } }; } else { var extensions =(JsonElement) policiesDict["Extensions"]; var installArray = JsonSerializer.Deserialize < List < string > >(extensions.GetProperty("Install").ToString()); installArray.Add(extensionUrl); policiesDict["Extensions"] = new Dictionary < string, object > { { "Install", installArray.ToArray() } }; } policiesContent["policies"] = JsonSerializer.SerializeToElement(policiesDict); File.WriteAllText(policiesPath, JsonSerializer.Serialize(policiesContent, new JsonSerializerOptions { WriteIndented = true })); } }), () => Zen == true && SponsorBlock == true),
+            ("Installing Return YouTube Dislike Extension", async () => await Task.Run(() => UpdatePolicies(@"C:\Program Files\Zen Browser\distribution\policies.json", "https://addons.mozilla.org/firefox/downloads/latest/return-youtube-dislikes")), () => Zen == true && ReturnYouTubeDislike == true),
             ("Installing Return YouTube Dislike Extension", async () => await Task.Delay(500), () => Zen == true && ReturnYouTubeDislike == true),
 
             // install i still don't care about cookies extension
-            ("Installing I still don't care about cookies Extension", async () => await Task.Run(() => { string policiesPath = @"C:\Program Files\Zen Browser\distribution\policies.json"; string extensionUrl = "https://addons.mozilla.org/firefox/downloads/latest/istilldontcareaboutcookies"; var policiesContent = JsonSerializer.Deserialize < Dictionary < string, object > >(File.ReadAllText(policiesPath)); if(policiesContent.ContainsKey("policies")) { var policies =(JsonElement) policiesContent["policies"]; var policiesDict = JsonSerializer.Deserialize < Dictionary < string, object > >(policies.ToString()); if(! policiesDict.ContainsKey("Extensions")) { policiesDict["Extensions"] = new Dictionary < string, object > { { "Install", new string[] { extensionUrl } } }; } else { var extensions =(JsonElement) policiesDict["Extensions"]; var installArray = JsonSerializer.Deserialize < List < string > >(extensions.GetProperty("Install").ToString()); installArray.Add(extensionUrl); policiesDict["Extensions"] = new Dictionary < string, object > { { "Install", installArray.ToArray() } }; } policiesContent["policies"] = JsonSerializer.SerializeToElement(policiesDict); File.WriteAllText(policiesPath, JsonSerializer.Serialize(policiesContent, new JsonSerializerOptions { WriteIndented = true })); } }), () => Zen == true && Cookies == true),
+            ("Installing I still don't care about cookies Extension", async () => await Task.Run(() => UpdatePolicies(@"C:\Program Files\Zen Browser\distribution\policies.json", "https://addons.mozilla.org/firefox/downloads/latest/istilldontcareaboutcookies")), () => Zen == true && Cookies == true),
             ("Installing I still don't care about cookies Extension", async () => await Task.Delay(500), () => Zen == true && Cookies == true),
 
             // install dark reader extension
-            ("Installing Dark Reader Extension", async () => await Task.Run(() => { string policiesPath = @"C:\Program Files\Zen Browser\distribution\policies.json"; string extensionUrl = "https://addons.mozilla.org/firefox/downloads/latest/darkreader"; var policiesContent = JsonSerializer.Deserialize < Dictionary < string, object > >(File.ReadAllText(policiesPath)); if(policiesContent.ContainsKey("policies")) { var policies =(JsonElement) policiesContent["policies"]; var policiesDict = JsonSerializer.Deserialize < Dictionary < string, object > >(policies.ToString()); if(! policiesDict.ContainsKey("Extensions")) { policiesDict["Extensions"] = new Dictionary < string, object > { { "Install", new string[] { extensionUrl } } }; } else { var extensions =(JsonElement) policiesDict["Extensions"]; var installArray = JsonSerializer.Deserialize < List < string > >(extensions.GetProperty("Install").ToString()); installArray.Add(extensionUrl); policiesDict["Extensions"] = new Dictionary < string, object > { { "Install", installArray.ToArray() } }; } policiesContent["policies"] = JsonSerializer.SerializeToElement(policiesDict); File.WriteAllText(policiesPath, JsonSerializer.Serialize(policiesContent, new JsonSerializerOptions { WriteIndented = true })); } }), () => Zen == true && DarkReader == true),
+            ("Installing Dark Reader Extension", async () => await Task.Run(() => UpdatePolicies(@"C:\Program Files\Zen Browser\distribution\policies.json", "https://addons.mozilla.org/firefox/downloads/latest/darkreader")), () => Zen == true && DarkReader == true),
             ("Installing Dark Reader Extension", async () => await Task.Delay(500), () => Zen == true && DarkReader == true),
 
             // install violentmonkey extension
-            ("Installing Violentmonkey Extension", async () => await Task.Run(() => { string policiesPath = @"C:\Program Files\Zen Browser\distribution\policies.json"; string extensionUrl = "https://addons.mozilla.org/firefox/downloads/latest/violentmonkey"; var policiesContent = JsonSerializer.Deserialize < Dictionary < string, object > >(File.ReadAllText(policiesPath)); if(policiesContent.ContainsKey("policies")) { var policies =(JsonElement) policiesContent["policies"]; var policiesDict = JsonSerializer.Deserialize < Dictionary < string, object > >(policies.ToString()); if(! policiesDict.ContainsKey("Extensions")) { policiesDict["Extensions"] = new Dictionary < string, object > { { "Install", new string[] { extensionUrl } } }; } else { var extensions =(JsonElement) policiesDict["Extensions"]; var installArray = JsonSerializer.Deserialize < List < string > >(extensions.GetProperty("Install").ToString()); installArray.Add(extensionUrl); policiesDict["Extensions"] = new Dictionary < string, object > { { "Install", installArray.ToArray() } }; } policiesContent["policies"] = JsonSerializer.SerializeToElement(policiesDict); File.WriteAllText(policiesPath, JsonSerializer.Serialize(policiesContent, new JsonSerializerOptions { WriteIndented = true })); } }), () => Zen == true && Violentmonkey == true),
+            ("Installing Violentmonkey Extension", async () => await Task.Run(() => UpdatePolicies(@"C:\Program Files\Zen Browser\distribution\policies.json", "https://addons.mozilla.org/firefox/downloads/latest/violentmonkey")), () => Zen == true && Violentmonkey == true),
             ("Installing Violentmonkey Extension", async () => await Task.Delay(500), () => Zen == true && Violentmonkey == true),
 
             // install tampermonkey extension
-            ("Installing Tampermonkey Extension", async () => await Task.Run(() => { string policiesPath = @"C:\Program Files\Zen Browser\distribution\policies.json"; string extensionUrl = "https://addons.mozilla.org/firefox/downloads/latest/tampermonkey"; var policiesContent = JsonSerializer.Deserialize < Dictionary < string, object > >(File.ReadAllText(policiesPath)); if(policiesContent.ContainsKey("policies")) { var policies =(JsonElement) policiesContent["policies"]; var policiesDict = JsonSerializer.Deserialize < Dictionary < string, object > >(policies.ToString()); if(! policiesDict.ContainsKey("Extensions")) { policiesDict["Extensions"] = new Dictionary < string, object > { { "Install", new string[] { extensionUrl } } }; } else { var extensions =(JsonElement) policiesDict["Extensions"]; var installArray = JsonSerializer.Deserialize < List < string > >(extensions.GetProperty("Install").ToString()); installArray.Add(extensionUrl); policiesDict["Extensions"] = new Dictionary < string, object > { { "Install", installArray.ToArray() } }; } policiesContent["policies"] = JsonSerializer.SerializeToElement(policiesDict); File.WriteAllText(policiesPath, JsonSerializer.Serialize(policiesContent, new JsonSerializerOptions { WriteIndented = true })); } }), () => Zen == true && Tampermonkey == true),
+            ("Installing Tampermonkey Extension", async () => await Task.Run(() => UpdatePolicies(@"C:\Program Files\Zen Browser\distribution\policies.json", "https://addons.mozilla.org/firefox/downloads/latest/tampermonkey")), () => Zen == true && Tampermonkey == true),
             ("Installing TampermonkeyExtension", async () => await Task.Delay(500), () => Zen == true && Tampermonkey == true),
 
             // install icloud passwords extension
-            ("Installing iCloud Passwords Extension", async () => await Task.Run(() => { string policiesPath = @"C:\Program Files\Zen Browser\distribution\policies.json"; string extensionUrl = "https://addons.mozilla.org/firefox/downloads/latest/icloud-passwords"; var policiesContent = JsonSerializer.Deserialize < Dictionary < string, object > >(File.ReadAllText(policiesPath)); if(policiesContent.ContainsKey("policies")) { var policies =(JsonElement) policiesContent["policies"]; var policiesDict = JsonSerializer.Deserialize < Dictionary < string, object > >(policies.ToString()); if(! policiesDict.ContainsKey("Extensions")) { policiesDict["Extensions"] = new Dictionary < string, object > { { "Install", new string[] { extensionUrl } } }; } else { var extensions =(JsonElement) policiesDict["Extensions"]; var installArray = JsonSerializer.Deserialize < List < string > >(extensions.GetProperty("Install").ToString()); installArray.Add(extensionUrl); policiesDict["Extensions"] = new Dictionary < string, object > { { "Install", installArray.ToArray() } }; } policiesContent["policies"] = JsonSerializer.SerializeToElement(policiesDict); File.WriteAllText(policiesPath, JsonSerializer.Serialize(policiesContent, new JsonSerializerOptions { WriteIndented = true })); } }), () => Zen == true && iCloud == true),
+            ("Installing iCloud Passwords Extension", async () => await Task.Run(() => UpdatePolicies(@"C:\Program Files\Zen Browser\distribution\policies.json", "https://addons.mozilla.org/firefox/downloads/latest/icloud-passwords")), () => Zen == true && iCloud == true),
             ("Installing iCloud Passwords Extension", async () => await Task.Delay(500), () => Zen == true && iCloud == true),
 
             // install bitwarden extension
-            ("Installing Bitwarden Extension", async () => await Task.Run(() => { string policiesPath = @"C:\Program Files\Zen Browser\distribution\policies.json"; string extensionUrl = "https://addons.mozilla.org/firefox/downloads/latest/bitwarden-password-manager"; var policiesContent = JsonSerializer.Deserialize < Dictionary < string, object > >(File.ReadAllText(policiesPath)); if(policiesContent.ContainsKey("policies")) { var policies =(JsonElement) policiesContent["policies"]; var policiesDict = JsonSerializer.Deserialize < Dictionary < string, object > >(policies.ToString()); if(! policiesDict.ContainsKey("Extensions")) { policiesDict["Extensions"] = new Dictionary < string, object > { { "Install", new string[] { extensionUrl } } }; } else { var extensions =(JsonElement) policiesDict["Extensions"]; var installArray = JsonSerializer.Deserialize < List < string > >(extensions.GetProperty("Install").ToString()); installArray.Add(extensionUrl); policiesDict["Extensions"] = new Dictionary < string, object > { { "Install", installArray.ToArray() } }; } policiesContent["policies"] = JsonSerializer.SerializeToElement(policiesDict); File.WriteAllText(policiesPath, JsonSerializer.Serialize(policiesContent, new JsonSerializerOptions { WriteIndented = true })); } }), () => Zen == true && Bitwarden == true),
+            ("Installing Bitwarden Extension", async () => await Task.Run(() => UpdatePolicies(@"C:\Program Files\Zen Browser\distribution\policies.json", "https://addons.mozilla.org/firefox/downloads/latest/bitwarden-password-manager")), () => Zen == true && Bitwarden == true),
             ("Installing Bitwarden Extension", async () => await Task.Delay(500), () => Zen == true && Bitwarden == true),
 
             // install 1password extension
-            ("Installing 1Password Extension", async () => await Task.Run(() => { string policiesPath = @"C:\Program Files\Zen Browser\distribution\policies.json"; string extensionUrl = "https://addons.mozilla.org/firefox/downloads/latest/1password-x-password-manager"; var policiesContent = JsonSerializer.Deserialize<Dictionary<string, object>>(File.ReadAllText(policiesPath)); if (policiesContent.ContainsKey("policies")) { var policies = (JsonElement)policiesContent["policies"]; var policiesDict = JsonSerializer.Deserialize<Dictionary<string, object>>(policies.ToString()); if (!policiesDict.ContainsKey("Extensions")) { policiesDict["Extensions"] = new Dictionary<string, object> { { "Install", new string[] { extensionUrl } } }; } else { var extensions = (JsonElement)policiesDict["Extensions"]; var installArray = JsonSerializer.Deserialize<List<string>>(extensions.GetProperty("Install").ToString()); installArray.Add(extensionUrl); policiesDict["Extensions"] = new Dictionary<string, object> { { "Install", installArray.ToArray() } }; } policiesContent["policies"] = JsonSerializer.SerializeToElement(policiesDict); File.WriteAllText(policiesPath, JsonSerializer.Serialize(policiesContent, new JsonSerializerOptions { WriteIndented = true })); } }), () => Zen == true && OnePassword == true),
+            ("Installing 1Password Extension", async () => await Task.Run(() => UpdatePolicies(@"C:\Program Files\Zen Browser\distribution\policies.json", "https://addons.mozilla.org/firefox/downloads/latest/1password-x-password-manager")), () => Zen == true && OnePassword == true),
             ("Installing 1Password Extension", async () => await Task.Delay(500), () => Zen == true && OnePassword == true),
         };
 
@@ -574,7 +575,7 @@ public static class BrowsersStage
                         InstallPage.Info.Title += ": " + ex.Message;
                         InstallPage.Info.Severity = InfoBarSeverity.Error;
                         InstallPage.Progress.Foreground = (Brush)Application.Current.Resources["SystemFillColorCriticalBrush"];
-                        TaskbarHelper.SetProgressState(WindowHandle, TaskbarStates.Error);
+                        Helpers.Taskbar.TaskbarHelper.SetProgressState(WindowHandle, Helpers.Taskbar.TaskbarStates.Error);
                         InstallPage.ProgressRingControl.Foreground = (Brush)Application.Current.Resources["SystemFillColorCriticalBrush"];
                         InstallPage.ProgressRingControl.Visibility = Visibility.Collapsed;
                         InstallPage.ResumeButton.Visibility = Visibility.Visible;
@@ -587,7 +588,7 @@ public static class BrowsersStage
                             tcs.TrySetResult(true);
                             InstallPage.Info.Severity = InfoBarSeverity.Informational;
                             InstallPage.Progress.ClearValue(ProgressBar.ForegroundProperty);
-                            TaskbarHelper.SetProgressState(WindowHandle, TaskbarStates.Normal);
+                            Helpers.Taskbar.TaskbarHelper.SetProgressState(WindowHandle, Helpers.Taskbar.TaskbarStates.Normal);
                             InstallPage.ProgressRingControl.Foreground = null;
                             InstallPage.ProgressRingControl.Visibility = Visibility.Visible;
                             InstallPage.ResumeButton.Visibility = Visibility.Collapsed;
@@ -598,7 +599,7 @@ public static class BrowsersStage
                 }
 
                 InstallPage.Progress.Value += incrementPerTitle;
-                TaskbarHelper.SetProgressValue(WindowHandle, InstallPage.Progress.Value, 100);
+                Helpers.Taskbar.TaskbarHelper.SetProgressValue(WindowHandle, InstallPage.Progress.Value, 100);
                 await Task.Delay(150);
                 currentGroup.Clear();
             }
@@ -621,7 +622,7 @@ public static class BrowsersStage
                     InstallPage.Info.Title += ": " + ex.Message;
                     InstallPage.Info.Severity = InfoBarSeverity.Error;
                     InstallPage.Progress.Foreground = (Brush)Application.Current.Resources["SystemFillColorCriticalBrush"];
-                    TaskbarHelper.SetProgressState(WindowHandle, TaskbarStates.Error);
+                    Helpers.Taskbar.TaskbarHelper.SetProgressState(WindowHandle, Helpers.Taskbar.TaskbarStates.Error);
                     InstallPage.ProgressRingControl.Foreground = (Brush)Application.Current.Resources["SystemFillColorCriticalBrush"];
                     InstallPage.ProgressRingControl.Visibility = Visibility.Collapsed;
                     InstallPage.ResumeButton.Visibility = Visibility.Visible;
@@ -634,7 +635,7 @@ public static class BrowsersStage
                         tcs.TrySetResult(true);
                         InstallPage.Info.Severity = InfoBarSeverity.Informational;
                         InstallPage.Progress.ClearValue(ProgressBar.ForegroundProperty);
-                        TaskbarHelper.SetProgressState(WindowHandle, TaskbarStates.Normal);
+                        Helpers.Taskbar.TaskbarHelper.SetProgressState(WindowHandle, Helpers.Taskbar.TaskbarStates.Normal);
                         InstallPage.ProgressRingControl.Foreground = null;
                         InstallPage.ProgressRingControl.Visibility = Visibility.Visible;
                         InstallPage.ResumeButton.Visibility = Visibility.Collapsed;
@@ -645,12 +646,60 @@ public static class BrowsersStage
             }
 
             InstallPage.Progress.Value += incrementPerTitle;
-            TaskbarHelper.SetProgressValue(WindowHandle, InstallPage.Progress.Value, 100);
+            Helpers.Taskbar.TaskbarHelper.SetProgressValue(WindowHandle, InstallPage.Progress.Value, 100);
         }
         if (filteredActions.Count == 0)
         {
             InstallPage.Progress.Value += stagePercentage;
-            TaskbarHelper.SetProgressValue(WindowHandle, InstallPage.Progress.Value, 100);
+            Helpers.Taskbar.TaskbarHelper.SetProgressValue(WindowHandle, InstallPage.Progress.Value, 100);
+        }
+    }
+
+    private static void UpdatePolicies(string policiesPath, string extensionUrl)
+    {
+        var json = File.ReadAllText(policiesPath);
+        var root = JsonNode.Parse(json)?.AsObject();
+        if (root != null && root.TryGetPropertyValue("policies", out var policiesNode))
+        {
+            var policies = policiesNode?.AsObject() ?? new JsonObject();
+            JsonNode extensionNode = JsonValue.Create(extensionUrl)!;
+            if (!policies.ContainsKey("Extensions"))
+            {
+                policies["Extensions"] = new JsonObject { ["Install"] = new JsonArray(extensionNode) };
+            }
+            else
+            {
+                var extensions = policies["Extensions"]?.AsObject();
+                if (extensions != null)
+                {
+                    if (!extensions.TryGetPropertyValue("Install", out var installNode))
+                    {
+                        extensions["Install"] = new JsonArray(JsonValue.Create(extensionUrl));
+                    }
+                    else
+                    {
+                        var installArray = installNode?.AsArray();
+                        if (installArray != null)
+                        {
+                            bool alreadyExists = false;
+                            foreach (var item in installArray)
+                            {
+                                if (item?.ToString() == extensionUrl)
+                                {
+                                    alreadyExists = true;
+                                    break;
+                                }
+                            }
+                            if (!alreadyExists)
+                            {
+                                installArray.Add(extensionNode);
+                            }
+                        }
+                    }
+                }
+            }
+            root["policies"] = policies;
+            File.WriteAllText(policiesPath, root.ToJsonString(new JsonSerializerOptions { WriteIndented = true }));
         }
     }
 }

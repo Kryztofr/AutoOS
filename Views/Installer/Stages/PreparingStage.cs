@@ -17,95 +17,91 @@ public static class PreparingStage
 {
     public static IntPtr WindowHandle { get; private set; }
 
-    public static bool? SSD;
+    public static bool SSD;
+    public static string ScheduleMode = string.Empty;
+    public static string LightTime = string.Empty;
+    public static string DarkTime = string.Empty;
+    public static bool LegacyContextMenu;
+    public static bool AlwaysShowTrayIcons;
+    public static bool TaskbarAlignment;
+    public static bool Chrome;
+    public static bool Thorium;
+    public static bool Brave;
+    public static bool Vivaldi;
+    public static bool Arc;
+    public static bool Comet;
+    public static bool Firefox;
+    public static bool Zen;
+    public static bool uBlock;
+    public static bool SponsorBlock;
+    public static bool ReturnYouTubeDislike;
+    public static bool Cookies;
+    public static bool DarkReader;
+    public static bool Violentmonkey;
+    public static bool Tampermonkey;
+    public static bool Shazam;
+    public static bool iCloud;
+    public static bool Bitwarden;
+    public static bool OnePassword;
+    public static bool Word;
+    public static bool Excel;
+    public static bool PowerPoint;
+    public static bool OneNote;
+    public static bool Teams;
+    public static bool Outlook;
+    public static bool OneDrive;
+    public static bool VisualStudio;
+    public static bool VisualStudioCode;
+    public static bool Git;
+    public static bool Python;
+    public static bool Nodejs;
+    public static bool Trello;
+    public static bool AppleMusic;
+    public static bool Tidal;
+    public static bool Qobuz;
+    public static bool AmazonMusic;
+    public static bool DeezerMusic;
+    public static bool Spotify;
 
-    public static string ScheduleMode;
-    public static string LightTime;
-    public static string DarkTime;
-
-    public static bool? LegacyContextMenu;
-    public static bool? AlwaysShowTrayIcons;
-    public static bool? TaskbarAlignment;
-
-    public static bool? Chrome;
-    public static bool? Thorium;
-    public static bool? Brave;
-    public static bool? Vivaldi;
-    public static bool? Arc;
-    public static bool? Comet;
-    public static bool? Firefox;
-    public static bool? Zen;
-
-    public static bool? uBlock;
-    public static bool? SponsorBlock;
-    public static bool? ReturnYouTubeDislike;
-    public static bool? Cookies;
-    public static bool? DarkReader;
-    public static bool? Violentmonkey;
-    public static bool? Tampermonkey;
-    public static bool? Shazam;
-    public static bool? iCloud;
-    public static bool? Bitwarden;
-    public static bool? OnePassword;
-
-    public static bool? Word;
-    public static bool? Excel;
-    public static bool? PowerPoint;
-    public static bool? OneNote;
-    public static bool? Teams;
-    public static bool? Outlook;
-    public static bool? OneDrive;
-
-    public static bool? VisualStudio;
-    public static bool? VisualStudioCode;
-    public static bool? Git;
-    public static bool? Python;
-    public static bool? Nodejs;
-    public static bool? Trello;
-
-    public static bool? AppleMusic;
-    public static bool? Tidal;
-    public static bool? Qobuz;
-    public static bool? AmazonMusic;
-    public static bool? DeezerMusic;
-    public static bool? Spotify;
-
-    public static bool? Discord;
-    public static bool? WhatsApp;
-    public static bool? EpicGames;
-    public static bool? EpicGamesAccount;
-    public static bool? EpicGamesGames;
-    public static bool? Steam;
-    public static bool? SteamGames;
-    public static bool? RiotClient;
-    public static bool? EA;
-    public static bool? UbisoftConnect;
-    public static bool? BattleNet;
-    public static bool? MinecraftLauncher;
-    public static bool? RockstarGamesLauncher;
-    public static bool? FiveM;
-    public static bool? FACEIT;
+    public static bool Discord;
+    public static bool WhatsApp;
+    public static bool EpicGames;
+    public static bool EpicGamesAccount;
+    public static bool EpicGamesGames;
+    public static bool Steam;
+    public static bool SteamGames;
+    public static bool RiotClient;
+    public static bool EA;
+    public static bool UbisoftConnect;
+    public static bool BattleNet;
+    public static bool MinecraftLauncher;
+    public static bool RockstarGamesLauncher;
+    public static bool FiveM;
+    public static bool FACEIT;
 
     public static List<GpuInfo> GPUs { get; set; } = [];
-    public static bool? MSI;
-    public static bool? CRU;
+    public static bool MSI;
+    public static bool CRU;
 
-    public static bool? Wifi;
-    public static bool? TxIntDelay;
-    public static bool? NetAdapterCx;
+    public static bool Wifi;
+    public static bool TxIntDelay;
+    public static bool NetAdapterCx;
 
-    public static bool? INTELCPU;
-    public static bool? AMDCPU;
-    public static bool? WindowsDefender;
-    public static bool? UserAccountControl;
-    public static bool? DEP;
-    public static bool? MemoryIntegrity;
-    public static bool? VirtualizationBasedSecurity;
-    public static bool? SpectreMeltdownMitigations;
-    public static bool? ProcessMitigations;
+    public static bool INTELCPU;
+    public static bool AMDCPU;
+    public static bool WindowsDefender;
+    public static bool UserAccountControl;
+    public static bool DEP;
+    public static bool MemoryIntegrity;
+    public static bool VirtualizationBasedSecurity;
+    public static bool SpectreMeltdownMitigations;
+    public static bool ProcessMitigations;
 
-    public static int? PCores;
-    public static bool? HyperThreading;
+    public static int PCores;
+    public static int ECores;
+    public static int TCores;
+    public static int LogicalCores;
+    public static bool HyperThreading;
 
     private static readonly ApplicationDataContainer localSettings = ApplicationData.Current.LocalSettings;
 
@@ -117,7 +113,7 @@ public static class PreparingStage
 
         InstallPage.Info.Severity = InfoBarSeverity.Warning;
         InstallPage.Progress.Foreground = (Brush)Application.Current.Resources["SystemFillColorCautionBrush"];
-        TaskbarHelper.SetProgressState(WindowHandle, TaskbarStates.Paused);
+        Helpers.Taskbar.TaskbarHelper.SetProgressState(WindowHandle, Helpers.Taskbar.TaskbarStates.Paused);
         InstallPage.ProgressRingControl.Foreground = (Brush)Application.Current.Resources["SystemFillColorCautionBrush"];
         localSettings.Values["Install_Start"] = DateTimeOffset.Now.ToString("O");
 
@@ -230,7 +226,31 @@ public static class PreparingStage
             FiveM = (localSettings.Values["Launchers"]?.ToString().Contains("FiveM") ?? false);
             FACEIT = (localSettings.Values["Launchers"]?.ToString().Contains("FACEIT") ?? false);
 
-            GPUs = JsonSerializer.Deserialize<List<GpuInfo>>(localSettings.Values["GPUs"]?.ToString() ?? "[]") ?? [];
+            var gpuArray = JsonNode.Parse(localSettings.Values["GPUs"]?.ToString() ?? "[]")?.AsArray();
+            if (gpuArray != null)
+            {
+                foreach (var node in gpuArray)
+                {
+                    var obj = node?.AsObject();
+                    if (obj == null) continue;
+
+                    GPUs.Add(new GpuInfo
+                    {
+                        DeviceName = obj["Name"]?.ToString(),
+                        PnPDeviceId = obj["PnPDeviceId"]?.ToString(),
+                        VendorId = obj["VendorId"]?.ToString(),
+                        DeviceId = obj["DeviceId"]?.ToString(),
+                        Codename = obj["Codename"]?.ToString(),
+                        Install = obj["Install"]?.GetValue<bool>() ?? false,
+                        IsInstalled = obj["IsInstalled"]?.GetValue<bool>() ?? false,
+                        RegistryPath = obj["RegistryPath"]?.ToString(),
+                        Location = obj["Location"]?.ToString(),
+                        HDCP = obj["HDCP"]?.GetValue<bool>() ?? false,
+                        HDMIDPAudio = obj["HDMIDPAudio"]?.GetValue<bool>() ?? false
+                    });
+                }
+            }
+
             MSI = (localSettings.Values["MsiProfile"] != null);
             CRU = (localSettings.Values["CruProfile"] != null);
 
@@ -309,8 +329,8 @@ public static class PreparingStage
 
         InstallPage.Info.Severity = InfoBarSeverity.Informational;
         InstallPage.Progress.ClearValue(ProgressBar.ForegroundProperty);
-        TaskbarHelper.SetProgressState(WindowHandle, TaskbarStates.Normal);
+        Helpers.Taskbar.TaskbarHelper.SetProgressState(WindowHandle, Helpers.Taskbar.TaskbarStates.Normal);
         InstallPage.ProgressRingControl.Foreground = null;
-        TaskbarHelper.SetProgressValue(WindowHandle, InstallPage.Progress.Value, 100);
+        Helpers.Taskbar.TaskbarHelper.SetProgressValue(WindowHandle, InstallPage.Progress.Value, 100);
     }
 }

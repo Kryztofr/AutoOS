@@ -16,16 +16,16 @@ public partial class FilePicker
     {
         this.hwnd = hwnd;
     }
-    public FilePicker(Microsoft.UI.Xaml.Window window) : this(WindowNative.GetWindowHandle(window)) { }
+    public FilePicker(Window window) : this(WindowNative.GetWindowHandle(window)) { }
     public PickerOptions Options { get; set; } = PickerOptions.None;
 
     public bool ShowDetailedExtension { get; set; } = true;
-    public string? CommitButtonText { get; set; }
-    public string? SuggestedFileName { get; set; }
-    public string? DefaultFileExtension { get; set; }
-    public string? InitialDirectory { get; set; }
+    public string CommitButtonText { get; set; }
+    public string SuggestedFileName { get; set; }
+    public string DefaultFileExtension { get; set; }
+    public string InitialDirectory { get; set; }
     public Microsoft.Windows.Storage.Pickers.PickerLocationId SuggestedStartLocation { get; set; } = Microsoft.Windows.Storage.Pickers.PickerLocationId.Unspecified;
-    public string? Title { get; set; }
+    public string Title { get; set; }
     public Dictionary<string, IList<string>> FileTypeChoices { get; set; } = new();
     public bool ShowAllFilesOption { get; set; } = true;
 
@@ -43,7 +43,7 @@ public partial class FilePicker
     /// Asynchronously picks single file.
     /// </summary>
     /// <returns>Returns the selected file as a StorageFile or null if no file was selected.</returns>
-    public async Task<StorageFile?> PickSingleFileAsync()
+    public async Task<StorageFile> PickSingleFileAsync()
     {
         var files = OpenFileDialog(false);
         return files.Count > 0 ? await StorageFile.GetFileFromPathAsync(files[0]) : null;

@@ -4,6 +4,7 @@ using Windows.Win32;
 using Windows.Win32.Foundation;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using WinRT;
 
 namespace AutoOS.Helpers.CPU;
 
@@ -17,6 +18,7 @@ public sealed class CpuSet
     public byte NumaNodeIndex { get; set; }
 }
 
+[GeneratedBindableCustomProperty]
 public sealed partial class CpuThread : INotifyPropertyChanged
 {
     private bool _isSelected;
@@ -35,14 +37,15 @@ public sealed partial class CpuThread : INotifyPropertyChanged
         }
     }
 
-    public event PropertyChangedEventHandler? PropertyChanged;
-    private void OnPropertyChanged([CallerMemberName] string? name = null)
+    public event PropertyChangedEventHandler PropertyChanged;
+    private void OnPropertyChanged([CallerMemberName] string name = null)
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
     }
 }
 
-public sealed class CpuCore
+[GeneratedBindableCustomProperty]
+public sealed partial class CpuCore
 {
     public byte CoreIndex { get; set; }
     public string Name { get; set; } = string.Empty;

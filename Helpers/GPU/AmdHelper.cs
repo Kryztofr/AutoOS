@@ -1,5 +1,5 @@
 ﻿using AutoOS.Views.Installer.Actions;
-using System.Text.Json;
+using System.Text.Json.Nodes;
 
 namespace AutoOS.Helpers.GPU;
 
@@ -33,20 +33,24 @@ public static class AmdHelper
 
         foreach (var json in responses)
         {
-            var builds = JsonSerializer.Deserialize<List<Dictionary<string, JsonElement>>>(json);
+            var builds = JsonNode.Parse(json).AsArray();
             if (builds == null) continue;
 
-            foreach (var build in builds)
+            foreach (var buildNode in builds)
             {
-                if (!build.TryGetValue("skus", out var skusElem) || skusElem.ValueKind != JsonValueKind.Array) continue;
+                var build = buildNode.AsObject();
+                if (build == null) continue;
 
-                foreach (var sku in skusElem.EnumerateArray())
+                if (!build.TryGetPropertyValue("skus", out var skusNode) || skusNode is not JsonArray skusArray)
+                    continue;
+
+                foreach (var sku in skusArray)
                 {
-                    if (sku.GetString()?.Contains(deviceId, StringComparison.InvariantCultureIgnoreCase) != true)
+                    if (sku?.ToString().Contains(deviceId, StringComparison.InvariantCultureIgnoreCase) != true)
                         continue;
 
-                    newestVersion = build.TryGetValue("externalbuildversion", out var ver) ? ver.GetString() : null;
-                    newestDownloadUrl = build.TryGetValue("fullbuild", out var url) ? url.GetString() : null;
+                    newestVersion = build["externalbuildversion"]?.ToString();
+                    newestDownloadUrl = build["fullbuild"]?.ToString();
                     break;
                 }
 

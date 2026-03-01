@@ -2,9 +2,11 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Microsoft.UI.Text;
+using WinRT;
 
 namespace AutoOS.Views.Settings.Power
 {
+    [GeneratedBindableCustomProperty]
     public sealed partial class PowerPlan : INotifyPropertyChanged
     {
         public Guid Guid { get; set; }
@@ -28,6 +30,7 @@ namespace AutoOS.Views.Settings.Power
             => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
+    [GeneratedBindableCustomProperty]
     public sealed partial class PowerSubgroup : INotifyPropertyChanged
     {
         public Guid Guid { get; set; }
@@ -56,6 +59,7 @@ namespace AutoOS.Views.Settings.Power
             => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
+    [GeneratedBindableCustomProperty]
     public sealed partial class PowerSetting : INotifyPropertyChanged
     {
         private uint _acValueIndex;

@@ -10,7 +10,7 @@ namespace AutoOS.Views.Installer.Stages;
 
 public static class ApplicationStage
 {
-    public static bool? Fortnite;
+    public static bool Fortnite;
     public static IntPtr WindowHandle { get; private set; }
     public static async Task Run()
     {
@@ -19,47 +19,47 @@ public static class ApplicationStage
         string LightTime = PreparingStage.LightTime;
         string DarkTime = PreparingStage.DarkTime;
 
-        bool? iCloud = PreparingStage.iCloud;
-        bool? Bitwarden = PreparingStage.Bitwarden;
-        bool? OnePassword = PreparingStage.OnePassword;
-        bool? AlwaysShowTrayIcons = PreparingStage.AlwaysShowTrayIcons;
+        bool iCloud = PreparingStage.iCloud;
+        bool Bitwarden = PreparingStage.Bitwarden;
+        bool OnePassword = PreparingStage.OnePassword;
+        bool AlwaysShowTrayIcons = PreparingStage.AlwaysShowTrayIcons;
 
-        bool? Word = PreparingStage.Word;
-        bool? Excel = PreparingStage.Excel;
-        bool? PowerPoint = PreparingStage.PowerPoint;
-        bool? OneNote = PreparingStage.OneNote;
-        bool? Teams = PreparingStage.Teams;
-        bool? Outlook = PreparingStage.Outlook;
-        bool? OneDrive = PreparingStage.OneDrive;
+        bool Word = PreparingStage.Word;
+        bool Excel = PreparingStage.Excel;
+        bool PowerPoint = PreparingStage.PowerPoint;
+        bool OneNote = PreparingStage.OneNote;
+        bool Teams = PreparingStage.Teams;
+        bool Outlook = PreparingStage.Outlook;
+        bool OneDrive = PreparingStage.OneDrive;
 
-        bool? VisualStudio = PreparingStage.VisualStudio;
-        bool? VisualStudioCode = PreparingStage.VisualStudioCode;
-        bool? Git = PreparingStage.Git;
-        bool? Python = PreparingStage.Python;
-        bool? Nodejs = PreparingStage.Nodejs;
-        bool? Trello = PreparingStage.Trello;
+        bool VisualStudio = PreparingStage.VisualStudio;
+        bool VisualStudioCode = PreparingStage.VisualStudioCode;
+        bool Git = PreparingStage.Git;
+        bool Python = PreparingStage.Python;
+        bool Nodejs = PreparingStage.Nodejs;
+        bool Trello = PreparingStage.Trello;
 
-        bool? AppleMusic = PreparingStage.AppleMusic;
-        bool? Tidal = PreparingStage.Tidal;
-        bool? Qobuz = PreparingStage.Qobuz;
-        bool? AmazonMusic = PreparingStage.AmazonMusic;
-        bool? DeezerMusic = PreparingStage.DeezerMusic;
-        bool? Spotify = PreparingStage.Spotify;
-        bool? WhatsApp = PreparingStage.WhatsApp;
-        bool? Discord = PreparingStage.Discord;
-        bool? EpicGames = PreparingStage.EpicGames;
-        bool? EpicGamesAccount = PreparingStage.EpicGamesAccount;
-        bool? EpicGamesGames = PreparingStage.EpicGamesGames;
-        bool? Steam = PreparingStage.Steam;
-        bool? SteamGames = PreparingStage.SteamGames;
-        bool? RiotClient = PreparingStage.RiotClient;
-        bool? EA = PreparingStage.EA;
-        bool? UbisoftConnect = PreparingStage.UbisoftConnect;
-        bool? BattleNet = PreparingStage.BattleNet;
-        bool? MinecraftLauncher = PreparingStage.MinecraftLauncher;
-        bool? RockstarGamesLauncher = PreparingStage.RockstarGamesLauncher;
-        bool? FiveM = PreparingStage.FiveM;
-        bool? FACEIT = PreparingStage.FACEIT;
+        bool AppleMusic = PreparingStage.AppleMusic;
+        bool Tidal = PreparingStage.Tidal;
+        bool Qobuz = PreparingStage.Qobuz;
+        bool AmazonMusic = PreparingStage.AmazonMusic;
+        bool DeezerMusic = PreparingStage.DeezerMusic;
+        bool Spotify = PreparingStage.Spotify;
+        bool WhatsApp = PreparingStage.WhatsApp;
+        bool Discord = PreparingStage.Discord;
+        bool EpicGames = PreparingStage.EpicGames;
+        bool EpicGamesAccount = PreparingStage.EpicGamesAccount;
+        bool EpicGamesGames = PreparingStage.EpicGamesGames;
+        bool Steam = PreparingStage.Steam;
+        bool SteamGames = PreparingStage.SteamGames;
+        bool RiotClient = PreparingStage.RiotClient;
+        bool EA = PreparingStage.EA;
+        bool UbisoftConnect = PreparingStage.UbisoftConnect;
+        bool BattleNet = PreparingStage.BattleNet;
+        bool MinecraftLauncher = PreparingStage.MinecraftLauncher;
+        bool RockstarGamesLauncher = PreparingStage.RockstarGamesLauncher;
+        bool FiveM = PreparingStage.FiveM;
+        bool FACEIT = PreparingStage.FACEIT;
 
         InstallPage.Status.Text = "Configuring Applications...";
 
@@ -845,7 +845,7 @@ public static class ApplicationStage
                         InstallPage.Info.Title += ": " + ex.Message;
                         InstallPage.Info.Severity = InfoBarSeverity.Error;
                         InstallPage.Progress.Foreground = (Brush)Application.Current.Resources["SystemFillColorCriticalBrush"];
-                        TaskbarHelper.SetProgressState(WindowHandle, TaskbarStates.Error);
+                        Helpers.Taskbar.TaskbarHelper.SetProgressState(WindowHandle, Helpers.Taskbar.TaskbarStates.Error);
                         InstallPage.ProgressRingControl.Foreground = (Brush)Application.Current.Resources["SystemFillColorCriticalBrush"];
                         InstallPage.ProgressRingControl.Visibility = Visibility.Collapsed;
                         InstallPage.ResumeButton.Visibility = Visibility.Visible;
@@ -858,7 +858,7 @@ public static class ApplicationStage
                             tcs.TrySetResult(true);
                             InstallPage.Info.Severity = InfoBarSeverity.Informational;
                             InstallPage.Progress.ClearValue(ProgressBar.ForegroundProperty);
-                            TaskbarHelper.SetProgressState(WindowHandle, TaskbarStates.Normal);
+                            Helpers.Taskbar.TaskbarHelper.SetProgressState(WindowHandle, Helpers.Taskbar.TaskbarStates.Normal);
                             InstallPage.ProgressRingControl.Foreground = null;
                             InstallPage.ProgressRingControl.Visibility = Visibility.Visible;
                             InstallPage.ResumeButton.Visibility = Visibility.Collapsed;
@@ -869,7 +869,7 @@ public static class ApplicationStage
                 }
 
                 InstallPage.Progress.Value += incrementPerTitle;
-                TaskbarHelper.SetProgressValue(WindowHandle, InstallPage.Progress.Value, 100);
+                Helpers.Taskbar.TaskbarHelper.SetProgressValue(WindowHandle, InstallPage.Progress.Value, 100);
                 await Task.Delay(150);
                 currentGroup.Clear();
             }
@@ -892,7 +892,7 @@ public static class ApplicationStage
                     InstallPage.Info.Title += ": " + ex.Message;
                     InstallPage.Info.Severity = InfoBarSeverity.Error;
                     InstallPage.Progress.Foreground = (Brush)Application.Current.Resources["SystemFillColorCriticalBrush"];
-                    TaskbarHelper.SetProgressState(WindowHandle, TaskbarStates.Error);
+                    Helpers.Taskbar.TaskbarHelper.SetProgressState(WindowHandle, Helpers.Taskbar.TaskbarStates.Error);
                     InstallPage.ProgressRingControl.Foreground = (Brush)Application.Current.Resources["SystemFillColorCriticalBrush"];
                     InstallPage.ProgressRingControl.Visibility = Visibility.Collapsed;
                     InstallPage.ResumeButton.Visibility = Visibility.Visible;
@@ -905,7 +905,7 @@ public static class ApplicationStage
                         tcs.TrySetResult(true);
                         InstallPage.Info.Severity = InfoBarSeverity.Informational;
                         InstallPage.Progress.ClearValue(ProgressBar.ForegroundProperty);
-                        TaskbarHelper.SetProgressState(WindowHandle, TaskbarStates.Normal);
+                        Helpers.Taskbar.TaskbarHelper.SetProgressState(WindowHandle, Helpers.Taskbar.TaskbarStates.Normal);
                         InstallPage.ProgressRingControl.Foreground = null;
                         InstallPage.ProgressRingControl.Visibility = Visibility.Visible;
                         InstallPage.ResumeButton.Visibility = Visibility.Collapsed;
@@ -916,12 +916,12 @@ public static class ApplicationStage
             }
 
             InstallPage.Progress.Value += incrementPerTitle;
-            TaskbarHelper.SetProgressValue(WindowHandle, InstallPage.Progress.Value, 100);
+            Helpers.Taskbar.TaskbarHelper.SetProgressValue(WindowHandle, InstallPage.Progress.Value, 100);
         }
         if (filteredActions.Count == 0)
         {
             InstallPage.Progress.Value += stagePercentage;
-            TaskbarHelper.SetProgressValue(WindowHandle, InstallPage.Progress.Value, 100);
+            Helpers.Taskbar.TaskbarHelper.SetProgressValue(WindowHandle, InstallPage.Progress.Value, 100);
         }
     }
 }

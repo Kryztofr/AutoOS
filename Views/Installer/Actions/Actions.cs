@@ -13,6 +13,7 @@ using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using ValveKeyValue;
 using WinRT.Interop;
+using AutoOS.Views.Installer.Stages;
 
 namespace AutoOS.Views.Installer.Actions;
 
@@ -29,7 +30,7 @@ public static class ProcessActions
             _ => throw new ArgumentException("Invalid user specified.", nameof(user))
         };
 
-        await Process.Start(new ProcessStartInfo(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Applications", "NSudo", "NSudoLC.exe"), arguments) { CreateNoWindow = true })!.WaitForExitAsync();
+        await Process.Start(new ProcessStartInfo(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Applications", "NSudo", "NSudoLC.exe"), arguments) { CreateNoWindow = true }).WaitForExitAsync();
     }
 
     public static async Task RunRestart()
@@ -54,7 +55,7 @@ public static class ProcessActions
 
     public static async Task RunPowerShell(string command)
     {
-        await Process.Start(new ProcessStartInfo("powershell.exe", $"-Command \"{command}\"") { CreateNoWindow = true, UseShellExecute = false })!.WaitForExitAsync();
+        await Process.Start(new ProcessStartInfo("powershell.exe", $"-Command \"{command}\"") { CreateNoWindow = true, UseShellExecute = false }).WaitForExitAsync();
     }
 
     public static async Task RunConnectionCheck()
@@ -62,7 +63,7 @@ public static class ProcessActions
         WindowHandle = WindowNative.GetWindowHandle(App.MainWindow);
         InstallPage.Info.Severity = InfoBarSeverity.Warning;
         InstallPage.Progress.Foreground = (Brush)Application.Current.Resources["SystemFillColorCautionBrush"];
-        TaskbarHelper.SetProgressState(WindowHandle, TaskbarStates.Paused);
+        Helpers.Taskbar.TaskbarHelper.SetProgressState(WindowHandle, Helpers.Taskbar.TaskbarStates.Paused);
         InstallPage.ProgressRingControl.Foreground = (Brush)Application.Current.Resources["SystemFillColorCautionBrush"];
 
         await Task.Delay(1000);
@@ -78,7 +79,7 @@ public static class ProcessActions
                     {
                         InstallPage.Info.Severity = InfoBarSeverity.Informational;
                         InstallPage.Progress.ClearValue(ProgressBar.ForegroundProperty);
-                        TaskbarHelper.SetProgressState(WindowHandle, TaskbarStates.Normal);
+                        Helpers.Taskbar.TaskbarHelper.SetProgressState(WindowHandle, Helpers.Taskbar.TaskbarStates.Normal);
                         InstallPage.ProgressRingControl.Foreground = null;
                         InstallPage.Info.Title = "Internet connection successfully established...";
                         await Task.Delay(500);
@@ -249,7 +250,8 @@ public static class ProcessActions
 
         string ram = $"{(RamHelper.GetRam() is var r ? $"{r.CapacityGB:N1} GB {r.DDRVersion} @ {r.MaxSpeedMHz} MHz" : "")}";
 
-        string gpus = string.Join(", ", (GpuHelper.GetGPUs()).Select(g => $"{g.DeviceName} (DeviceId: {g.DeviceId}, Install: {g.Install}, {g.CurrentVersion})"));
+        var gpuList = PreparingStage.GPUs.Count > 0 ? PreparingStage.GPUs : GpuHelper.GetGPUs();
+        string gpus = string.Join(", ", gpuList.Select(g => $"{g.DeviceName} (DeviceId: {g.DeviceId}, Install: {g.Install}, {g.CurrentVersion})"));
 
         string monitors = string.Join(", ", MonitorHelper.GetMonitors().Select(m => $"{m.DeviceName} ({m.Resolution.Width}x{m.Resolution.Height} @ {m.RefreshRate} Hz)"));
 
@@ -325,7 +327,8 @@ public static class ProcessActions
 
         string ram = $"{(RamHelper.GetRam() is var r ? $"{r.CapacityGB:N1} GB {r.DDRVersion} @ {r.MaxSpeedMHz} MHz" : "")}";
 
-        string gpus = string.Join(", ", (GpuHelper.GetGPUs()).Select(g => $"{g.DeviceName} (DeviceId: {g.DeviceId}, Install: {g.Install}, {g.CurrentVersion})"));
+        var gpuList = PreparingStage.GPUs.Count > 0 ? PreparingStage.GPUs : GpuHelper.GetGPUs();
+        string gpus = string.Join(", ", gpuList.Select(g => $"{g.DeviceName} (DeviceId: {g.DeviceId}, Install: {g.Install}, {g.CurrentVersion})"));
 
         string monitors = string.Join(", ", MonitorHelper.GetMonitors().Select(m => $"{m.DeviceName} ({m.Resolution.Width}x{m.Resolution.Height} @ {m.RefreshRate} Hz)"));
 
@@ -377,7 +380,6 @@ public static class ProcessActions
                 $"Message: {ex.Message}\n" +
                 $"HResult: 0x{ex.HResult:X}\n" +
                 $"Source: {ex.Source}\n" +
-                $"TargetSite: {ex.TargetSite}\n" +
                 $"StackTrace:\n{ex.StackTrace}\n" +
                 (ex.InnerException != null ? $"\nInnerException:\n{ex.InnerException}" : "") +
                 $"\n{ProcessInfoHelper.Version}"
@@ -767,7 +769,7 @@ public static class ProcessActions
                 string originalDrive = Path.GetPathRoot(originalInstallLocation)?.Replace('\\', '/') ?? "";
                 string relativePath = originalInstallLocation.Substring(originalDrive.Length);
 
-                string? newInstallLocation = null;
+                string newInstallLocation = null;
 
                 foreach (var drive in DriveInfo.GetDrives().Where(d => d.DriveType == DriveType.Fixed && d.Name != @"C:\"))
                 {

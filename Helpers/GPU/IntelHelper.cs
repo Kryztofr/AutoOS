@@ -4,11 +4,22 @@ using System.Text.RegularExpressions;
 
 namespace AutoOS.Helpers.GPU
 {
-    public static class IntelHelper
+    public static partial class IntelHelper
     {
+        [GeneratedRegex(@"(\d+\.\d+\.\d+\.\d+)\s*\(Latest\)", RegexOptions.IgnoreCase)]
+        private static partial Regex VersionRegex();
+
+        [GeneratedRegex(@"downloadmirror\.intel\.com\/(\d+)", RegexOptions.IgnoreCase)]
+        private static partial Regex IntelIdRegex();
+
+        [GeneratedRegex(@"(gfx_win_[0-9.]+\.zip)", RegexOptions.IgnoreCase)]
+        private static partial Regex ZipFileRegex();
+
+        [GeneratedRegex(@"(gfx_win_[0-9.]+\.exe)", RegexOptions.IgnoreCase)]
+        private static partial Regex ExeFileRegex();
+
         public static async Task<(string newestVersion, string newestDownloadUrl)> CheckUpdate(GpuInfo gpu)
         {
-            string deviceId = gpu.DeviceId;
             string codename = gpu.Codename;
             string driverPageUrl = string.Empty;
             string newestVersion = string.Empty;
@@ -46,17 +57,16 @@ namespace AutoOS.Helpers.GPU
             var page = await browser.NewPageAsync();
             await page.GoToAsync(driverPageUrl, new NavigationOptions { WaitUntil = [WaitUntilNavigation.DOMContentLoaded] });
 
-            string bodyText = await page.EvaluateFunctionAsync<string>("() => document.body.innerText");
-            string domHtml = await page.EvaluateFunctionAsync<string>("() => document.documentElement.outerHTML");
+            string bodyText = await page.EvaluateExpressionAsync<string>("document.body.innerText");
+            string domHtml = await page.EvaluateExpressionAsync<string>("document.documentElement.outerHTML");
 
-            var versionMatch = Regex.Match(bodyText, @"(\d+\.\d+\.\d+\.\d+)\s*\(Latest\)", RegexOptions.IgnoreCase);
+            var versionMatch = VersionRegex().Match(bodyText);
             if (versionMatch.Success) newestVersion = versionMatch.Groups[1].Value;
 
-            string filePattern = is6thGen ? @"(gfx_win_[0-9.]+\.zip)" : @"(gfx_win_[0-9.]+\.exe)";
-            var fileMatch = Regex.Match(domHtml, filePattern, RegexOptions.IgnoreCase);
+            var fileMatch = is6thGen ? ZipFileRegex().Match(domHtml) : ExeFileRegex().Match(domHtml);
             string fileName = fileMatch.Success ? fileMatch.Groups[1].Value : string.Empty;
 
-            var idMatch = Regex.Match(domHtml, @"downloadmirror\.intel\.com\/(\d+)", RegexOptions.IgnoreCase);
+            var idMatch = IntelIdRegex().Match(domHtml);
             string fileId = idMatch.Success ? idMatch.Groups[1].Value : string.Empty;
 
             if (!string.IsNullOrEmpty(fileId) && !string.IsNullOrEmpty(fileName))
@@ -78,7 +88,7 @@ namespace AutoOS.Helpers.GPU
             bool Intel_6th = false;
             bool Intel_7th_10th = false;
             bool Intel_11th_14th = false;
-            bool Intel_Arc = false; 
+            //bool Intel_Arc = false;
 
             if (intel6th.Any(c => Normalize(codename).Contains(Normalize(c))))
                 Intel_6th = true;
@@ -86,8 +96,8 @@ namespace AutoOS.Helpers.GPU
                 Intel_7th_10th = true;
             else if (intel11to14.Any(c => Normalize(codename).Contains(Normalize(c))))
                 Intel_11th_14th = true;
-            else if (intelArc.Any(c => Normalize(codename).Contains(Normalize(c))))
-                Intel_Arc = true;
+            //else if (intelArc.Any(c => Normalize(codename).Contains(Normalize(c))))
+                //Intel_Arc = true;
 
             var actions = new List<(string Title, Func<Task> Action, Func<bool> Condition)>
             {

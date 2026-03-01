@@ -12,8 +12,8 @@ public static partial class GamesStage
     public static async Task Run()
     {
         WindowHandle = WindowNative.GetWindowHandle(App.MainWindow);
-        bool? Fortnite = ApplicationStage.Fortnite;
-        bool? NVIDIA = GraphicsStage.NVIDIA;
+        bool Fortnite = ApplicationStage.Fortnite;
+        bool NVIDIA = GraphicsStage.NVIDIA;
 
         InstallPage.Status.Text = "Configuring Games...";
 
@@ -86,7 +86,7 @@ public static partial class GamesStage
                         InstallPage.Info.Title += ": " + ex.Message;
                         InstallPage.Info.Severity = InfoBarSeverity.Error;
                         InstallPage.Progress.Foreground = (Brush)Application.Current.Resources["SystemFillColorCriticalBrush"];
-                        TaskbarHelper.SetProgressState(WindowHandle, TaskbarStates.Error);
+                        Helpers.Taskbar.TaskbarHelper.SetProgressState(WindowHandle, Helpers.Taskbar.TaskbarStates.Error);
                         InstallPage.ProgressRingControl.Foreground = (Brush)Application.Current.Resources["SystemFillColorCriticalBrush"];
                         InstallPage.ProgressRingControl.Visibility = Visibility.Collapsed;
                         InstallPage.ResumeButton.Visibility = Visibility.Visible;
@@ -99,7 +99,7 @@ public static partial class GamesStage
                             tcs.TrySetResult(true);
                             InstallPage.Info.Severity = InfoBarSeverity.Informational;
                             InstallPage.Progress.ClearValue(ProgressBar.ForegroundProperty);
-                            TaskbarHelper.SetProgressState(WindowHandle, TaskbarStates.Normal);
+                            Helpers.Taskbar.TaskbarHelper.SetProgressState(WindowHandle, Helpers.Taskbar.TaskbarStates.Normal);
                             InstallPage.ProgressRingControl.Foreground = null;
                             InstallPage.ProgressRingControl.Visibility = Visibility.Visible;
                             InstallPage.ResumeButton.Visibility = Visibility.Collapsed;
@@ -110,7 +110,7 @@ public static partial class GamesStage
                 }
 
                 InstallPage.Progress.Value += incrementPerTitle;
-                TaskbarHelper.SetProgressValue(WindowHandle, InstallPage.Progress.Value, 100);
+                Helpers.Taskbar.TaskbarHelper.SetProgressValue(WindowHandle, InstallPage.Progress.Value, 100);
                 await Task.Delay(150);
                 currentGroup.Clear();
             }
@@ -133,7 +133,7 @@ public static partial class GamesStage
                     InstallPage.Info.Title += ": " + ex.Message;
                     InstallPage.Info.Severity = InfoBarSeverity.Error;
                     InstallPage.Progress.Foreground = (Brush)Application.Current.Resources["SystemFillColorCriticalBrush"];
-                    TaskbarHelper.SetProgressState(WindowHandle, TaskbarStates.Error);
+                    Helpers.Taskbar.TaskbarHelper.SetProgressState(WindowHandle, Helpers.Taskbar.TaskbarStates.Error);
                     InstallPage.ProgressRingControl.Foreground = (Brush)Application.Current.Resources["SystemFillColorCriticalBrush"];
                     InstallPage.ProgressRingControl.Visibility = Visibility.Collapsed;
                     InstallPage.ResumeButton.Visibility = Visibility.Visible;
@@ -146,7 +146,7 @@ public static partial class GamesStage
                         tcs.TrySetResult(true);
                         InstallPage.Info.Severity = InfoBarSeverity.Informational;
                         InstallPage.Progress.ClearValue(ProgressBar.ForegroundProperty);
-                        TaskbarHelper.SetProgressState(WindowHandle, TaskbarStates.Normal);
+                        Helpers.Taskbar.TaskbarHelper.SetProgressState(WindowHandle, Helpers.Taskbar.TaskbarStates.Normal);
                         InstallPage.ProgressRingControl.Foreground = null;
                         InstallPage.ProgressRingControl.Visibility = Visibility.Visible;
                         InstallPage.ResumeButton.Visibility = Visibility.Collapsed;
@@ -157,12 +157,12 @@ public static partial class GamesStage
             }
 
             InstallPage.Progress.Value += incrementPerTitle;
-            TaskbarHelper.SetProgressValue(WindowHandle, InstallPage.Progress.Value, 100);
+            Helpers.Taskbar.TaskbarHelper.SetProgressValue(WindowHandle, InstallPage.Progress.Value, 100);
         }
         if (filteredActions.Count == 0)
         {
             InstallPage.Progress.Value += stagePercentage;
-            TaskbarHelper.SetProgressValue(WindowHandle, InstallPage.Progress.Value, 100);
+            Helpers.Taskbar.TaskbarHelper.SetProgressValue(WindowHandle, InstallPage.Progress.Value, 100);
         }
     }
 }

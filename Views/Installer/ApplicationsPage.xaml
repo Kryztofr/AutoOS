@@ -7,7 +7,7 @@
       xmlns:dev="using:DevWinUI"
       xmlns:local="using:AutoOS"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-      xmlns:views="using:AutoOS.Views"
+      xmlns:views="using:AutoOS.Views.Installer"
       mc:Ignorable="d">
     <Grid>
         <Grid.RowDefinitions>
@@ -32,7 +32,7 @@
                                   SelectionChanged="Office_Changed"
                                   SelectionMode="Multiple">
                             <GridView.ItemTemplate>
-                                <DataTemplate>
+                                <DataTemplate x:DataType="views:GridViewItem">
                                     <Grid Height="85"
                                           Margin="24">
                                         <Grid.RowDefinitions>
@@ -41,10 +41,10 @@
                                         <StackPanel VerticalAlignment="Center">
                                             <Image Height="36"
                                                    Margin="0,0,0,8"
-                                                   Source="{Binding ImageSource}" />
+                                                   Source="{x:Bind ImageSource}" />
                                             <TextBlock HorizontalAlignment="Center"
                                                        FontSize="14"
-                                                       Text="{Binding Text}"
+                                                       Text="{x:Bind Text}"
                                                        TextAlignment="Center"
                                                        TextTrimming="CharacterEllipsis"
                                                        TextWrapping="Wrap" />
@@ -71,7 +71,7 @@
                                   SelectionChanged="Development_Changed"
                                   SelectionMode="Multiple">
                             <GridView.ItemTemplate>
-                                <DataTemplate>
+                                <DataTemplate x:DataType="views:GridViewItem">
                                     <Grid Height="85"
                                           Margin="24">
                                         <Grid.RowDefinitions>
@@ -80,10 +80,10 @@
                                         <StackPanel VerticalAlignment="Center">
                                             <Image Height="36"
                                                    Margin="0,0,0,8"
-                                                   Source="{Binding ImageSource}" />
+                                                   Source="{x:Bind ImageSource}" />
                                             <TextBlock HorizontalAlignment="Center"
                                                        FontSize="14"
-                                                       Text="{Binding Text}"
+                                                       Text="{x:Bind Text}"
                                                        TextAlignment="Center"
                                                        TextTrimming="CharacterEllipsis"
                                                        TextWrapping="Wrap" />
@@ -110,7 +110,7 @@
                                   SelectionChanged="Music_Changed"
                                   SelectionMode="Multiple">
                             <GridView.ItemTemplate>
-                                <DataTemplate>
+                                <DataTemplate x:DataType="views:GridViewItem">
                                     <Grid Height="85"
                                           Margin="24">
                                         <Grid.RowDefinitions>
@@ -119,10 +119,10 @@
                                         <StackPanel VerticalAlignment="Center">
                                             <Image Height="36"
                                                    Margin="0,0,0,8"
-                                                   Source="{Binding ImageSource}" />
+                                                   Source="{x:Bind ImageSource}" />
                                             <TextBlock HorizontalAlignment="Center"
                                                        FontSize="14"
-                                                       Text="{Binding Text}"
+                                                       Text="{x:Bind Text}"
                                                        TextAlignment="Center"
                                                        TextTrimming="CharacterEllipsis"
                                                        TextWrapping="Wrap" />
@@ -149,7 +149,7 @@
                                   SelectionChanged="Messaging_Changed"
                                   SelectionMode="Multiple">
                             <GridView.ItemTemplate>
-                                <DataTemplate>
+                                <DataTemplate x:DataType="views:GridViewItem">
                                     <Grid Height="85"
                                           Margin="24">
                                         <Grid.RowDefinitions>
@@ -158,10 +158,10 @@
                                         <StackPanel VerticalAlignment="Center">
                                             <Image Height="36"
                                                    Margin="0,0,0,8"
-                                                   Source="{Binding ImageSource}" />
+                                                   Source="{x:Bind ImageSource}" />
                                             <TextBlock HorizontalAlignment="Center"
                                                        FontSize="14"
-                                                       Text="{Binding Text}"
+                                                       Text="{x:Bind Text}"
                                                        TextAlignment="Center"
                                                        TextTrimming="CharacterEllipsis"
                                                        TextWrapping="Wrap" />
@@ -188,7 +188,7 @@
                                   SelectionChanged="Launchers_Changed"
                                   SelectionMode="Multiple">
                             <GridView.ItemTemplate>
-                                <DataTemplate>
+                                <DataTemplate x:DataType="views:GridViewItem">
                                     <Grid Height="85"
                                           Margin="24">
                                         <Grid.RowDefinitions>
@@ -197,10 +197,10 @@
                                         <StackPanel VerticalAlignment="Center">
                                             <Image Height="36"
                                                    Margin="0,0,0,8"
-                                                   Source="{Binding ImageSource}" />
+                                                   Source="{x:Bind ImageSource}" />
                                             <TextBlock HorizontalAlignment="Center"
                                                        FontSize="14"
-                                                       Text="{Binding Text}"
+                                                       Text="{x:Bind Text}"
                                                        TextAlignment="Center"
                                                        TextTrimming="CharacterEllipsis"
                                                        TextWrapping="Wrap" />

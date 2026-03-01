@@ -29,10 +29,6 @@ namespace AutoOS
 
             IsInstalled = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\AutoOS")?.GetValue("Stage") as string == "Installed";
 
-            // Enables Multicore JIT with the specified profile
-            System.Runtime.ProfileOptimization.SetProfileRoot(Constants.RootDirectoryPath);
-            System.Runtime.ProfileOptimization.StartProfile("Startup.Profile");
-
             Application.Current.UnhandledException += Current_UnhandledException;
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
             TaskScheduler.UnobservedTaskException += TaskScheduler_UnobservedTaskException;
@@ -73,7 +69,6 @@ namespace AutoOS
                     MainWindow = new MainWindow();
                     MainWindow.Title = MainWindow.AppWindow.Title = "AutoOS Settings";
                     MainWindow.AppWindow.SetIcon("Assets/AppIcon.ico");
-
                     ThemeService = new ThemeService().Initialize(MainWindow);
 
                     WindowHelper.ResizeAndCenterWindowToPercentageOfWorkArea(MainWindow, 92);
@@ -90,7 +85,7 @@ namespace AutoOS
                 AppWindow.GetFromWindowId(Win32Interop.GetWindowIdFromWindow(WindowNative.GetWindowHandle(MainWindow))).Closing += AppWindow_Closing;
 
                 ThemeService = new ThemeService().Initialize(MainWindow);
-                
+
                 MainWindow.Activate();
             }
         }

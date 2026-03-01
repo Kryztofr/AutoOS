@@ -1,6 +1,7 @@
 ﻿using Windows.ApplicationModel.DataTransfer;
 using Windows.Storage;
 using AutoOS.Helpers.Picker;
+using WinRT;
 
 namespace AutoOS.Views.Settings;
 
@@ -17,15 +18,9 @@ public sealed partial class SettingsPage : Page
         GetSwitchEmulator();
     }
 
-    public class GridViewItem
-    {
-        public string Text { get; set; }
-        public string ImageSource { get; set; }
-    }
-
     private void GetItems()
     {
-        SwitchEmulator.ItemsSource = new List<GridViewItem>
+        SwitchEmulator.ItemsSource = new List<SettingsGridViewItem>
         {
             new() { Text = "Eden", ImageSource = "ms-appx:///Assets/Fluent/Eden.png" },
             new() { Text = "Citron", ImageSource = "ms-appx:///Assets/Fluent/Citron.png" },
@@ -36,7 +31,7 @@ public sealed partial class SettingsPage : Page
     private void GetSwitchEmulator()
     {
         var selectedSwitchEmulator = localSettings.Values["SwitchEmulator"] as string ?? "Eden";
-        var switchEmulatorItems = SwitchEmulator.ItemsSource as List<GridViewItem>;
+        var switchEmulatorItems = SwitchEmulator.ItemsSource as List<SettingsGridViewItem>;
 
         var itemToSelect = switchEmulatorItems?.FirstOrDefault(ext => ext.Text == selectedSwitchEmulator) ?? switchEmulatorItems?.FirstOrDefault(ext => ext.Text == "Eden");
 
@@ -106,7 +101,7 @@ public sealed partial class SettingsPage : Page
     {
         if (isInitializingSwitchEmulatorState) return;
 
-        if (SwitchEmulator.SelectedItem is GridViewItem selectedItem)
+        if (SwitchEmulator.SelectedItem is SettingsGridViewItem selectedItem)
         {
             DataLocationValue.IsEnabled = selectedItem.Text == "Ryujinx";
             DataLocationValue.IsReadOnly = selectedItem.Text != "Ryujinx";
@@ -120,7 +115,7 @@ public sealed partial class SettingsPage : Page
 
     private void ExecutableLocation_TextChanged(object sender, RoutedEventArgs e)
     {
-        if (SwitchEmulator.SelectedItem is GridViewItem selectedItem)
+        if (SwitchEmulator.SelectedItem is SettingsGridViewItem selectedItem)
         {
             string emulator = selectedItem.Text;
 
@@ -146,7 +141,7 @@ public sealed partial class SettingsPage : Page
         picker.FileTypeChoices.Add("Emulator executable", ["*.exe"]);
 
         var file = await picker.PickSingleFileAsync();
-        if (file != null && SwitchEmulator.SelectedItem is GridViewItem selectedItem)
+        if (file != null && SwitchEmulator.SelectedItem is SettingsGridViewItem selectedItem)
         {
             string emulator = selectedItem.Text;
             string exeName = Path.GetFileName(file.Path).ToLowerInvariant();
@@ -175,7 +170,7 @@ public sealed partial class SettingsPage : Page
 
     private void DataLocation_TextChanged(object sender, RoutedEventArgs e)
     {
-        if (SwitchEmulator.SelectedItem is GridViewItem selectedItem && selectedItem.Text == "Ryujinx")
+        if (SwitchEmulator.SelectedItem is SettingsGridViewItem selectedItem && selectedItem.Text == "Ryujinx")
         {
             if (!string.IsNullOrWhiteSpace(DataLocationValue?.Text))
             {
@@ -195,7 +190,7 @@ public sealed partial class SettingsPage : Page
 
     private async void DataLocation_Click(object sender, RoutedEventArgs e)
     {
-        if (SwitchEmulator.SelectedItem is not GridViewItem selectedItem || selectedItem.Text != "Ryujinx")
+        if (SwitchEmulator.SelectedItem is not SettingsGridViewItem selectedItem || selectedItem.Text != "Ryujinx")
             return;
 
         var picker = new FolderPicker(App.MainWindow)
@@ -256,4 +251,11 @@ public sealed partial class SettingsPage : Page
     {
         localSettings.Values["LaunchMinimized"] = LaunchMinimized.IsOn ? 1 : 0;
     }
+}
+
+[GeneratedBindableCustomProperty]
+public partial class SettingsGridViewItem
+{
+    public string Text { get; set; }
+    public string ImageSource { get; set; }
 }

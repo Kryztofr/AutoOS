@@ -6,7 +6,7 @@
       xmlns:dev="using:DevWinUI"
       xmlns:local="using:AutoOS"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-      xmlns:views="using:AutoOS.Views"
+      xmlns:views="using:AutoOS.Views.Installer"
       mc:Ignorable="d">
     <Grid>
         <Grid.RowDefinitions>
@@ -30,15 +30,15 @@
                                   SelectionChanged="Theme_Changed"
                                   SelectionMode="Single">
                             <GridView.ItemTemplate>
-                                <DataTemplate>
+                                <DataTemplate x:DataType="views:ThemeItem">
                                     <StackPanel Orientation="Horizontal">
                                         <Image Height="128"
-                                               Source="{Binding LightTheme}"
+                                               Source="{x:Bind LightTheme}"
                                                Stretch="Uniform"
                                                ToolTipService.Placement="Top"
                                                ToolTipService.ToolTip="Light Mode" />
                                         <Image Height="128"
-                                               Source="{Binding DarkTheme}"
+                                               Source="{x:Bind DarkTheme}"
                                                Stretch="Uniform"
                                                ToolTipService.Placement="Top"
                                                ToolTipService.ToolTip="Dark Mode" />

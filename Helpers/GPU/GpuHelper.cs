@@ -1,13 +1,16 @@
 using Microsoft.UI.Xaml.Data;
 using Microsoft.Win32;
 using System.ComponentModel;
+using System.Net.Security;
 using System.Runtime.CompilerServices;
 using Windows.Win32;
 using Windows.Win32.Devices.DeviceAndDriverInstallation;
 using Windows.Win32.Foundation;
+using WinRT;
 
 namespace AutoOS.Helpers.GPU;
 
+[GeneratedBindableCustomProperty]
 public partial class GpuInfo : INotifyPropertyChanged
 {
     private string deviceName;
@@ -85,7 +88,22 @@ public partial class VendorIdToBitmapIconConverter : IValueConverter
 
 public static class GpuHelper
 {
-    private static readonly HttpClient httpClient = new();
+    private static readonly HttpClient httpClient = new(new SocketsHttpHandler
+    {
+        SslOptions = new SslClientAuthenticationOptions
+        {
+            EnabledSslProtocols = System.Security.Authentication.SslProtocols.Tls12 | System.Security.Authentication.SslProtocols.Tls13
+        }
+    })
+    {
+    DefaultRequestHeaders =
+        {
+            UserAgent =
+            {
+                new System.Net.Http.Headers.ProductInfoHeaderValue("AutoOS", ProcessInfoHelper.Version)
+            }
+        }
+    };
 
     public unsafe static List<GpuInfo> GetGPUs()
     {
@@ -192,7 +210,7 @@ public static class GpuHelper
                         }
                         finally 
                         { 
-                            PInvoke.SetupDiDestroyDeviceInfoList(hAudioInfo); 
+                            PInvoke.SetupDiDestroyDeviceInfoList(hAudioInfo);
                         }
                     }
                 }
@@ -228,7 +246,10 @@ public static class GpuHelper
                 });
             }
         }
-        finally { PInvoke.SetupDiDestroyDeviceInfoList(hDevInfo); }
+        finally 
+        { 
+            PInvoke.SetupDiDestroyDeviceInfoList(hDevInfo); 
+        }
 
         return gpus;
     }
@@ -383,8 +404,6 @@ public static class GpuHelper
 
     public static unsafe void ToggleHdmiDpAudio(GpuInfo gpu, bool enable)
     {
-        if (gpu == null || string.IsNullOrEmpty(gpu.Location)) return;
-
         Guid hdaudioGuid = new("4d36e97d-e325-11ce-bfc1-08002be10318");
         HDEVINFO hAudioInfo = PInvoke.SetupDiGetClassDevs(&hdaudioGuid, null, HWND.Null, SETUP_DI_GET_CLASS_DEVS_FLAGS.DIGCF_PRESENT);
 

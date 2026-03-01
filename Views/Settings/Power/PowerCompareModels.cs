@@ -2,10 +2,12 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Microsoft.UI.Text;
+using WinRT;
 
 namespace AutoOS.Views.Settings.Power
 {
-    public sealed class PowerCompareSubgroup : INotifyPropertyChanged
+    [GeneratedBindableCustomProperty]
+    public sealed partial class PowerCompareSubgroup : INotifyPropertyChanged
     {
         public Guid Guid { get; set; }
         public string Name { get; set; }
@@ -34,7 +36,8 @@ namespace AutoOS.Views.Settings.Power
             => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
-    public sealed class PowerCompareSetting : INotifyPropertyChanged
+    [GeneratedBindableCustomProperty]
+    public sealed partial class PowerCompareSetting : INotifyPropertyChanged
     {
         public Guid SubgroupGuid { get; set; }
         public Guid Guid { get; set; }
@@ -145,7 +148,7 @@ namespace AutoOS.Views.Settings.Power
             => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
-    public sealed class PowerCompareItemTemplateSelector : DataTemplateSelector
+    public sealed partial class PowerCompareItemTemplateSelector : DataTemplateSelector
     {
         public DataTemplate SubgroupTemplate { get; set; }
         public DataTemplate SettingTemplate { get; set; }
