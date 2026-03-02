@@ -4,7 +4,7 @@ using Windows.Win32;
 using Windows.Win32.Foundation;
 using WinRT.Interop;
 
-namespace AutoOS.Views
+namespace AutoOS.Views.Startup
 {
     public sealed partial class StartupWindow : Window
     {

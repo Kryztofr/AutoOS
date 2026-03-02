@@ -6,6 +6,7 @@ using Microsoft.Windows.AppLifecycle;
 using Windows.Graphics;
 using Windows.Storage;
 using WinRT.Interop;
+using AutoOS.Views.Startup;
 
 namespace AutoOS
 {
