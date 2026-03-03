@@ -79,6 +79,7 @@ AutoOS is a WinUI 3 application that automates Windows setup and optimization wi
 - Toggle Windows Security Options
 - Toggle Windows Updates and set target version
 - Custom Game Launcher supporting Epic Games, Steam, Riot Games, Eden, Citron and Ryujinx
+- Check for Epic Games title updates
 - Launch Games, Stop Processes and Restart Processes when done  
 - Switch between Epic Games and Steam Accounts
 
@@ -256,7 +257,7 @@ Clone the repository and run this in the terminal inside of Visual Studio.
 dotnet nuget add source https://pkgs.dev.azure.com/dotnet/CommunityToolkit/_packaging/CommunityToolkit-Labs/nuget/v3/index.json -n CommunityToolkit-Labs
 ```
 
-If the debugger is not attaching to the process you are required to set EnableLua to 0. This has been a problem for 5 years and Microsoft hasn't provided a fix:
+If the debugger is not attaching to the process, you are required to set EnableLua to 0 and restart your PC. This has been a problem for 5 years and Microsoft hasn't provided a fix:
 ```bat
 reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" /v EnableLUA /t REG_DWORD /d 0 /f
 ```

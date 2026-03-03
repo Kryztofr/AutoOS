@@ -1,6 +1,8 @@
-﻿using AutoOS.Views.Installer.Actions;
+﻿using AutoOS.Helpers.Device;
+using AutoOS.Views.Installer.Actions;
 using Microsoft.UI.Xaml.Media;
 using WinRT.Interop;
+using Microsoft.Win32;
 
 namespace AutoOS.Views.Installer.Stages;
 
@@ -44,8 +46,8 @@ public static class NetworkStage
             // disable power management settings
             ("Disabling power management settings", async () => await ProcessActions.RunPowerShellScript("networkpowermanagement.ps1", ""), null),
 
-             // set txintdelay to 0
-            ("Setting TxIntDelay to 0", async () => await ProcessActions.RunPowerShellScript("txintdelay.ps1", ""), () => TxIntDelay == true),
+            // set txintdelay to 0
+            ("Setting TxIntDelay to 0", async () => DeviceHelper.GetDevices(DeviceType.NIC).Where(d => Registry.LocalMachine.OpenSubKey(d.RegistryPath).GetValue("TxIntDelay") != null).ToList().ForEach(d => Registry.LocalMachine.OpenSubKey(d.RegistryPath, true).SetValue("TxIntDelay", 0, RegistryValueKind.DWord)), () => TxIntDelay == true),
 
             // set "congestion control provider" to "bbr2"
             (@"Setting ""Congestion Control Provider"" to ""BBR2""", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"netsh int tcp set supplemental internet congestionprovider=bbr2"), null),

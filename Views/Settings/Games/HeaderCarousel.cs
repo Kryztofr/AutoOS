@@ -1375,7 +1375,7 @@ public partial class HeaderCarousel : ItemsControl
         {
             if (!string.IsNullOrEmpty(item.Hyperlink))
             {
-                await Windows.System.Launcher.LaunchFolderPathAsync(item.Hyperlink.Replace("/", "\\").Trim());
+                await Windows.System.Launcher.LaunchFolderPathAsync(item.Hyperlink.Trim());
             }
         }
     }

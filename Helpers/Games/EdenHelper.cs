@@ -68,7 +68,7 @@ public static partial class EdenHelper
                 string cleanName = CleanNameRegex().Replace(name.Replace('’', '\''), "");
 
                 // get install location
-                string installLocation = edenEntry.GetProperty("file_path").GetString();
+                string installLocation = edenEntry.GetProperty("file_path").GetString()?.Replace("/", "\\");
 
                 // get playtime
                 string playTime = "0m";
@@ -100,8 +100,8 @@ public static partial class EdenHelper
                     GamesPage.Instance.Games.Items.Add(new Views.Settings.Games.HeaderCarouselItem
                     {
                         Launcher = "Eden",
-                        LauncherLocation = localSettings.Values["EdenLocation"]?.ToString(),
-                        DataLocation = localSettings.Values["EdenDataLocation"]?.ToString(),
+                        LauncherLocation = localSettings.Values["EdenLocation"]?.ToString()?.Replace("/", "\\"),
+                        DataLocation = localSettings.Values["EdenDataLocation"]?.ToString()?.Replace("/", "\\"),
                         GameLocation = installLocation,
                         InstallLocation = Path.GetDirectoryName(installLocation),
                         Title = name,

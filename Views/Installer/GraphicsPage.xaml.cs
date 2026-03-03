@@ -89,9 +89,10 @@ public sealed partial class GraphicsPage : Page
             catch { }
         }
 
-        var detected = GpuHelper.GetGPUs();
+        var detectedGpus = GpuHelper.GetGPUs();
+        detectedGpus = detectedGpus.OrderBy(g => g.Location).ToList();
 
-        foreach (var gpu in detected)
+        foreach (var gpu in detectedGpus)
         {
             var saved = savedGpus?.FirstOrDefault(x => x.PnPDeviceId == gpu.PnPDeviceId);
 

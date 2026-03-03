@@ -67,7 +67,7 @@ public static partial class CitronHelper
                 string cleanName = CleanNameRegex().Replace(name.Replace('’', '\''), "");
 
                 // get install location
-                string installLocation = CitronEntry.GetProperty("file_path").GetString();
+                string installLocation = CitronEntry.GetProperty("file_path").GetString()?.Replace("/", "\\");
 
                 // get playtime
                 string playTime = "0m";
@@ -99,8 +99,8 @@ public static partial class CitronHelper
                     GamesPage.Instance.Games.Items.Add(new Views.Settings.Games.HeaderCarouselItem
                     {
                         Launcher = "Citron",
-                        LauncherLocation = localSettings.Values["CitronLocation"]?.ToString(),
-                        DataLocation = localSettings.Values["CitronDataLocation"]?.ToString(),
+                        LauncherLocation = localSettings.Values["CitronLocation"]?.ToString()?.Replace("/", "\\"),
+                        DataLocation = localSettings.Values["CitronDataLocation"]?.ToString()?.Replace("/", "\\"),
                         GameLocation = installLocation,
                         InstallLocation = Path.GetDirectoryName(installLocation),
                         Title = name,

@@ -98,7 +98,7 @@ public static partial class RyujinxHelper
                     {
                         var simpleFileName = SimpleCleanNameRegex().Replace(Path.GetFileNameWithoutExtension(candidate).ToLowerInvariant(), "");
                         return simpleFileName.StartsWith(simpleCleanName, StringComparison.Ordinal);
-                    }));
+                    }))?.Replace("/", "\\");
                     if (bestInstallLocation != null)
                         break;
                 }
@@ -135,8 +135,8 @@ public static partial class RyujinxHelper
                     GamesPage.Instance.Games.Items.Add(new Views.Settings.Games.HeaderCarouselItem
                     {
                         Launcher = "Ryujinx",
-                        LauncherLocation = localSettings.Values["RyujinxLocation"]?.ToString(),
-                        DataLocation = localSettings.Values["RyujinxDataLocation"]?.ToString(),
+                        LauncherLocation = localSettings.Values["RyujinxLocation"]?.ToString()?.Replace("/", "\\"),
+                        DataLocation = localSettings.Values["RyujinxDataLocation"]?.ToString()?.Replace("/", "\\"),
                         GameLocation = bestInstallLocation,
                         InstallLocation = Path.GetDirectoryName(bestInstallLocation),
                         Title = name,

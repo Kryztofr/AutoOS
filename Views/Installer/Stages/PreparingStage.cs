@@ -4,7 +4,6 @@ using AutoOS.Helpers.GPU;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.Win32;
 using System.Diagnostics;
-using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using ValveKeyValue;
@@ -324,7 +323,7 @@ public static class PreparingStage
             var nics = DeviceHelper.GetDevices(DeviceType.NIC);
             Wifi = nics.Any(device => device.NicType == NicDeviceType.WiFi);
 			TxIntDelay = nics.Any(device => Registry.LocalMachine.OpenSubKey(device.RegistryPath).GetValue("TxIntDelay") != null);
-			NetAdapterCx = nics.Any(device => device.IsActive && device.DriverType == NicDriverType.NetAdapterCx);
+            NetAdapterCx = nics.Any(device => device.IsActive && device.DriverType == NicDriverType.NetAdapterCx);
         });
 
         InstallPage.Info.Severity = InfoBarSeverity.Informational;

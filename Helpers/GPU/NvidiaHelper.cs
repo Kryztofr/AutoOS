@@ -1,11 +1,11 @@
 ﻿using AutoOS.Views.Installer.Actions;
 using System.Diagnostics;
-using System.Net;
 using System.Net.Security;
 using System.Text.Json;
 using Windows.Win32.System.Power;
 using Windows.Win32;
-
+using System.Net.Http.Headers;
+using System.Security.Authentication;
 namespace AutoOS.Helpers.GPU
 {
     public static class NvidiaHelper
@@ -14,17 +14,17 @@ namespace AutoOS.Helpers.GPU
         {
             SslOptions = new SslClientAuthenticationOptions
             {
-                EnabledSslProtocols = System.Security.Authentication.SslProtocols.Tls12 | System.Security.Authentication.SslProtocols.Tls13
+                EnabledSslProtocols = SslProtocols.Tls12 | SslProtocols.Tls13
             }
         })
         {
             DefaultRequestHeaders =
-        {
-            UserAgent =
             {
-                new System.Net.Http.Headers.ProductInfoHeaderValue("AutoOS", ProcessInfoHelper.Version)
+                UserAgent =
+                {
+                    new ProductInfoHeaderValue("AutoOS", ProcessInfoHelper.Version)
+                }
             }
-        }
         };
 
         public static async Task<(string newestVersion, string newestDownloadUrl)> CheckUpdate(GpuInfo gpu)

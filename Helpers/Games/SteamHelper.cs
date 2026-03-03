@@ -258,7 +258,7 @@ public static class SteamHelper
                                     .Select(s => s.GetProperty("path_thumbnail").GetString())
                                     .Where(s => !string.IsNullOrWhiteSpace(s))]
                                 : [],
-                            InstallLocation = Path.Combine(steamAppsDir, "common", appManifestData["installdir"]?.ToString()),
+                            InstallLocation = Path.Combine(steamAppsDir, "common", appManifestData["installdir"]?.ToString()).Replace("/", "\\"),
                             ReleaseDate = releaseDate.ToString("d"),
                             Size = sizeBytes >= 1024 * 1024 * 1024
                                 ? $"{sizeBytes.Value / (1024d * 1024d * 1024d):F1} GB"
