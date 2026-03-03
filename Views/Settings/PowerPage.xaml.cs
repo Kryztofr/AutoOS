@@ -331,7 +331,10 @@ namespace AutoOS.Views.Settings
             {
                 foreach (var setting in subgroup.Settings)
                 {
-                    setting.IsVisible = string.IsNullOrEmpty(query) || setting.Name.Contains(query, StringComparison.CurrentCultureIgnoreCase);
+                    setting.IsVisible = string.IsNullOrEmpty(query) || 
+                                        setting.Name.Contains(query, StringComparison.CurrentCultureIgnoreCase) ||
+                                        setting.Guid.ToString().Contains(query, StringComparison.CurrentCultureIgnoreCase) ||
+                                        setting.SubgroupGuid.ToString().Contains(query, StringComparison.CurrentCultureIgnoreCase);
                 }
 
                 subgroup.IsVisible = subgroup.Settings.Any(s => s.IsVisible);
