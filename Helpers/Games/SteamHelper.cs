@@ -272,7 +272,7 @@ public static class SteamHelper
                 }
                 catch (Exception ex)
                 {
-                    await App.ShowCrashDialogAsync(new Exception($"Failed to load game: {KVSerializer.Create(KVSerializationFormat.KeyValues1Text).Deserialize(File.OpenRead(Path.Combine(steamAppsDir, $"appmanifest_{gameId}.acf")))["name"]?.ToString()}", ex));
+                    await App.ShowErrorMessage(new Exception($"Failed to load game: {KVSerializer.Create(KVSerializationFormat.KeyValues1Text).Deserialize(File.OpenRead(Path.Combine(steamAppsDir, $"appmanifest_{gameId}.acf")))["name"]?.ToString()}", ex));
                 }
             }
         });

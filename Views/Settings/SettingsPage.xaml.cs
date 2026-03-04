@@ -230,6 +230,16 @@ public sealed partial class SettingsPage : Page
 
     private void LoadSettings()
     {
+        if (!localSettings.Values.TryGetValue("IncludePrerelease", out object prereleaseValue))
+        {
+            localSettings.Values["IncludePrerelease"] = false;
+            IncludePrerelease.IsOn = false;
+        }
+        else
+        {
+            IncludePrerelease.IsOn = (bool)prereleaseValue;
+        }
+
         if (!localSettings.Values.TryGetValue("LaunchMinimized", out object value))
         {
             localSettings.Values["LaunchMinimized"] = 0;
@@ -245,6 +255,11 @@ public sealed partial class SettingsPage : Page
                 LaunchMinimized.IsOn = (int)value == 1;
             }
         }
+    }
+
+    private void IncludePrerelease_Toggled(object sender, RoutedEventArgs e)
+    {
+        localSettings.Values["IncludePrerelease"] = IncludePrerelease.IsOn;
     }
 
     private void LaunchMinimized_Toggled(object sender, RoutedEventArgs e)

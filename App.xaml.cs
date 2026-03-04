@@ -1,5 +1,5 @@
 ﻿using AutoOS.Views.Installer.Actions;
-using CommunityToolkit.WinUI;
+using DevWinUI;
 using Microsoft.UI.Windowing;
 using Microsoft.Win32;
 using Microsoft.Windows.AppLifecycle;
@@ -19,17 +19,12 @@ namespace AutoOS
         public IThemeService ThemeService { get; set; }
         internal static bool IsInstalled { get; private set; }
         internal static double Scaling { get; set; }
-
+        
         public App()
         {
-            //Registry.SetValue(@"HKEY_CURRENT_USER\SOFTWARE\AutoOS", "Stage", "Installed", RegistryValueKind.String);
-            //Registry.CurrentUser.OpenSubKey(@"SOFTWARE\AutoOS", true)?.DeleteValue("Stage", false);
-
             InitializeComponent();
             NavService = new JsonNavigationService();
-
-            IsInstalled = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\AutoOS")?.GetValue("Stage") as string == "Installed";
-
+            IsInstalled = (Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\AutoOS", "IsInstalled", 0) as int? ?? 0) == 1 || Registry.CurrentUser.OpenSubKey(@"SOFTWARE\AutoOS")?.GetValue("Stage") as string == "Installed";
             Application.Current.UnhandledException += Current_UnhandledException;
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
             TaskScheduler.UnobservedTaskException += TaskScheduler_UnobservedTaskException;
@@ -94,14 +89,14 @@ namespace AutoOS
         private async void Current_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
         {
             e.Handled = true;
-            await ShowCrashDialogAsync(e.Exception);
+            await ShowErrorMessage(e.Exception);
         }
 
         private void CurrentDomain_UnhandledException(object sender, System.UnhandledExceptionEventArgs e)
         {
             if (e.ExceptionObject is Exception ex)
             {
-                _ = ShowCrashDialogAsync(ex);
+                _ = ShowErrorMessage(ex);
             }
         }
 
@@ -110,25 +105,22 @@ namespace AutoOS
             e.SetObserved();
 
             if (e.Exception != null && !e.Exception.Message.Contains("Response body is unavailable for redirect responses"))
-                _ = ShowCrashDialogAsync(e.Exception);
+                _ = ShowErrorMessage(e.Exception);
         }
 
-        internal static async Task ShowCrashDialogAsync(Exception ex)
+        internal static async Task ShowErrorMessage(Exception ex)
         {
             await ProcessActions.LogError(ex);
-            await MainWindow.DispatcherQueue.EnqueueAsync(() =>
-            {
-                var dialog = new ContentDialog
-                {
-                    Title = "Unexpected Error",
-                    Content = ex.Message,
-                    CloseButtonText = "OK",
-                    DefaultButton = ContentDialogButton.Close,
-                    XamlRoot = MainWindow.Content.XamlRoot
-                };
 
-                return dialog.ShowAsync().AsTask();
-            });
+            if (MainWindow?.DispatcherQueue != null)
+            {
+                MainWindow.DispatcherQueue.TryEnqueue(async () =>
+                {
+                    MessageBoxOptions options = MessageBoxOptions.Default;
+                    options.Underlay = UnderlayMode.SmokeLayer;
+                    await MessageBox.ShowAsync(true, MainWindow, ex.Message, "Unexpected Error", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1, options);
+                });
+            }
         }
 
         private async void AppWindow_Closing(AppWindow sender, AppWindowClosingEventArgs args)

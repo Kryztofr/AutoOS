@@ -14,10 +14,9 @@
             <RowDefinition />
         </Grid.RowDefinitions>
         <TitleBar x:Name="AppTitleBar"
-                  Title="AutoOS"
                   IsBackButtonVisible="False"
                   IsPaneToggleButtonVisible="True"
-                  Subtitle="{x:Bind dev:ProcessInfoHelper.VersionWithPrefix}">
+                  Subtitle="{x:Bind AppSubtitle}">
             <TitleBar.LeftHeader>
                 <ImageIcon Width="16"
                            Height="16"

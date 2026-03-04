@@ -107,13 +107,6 @@ jobs:
       env:
         Platform: ${{ matrix.platform }}
     
-    # Add appinstaller
-    - name: Copy appinstaller to output folder
-      run: |
-        $dest = "Packages/${{ env.APP_NAME }}_${{ steps.get-version.outputs.version }}_x64_Test"
-        Copy-Item -Path "${{ env.APP_NAME }}.appinstaller" -Destination $dest
-      shell: pwsh
-
     # Remove PFX
     - name: Remove the pfx
       run: Remove-Item -path GitHubActionsWorkflow.pfx
@@ -202,7 +195,6 @@ jobs:
       - uses: ncipollo/release-action@v1
         with:
           artifacts: |
-            ${{ env.APP_NAME }}_${{ env.APP_VERSION }}_x64_Test/AutoOS.appinstaller
             ${{ env.APP_NAME }}_${{ env.APP_VERSION }}_x64_Test/AutoOS.msix
             ${{ env.APP_NAME }}_${{ env.APP_VERSION }}_x64_Test/AutoOS.cer
           bodyFile: "CHANGELOG.md"

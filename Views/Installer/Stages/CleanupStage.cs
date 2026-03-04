@@ -66,9 +66,6 @@ public static class CleanupStage
             ("Running disk cleanup", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VolumeCaches\Windows Reset Log Files"" /v StateFlags0000 /t REG_DWORD /d 2 /f"), null),
             ("Running disk cleanup", async () => await ProcessActions.RunNsudo("TrustedInstaller", @"reg add ""HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VolumeCaches\Windows Upgrade Log Files"" /v StateFlags0000 /t REG_DWORD /d 2 /f"), null),
             ("Running disk cleanup", async () => await Task.Run(() => Process.Start(new ProcessStartInfo { FileName = @"C:\Windows\System32\cleanmgr", Arguments = "/sagerun:0" })!.WaitForExitAsync()), null),
-
-            // write stage
-            ("Running disk cleanup", async () => await Task.Run(() => Registry.SetValue(@"HKEY_CURRENT_USER\SOFTWARE\AutoOS", "Stage", "Installed", RegistryValueKind.String)), null)
         };
 
         var filteredActions = actions.Where(a => a.Condition == null || a.Condition.Invoke()).ToList();
@@ -186,6 +183,7 @@ public static class CleanupStage
         InstallPage.ProgressRingControl.Foreground = new SolidColorBrush((Windows.UI.Color)Application.Current.Resources["SystemFillColorSuccess"]);
         localSettings.Values["Version"] = ProcessInfoHelper.Version;
         localSettings.Values["Install_End"] = DateTimeOffset.Now.ToString("O");
+        Registry.SetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\AutoOS", "IsInstalled", 1, RegistryValueKind.DWord);
         Registry.SetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\Explorer", "LockedStartLayout", 0, RegistryValueKind.DWord);
         await ProcessActions.Log();
         await ProcessActions.RunRestart();

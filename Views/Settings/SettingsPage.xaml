@@ -24,7 +24,61 @@
                         Padding="{ThemeResource ContentPagePadding}"
                         dev:PanelAttach.ChildrenTransitions="Default">
                 <dev:SimpleSettingsGroup Margin="0,-48,0,0"
-                                         Header="Appearance &amp; behavior">
+                                         Header="About">
+                    <dev:SettingsExpander Description="tinodin"
+                                          Header="AutoOS"
+                                          HeaderIcon="{dev:BitmapIcon Source=Assets/AppIcon.png}"
+                                          IsExpanded="False">
+                        <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                   IsTextSelectionEnabled="True"
+                                   Text="{x:Bind dev:ProcessInfoHelper.Version}" />
+                        <dev:SettingsExpander.Items>
+                            <dev:SettingsCard x:Name="CloneRepo"
+                                              Click="CloneRepo_Click"
+                                              Header="To clone this repository"
+                                              IsClickEnabled="True">
+                                <TextBlock x:Name="GitCloneTextBlock"
+                                           FontFamily="Consolas"
+                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                           IsTextSelectionEnabled="True"
+                                           Text="git clone https://github.com/tinodin/AutoOS" />
+                                <dev:SettingsCard.ActionIcon>
+                                    <FontIcon Glyph="&#xE8C8;" />
+                                </dev:SettingsCard.ActionIcon>
+                            </dev:SettingsCard>
+                            <dev:SettingsCard HorizontalContentAlignment="Left"
+                                              ContentAlignment="Left">
+                                <StackPanel Orientation="Vertical"
+                                            Spacing="4">
+                                    <TextBlock Text="Related Links" />
+                                    <HyperlinkButton Content="Source Code"
+                                                     NavigateUri="https://github.com/tinodin/AutoOS" />
+                                    <HyperlinkButton Content="Release Notes"
+                                                     NavigateUri="https://github.com/tinodin/AutoOS/releases" />
+                                </StackPanel>
+                            </dev:SettingsCard>
+                        </dev:SettingsExpander.Items>
+                    </dev:SettingsExpander>
+                </dev:SimpleSettingsGroup>
+                <dev:SimpleSettingsGroup Header="Updates">
+                    <dev:SettingsCard Description="Get early access to new features and bug fixes. These versions are for testing and may be less stable than final releases."
+                                      Header="Pre-release Updates"
+                                      HeaderIcon="{dev:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
+                                                                Glyph=&#xE895;}">
+                        <ToggleSwitch x:Name="IncludePrerelease"
+                                      Toggled="IncludePrerelease_Toggled" />
+                    </dev:SettingsCard>
+                </dev:SimpleSettingsGroup>
+                <dev:SimpleSettingsGroup Header="Startup">
+                    <dev:SettingsCard Description="Enable to completely hide the AutoOS Startup window."
+                                      Header="Launch minimized"
+                                      HeaderIcon="{dev:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
+                                                                Glyph=&#xE73F;}">
+                        <ToggleSwitch x:Name="LaunchMinimized"
+                                      Toggled="LaunchMinimized_Toggled" />
+                    </dev:SettingsCard>
+                </dev:SimpleSettingsGroup>
+                <dev:SimpleSettingsGroup Header="Appearance &amp; behavior">
                     <dev:SettingsCard Description="Select the theme that suits your mood and preference. You can choose from dark, light, or system themes."
                                       Header="App theme"
                                       HeaderIcon="{dev:BitmapIcon Source=Assets/Fluent/Theme.png}">
@@ -56,7 +110,8 @@
                                       IsClickEnabled="True"
                                       LaunchUri="ms-settings:colors" />
                 </dev:SimpleSettingsGroup>
-                <dev:SimpleSettingsGroup Header="Games">
+                <dev:SimpleSettingsGroup Margin="0,0,0,36"
+                                         Header="Games">
                     <dev:Card Title="Switch Emulator"
                               Padding="24,24,24,12">
                         <dev:Card.Content>
@@ -122,53 +177,6 @@
                             </StackPanel>
                         </dev:Card.Content>
                     </dev:Card>
-
-                </dev:SimpleSettingsGroup>
-                <dev:SimpleSettingsGroup Header="Startup">
-                    <dev:SettingsCard Description="Enable to completely hide the AutoOS Startup window."
-                                      Header="Launch minimized"
-                                      HeaderIcon="{dev:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
-                                                                Glyph=&#xE73F;}">
-                        <ToggleSwitch x:Name="LaunchMinimized"
-                                      Toggled="LaunchMinimized_Toggled" />
-                    </dev:SettingsCard>
-                </dev:SimpleSettingsGroup>
-                <dev:SimpleSettingsGroup Header="About">
-                    <dev:SettingsExpander Margin="0,0,0,36"
-                                          Description="tinodin"
-                                          Header="AutoOS"
-                                          HeaderIcon="{dev:BitmapIcon Source=Assets/AppIcon.png}"
-                                          IsExpanded="False">
-                        <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                   IsTextSelectionEnabled="True"
-                                   Text="{x:Bind dev:ProcessInfoHelper.Version}" />
-                        <dev:SettingsExpander.Items>
-                            <dev:SettingsCard x:Name="CloneRepo"
-                                              Click="CloneRepo_Click"
-                                              Header="To clone this repository"
-                                              IsClickEnabled="True">
-                                <TextBlock x:Name="GitCloneTextBlock"
-                                           FontFamily="Consolas"
-                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                           IsTextSelectionEnabled="True"
-                                           Text="git clone https://github.com/tinodin/AutoOS" />
-                                <dev:SettingsCard.ActionIcon>
-                                    <FontIcon Glyph="&#xE8C8;" />
-                                </dev:SettingsCard.ActionIcon>
-                            </dev:SettingsCard>
-                            <dev:SettingsCard HorizontalContentAlignment="Left"
-                                              ContentAlignment="Left">
-                                <StackPanel Orientation="Vertical"
-                                            Spacing="5">
-                                    <TextBlock Text="Related Links" />
-                                    <HyperlinkButton Content="Source Code"
-                                                     NavigateUri="https://github.com/tinodin/AutoOS" />
-                                    <HyperlinkButton Content="Release Notes"
-                                                     NavigateUri="https://github.com/tinodin/AutoOS/releases" />
-                                </StackPanel>
-                            </dev:SettingsCard>
-                        </dev:SettingsExpander.Items>
-                    </dev:SettingsExpander>
                 </dev:SimpleSettingsGroup>
             </StackPanel>
         </ScrollViewer>

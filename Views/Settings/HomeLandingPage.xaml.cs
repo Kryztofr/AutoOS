@@ -1,7 +1,8 @@
 ﻿using AutoOS.Views.Installer.Actions;
+using AutoOS.Views.Updater;
+using AutoOS.Views.Updater.Stages;
 using CommunityToolkit.WinUI.Controls;
-using Microsoft.UI.Text;
-using Microsoft.UI.Xaml.Media;
+using System.Net.Http.Headers;
 using System.Text.Json;
 using Windows.Storage;
 
@@ -10,47 +11,45 @@ namespace AutoOS.Views.Settings
     public sealed partial class HomeLandingPage : Page
     {
         private readonly ApplicationDataContainer localSettings = ApplicationData.Current.LocalSettings;
-        private static readonly HttpClient httpClient = new();
-        private readonly TextBlock StatusText = new()
+        private static readonly HttpClient httpClient = new()
         {
-            Margin = new Thickness(0, 12, 0, 0),
-            FontSize = 14,
-            FontWeight = FontWeights.Medium
-        };
-
-        private readonly ProgressBar ProgressBar = new()
-        {
-            Margin = new Thickness(0, 12, 0, 0)
+            DefaultRequestHeaders =
+            {
+                UserAgent =
+                {
+                    new ProductInfoHeaderValue("AutoOS", ProcessInfoHelper.Version)
+                }
+            }
         };
 
         public HomeLandingPage()
         {
             InitializeComponent();
             #if !DEBUG
-                Loaded += GetChangeLog;
+                Loaded += CheckForUpdates;
             #endif
         }
 
-        private async void GetChangeLog(object sender, RoutedEventArgs e)
+        private async void CheckForUpdates(object sender, RoutedEventArgs e)
         {
-            string currentVersion = ProcessInfoHelper.Version;
+            Version currentVersion = new(ProcessInfoHelper.Version);
 
-            if (localSettings.Values["Version"] is string storedVersion && storedVersion != currentVersion)
+            if (localSettings.Values.TryGetValue("Version", out var storedVersionObj) && storedVersionObj is string storedVersionStr)
             {
-                try
-                {
-                    httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("AutoOS");
+                Version storedVersion = new(storedVersionStr);
 
+                if (currentVersion.CompareTo(storedVersion) > 0)
+                {
                     using var doc = JsonDocument.Parse(await httpClient.GetStringAsync($"https://api.github.com/repos/tinodin/AutoOS/releases/tags/v{currentVersion}"));
 
                     if (doc.RootElement.TryGetProperty("body", out var body))
                     {
-                        string rawChangelog = body.GetString()!;
+                        string rawChangelog = body.GetString();
                         string changelog = rawChangelog.Replace("`", "")[rawChangelog.IndexOf("- ")..];
 
                         var contentDialog = new ContentDialog
                         {
-                            Title = $"What’s new in AutoOS v{currentVersion}",
+                            Title = $"What's new in AutoOS v{currentVersion}",
                             Content = new ScrollViewer
                             {
                                 Content = new MarkdownTextBlock
@@ -67,129 +66,97 @@ namespace AutoOS.Views.Settings
                         contentDialog.Resources["ContentDialogMaxWidth"] = 1000;
                         await contentDialog.ShowAsync();
                     }
-                }
-                catch
-                {
 
-                }
+                    var updateDialog = new UpdateDialog();
 
-                //await Update();
-                //StatusText.Text = "Update complete.";
-                //ProgressBar.Foreground = new SolidColorBrush((Windows.UI.Color)Application.Current.Resources["SystemFillColorSuccess"]);
-                localSettings.Values["Version"] = currentVersion;
-                await ProcessActions.Log();
-                //StatusText.Text = "Restarting in 3...";
-                //await Task.Delay(1000);
-                //StatusText.Text = "Restarting in 2...";
-                //await Task.Delay(1000);
-                //StatusText.Text = "Restarting in 1...";
-                //await Task.Delay(1000);
-                //StatusText.Text = "Restarting...";
-                //await Task.Delay(750);
-
-                //ProcessStartInfo processStartInfo = new()
-                //{
-                //    FileName = "cmd.exe",
-                //    Arguments = $"/c shutdown /r /t 0",
-                //    UseShellExecute = false,
-                //    CreateNoWindow = true,
-                //};
-                //Process.Start(processStartInfo);
-            }
-        }
-
-        private async Task Update()
-        {
-            var updater = new ContentDialog
-            {
-                Title = "Updating AutoOS",
-                Content = new StackPanel
-                {
-                    Children =
+                    var updater = new ContentDialog
                     {
-                        StatusText,
-                        ProgressBar
-                    }
-                },
-                PrimaryButtonText = "Done",
-                IsPrimaryButtonEnabled = false,
+                        Title = "Applying Update...",
+                        Content = updateDialog,
+                        Resources = new ResourceDictionary
+                        {
+                            ["ContentDialogMinHeight"] = 0.0,
+                            ["ContentDialogMinWidth"] = 500,
+                            ["ContentDialogMaxWidth"] = 1000
+                        },
+                        XamlRoot = XamlRoot
+                    };
+
+                    _ = updater.ShowAsync();
+					await updateDialog.RunActions(UpdateStage.UpdateActions());
+                    updateDialog.SetStatus("Update complete.");
+                    updateDialog.SetSuccess();
+					localSettings.Values["Version"] = currentVersion.ToString();
+                    await ProcessActions.Log();
+                    await Task.Delay(1000);
+                    updater.Hide();
+                }
+            }
+
+            bool includePrereleases = localSettings.Values["IncludePrerelease"] as bool? ?? false;
+
+            var json = await httpClient.GetStringAsync("https://api.github.com/repos/tinodin/AutoOS/releases");
+            using var releasesDoc = JsonDocument.Parse(json);
+
+            var releases = releasesDoc.RootElement.EnumerateArray()
+                .Select(release =>
+                {
+                    string tag = release.GetProperty("tag_name").GetString();
+                    return new
+                    {
+                        Version = Version.Parse(tag.TrimStart('v')),
+                        IsPrerelease = release.GetProperty("prerelease").GetBoolean(),
+                        Json = release
+                    };
+                })
+                .Where(x => x.Version.CompareTo(currentVersion) > 0)
+                .Where(x => includePrereleases || (!x.IsPrerelease && x.Version.Revision <= 0))
+                .OrderBy(x => x.Version)
+                .ToList();
+
+            if (releases.Count == 0)
+                return;
+
+            var nextRelease = releases.First();
+            var assets = nextRelease.Json.GetProperty("assets");
+            string downloadUrl = assets.EnumerateArray()
+                .First(a => a.GetProperty("name").GetString() == "AutoOS.msix")
+                .GetProperty("browser_download_url")
+                .GetString();
+
+            Version nextVersion = nextRelease.Version;
+
+            var confirmDialog = new ContentDialog
+            {
+                Title = "Update Available",
+                Content = $"Do you want to update AutoOS from v{currentVersion} to v{nextVersion}?",
+                PrimaryButtonText = "Yes",
+                CloseButtonText = "No",
+                DefaultButton = ContentDialogButton.Close,
+				XamlRoot = XamlRoot
+            };
+
+            if (await confirmDialog.ShowAsync() != ContentDialogResult.Primary)
+                return;
+
+            var msixDialog = new UpdateDialog();
+
+            var msixUpdater = new ContentDialog
+            {
+                Title = $"Updating to AutoOS v{nextVersion}...",
+                Content = msixDialog,
                 Resources = new ResourceDictionary
                 {
-                    ["ContentDialogMinWidth"] = 500,
+					["ContentDialogMinHeight"] = 0.0,
+					["ContentDialogMinWidth"] = 500,
                     ["ContentDialogMaxWidth"] = 1000
                 },
                 XamlRoot = XamlRoot
             };
 
-            _ = updater.ShowAsync();
+            _ = msixUpdater.ShowAsync();
 
-            string previousTitle = string.Empty;
-
-            var actions = new List<(string Title, Func<Task> Action, Func<bool> Condition)>
-            {
-
-            };
-
-            var filteredActions = actions.Where(a => a.Condition == null || a.Condition.Invoke()).ToList();
-            int groupedTitleCount = 0;
-
-            List<Func<Task>> currentGroup = [];
-
-            for (int i = 0; i < filteredActions.Count; i++)
-            {
-                if (i == 0 || filteredActions[i].Title != filteredActions[i - 1].Title)
-                {
-                    groupedTitleCount++;
-                }
-            }
-
-            double incrementPerTitle = groupedTitleCount > 0 ? 100 / (double)groupedTitleCount : 0;
-
-            foreach (var (title, action, condition) in filteredActions)
-            {
-                if (previousTitle != string.Empty && previousTitle != title && currentGroup.Count > 0)
-                {
-                    foreach (var groupedAction in currentGroup)
-                    {
-                        try
-                        {
-                            await groupedAction();
-                        }
-                        catch (Exception ex)
-                        {
-                            StatusText.Text = ex.Message;
-                            ProgressBar.Foreground = (Brush)Application.Current.Resources["SystemFillColorCriticalBrush"];
-                        }
-                    }
-
-                    ProgressBar.Value += incrementPerTitle;
-                    await Task.Delay(250);
-                    currentGroup.Clear();
-                }
-
-                StatusText.Text = title + "...";
-                currentGroup.Add(action);
-                previousTitle = title;
-            }
-
-            if (currentGroup.Count > 0)
-            {
-                foreach (var groupedAction in currentGroup)
-                {
-                    try
-                    {
-                        await groupedAction();
-                    }
-                    catch (Exception ex)
-                    {
-                        StatusText.Text = ex.Message;
-                        ProgressBar.Foreground = (Brush)Application.Current.Resources["SystemFillColorCriticalBrush"];
-                    }
-                }
-                ProgressBar.Value += incrementPerTitle;
-            }
-
-            updater.IsPrimaryButtonEnabled = true;
+            await PackageStage.PackageActions(downloadUrl, msixDialog);
         }
     }
 }

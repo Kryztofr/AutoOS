@@ -12,6 +12,19 @@ namespace AutoOS.Views
         public string TitleBarName { get; set; }
         internal static MainWindow Instance { get; set; }
 
+        public  string AppSubtitle
+        {
+            get
+            {
+                var version = new Version(ProcessInfoHelper.Version);
+                if (version.Revision > 0)
+                {
+                    return ProcessInfoHelper.VersionWithPrefix + " - Pre-release";
+                }
+                return ProcessInfoHelper.VersionWithPrefix;
+            }
+        }
+
         public MainWindow()
         {
             Instance = this;

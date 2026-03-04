@@ -690,7 +690,7 @@ public static class EpicGamesHelper
                 }
                 catch (Exception ex)
                 {
-                    await App.ShowCrashDialogAsync(new Exception($"Failed to load game: {JsonNode.Parse(await File.ReadAllTextAsync(file.FullName).ConfigureAwait(false))["DisplayName"]?.ToString()}", ex));
+                    await App.ShowErrorMessage(new Exception($"Failed to load game: {JsonNode.Parse(await File.ReadAllTextAsync(file.FullName).ConfigureAwait(false))["DisplayName"]?.ToString()}", ex));
                 }
             });
         }
