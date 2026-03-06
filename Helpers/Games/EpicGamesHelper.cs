@@ -525,6 +525,10 @@ public static class EpicGamesHelper
                     if (!libraryData.Any(x => x?["catalogItemId"]?.ToString() == catalogItemId))
                         return;
 
+                    string installLocation = itemJson["InstallLocation"]?.GetValue<string>()?.Replace("/", "\\");
+                    if (!Directory.Exists(installLocation))
+                        return;
+
                     // get offer id
                     var itemOfferData = JsonNode.Parse(await httpClient.GetStringAsync($"https://api.egdata.app/items/{catalogItemId}/offer", token).ConfigureAwait(false));
                     var offerId = itemOfferData?["id"]?.GetValue<string>();
@@ -640,7 +644,7 @@ public static class EpicGamesHelper
                             CatalogNamespace = catalogNamespace,
                             CatalogItemId = catalogItemId,
                             AppName = itemJson["MainGameAppName"]?.GetValue<string>(),
-                            InstallLocation = itemJson["InstallLocation"]?.GetValue<string>()?.Replace("/", "\\"),
+                            InstallLocation = installLocation,
                             LaunchCommand = itemJson["LaunchCommand"]?.GetValue<string>(),
                             LaunchExecutable = itemJson["LaunchExecutable"]?.GetValue<string>()?.Replace("/", "\\"),
                             ProcessNames = itemJson["ProcessNames"]?.AsArray().Select(p => p.GetValue<string>()).ToList(),

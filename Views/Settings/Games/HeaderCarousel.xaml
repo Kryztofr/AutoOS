@@ -39,7 +39,6 @@
                             <Grid>
                                 <dev:AnimatedImage x:Name="PART_BackDropImage"
                                                    Height="Auto"
-                                                   ImageUrl="ms-appx:///Assets/BackgroundBlur.png"
                                                    Stretch="{TemplateBinding ImageStretch}" />
                                 <Rectangle>
                                     <Rectangle.Fill>
@@ -51,6 +50,9 @@
                                         </RadialGradientBrush>
                                     </Rectangle.Fill>
                                 </Rectangle>
+                                <dev:LinearGradientBlurPanel MaxBlurAmount="64"
+                                                             StartPoint="0,1"
+                                                             EndPoint="0,0.45" />
                             </Grid>
                         </dev:OpacityMaskView>
                         <!--  Title  -->

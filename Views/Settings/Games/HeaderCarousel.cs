@@ -1886,28 +1886,36 @@ public partial class HeaderCarousel : ItemsControl
 
         if (Launcher == "Epic Games")
         {
-            string offlineExecutable = Path.GetFileNameWithoutExtension(LaunchExecutable);
-            string onlineExecutable = Title switch
-            {
-                "Fortnite" => "FortniteClient-Win64-Shipping",
-                "Fall Guys" => "FallGuys_client_game",
-                _ => string.Empty
-            };
-            if (Title == "Fall Guys") offlineExecutable = "FallGuys_client";
+            var exeNames = Directory.GetFiles(InstallLocation, "*.exe", SearchOption.AllDirectories)
+                .Select(Path.GetFileNameWithoutExtension)
+                .Distinct()
+                .ToList();
+
+            if (exeNames.Count == 0) return;
 
             StartGameWatcher(() =>
-                (!string.IsNullOrEmpty(offlineExecutable) && Process.GetProcessesByName(Path.GetFileNameWithoutExtension(offlineExecutable)).Length > 0) ||
-                (!string.IsNullOrEmpty(onlineExecutable) && Process.GetProcessesByName(Path.GetFileNameWithoutExtension(onlineExecutable)).Length > 0) ||
-                (ProcessNames?.Any(p => !string.IsNullOrEmpty(p) && Process.GetProcessesByName(Path.GetFileNameWithoutExtension(p)).Length > 0) ?? false)
+                exeNames.Any(name => Process.GetProcessesByName(name).Length > 0)
             );
+            //string offlineExecutable = Path.GetFileNameWithoutExtension(LaunchExecutable);
+            //string onlineExecutable = Title switch
+            //{
+            //    "Fortnite" => "FortniteClient-Win64-Shipping",
+            //    "Fall Guys" => "FallGuys_client_game",
+            //    _ => string.Empty
+            //};
+            //if (Title == "Fall Guys") offlineExecutable = "FallGuys_client";
+
+            //StartGameWatcher(() =>
+            //    (!string.IsNullOrEmpty(offlineExecutable) && Process.GetProcessesByName(Path.GetFileNameWithoutExtension(offlineExecutable)).Length > 0) ||
+            //    (!string.IsNullOrEmpty(onlineExecutable) && Process.GetProcessesByName(Path.GetFileNameWithoutExtension(onlineExecutable)).Length > 0) ||
+            //    (ProcessNames?.Any(p => !string.IsNullOrEmpty(p) && Process.GetProcessesByName(Path.GetFileNameWithoutExtension(p)).Length > 0) ?? false)
+            //);
         }
         else if (Launcher == "Steam")
         {
-            string installLocation = InstallLocation;
-            if (string.IsNullOrEmpty(installLocation)) return;
-
-            var exeNames = Directory.GetFiles(installLocation, "*.exe")
+            var exeNames = Directory.GetFiles(InstallLocation, "*.exe", SearchOption.AllDirectories)
                 .Select(Path.GetFileNameWithoutExtension)
+                .Distinct()
                 .ToList();
 
             if (exeNames.Count == 0) return;
