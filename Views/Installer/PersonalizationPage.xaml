@@ -33,15 +33,25 @@
                                 <DataTemplate x:DataType="views:ThemeItem">
                                     <StackPanel Orientation="Horizontal">
                                         <Image Height="128"
-                                               Source="{x:Bind LightTheme}"
                                                Stretch="Uniform"
                                                ToolTipService.Placement="Top"
-                                               ToolTipService.ToolTip="Light Mode" />
+                                               ToolTipService.ToolTip="Light Mode">
+                                            <Image.Source>
+                                                <BitmapImage DecodePixelHeight="128"
+                                                             DecodePixelType="Logical"
+                                                             UriSource="{x:Bind LightTheme, Mode=OneTime}" />
+                                            </Image.Source>
+                                        </Image>
                                         <Image Height="128"
-                                               Source="{x:Bind DarkTheme}"
                                                Stretch="Uniform"
                                                ToolTipService.Placement="Top"
-                                               ToolTipService.ToolTip="Dark Mode" />
+                                               ToolTipService.ToolTip="Dark Mode">
+                                            <Image.Source>
+                                                <BitmapImage DecodePixelHeight="128"
+                                                             DecodePixelType="Logical"
+                                                             UriSource="{x:Bind DarkTheme, Mode=OneTime}" />
+                                            </Image.Source>
+                                        </Image>
                                     </StackPanel>
                                 </DataTemplate>
                             </GridView.ItemTemplate>

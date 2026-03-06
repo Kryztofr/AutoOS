@@ -252,12 +252,12 @@
                             <controls:DataColumn Margin="-48,0,48,0"
                                                  Content="Name"
                                                  DesiredWidth="*" />
-                            <controls:DataColumn MinWidth="75"
+                            <controls:DataColumn MinWidth="85"
                                                  Content="Ac"
-                                                 DesiredWidth="75" />
-                            <controls:DataColumn MinWidth="100"
+                                                 DesiredWidth="85" />
+                            <controls:DataColumn MinWidth="110"
                                                  Content="Dc"
-                                                 DesiredWidth="100" />
+                                                 DesiredWidth="110" />
                         </controls:DataTable>
                     </controls:HeaderedTreeView.Header>
                 </controls:HeaderedTreeView>
