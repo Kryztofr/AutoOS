@@ -5,6 +5,9 @@ namespace AutoOS.Views.Updater;
 
 public sealed partial class UpdateDialog : UserControl
 {
+    public double CurrentGroupStart { get; set; }
+    public double CurrentGroupTarget { get; set; }
+
     public UpdateDialog()
     {
         InitializeComponent();
@@ -47,7 +50,7 @@ public sealed partial class UpdateDialog : UserControl
             }
         }
 
-        double incrementPerTitle = groupedTitleCount > 0 ? 100 / (double)groupedTitleCount : 0;
+        double incrementPerTitle = groupedTitleCount > 0 ? 100.0 / (double)groupedTitleCount : 0;
 
         ProgressBar.IsIndeterminate = false;
 
@@ -55,6 +58,9 @@ public sealed partial class UpdateDialog : UserControl
         {
             if (previousTitle != string.Empty && previousTitle != title && currentGroup.Count > 0)
             {
+                CurrentGroupStart = ProgressBar.Value;
+                CurrentGroupTarget = CurrentGroupStart + incrementPerTitle;
+
                 foreach (var groupedAction in currentGroup)
                 {
                     try
@@ -68,7 +74,7 @@ public sealed partial class UpdateDialog : UserControl
                     }
                 }
 
-                ProgressBar.Value += incrementPerTitle;
+                ProgressBar.Value = CurrentGroupTarget;
                 await Task.Delay(250);
                 currentGroup.Clear();
             }
@@ -80,6 +86,9 @@ public sealed partial class UpdateDialog : UserControl
 
         if (currentGroup.Count > 0)
         {
+            CurrentGroupStart = ProgressBar.Value;
+            CurrentGroupTarget = CurrentGroupStart + incrementPerTitle;
+
             foreach (var groupedAction in currentGroup)
             {
                 try
@@ -92,11 +101,11 @@ public sealed partial class UpdateDialog : UserControl
                     SetError();
                 }
             }
-            ProgressBar.Value += incrementPerTitle;
+            ProgressBar.Value = CurrentGroupTarget;
         }
     }
 
-    public async Task RunDownload(string url, string path, string file, string displayTitle, double startValue, double targetValue)
+    public async Task Download(string url, string path, string file, string displayTitle, double startValue, double targetValue)
     {
         SetStatus(displayTitle + "...");
 

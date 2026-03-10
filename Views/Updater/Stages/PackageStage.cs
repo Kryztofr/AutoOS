@@ -32,7 +32,7 @@ public static class PackageStage
         if (!isCertValid)
         {
             StorageFile cerFile = await tempFolder.CreateFileAsync("AutoOS.cer", CreationCollisionOption.ReplaceExisting);
-            await dialog.RunDownload(downloadUrl.Replace("AutoOS.msix", "AutoOS.cer"), tempFolder.Path, "AutoOS.cer", "Downloading Certificate...", 0, 25);
+            await dialog.Download(downloadUrl.Replace("AutoOS.msix", "AutoOS.cer"), tempFolder.Path, "AutoOS.cer", "Downloading Certificate...", 0, 25);
             dialog.SetStatus("Installing Certificate...");
             using (X509Store store = new(StoreName.Root, StoreLocation.LocalMachine))
             {
@@ -46,13 +46,13 @@ public static class PackageStage
                 store.Add(cert);
             }
             dialog.SetProgress(50);
-            await dialog.RunDownload(downloadUrl, tempFolder.Path, "AutoOS.msix", "Downloading Update...", 50, 75);
+            await dialog.Download(downloadUrl, tempFolder.Path, "AutoOS.msix", "Downloading Update...", 50, 75);
             startValue = 75;
             weight = 25;
         }
         else
         {
-            await dialog.RunDownload(downloadUrl, tempFolder.Path, "AutoOS.msix", "Downloading Update...", 0, 50);
+            await dialog.Download(downloadUrl, tempFolder.Path, "AutoOS.msix", "Downloading Update...", 0, 50);
             startValue = 50;
             weight = 50;
         }

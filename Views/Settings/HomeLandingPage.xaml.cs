@@ -83,7 +83,7 @@ namespace AutoOS.Views.Settings
                     };
 
                     _ = updater.ShowAsync();
-					await updateDialog.RunActions(UpdateStage.UpdateActions());
+					await updateDialog.RunActions(UpdateStage.UpdateActions(updateDialog));
                     updateDialog.SetStatus("Update complete.");
                     updateDialog.SetSuccess();
 					localSettings.Values["Version"] = currentVersion.ToString();
