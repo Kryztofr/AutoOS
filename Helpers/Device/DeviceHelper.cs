@@ -67,6 +67,7 @@ public class DeviceInfo
     public bool IsActive { get; set; }
     public XhciDeviceType? XhciType { get; set; }
     public ulong? BaseAddress { get; set; }
+    public string CurrentVersion { get; set; } = string.Empty;
 }
 
 internal static class DeviceHelper
@@ -168,9 +169,21 @@ internal static class DeviceHelper
                 }
             }
 
-            string vendorId = pnpDeviceId.Substring(pnpDeviceId.IndexOf("VEN_") + 4, 4).ToLowerInvariant();
-            string deviceId = pnpDeviceId.Substring(pnpDeviceId.IndexOf("DEV_") + 4, 4).ToLowerInvariant();
+            string vendorId = string.Empty;
+            string deviceId = string.Empty;
+
+            if (pnpDeviceId.Contains("VEN_"))
+                vendorId = pnpDeviceId.Substring(pnpDeviceId.IndexOf("VEN_") + 4, 4).ToLowerInvariant();
+            else if (pnpDeviceId.Contains("VID_"))
+                vendorId = pnpDeviceId.Substring(pnpDeviceId.IndexOf("VID_") + 4, 4).ToLowerInvariant();
+
+            if (pnpDeviceId.Contains("DEV_"))
+                deviceId = pnpDeviceId.Substring(pnpDeviceId.IndexOf("DEV_") + 4, 4).ToLowerInvariant();
+            else if (pnpDeviceId.Contains("PID_"))
+                deviceId = pnpDeviceId.Substring(pnpDeviceId.IndexOf("PID_") + 4, 4).ToLowerInvariant();
             string registryPath = $@"SYSTEM\CurrentControlSet\Control\Class\{GetDeviceRegistryPropertyString(deviceInfoSetHandle, &deviceInfoData, SPDRP_DRIVER)}";
+
+            string driverVersion = Registry.LocalMachine.OpenSubKey(registryPath).GetValue("DriverVersion")?.ToString();
 
             uint msiSupported = 2, msiLimit = 0, devicePolicy = 0, devicePriority = 0;
             ulong assignmentSetOverride = 0;
@@ -259,7 +272,8 @@ internal static class DeviceHelper
                 NicType = nicDeviceType,
                 IsActive = isActive,
                 XhciType = xhciType,
-                BaseAddress = baseAddress
+                BaseAddress = baseAddress,
+                CurrentVersion = driverVersion
             };
 
             devices.Add(device);

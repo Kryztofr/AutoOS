@@ -50,6 +50,8 @@
                                          VerticalAlignment="Stretch"
                                          AutomationProperties.AccessibilityView="Raw"
                                          CornerRadius="{TemplateBinding CornerRadius}"
+                                         DecodePixelHeight="208"
+                                         DecodePixelType="Logical"
                                          IsCacheEnabled="True"
                                          Source="{TemplateBinding ImageUrl}"
                                          Stretch="Fill" />

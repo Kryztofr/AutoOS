@@ -476,6 +476,8 @@
                                         Orientation="Horizontal"
                                         Spacing="12">
                                 <dev:ImageEx Height="44"
+                                             DecodePixelHeight="44"
+                                             DecodePixelType="Logical"
                                              IsCacheEnabled="True"
                                              Source="{TemplateBinding AgeRatingUrl}"
                                              Stretch="Uniform" />
@@ -629,6 +631,8 @@
                                                                      VerticalAlignment="Stretch"
                                                                      AutomationProperties.AccessibilityView="Raw"
                                                                      CornerRadius="{ThemeResource ControlCornerRadius}"
+                                                                     DecodePixelHeight="160"
+                                                                     DecodePixelType="Logical"
                                                                      IsCacheEnabled="True"
                                                                      Source="{Binding}"
                                                                      Stretch="Uniform" />

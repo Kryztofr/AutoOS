@@ -9,7 +9,8 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       mc:Ignorable="d">
     <Page.Resources>
-        <DataTemplate x:Key="GroupTemplate" x:DataType="local:SchedulingGroup">
+        <DataTemplate x:Key="GroupTemplate"
+                      x:DataType="local:SchedulingGroup">
             <TreeViewItem IsExpanded="{x:Bind IsExpanded, Mode=TwoWay}"
                           ItemsSource="{x:Bind SubItems}">
                 <controls:DataRow>
@@ -26,7 +27,8 @@
                 </controls:DataRow>
             </TreeViewItem>
         </DataTemplate>
-        <DataTemplate x:Key="ItemTemplate" x:DataType="local:SchedulingItem">
+        <DataTemplate x:Key="ItemTemplate"
+                      x:DataType="local:SchedulingItem">
             <TreeViewItem>
                 <controls:DataRow>
                     <TextBlock />

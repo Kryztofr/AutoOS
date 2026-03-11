@@ -14,6 +14,7 @@ using System.Text.RegularExpressions;
 using ValveKeyValue;
 using WinRT.Interop;
 using AutoOS.Views.Installer.Stages;
+using AutoOS.Helpers.Device;
 
 namespace AutoOS.Views.Installer.Actions;
 
@@ -255,6 +256,9 @@ public static class ProcessActions
 
         string monitors = string.Join(", ", MonitorHelper.GetMonitors().Select(m => $"{m.DeviceName} ({m.Resolution.Width}x{m.Resolution.Height} @ {m.RefreshRate} Hz)"));
 
+        var nicsList = DeviceHelper.GetDevices(DeviceType.NIC);
+        string nics = nicsList.Count > 0 ? string.Join("\n", nicsList.Select(n => $"{n.FriendlyName} (DeviceId: {n.DeviceId}, VendorId: {n.VendorId}, Current Version: {n.DriverType} {n.CurrentVersion}, Connected: {n.IsActive})")) : "N/A";
+
         using var key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion");
         string build = key.GetValue("CurrentBuild")?.ToString() ?? "";
         string ubr = key.GetValue("UBR")?.ToString() ?? "";
@@ -296,6 +300,7 @@ public static class ProcessActions
                 $"{ram}\n" +
                 $"{gpus}\n" +
                 $"{monitors}\n" +
+                $"{nics}\n" +
                 $"{osVersion}\n" +
                 $"Install start: {installStart}\n" +
                 $"Install end: {installEnd}\n" +
@@ -332,6 +337,9 @@ public static class ProcessActions
 
         string monitors = string.Join(", ", MonitorHelper.GetMonitors().Select(m => $"{m.DeviceName} ({m.Resolution.Width}x{m.Resolution.Height} @ {m.RefreshRate} Hz)"));
 
+        var nicsList = DeviceHelper.GetDevices(DeviceType.NIC);
+        string nics = nicsList.Count > 0 ? string.Join("\n", nicsList.Select(n => $"{n.FriendlyName} (DeviceId: {n.DeviceId}, VendorId: {n.VendorId}, Current Version: {n.DriverType} {n.CurrentVersion}, Connected: {n.IsActive})")) : "N/A";
+
         using var key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion");
         string build = key.GetValue("CurrentBuild")?.ToString() ?? "";
         string ubr = key.GetValue("UBR")?.ToString() ?? "";
@@ -373,6 +381,7 @@ public static class ProcessActions
                 $"{ram}\n" +
                 $"{gpus}\n" +
                 $"{monitors}\n" +
+                $"{nics}\n" +
                 $"{osVersion}\n" +
                 $"Install start: {installStart}\n" +
                 $"Install end: {installEnd}\n" +
