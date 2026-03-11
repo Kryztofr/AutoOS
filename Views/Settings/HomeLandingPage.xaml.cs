@@ -2,6 +2,7 @@
 using AutoOS.Views.Updater;
 using AutoOS.Views.Updater.Stages;
 using CommunityToolkit.WinUI.Controls;
+using Microsoft.Win32;
 using System.Net.Http.Headers;
 using System.Text.Json;
 using Windows.Storage;
@@ -88,6 +89,7 @@ namespace AutoOS.Views.Settings
                     updateDialog.SetStatus("Update complete.");
                     updateDialog.SetSuccess();
                     localSettings.Values["Version"] = currentVersion.ToString();
+                    Registry.SetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\AutoOS", "IsInstalled", 1, RegistryValueKind.DWord);
                     await ProcessActions.Log();
                     await Task.Delay(1000);
                     updater.Hide();
