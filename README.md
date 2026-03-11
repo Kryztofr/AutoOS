@@ -333,15 +333,11 @@ This project is licensed under the **GNU General Public License v3.0**. See the 
    - Changes: Removed `shutdown /r /t 0` from created lists, added `--output-dir` switch because of MSIX restrictions.
    - Fork: [tinodin/service-list-builder](https://github.com/tinodin/service-list-builder)
 
-6. **Chiptool**
-   - Licensed under the **GNU General Public License v3.0**.
-   - Source: [LuSlower/chiptool](https://github.com/LuSlower/chiptool)
-
-7. **ClassicWindowSwitcher**
+6. **ClassicWindowSwitcher**
    - Licensed under the **GNU General Public License v2.0**.
    - Source: [Ingan121/ClassicWindowSwitcher](https://github.com/Ingan121/ClassicWindowSwitcher)
 
-8. **7-Zip**
+7. **7-Zip**
 ```
   7-Zip
   ~~~~~
@@ -492,7 +488,7 @@ The license for original unRAR code has the following restriction:
 ```
 - Source: [7-Zip](https://www.7-zip.org)
  
-9. **Custom Resolution Utility (CRU)**
+8. **Custom Resolution Utility (CRU)**
 ```
 Copyright (C) 2012-2022 ToastyX
 https://monitortests.com/custom-resolution-utility

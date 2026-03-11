@@ -141,21 +141,10 @@ public static class PreparingStage
                 SSD = true;
             }
 
-            string sourcePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Applications", "Chiptool");
-            string destinationPath = Path.Combine(PathHelper.GetAppDataFolderPath(), "Chiptool");
-
-            Directory.CreateDirectory(destinationPath);
-
-            foreach (var directory in Directory.GetDirectories(sourcePath, "*", SearchOption.AllDirectories))
-                Directory.CreateDirectory(directory.Replace(sourcePath, destinationPath));
-
-            foreach (var file in Directory.GetFiles(sourcePath, "*.*", SearchOption.AllDirectories))
-                File.Copy(file, file.Replace(sourcePath, destinationPath), overwrite: true);
-
             Process.Start(new ProcessStartInfo
             {
                 FileName = "powershell.exe",
-                Arguments = $@"-NoProfile -ExecutionPolicy Bypass -Command ""Add-MpPreference -ExclusionPath '{Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Applications")}'; Add-MpPreference -ExclusionPath '{Path.Combine(PathHelper.GetAppDataFolderPath(), "Chiptool")}'""",
+                Arguments = $@"-NoProfile -ExecutionPolicy Bypass -Command ""Add-MpPreference -ExclusionPath '{Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Applications")}'; Add-MpPreference -ExclusionPath '{Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Helpers", "ReadWrite")}'""",
                 CreateNoWindow = true,
                 WindowStyle = ProcessWindowStyle.Hidden
             });

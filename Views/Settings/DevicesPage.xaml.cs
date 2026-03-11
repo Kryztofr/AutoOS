@@ -141,7 +141,6 @@ public sealed partial class DevicesPage : Page
         {
             XHCIs.Add(device);
             device.IsActive = await Task.Run(() => DeviceHelper.GetIMODState(device));
-            device.IsLoading = false;
         }
 
         isInitializingIMODState = false;
@@ -174,6 +173,9 @@ public sealed partial class DevicesPage : Page
 
         // toggle imod
         await Task.Run(() => DeviceHelper.ToggleImod(device, isOn));
+
+        // delay
+        await Task.Delay(500);
 
         // re-enable hittestvisible
         toggleSwitch.IsHitTestVisible = true;

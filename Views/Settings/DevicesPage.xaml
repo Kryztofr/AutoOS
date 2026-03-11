@@ -53,13 +53,7 @@
                                             <StackPanel Orientation="Horizontal">
                                                 <ToggleSwitch DataContext="{x:Bind}"
                                                               IsOn="{x:Bind IsActive, Mode=TwoWay}"
-                                                              Toggled="IMOD_Toggled"
-                                                              Visibility="{x:Bind IsLoading, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=True}" />
-                                                <ProgressRing Width="25"
-                                                              Height="25"
-                                                              Background="Transparent"
-                                                              IsActive="{x:Bind IsLoading, Mode=OneWay}"
-                                                              Visibility="{x:Bind IsLoading, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                                                              Toggled="IMOD_Toggled" />
                                             </StackPanel>
                                         </dev:SettingsCard>
                                     </dev:SettingsGroup.Items>

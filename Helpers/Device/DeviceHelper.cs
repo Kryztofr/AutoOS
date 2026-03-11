@@ -1,6 +1,6 @@
+using AutoOS.Helpers.ReadWrite;
 using Microsoft.Win32;
 using System.Collections.Concurrent;
-using System.Diagnostics;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Text.Json.Nodes;
@@ -76,12 +76,6 @@ public partial class DeviceInfo : INotifyPropertyChanged
     {
         get => isActive;
         set { if (isActive != value) { isActive = value; OnPropertyChanged(); } }
-    }
-    private bool isLoading = true;
-    public bool IsLoading
-    {
-        get => isLoading;
-        set { if (isLoading != value) { isLoading = value; OnPropertyChanged(); } }
     }
     public XhciDeviceType? XhciType { get; set; }
     public ulong? BaseAddress { get; set; }
@@ -600,8 +594,7 @@ internal static class DeviceHelper
             if (PInvoke.CM_Locate_DevNode(out uint devInst, pId, CM_LOCATE_DEVNODE_FLAGS.CM_LOCATE_DEVNODE_NORMAL) != CONFIGRET.CR_SUCCESS)
                 return null;
 
-            nuint logConf;
-            if (PInvoke.CM_Get_First_Log_Conf(out logConf, devInst, CM_LOG_CONF.ALLOC_LOG_CONF) != CONFIGRET.CR_SUCCESS && PInvoke.CM_Get_First_Log_Conf(out logConf, devInst, CM_LOG_CONF.BOOT_LOG_CONF) != CONFIGRET.CR_SUCCESS)
+            if (PInvoke.CM_Get_First_Log_Conf(out nuint logConf, devInst, CM_LOG_CONF.ALLOC_LOG_CONF) != CONFIGRET.CR_SUCCESS && PInvoke.CM_Get_First_Log_Conf(out logConf, devInst, CM_LOG_CONF.BOOT_LOG_CONF) != CONFIGRET.CR_SUCCESS)
                 return null;
 
             try
@@ -613,9 +606,7 @@ internal static class DeviceHelper
 
                 while (true)
                 {
-                    nuint nextResDes;
-                    CM_RESTYPE outResType;
-                    var result = PInvoke.CM_Get_Next_Res_Des(out nextResDes, currentHandle, 0, out outResType, 0);
+                    var result = PInvoke.CM_Get_Next_Res_Des(out nuint nextResDes, currentHandle, 0, out CM_RESTYPE outResType, 0);
                     resType = (uint)outResType;
 
                     if (!isFirst && resDes != 0)
@@ -658,80 +649,38 @@ internal static class DeviceHelper
         return null;
     }
 
-    private static ulong GetValueFromAddress(ulong address)
+    public static bool GetIMODState(DeviceInfo device, ReadWriteHelper sharedHw = null)
     {
-        using var process = new Process
-        {
-            StartInfo = new ProcessStartInfo
-            {
-                FileName = Path.Combine(PathHelper.GetAppDataFolderPath(), "Chiptool", "chiptool.exe"),
-                Arguments = $"--rdmem 32 {$"0x{address:X}"}",
-                UseShellExecute = false,
-                RedirectStandardOutput = true,
-                CreateNoWindow = true
-            }
-        };
+        using var localHw = sharedHw == null ? new ReadWriteHelper() : null;
+        var hw = sharedHw ?? localHw;
 
-        process.Start();
-        string output = process.StandardOutput.ReadToEnd();
-        process.WaitForExit();
+        if (device.BaseAddress == null) return false;
+        
+        hw.ReadMemory32(device.BaseAddress.Value + 0x18, out uint rtsoff);
+        ulong runtime = device.BaseAddress.Value + (rtsoff & ~0x1Fu);
 
-        return ulong.Parse(output.AsSpan(output.LastIndexOf('x') + 1), System.Globalization.NumberStyles.HexNumber);
-    }
-
-    private static void WriteValueToAddress(ulong address, ulong value)
-    {
-        using var process = new Process
-        {
-            StartInfo = new ProcessStartInfo
-            {
-                FileName = Path.Combine(PathHelper.GetAppDataFolderPath(), "Chiptool", "chiptool.exe"),
-                Arguments = $"--wrmem 32 {$"0x{address:X}"} {$"0x{value:X8}"}",
-                UseShellExecute = false,
-                CreateNoWindow = true
-            }
-        };
-        process.Start();
-        process.WaitForExit();
-    }
-
-    private static (ulong RuntimeAddress, int MaxIntrs) GetRuntimeAndMaxIntrs(DeviceInfo device)
-    {
-        string sourcePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Applications", "Chiptool");
-        string destinationPath = Path.Combine(PathHelper.GetAppDataFolderPath(), "Chiptool");
-
-        if (!Directory.Exists(destinationPath))
-        {
-            Directory.CreateDirectory(destinationPath);
-
-            foreach (var directory in Directory.GetDirectories(sourcePath, "*", SearchOption.AllDirectories))
-                Directory.CreateDirectory(directory.Replace(sourcePath, destinationPath));
-
-            foreach (var file in Directory.GetFiles(sourcePath, "*.*", SearchOption.AllDirectories))
-                File.Copy(file, file.Replace(sourcePath, destinationPath), overwrite: true);
-        }
-
-        if (device.BaseAddress == null) return (0, 0);
-        ulong cap = device.BaseAddress.Value;
-        uint hcs1 = (uint)GetValueFromAddress(cap + 0x04);
-        int maxIntrs = (int)((hcs1 >> 8) & 0x7FF);
-        uint rtsoff = (uint)GetValueFromAddress(cap + 0x18);
-        return (cap + (rtsoff & ~0x1Fu), maxIntrs);
-    }
-
-    public static bool GetIMODState(DeviceInfo device)
-    {
-        var (runtime, max) = GetRuntimeAndMaxIntrs(device);
-        if (max == 0) return false;
+        hw.ReadMemory32(device.BaseAddress.Value + 0x04, out uint hcs1);
+        int max = (int)((hcs1 >> 8) & 0x7FF);
 
         for (int i = 0; i < max; i++)
-            if (GetValueFromAddress(runtime + 0x24 + (0x20 * (ulong)i)) != 0) return true;
+        {
+            hw.ReadMemory32(runtime + 0x24 + (0x20 * (ulong)i), out uint imod);
+            if (imod != 0) return true;
+        }
 
         return false;
     }
 
     public static void ToggleImod(DeviceInfo device, bool enable)
     {
+        using var hw = new ReadWriteHelper();
+        if (device.BaseAddress == null) return;
+
+        hw.ReadMemory32(device.BaseAddress.Value + 0x18, out uint rtsoff);
+        ulong runtime = device.BaseAddress.Value + (rtsoff & ~0x1Fu);
+        hw.ReadMemory32(device.BaseAddress.Value + 0x04, out uint hcs1);
+        int max = (int)((hcs1 >> 8) & 0x7FF);
+
         if (enable)
         {
             var json = ApplicationData.Current.LocalSettings.Values["XHCIs"]?.ToString();
@@ -740,28 +689,40 @@ internal static class DeviceHelper
             var array = JsonNode.Parse(json)?.AsArray();
             var intervals = array?.FirstOrDefault(x => x?["PnpDeviceId"]?.ToString() == device.PnpDeviceId)?["Intervals"]?.AsObject();
             if (intervals != null)
+            {
                 foreach (var kvp in intervals)
-                    if (ulong.TryParse(kvp.Key, out ulong addr)) WriteValueToAddress(addr, kvp.Value?.GetValue<ulong>() ?? 0);
+                {
+                    if (ulong.TryParse(kvp.Key, out ulong addr) && uint.TryParse(kvp.Value?.ToString(), out uint val))
+                        hw.WriteMemory32(addr, val);
+                }
+            }
         }
         else
         {
-            SaveImod(device);
-            var (runtime, max) = GetRuntimeAndMaxIntrs(device);
+            SaveImod(device, hw);
             for (int i = 0; i < max; i++)
-                WriteValueToAddress(runtime + 0x24 + (0x20 * (ulong)i), 0);
+                hw.WriteMemory32(runtime + 0x24 + (0x20 * (ulong)i), 0);
         }
     }
 
-    public static void SaveImod(DeviceInfo device)
+    public static void SaveImod(DeviceInfo device, ReadWriteHelper sharedHw = null)
     {
-        var (runtime, max) = GetRuntimeAndMaxIntrs(device);
-        if (max == 0 || !GetIMODState(device)) return;
+        using var localHw = sharedHw == null ? new ReadWriteHelper() : null;
+        var hw = sharedHw ?? localHw;
+
+        if (device.BaseAddress == null || !GetIMODState(device, hw)) return;
+
+        hw.ReadMemory32(device.BaseAddress.Value + 0x18, out uint rtsoff);
+        ulong runtime = device.BaseAddress.Value + (rtsoff & ~0x1Fu);
+        hw.ReadMemory32(device.BaseAddress.Value + 0x04, out uint hcs1);
+        int max = (int)((hcs1 >> 8) & 0x7FF);
 
         var intervals = new JsonObject();
         for (int i = 0; i < max; i++)
         {
             ulong addr = runtime + 0x24 + (0x20 * (ulong)i);
-            intervals[addr.ToString()] = JsonValue.Create(GetValueFromAddress(addr));
+            hw.ReadMemory32(addr, out uint val);
+            intervals[addr.ToString()] = JsonValue.Create(val);
         }
 
         var settings = ApplicationData.Current.LocalSettings;

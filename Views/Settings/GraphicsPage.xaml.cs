@@ -35,7 +35,7 @@ public sealed partial class GraphicsPage : Page
     public void GetGpus()
     {
         var detectedGpus = GpuHelper.GetGPUs();
-        detectedGpus = detectedGpus.OrderBy(g => g.Location).ToList();
+        detectedGpus = [.. detectedGpus.OrderBy(g => g.Location)];
         GPUs.Clear();
 
         foreach (var gpu in detectedGpus)
@@ -397,7 +397,7 @@ public sealed partial class GraphicsPage : Page
             if (toggleSwitch.IsOn)
             {
                 Registry.SetValue(gpu.RegistryPath, "RMHdcpKeyglobZero", 0, RegistryValueKind.DWord);
-                using var key = Registry.LocalMachine.OpenSubKey(gpu.RegistryPath.Substring("HKEY_LOCAL_MACHINE\\".Length), writable: true);
+                using var key = Registry.LocalMachine.OpenSubKey(gpu.RegistryPath["HKEY_LOCAL_MACHINE\\".Length..], writable: true);
                 key?.DeleteValue("RmDisableHdcp22", false);
                 key?.DeleteValue("RmSkipHdcp22Init", false);
             }
