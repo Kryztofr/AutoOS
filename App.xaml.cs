@@ -1,5 +1,4 @@
 ﻿using AutoOS.Views.Installer.Actions;
-using DevWinUI;
 using Microsoft.UI.Windowing;
 using Microsoft.Win32;
 using Microsoft.Windows.AppLifecycle;

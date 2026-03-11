@@ -144,7 +144,7 @@ public static class PreparingStage
             Process.Start(new ProcessStartInfo
             {
                 FileName = "powershell.exe",
-                Arguments = $@"-NoProfile -ExecutionPolicy Bypass -Command ""Add-MpPreference -ExclusionPath '{Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Applications")}'; Add-MpPreference -ExclusionPath '{Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Helpers", "ReadWrite")}'""",
+                Arguments = $@"-NoProfile -ExecutionPolicy Bypass -Command ""Add-MpPreference -ExclusionPath '{AppDomain.CurrentDomain.BaseDirectory}'""",
                 CreateNoWindow = true,
                 WindowStyle = ProcessWindowStyle.Hidden
             });

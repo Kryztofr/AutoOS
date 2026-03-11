@@ -70,29 +70,34 @@ namespace AutoOS.Views.Settings
                     }
 
                     var updateDialog = new UpdateDialog();
+                    var actions = UpdateStage.UpdateActions(updateDialog);
 
-                    var updater = new ContentDialog
+                    if (actions.Count > 0)
                     {
-                        Title = "Applying Update...",
-                        Content = updateDialog,
-                        Resources = new ResourceDictionary
+                        var updater = new ContentDialog
                         {
-                            ["ContentDialogMinHeight"] = 0.0,
-                            ["ContentDialogMinWidth"] = 500,
-                            ["ContentDialogMaxWidth"] = 1000
-                        },
-                        XamlRoot = XamlRoot
-                    };
+                            Title = "Applying Update...",
+                            Content = updateDialog,
+                            Resources = new ResourceDictionary
+                            {
+                                ["ContentDialogMinHeight"] = 0.0,
+                                ["ContentDialogMinWidth"] = 500,
+                                ["ContentDialogMaxWidth"] = 1000
+                            },
+                            XamlRoot = XamlRoot
+                        };
 
-                    _ = updater.ShowAsync();
-                    await updateDialog.RunActions(UpdateStage.UpdateActions(updateDialog));
-                    updateDialog.SetStatus("Update complete.");
-                    updateDialog.SetSuccess();
+                        _ = updater.ShowAsync();
+                        await updateDialog.RunActions(actions);
+                        updateDialog.SetStatus("Update complete.");
+                        updateDialog.SetSuccess();
+                        await Task.Delay(1000);
+                        updater.Hide();
+                    }
+
                     localSettings.Values["Version"] = currentVersion.ToString();
                     Registry.SetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\AutoOS", "IsInstalled", 1, RegistryValueKind.DWord);
                     await ProcessActions.Log();
-                    await Task.Delay(1000);
-                    updater.Hide();
                 }
                 catch
                 {

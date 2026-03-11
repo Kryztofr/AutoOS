@@ -684,17 +684,19 @@ internal static class DeviceHelper
         if (enable)
         {
             var json = ApplicationData.Current.LocalSettings.Values["XHCIs"]?.ToString();
-            if (string.IsNullOrEmpty(json)) return;
-
-            var array = JsonNode.Parse(json)?.AsArray();
+            var array = !string.IsNullOrEmpty(json) ? JsonNode.Parse(json)?.AsArray() : null;
             var intervals = array?.FirstOrDefault(x => x?["PnpDeviceId"]?.ToString() == device.PnpDeviceId)?["Intervals"]?.AsObject();
-            if (intervals != null)
+
+            if (intervals == null)
             {
-                foreach (var kvp in intervals)
-                {
-                    if (ulong.TryParse(kvp.Key, out ulong addr) && uint.TryParse(kvp.Value?.ToString(), out uint val))
-                        hw.WriteMemory32(addr, val);
-                }
+                _ = App.ShowErrorMessage(new Exception("No saved intervals found."));
+                return;
+            }
+
+            foreach (var kvp in intervals)
+            {
+                if (ulong.TryParse(kvp.Key, out ulong addr) && uint.TryParse(kvp.Value?.ToString(), out uint val))
+                    hw.WriteMemory32(addr, val);
             }
         }
         else
