@@ -233,6 +233,7 @@ public static class PreparingStage
                         IsInstalled = obj["IsInstalled"]?.GetValue<bool>() ?? false,
                         RegistryPath = obj["RegistryPath"]?.ToString(),
                         Location = obj["Location"]?.ToString(),
+                        PStates = obj["PStates"]?.GetValue<bool>() ?? false,
                         HDCP = obj["HDCP"]?.GetValue<bool>() ?? false,
                         HDMIDPAudio = obj["HDMIDPAudio"]?.GetValue<bool>() ?? false
                     });

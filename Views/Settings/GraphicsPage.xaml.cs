@@ -14,6 +14,7 @@ public sealed partial class GraphicsPage : Page
 {
     private readonly ApplicationDataContainer localSettings = ApplicationData.Current.LocalSettings;
 
+    private bool isInitializingPStatesState = true;
     private bool isInitializingHDCPState = true;
     private bool isInitializingHDMIDPAudioState = true;
     private bool isInitializingOBSState = true;
@@ -28,6 +29,7 @@ public sealed partial class GraphicsPage : Page
 
     private async void GraphicsPage_Loaded(object sender, RoutedEventArgs e)
     {
+        isInitializingPStatesState = false;
         isInitializingHDCPState = false;
         isInitializingHDMIDPAudioState = false;
     }
@@ -44,6 +46,9 @@ public sealed partial class GraphicsPage : Page
 
             if (!gpu.IsInstalled)
             {
+                if (localSettings.Values.TryGetValue($"PStates_{gpu.PnPDeviceId}", out var pstates))
+                    gpu.PStates = Convert.ToBoolean(pstates);
+
                 if (localSettings.Values.TryGetValue($"HDCP_{gpu.PnPDeviceId}", out var hdcp))
                     gpu.HDCP = Convert.ToBoolean(hdcp);
 
@@ -360,6 +365,103 @@ public sealed partial class GraphicsPage : Page
         }
 
         progressButton.CheckedContent = null;
+    }
+
+    private async void PStates_Toggled(object sender, RoutedEventArgs e)
+    {
+        // return if still initializing
+        if (isInitializingPStatesState) return;
+
+        ToggleSwitch toggleSwitch = (ToggleSwitch)sender;
+        GpuInfo gpu = (GpuInfo)toggleSwitch.DataContext;
+        var GpuInfo = FindParent<StackPanel>(toggleSwitch).FindName("GpuInfo") as StackPanel;
+        if (!gpu.IsInstalled)
+        {
+            localSettings.Values[$"PStates_{gpu.PnPDeviceId}"] = toggleSwitch.IsOn;
+            return;
+        }
+
+        // disable hittestvisible to avoid double-clicking
+        toggleSwitch.IsHitTestVisible = false;
+
+        // remove infobar
+        GpuInfo.Children.Clear();
+
+        // add infobar
+        GpuInfo.Children.Add(new InfoBar
+        {
+            Title = toggleSwitch.IsOn ? "Enabling Dynamic Performance States (P-States)..." : "Disabling Dynamic Performance States (P-States)...",
+            IsClosable = false,
+            IsOpen = true,
+            Severity = InfoBarSeverity.Informational
+        });
+
+        // toggle pstates
+        if (gpu.VendorId == "10de")
+        {
+            if (toggleSwitch.IsOn)
+            {
+                using var key = Registry.LocalMachine.OpenSubKey(gpu.RegistryPath["HKEY_LOCAL_MACHINE\\".Length..], writable: true);
+                key?.DeleteValue("DisableDynamicPstate", false);
+                key?.DeleteValue("DisableAsyncPstates", false);
+            }
+            else
+            {
+                Registry.SetValue(gpu.RegistryPath, "DisableDynamicPstate", 1, RegistryValueKind.DWord);
+                Registry.SetValue(gpu.RegistryPath, "DisableAsyncPstates", 1, RegistryValueKind.DWord);
+            }
+        }
+
+        // close obs studio
+        if (Process.GetProcessesByName("obs64").Length > 0)
+        {
+            foreach (var process in Process.GetProcessesByName("obs64"))
+            {
+                process.Kill();
+                process.WaitForExit();
+            }
+        }
+
+        // delay
+        await Task.Delay(400);
+
+        // restart driver
+        await Task.Run(() => Process.Start(new ProcessStartInfo(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Applications", "CRU", "restart64.exe")) { Arguments = "/q" })?.WaitForExit());
+
+        // apply profile
+        if (localSettings.Values["MsiProfile"] != null)
+        {
+            await Task.Run(() => Process.Start(new ProcessStartInfo(@"C:\Program Files (x86)\MSI Afterburner\MSIAfterburner.exe") { Arguments = "/Profile1 /q" })?.WaitForExit());
+        }
+
+        // launch obs studio
+        if (!(localSettings.Values["OBS"] as int? == 0))
+        {
+            await Task.Run(() => Process.Start(new ProcessStartInfo("cmd.exe") { Arguments = @"/c del ""%APPDATA%\obs-studio\.sentinel"" /s /f /q", CreateNoWindow = true, WindowStyle = ProcessWindowStyle.Hidden, UseShellExecute = false })?.WaitForExit());
+            await Task.Run(() => Process.Start(new ProcessStartInfo { FileName = @"C:\Program Files\obs-studio\bin\64bit\obs64.exe", Arguments = "--disable-updater --startreplaybuffer --minimize-to-tray", WorkingDirectory = @"C:\Program Files\obs-studio\bin\64bit" }));
+        }
+
+        // re-enable hittestvisible
+        toggleSwitch.IsHitTestVisible = true;
+
+        // remove infobar
+        GpuInfo.Children.Clear();
+
+        // add infobar
+        var infoBar = new InfoBar
+        {
+            Title = toggleSwitch.IsOn ? "Successfully enabled Dynamic Performance States (P-States)." : "Successfully disabled Dynamic Performance States (P-States).",
+            IsClosable = false,
+            IsOpen = true,
+            Severity = InfoBarSeverity.Success
+        };
+        GpuInfo.Children.Add(infoBar);
+
+        // delay
+        await Task.Delay(2000);
+
+        // remove infobar
+        GpuInfo.Children.Clear();
     }
 
     private async void HDCP_Toggled(object sender, RoutedEventArgs e)

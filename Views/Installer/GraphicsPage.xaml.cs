@@ -44,6 +44,7 @@ public sealed partial class GraphicsPage : Page
                 ["IsInstalled"] = gpu.IsInstalled,
                 ["RegistryPath"] = gpu.RegistryPath,
                 ["Location"] = gpu.Location,
+                ["PStates"] = gpu.PStates,
                 ["HDCP"] = gpu.HDCP,
                 ["HDMIDPAudio"] = gpu.HDMIDPAudio
             });
@@ -80,6 +81,7 @@ public sealed partial class GraphicsPage : Page
                             IsInstalled = obj["IsInstalled"]?.GetValue<bool>() ?? false,
                             RegistryPath = obj["RegistryPath"]?.ToString(),
                             Location = obj["Location"]?.ToString(),
+                            PStates = obj["PStates"]?.GetValue<bool>() ?? false,
                             HDCP = obj["HDCP"]?.GetValue<bool>() ?? false,
                             HDMIDPAudio = obj["HDMIDPAudio"]?.GetValue<bool>() ?? false
                         });
@@ -99,6 +101,7 @@ public sealed partial class GraphicsPage : Page
             if (saved != null)
             {
                 gpu.Install = saved.Install;
+                gpu.PStates = saved.PStates;
                 gpu.HDCP = saved.HDCP;
                 gpu.HDMIDPAudio = saved.HDMIDPAudio;
             }

@@ -34,6 +34,13 @@ public partial class GpuInfo : INotifyPropertyChanged
         set { if (isInstalled != value) { isInstalled = value; OnPropertyChanged(); } }
     }
 
+    private bool pstates = true;
+    public bool PStates
+    {
+        get => pstates;
+        set { if (pstates != value) { pstates = value; OnPropertyChanged(); } }
+    }
+
     private bool hdcp = false;
     public bool HDCP
     {
@@ -145,6 +152,7 @@ public static class GpuHelper
 
                 string deviceName = string.Empty;
                 string codename = string.Empty;
+                bool pstates = true;
                 bool hdcp = false;
                 bool hdmidpaudio = true;
 
@@ -163,6 +171,7 @@ public static class GpuHelper
                         {
                             currentVersion = string.Concat(versionParts[2].AsSpan()[1..], versionParts[3].AsSpan()[..2], ".", versionParts[3].AsSpan(2, 2));
                         }
+                        pstates = Registry.GetValue(registryPath, "DisableDynamicPstate", null) is not int pstateValue || pstateValue == 0;
                         hdcp = Registry.GetValue(registryPath, "RMHdcpKeyglobZero", null) is int intValue && intValue == 0;
                     }
                     else if (vendorId == "1002")
@@ -240,6 +249,7 @@ public static class GpuHelper
                     CurrentVersion = $"Current Version: {currentVersion}",
                     IsInstalled = isInstalled,
                     RegistryPath = registryPath,
+                    PStates = pstates,
                     HDCP = hdcp,
                     HDMIDPAudio = hdmidpaudio,
                     Location = gpuBusDev
