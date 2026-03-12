@@ -28,8 +28,7 @@
             <StackPanel Margin="{ThemeResource ContentPageMargin}"
                         Padding="{ThemeResource ContentPagePadding}"
                         dev:PanelAttach.ChildrenTransitions="Default">
-                <dev:SettingsGroup Margin="0,0,0,12"
-                                   Description="Toggle Services &amp; Drivers required for Bluetooth functionality."
+                <dev:SettingsGroup Description="Toggle Services &amp; Drivers required for Bluetooth functionality."
                                    Header="Bluetooth"
                                    HeaderIcon="{dev:BitmapIcon Source=Assets/Fluent/Bluetooth.png}">
                     <dev:SettingsGroup.Content>
@@ -38,15 +37,14 @@
                     </dev:SettingsGroup.Content>
                 </dev:SettingsGroup>
                 <StackPanel x:Name="BluetoothInfo"
-                            Margin="4,-4,4,12" />
+                            Margin="4,8,4,0" />
                 <ItemsRepeater x:Name="XhciRepeater"
-                               Margin="0,0,0,12"
+                               Margin="0,0,0,28"
                                ItemsSource="{x:Bind XHCIs, Mode=OneWay}">
                     <ItemsRepeater.ItemTemplate>
                         <DataTemplate x:DataType="models:DeviceInfo">
                             <StackPanel>
-                                <dev:SettingsGroup Margin="0,0,0,12"
-                                                   Description="{x:Bind Location, Mode=OneWay}"
+                                <dev:SettingsGroup Description="{x:Bind Location, Mode=OneWay}"
                                                    Header="{x:Bind FriendlyName, Mode=OneWay}"
                                                    HeaderIcon="{dev:BitmapIcon Source=Assets/Fluent/Devices.png}">
                                     <dev:SettingsGroup.Items>
@@ -61,7 +59,7 @@
                                     </dev:SettingsGroup.Items>
                                 </dev:SettingsGroup>
                                 <StackPanel x:Name="DevicesInfo"
-                                            Margin="4,-4,4,12" />
+                                            Margin="4,8,4,0" />
                             </StackPanel>
                         </DataTemplate>
                     </ItemsRepeater.ItemTemplate>

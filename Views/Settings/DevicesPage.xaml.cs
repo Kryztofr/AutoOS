@@ -74,7 +74,8 @@ public sealed partial class DevicesPage : Page
             Title = Bluetooth.IsOn ? "Enabling Bluetooth..." : "Disabling Bluetooth...",
             IsClosable = false,
             IsOpen = true,
-            Severity = InfoBarSeverity.Informational
+            Severity = InfoBarSeverity.Informational,
+            Margin = new Thickness(0, 0, 0, 12)
         });
 
         // declare services and drivers
@@ -110,7 +111,8 @@ public sealed partial class DevicesPage : Page
             Title = Bluetooth.IsOn ? "Successfully enabled Bluetooth." : "Successfully disabled Bluetooth.",
             IsClosable = false,
             IsOpen = true,
-            Severity = InfoBarSeverity.Success
+            Severity = InfoBarSeverity.Success,
+            Margin = new Thickness(0, 0, 0, 12)
         };
         BluetoothInfo.Children.Add(infoBar);
 
@@ -169,7 +171,8 @@ public sealed partial class DevicesPage : Page
             Title = isOn ? "Enabling XHCI Interrupt Moderation (IMOD)..." : "Disabling XHCI Interrupt Moderation (IMOD)...",
             IsClosable = false,
             IsOpen = true,
-            Severity = InfoBarSeverity.Informational
+            Severity = InfoBarSeverity.Informational,
+            Margin = new Thickness(0, 0, 0, 12)
         });
 
         // toggle imod
@@ -190,7 +193,8 @@ public sealed partial class DevicesPage : Page
             Title = isOn ? "Successfully enabled XHCI Interrupt Moderation (IMOD)." : "Successfully disabled XHCI Interrupt Moderation (IMOD).",
             IsClosable = false,
             IsOpen = true,
-            Severity = InfoBarSeverity.Success
+            Severity = InfoBarSeverity.Success,
+            Margin = new Thickness(0, 0, 0, 12)
         });
 
         // delay

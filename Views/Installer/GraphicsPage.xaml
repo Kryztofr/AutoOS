@@ -29,7 +29,7 @@
                                ItemsSource="{x:Bind GPUs, Mode=OneWay}">
                     <ItemsRepeater.ItemTemplate>
                         <DataTemplate x:DataType="models:GpuInfo">
-                            <dev:SettingsGroup Margin="0,0,0,12"
+                            <dev:SettingsGroup Margin="0,0,0,8"
                                                Description="{x:Bind CurrentVersion}"
                                                Header="{x:Bind DeviceName}"
                                                HeaderIcon="{x:Bind VendorId, Converter={StaticResource VendorIdToBitmapIconConverter}}">
@@ -61,8 +61,7 @@
                         </DataTemplate>
                     </ItemsRepeater.ItemTemplate>
                 </ItemsRepeater>
-                <dev:SettingsGroup Margin="0,0,0,12"
-                                   Description="Import your MSI Afterburner profile here."
+                <dev:SettingsGroup Description="Import your MSI Afterburner profile here."
                                    Header="MSI Afterburner"
                                    HeaderIcon="{dev:BitmapIcon Source=Assets/Fluent/MsiAfterburner.png}">
                     <dev:SettingsGroup.Content>
@@ -72,7 +71,8 @@
                                 Style="{ThemeResource AccentButtonStyle}" />
                     </dev:SettingsGroup.Content>
                 </dev:SettingsGroup>
-                <StackPanel x:Name="MsiAfterburnerInfo" />
+                <StackPanel x:Name="MsiAfterburnerInfo"
+                            Margin="4,8,4,0" />
                 <dev:SettingsGroup Margin="0,0,0,36"
                                    Description="Launch OBS Studio on startup and start the replay buffer."
                                    Header="OBS Studio"

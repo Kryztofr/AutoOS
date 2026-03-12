@@ -22,8 +22,7 @@
             <StackPanel Margin="{ThemeResource ContentPageMargin}"
                         Padding="{ThemeResource ContentPagePadding}"
                         dev:PanelAttach.ChildrenTransitions="Default">
-                <dev:SettingsGroup Margin="0,0,0,36"
-                                   Description="AutoOS supports installing Windows Updates without losing any tweaks. It is recommended to enable Windows Updates from time to time and install them through the Settings app."
+                <dev:SettingsGroup Description="AutoOS supports installing Windows Updates without losing any tweaks. It is recommended to enable Windows Updates from time to time and install them through the Settings app."
                                    Header="Windows Updates"
                                    HeaderIcon="{dev:BitmapIcon Source=Assets/Fluent/Update2.png}">
                     <dev:SettingsGroup.Content>
@@ -37,7 +36,8 @@
                         </dev:SettingsCard>
                     </dev:SettingsGroup.Items>
                 </dev:SettingsGroup>
-                <StackPanel x:Name="WindowsUpdateInfo" />
+                <StackPanel x:Name="WindowsUpdateInfo"
+                            Margin="4,8,4,28" />
             </StackPanel>
         </ScrollViewer>
     </Grid>

@@ -393,7 +393,8 @@ public sealed partial class GraphicsPage : Page
             Title = toggleSwitch.IsOn ? "Enabling Dynamic Performance States (P-States)..." : "Disabling Dynamic Performance States (P-States)...",
             IsClosable = false,
             IsOpen = true,
-            Severity = InfoBarSeverity.Informational
+            Severity = InfoBarSeverity.Informational,
+            Margin = new Thickness(0, 0, 0, 12)
         });
 
         // toggle pstates
@@ -453,7 +454,8 @@ public sealed partial class GraphicsPage : Page
             Title = toggleSwitch.IsOn ? "Successfully enabled Dynamic Performance States (P-States)." : "Successfully disabled Dynamic Performance States (P-States).",
             IsClosable = false,
             IsOpen = true,
-            Severity = InfoBarSeverity.Success
+            Severity = InfoBarSeverity.Success,
+            Margin = new Thickness(0, 0, 0, 12)
         };
         GpuInfo.Children.Add(infoBar);
 
@@ -490,7 +492,8 @@ public sealed partial class GraphicsPage : Page
             Title = toggleSwitch.IsOn ? "Enabling High-Bandwidth Digital Content Protection (HDCP)..." : "Disabling High-Bandwidth Digital Content Protection (HDCP)...",
             IsClosable = false,
             IsOpen = true,
-            Severity = InfoBarSeverity.Informational
+            Severity = InfoBarSeverity.Informational,
+            Margin = new Thickness(0, 0, 0, 12)
         });
 
         // toggle hdcp
@@ -552,7 +555,8 @@ public sealed partial class GraphicsPage : Page
             Title = toggleSwitch.IsOn ? "Successfully enabled High-Bandwidth Digital Content Protection (HDCP)." : "Successfully disabled High-Bandwidth Digital Content Protection (HDCP).",
             IsClosable = false,
             IsOpen = true,
-            Severity = InfoBarSeverity.Success
+            Severity = InfoBarSeverity.Success,
+            Margin = new Thickness(0, 0, 0, 12)
         };
         GpuInfo.Children.Add(infoBar);
 
@@ -589,7 +593,8 @@ public sealed partial class GraphicsPage : Page
             Title = toggleSwitch.IsOn ? "Enabling High-Definition Multimedia Interface (HDMI)/DisplayPort (DP) Audio..." : "Disabling High-Definition Multimedia Interface (HDMI)/DisplayPort (DP) Audio...",
             IsClosable = false,
             IsOpen = true,
-            Severity = InfoBarSeverity.Informational
+            Severity = InfoBarSeverity.Informational,
+            Margin = new Thickness(0, 0, 0, 12)
         });
 
         // toggle hdmi/dp audio
@@ -610,7 +615,8 @@ public sealed partial class GraphicsPage : Page
             Title = toggleSwitch.IsOn ? "Successfully enabled High-Definition Multimedia Interface (HDMI)/DisplayPort (DP) Audio." : "Successfully disabled High-Definition Multimedia Interface (HDMI)/DisplayPort (DP) Audio.",
             IsClosable = false,
             IsOpen = true,
-            Severity = InfoBarSeverity.Success
+            Severity = InfoBarSeverity.Success,
+            Margin = new Thickness(0, 0, 0, 12)
         };
         GpuInfo.Children.Add(infoBar);
 
@@ -636,7 +642,8 @@ public sealed partial class GraphicsPage : Page
             Title = "Please select a MSI Afterburner profile (.cfg).",
             IsClosable = false,
             IsOpen = true,
-            Severity = InfoBarSeverity.Informational
+            Severity = InfoBarSeverity.Informational,
+            Margin = new Thickness(0, 0, 0, 12)
         });
 
         // delay
@@ -670,7 +677,8 @@ public sealed partial class GraphicsPage : Page
                         Title = "The selected MSI Afterburner profile is already imported.",
                         IsClosable = false,
                         IsOpen = true,
-                        Severity = InfoBarSeverity.Error
+                        Severity = InfoBarSeverity.Error,
+                        Margin = new Thickness(0, 0, 0, 12)
                     });
 
                     // delay
@@ -693,7 +701,8 @@ public sealed partial class GraphicsPage : Page
                     Title = "Applying the MSI Afterburner profile...",
                     IsClosable = false,
                     IsOpen = true,
-                    Severity = InfoBarSeverity.Informational
+                    Severity = InfoBarSeverity.Informational,
+                    Margin = new Thickness(0, 0, 0, 12)
                 });
 
                 // delay
@@ -720,7 +729,8 @@ public sealed partial class GraphicsPage : Page
                     Title = "Successfully applied the MSI Afterburner profile.",
                     IsClosable = false,
                     IsOpen = true,
-                    Severity = InfoBarSeverity.Success
+                    Severity = InfoBarSeverity.Success,
+                    Margin = new Thickness(0, 0, 0, 12)
                 });
 
                 // delay
@@ -743,7 +753,8 @@ public sealed partial class GraphicsPage : Page
                     Title = "The selected file is not a valid MSI Afterburner profile.",
                     IsClosable = false,
                     IsOpen = true,
-                    Severity = InfoBarSeverity.Error
+                    Severity = InfoBarSeverity.Error,
+                    Margin = new Thickness(0, 0, 0, 12)
                 });
 
                 // delay
@@ -775,7 +786,8 @@ public sealed partial class GraphicsPage : Page
             Title = "Launching MSI Afterburner...",
             IsClosable = false,
             IsOpen = true,
-            Severity = InfoBarSeverity.Informational
+            Severity = InfoBarSeverity.Informational,
+            Margin = new Thickness(0, 0, 0, 12)
         });
 
         // launch
@@ -790,7 +802,8 @@ public sealed partial class GraphicsPage : Page
             Title = "Successfully launched MSI Afterburner.",
             IsClosable = false,
             IsOpen = true,
-            Severity = InfoBarSeverity.Success
+            Severity = InfoBarSeverity.Success,
+            Margin = new Thickness(0, 0, 0, 12)
         });
 
         // delay
@@ -831,7 +844,7 @@ public sealed partial class GraphicsPage : Page
             IsClosable = false,
             IsOpen = true,
             Severity = InfoBarSeverity.Informational,
-            Margin = new Thickness(4, -28, 4, 36)
+            Margin = new Thickness(0, 0, 0, 12)
         });
 
         localSettings.Values["OBS"] = OBS.IsOn ? 1 : 0;
@@ -874,7 +887,7 @@ public sealed partial class GraphicsPage : Page
             IsClosable = false,
             IsOpen = true,
             Severity = InfoBarSeverity.Success,
-            Margin = new Thickness(4, -28, 4, 36)
+            Margin = new Thickness(0, 0, 0, 12)
         };
         ObsStudioInfo.Children.Add(infoBar);
 

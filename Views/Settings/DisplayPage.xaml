@@ -33,18 +33,15 @@
                                 Style="{ThemeResource AccentButtonStyle}" />
                     </dev:SettingsGroup.Content>
                     <dev:SettingsGroup.Items>
-                        <dev:SettingsCard Header="Create a custom resolution"
-                                          IsClickEnabled="False">
+                        <dev:SettingsCard Header="Create a custom resolution">
                             <Button Click="LaunchCru_Click"
                                     Content="Launch" />
                         </dev:SettingsCard>
-                        <dev:SettingsCard Header="Reset all custom resolutions"
-                                          IsClickEnabled="False">
+                        <dev:SettingsCard Header="Reset all custom resolutions">
                             <Button Click="ResetCru_Click"
                                     Content="Reset" />
                         </dev:SettingsCard>
-                        <dev:SettingsCard Header="Restart the graphics driver"
-                                          IsClickEnabled="False">
+                        <dev:SettingsCard Header="Restart the graphics driver">
                             <Button Click="RestartCru_Click"
                                     Content="Restart" />
                         </dev:SettingsCard>

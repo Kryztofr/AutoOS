@@ -21,7 +21,7 @@
 </p>
 </div>
 
-AutoOS is a Native AOT WinUI 3 application that automates Windows setup and optimization with a focus on gaming performance, privacy, system compatibility and quality of live improvements.
+AutoOS is a Native AOT WinUI 3 application that automates Windows setup and optimization with a focus on gaming performance, privacy, system compatibility and quality of life improvements.
 
 ## ✨ Features
 **AutoOS Installer**:
@@ -47,7 +47,7 @@ AutoOS is a Native AOT WinUI 3 application that automates Windows setup and opti
 - Disables Audio Enhancements and optimizes MMCSS settings depending on your NIC driver
 - Restores the Dolby AC-3 Feature on Demand to support Dolby Atmos on newer Windows Versions
 - Disables Device Power Management features
-- Enables MSI mode for supported devices, saves XHCI Interrupt Moderation (IMOD) data and disables it for all controllers
+- Enables MSI mode for supported devices, disables XHCI Interrupt Moderation (IMOD) for all controllers
 - Disables some Scheduled Tasks
 - Disables some unneeded Optional Features and removes some unneeded Capabilities
 - Uninstalls and deprovisions unneeded AppX packages and updates all installed AppX to their latest version

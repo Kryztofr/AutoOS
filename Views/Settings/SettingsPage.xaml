@@ -115,14 +115,14 @@
                     <dev:Card Title="Switch Emulator"
                               Padding="24,24,24,12">
                         <dev:Card.Content>
-                            <StackPanel>
+                            <StackPanel Margin="0,0,0,4">
                                 <GridView x:Name="SwitchEmulator"
                                           SelectionChanged="SwitchEmulator_Changed"
                                           SelectionMode="Single">
                                     <GridView.ItemTemplate>
                                         <DataTemplate x:DataType="views:SettingsGridViewItem">
                                             <Grid Height="75"
-                                                  Margin="24">
+                                                  Margin="12">
                                                 <Grid.RowDefinitions>
                                                     <RowDefinition Height="*" />
                                                 </Grid.RowDefinitions>

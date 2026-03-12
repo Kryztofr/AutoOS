@@ -175,7 +175,7 @@ public sealed partial class InternetPage : Page
             IsClosable = false,
             IsOpen = true,
             Severity = InfoBarSeverity.Informational,
-            Margin = new Thickness(4, -28, 4, 36)
+            Margin = new Thickness(0, 0, 0, 12)
         });
 
         // toggle wol
@@ -205,7 +205,7 @@ public sealed partial class InternetPage : Page
             IsClosable = false,
             IsOpen = true,
             Severity = InfoBarSeverity.Success,
-            Margin = new Thickness(4, -28, 4, 36)
+            Margin = new Thickness(0, 0, 0, 12)
         });
 
         // delay

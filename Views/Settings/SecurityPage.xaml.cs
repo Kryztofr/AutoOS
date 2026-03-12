@@ -81,7 +81,7 @@ public sealed partial class SecurityPage : Page
                 IsClosable = false,
                 IsOpen = true,
                 Severity = InfoBarSeverity.Success,
-                Margin = new Thickness(4, -28, 4, 36)
+                Margin = new Thickness(0, 0, 0, 12)
             };
             infoBar.ActionButton = new Button
             {
@@ -111,7 +111,7 @@ public sealed partial class SecurityPage : Page
             IsClosable = false,
             IsOpen = true,
             Severity = InfoBarSeverity.Informational,
-            Margin = new Thickness(4, -28, 4, 36)
+            Margin = new Thickness(0, 0, 0, 12)
         });
 
         // toggle windows defender
@@ -286,7 +286,7 @@ public sealed partial class SecurityPage : Page
             IsClosable = false,
             IsOpen = true,
             Severity = InfoBarSeverity.Success,
-            Margin = new Thickness(4, -28, 4, 36)
+            Margin = new Thickness(0, 0, 0, 12)
         };
         WindowsDefenderInfo.Children.Add(infoBar);
 
@@ -342,7 +342,7 @@ public sealed partial class SecurityPage : Page
             IsClosable = false,
             IsOpen = true,
             Severity = InfoBarSeverity.Informational,
-            Margin = new Thickness(4, -28, 4, 36)
+            Margin = new Thickness(0, 0, 0, 12)
         });
 
         // toggle uac
@@ -369,7 +369,7 @@ public sealed partial class SecurityPage : Page
             IsClosable = false,
             IsOpen = true,
             Severity = InfoBarSeverity.Success,
-            Margin = new Thickness(4, -28, 4, 36)
+            Margin = new Thickness(0, 0, 0, 12)
         };
         WindowsDefenderInfo.Children.Add(infoBar);
 
@@ -417,7 +417,7 @@ public sealed partial class SecurityPage : Page
                     IsClosable = false,
                     IsOpen = true,
                     Severity = InfoBarSeverity.Success,
-                    Margin = new Thickness(4, -28, 4, 36)
+                    Margin = new Thickness(0, 0, 0, 12)
                 };
                 infoBar.ActionButton = new Button
                 {
@@ -445,7 +445,7 @@ public sealed partial class SecurityPage : Page
                     IsClosable = false,
                     IsOpen = true,
                     Severity = InfoBarSeverity.Success,
-                    Margin = new Thickness(4, -28, 4, 36),
+                    Margin = new Thickness(0, 0, 0, 12),
                     ActionButton = new Button
                     {
                         Content = "Restart",
@@ -481,7 +481,7 @@ public sealed partial class SecurityPage : Page
             IsClosable = false,
             IsOpen = true,
             Severity = InfoBarSeverity.Informational,
-            Margin = new Thickness(4, -28, 4, 36)
+            Margin = new Thickness(0, 0, 0, 12)
         });
 
         // toggle dep
@@ -510,7 +510,7 @@ public sealed partial class SecurityPage : Page
                 IsClosable = false,
                 IsOpen = true,
                 Severity = InfoBarSeverity.Error,
-                Margin = new Thickness(4, -28, 4, 36)
+                Margin = new Thickness(0, 0, 0, 12)
             });
 
             // delay
@@ -537,7 +537,7 @@ public sealed partial class SecurityPage : Page
                 IsClosable = false,
                 IsOpen = true,
                 Severity = InfoBarSeverity.Success,
-                Margin = new Thickness(4, -28, 4, 36)
+                Margin = new Thickness(0, 0, 0, 12)
             };
             WindowsDefenderInfo.Children.Add(infoBar);
 
@@ -592,7 +592,7 @@ public sealed partial class SecurityPage : Page
             IsClosable = false,
             IsOpen = true,
             Severity = InfoBarSeverity.Informational,
-            Margin = new Thickness(4, -28, 4, 36)
+            Margin = new Thickness(0, 0, 0, 12)
         });
 
         // toggle
@@ -614,7 +614,7 @@ public sealed partial class SecurityPage : Page
             IsClosable = false,
             IsOpen = true,
             Severity = InfoBarSeverity.Success,
-            Margin = new Thickness(4, -28, 4, 36)
+            Margin = new Thickness(0, 0, 0, 12)
         };
         WindowsDefenderInfo.Children.Add(infoBar);
 
@@ -669,7 +669,7 @@ public sealed partial class SecurityPage : Page
 			IsClosable = false,
 			IsOpen = true,
 			Severity = InfoBarSeverity.Informational,
-			Margin = new Thickness(4, -28, 4, 36)
+			Margin = new Thickness(0, 0, 0, 12)
 		});
 
 		// toggle
@@ -728,7 +728,7 @@ public sealed partial class SecurityPage : Page
 			IsClosable = false,
 			IsOpen = true,
 			Severity = InfoBarSeverity.Success,
-			Margin = new Thickness(4, -28, 4, 36)
+			Margin = new Thickness(0, 0, 0, 12)
 		};
 		WindowsDefenderInfo.Children.Add(infoBar);
 
@@ -798,7 +798,7 @@ public sealed partial class SecurityPage : Page
             IsClosable = false,
             IsOpen = true,
             Severity = InfoBarSeverity.Informational,
-            Margin = new Thickness(4, -28, 4, 36)
+            Margin = new Thickness(0, 0, 0, 12)
         });
 
         if (SpectreMeltdown.IsOn)
@@ -844,7 +844,7 @@ public sealed partial class SecurityPage : Page
             IsClosable = false,
             IsOpen = true,
             Severity = InfoBarSeverity.Success,
-            Margin = new Thickness(4, -28, 4, 36)
+            Margin = new Thickness(0, 0, 0, 12)
         };
         WindowsDefenderInfo.Children.Add(infoBar);
 
@@ -898,7 +898,7 @@ public sealed partial class SecurityPage : Page
             IsClosable = false,
             IsOpen = true,
             Severity = InfoBarSeverity.Informational,
-            Margin = new Thickness(4, -28, 4, 36)
+            Margin = new Thickness(0, 0, 0, 12)
         });
 
         // toggle process mitigations
@@ -933,7 +933,7 @@ public sealed partial class SecurityPage : Page
             IsClosable = false,
             IsOpen = true,
             Severity = InfoBarSeverity.Success,
-            Margin = new Thickness(4, -28, 4, 36)
+            Margin = new Thickness(0, 0, 0, 12)
         };
         WindowsDefenderInfo.Children.Add(infoBar);
 

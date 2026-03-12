@@ -29,8 +29,7 @@
                     <ItemsRepeater.ItemTemplate>
                         <DataTemplate x:DataType="models:GpuInfo">
                             <StackPanel>
-                                <dev:SettingsGroup Margin="0,0,0,12"
-                                                   Description="{x:Bind CurrentVersion, Mode=OneWay}"
+                                <dev:SettingsGroup Description="{x:Bind CurrentVersion, Mode=OneWay}"
                                                    Header="{x:Bind DeviceName, Mode=OneWay}"
                                                    HeaderIcon="{x:Bind VendorId, Converter={StaticResource VendorIdToBitmapIconConverter}}">
                                     <dev:SettingsGroup.Content>
@@ -74,13 +73,12 @@
                                     </dev:SettingsGroup.Items>
                                 </dev:SettingsGroup>
                                 <StackPanel x:Name="GpuInfo"
-                                            Margin="4,-4,4,12" />
+                                            Margin="4,8,4,0" />
                             </StackPanel>
                         </DataTemplate>
                     </ItemsRepeater.ItemTemplate>
                 </ItemsRepeater>
-                <dev:SettingsGroup Margin="0,0,0,12"
-                                   Description="Overclock your graphics card, remove power limits, set custom fan curves, and more."
+                <dev:SettingsGroup Description="Overclock your graphics card, remove power limits, set custom fan curves, and more."
                                    Header="MSI Afterburner"
                                    HeaderIcon="{dev:BitmapIcon Source=Assets/Fluent/MsiAfterburner.png}">
                     <dev:SettingsGroup.Content>
@@ -98,9 +96,8 @@
                     </dev:SettingsGroup.Items>
                 </dev:SettingsGroup>
                 <StackPanel x:Name="MsiAfterburnerInfo"
-                            Margin="4,-4,4,12" />
-                <dev:SettingsGroup Margin="0,0,0,36"
-                                   Description="Launch OBS Studio on startup and start the replay buffer."
+                            Margin="4,8,4,0" />
+                <dev:SettingsGroup Description="Launch OBS Studio on startup and start the replay buffer."
                                    Header="OBS Studio"
                                    HeaderIcon="{dev:BitmapIcon Source=Assets/Fluent/Obs.png}">
                     <dev:SettingsGroup.Content>
@@ -109,7 +106,8 @@
                         </ToggleSwitch>
                     </dev:SettingsGroup.Content>
                 </dev:SettingsGroup>
-                <StackPanel x:Name="ObsStudioInfo" />
+                <StackPanel x:Name="ObsStudioInfo"
+                            Margin="4,8,4,28" />
             </StackPanel>
         </ScrollViewer>
     </Grid>

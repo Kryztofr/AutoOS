@@ -22,7 +22,7 @@
             <StackPanel Margin="{ThemeResource ContentPageMargin}"
                         Padding="{ThemeResource ContentPagePadding}"
                         dev:PanelAttach.ChildrenTransitions="Default">
-                <dev:SettingsGroup Margin="0,0,0,12"
+                <dev:SettingsGroup Margin="0,0,0,8"
                                    Header="Themes">
                     <dev:SettingsGroup.Content>
                         <GridView x:Name="Themes"
