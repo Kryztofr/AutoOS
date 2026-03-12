@@ -47,7 +47,7 @@ AutoOS is a Native AOT WinUI 3 application that automates Windows setup and opti
 - Disables Audio Enhancements and optimizes MMCSS settings depending on your NIC driver
 - Restores the Dolby AC-3 Feature on Demand to support Dolby Atmos on newer Windows Versions
 - Disables Device Power Management features
-- Enables MSI mode for supported devices, saves XHCI Interrupt Moderation (IMOD) data and disables it
+- Enables MSI mode for supported devices, saves XHCI Interrupt Moderation (IMOD) data and disables it for all controllers
 - Disables some Scheduled Tasks
 - Disables some unneeded Optional Features and removes some unneeded Capabilities
 - Uninstalls and deprovisions unneeded AppX packages and updates all installed AppX to their latest version
@@ -70,7 +70,7 @@ AutoOS is a Native AOT WinUI 3 application that automates Windows setup and opti
 - Manually adjust or import an MSI Afterburner overclock profile
 - Toggle OBS Studio Replay Buffer
 - Manually adjust or automatically optimize GPU, XHCI and NIC Affinities
-- Toggle Bluetooth Services and Drivers, Human Interface Devices (HID) and XHCI Interrupt Moderation (IMOD)
+- Toggle Bluetooth Services and Drivers, XHCI Interrupt Moderation (IMOD) per controller
 - Toggle Wi-Fi Services and Drivers and Wake-on-LAN (WOL)
 - Adjust, Edit, Delete, Export, Import Power plans and compare them
 - Toggle Services & Drivers States with configured functionality (Disable for Gaming and Enable for Work)
@@ -86,7 +86,7 @@ AutoOS is a Native AOT WinUI 3 application that automates Windows setup and opti
 **AutoOS Startup**:
 - Syncs the time
 - Applies the MSI Afterburner profile
-- Disables XHCI Interrupt Moderation (IMOD)
+- Disables XHCI Interrupt Moderation (IMOD) for selected XHCI Controllers
 - Disables Device Power Management features
 - Launches LowAudioLatency
 - Launches OBS Studio

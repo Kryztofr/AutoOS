@@ -2,6 +2,7 @@
 using AutoOS.Helpers.Device;
 using Microsoft.UI.Xaml.Media;
 using System.Diagnostics;
+using System.Text.Json.Nodes;
 using Windows.Storage;
 
 namespace AutoOS.Views.Startup.Stages;
@@ -14,29 +15,25 @@ public static class StartupStage
         bool MSI = Directory.Exists(@"C:\Program Files (x86)\MSI Afterburner\Profiles\") && Directory.GetFiles(@"C:\Program Files (x86)\MSI Afterburner\Profiles\").Any(f => !f.EndsWith("MSIAfterburner.cfg", StringComparison.OrdinalIgnoreCase));
         bool OBS = localSettings.Values["OBS"]?.ToString() == "1";
         bool HID = localSettings.Values["HumanInterfaceDevices"]?.ToString() == "0";
-        bool IMOD = localSettings.Values["XhciInterruptModeration"]?.ToString() != "1";
+        bool IMOD = JsonNode.Parse(localSettings.Values["XHCIs"]?.ToString() ?? "[]")?.AsArray()?.Any(x => x?["IsActive"]?.GetValue<bool>() == false) == true;
         bool Discord = Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Discord"));
 
         string discordVersion = "";
 
         string previousTitle = string.Empty;
 
-        // copy chiptool and lowaudiolatency to localstate
-        foreach (var folderName in new[] { "Chiptool", "LowAudioLatency" })
+        string sourcePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Applications", "LowAudioLatency");
+        string destinationPath = Path.Combine(PathHelper.GetAppDataFolderPath(), "LowAudioLatency");
+
+        if (!Directory.Exists(destinationPath))
         {
-            string sourcePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Applications", folderName);
-            string destinationPath = Path.Combine(PathHelper.GetAppDataFolderPath(), folderName);
+            Directory.CreateDirectory(destinationPath);
 
-            if (!Directory.Exists(destinationPath))
-            {
-                Directory.CreateDirectory(destinationPath);
+            foreach (var directory in Directory.GetDirectories(sourcePath, "*", SearchOption.AllDirectories))
+                Directory.CreateDirectory(directory.Replace(sourcePath, destinationPath));
 
-                foreach (var directory in Directory.GetDirectories(sourcePath, "*", SearchOption.AllDirectories))
-                    Directory.CreateDirectory(directory.Replace(sourcePath, destinationPath));
-
-                foreach (var file in Directory.GetFiles(sourcePath, "*.*", SearchOption.AllDirectories))
-                    File.Copy(file, file.Replace(sourcePath, destinationPath), overwrite: true);
-            }
+            foreach (var file in Directory.GetFiles(sourcePath, "*.*", SearchOption.AllDirectories))
+                File.Copy(file, file.Replace(sourcePath, destinationPath), overwrite: true);
         }
 
         var actions = new List<(string Title, Func<Task> Action, Func<bool> Condition)>
@@ -50,7 +47,7 @@ public static class StartupStage
             ("Applying MSI Afterburner profile", async () => await Task.Run(() => Process.Start(new ProcessStartInfo { FileName = @"C:\Program Files (x86)\MSI Afterburner\MSIAfterburner.exe", Arguments = "/Profile1 /q" })), () => MSI == true),
 
             // disable xhci interrupt moderation (imod)
-            ("Disabling XHCI Interrupt Moderation (IMOD)", async () => await Task.Run(() => { foreach (var device in DeviceHelper.GetDevices(DeviceType.XHCI)) DeviceHelper.ToggleImod(device, false); }), () => IMOD),
+            ("Disabling XHCI Interrupt Moderation (IMOD)", async () => await Task.Run(() => { foreach (var device in DeviceHelper.GetDevices(DeviceType.XHCI)) if (JsonNode.Parse(localSettings.Values["XHCIs"]?.ToString() ?? "[]")?.AsArray()?.FirstOrDefault(x => x?["PnpDeviceId"]?.ToString() == device.PnpDeviceId)?["IsActive"]?.GetValue<bool>() == false) DeviceHelper.ToggleImod(device, false); }), () => IMOD),
 
             // disable device power management
             ("Disabling device power management", async () => await StartupActions.RunPowerShellScript("devicepowermanagement.ps1", ""), null),

@@ -681,11 +681,31 @@ internal static class DeviceHelper
         hw.ReadMemory32(device.BaseAddress.Value + 0x04, out uint hcs1);
         int max = (int)((hcs1 >> 8) & 0x7FF);
 
+        var json = ApplicationData.Current.LocalSettings.Values["XHCIs"]?.ToString();
+        var array = !string.IsNullOrEmpty(json) ? JsonNode.Parse(json)?.AsArray() : [];
+
+        JsonObject obj = null;
+        foreach (var item in array)
+        {
+            if (item?["PnpDeviceId"]?.ToString() == device.PnpDeviceId)
+            {
+                obj = item.AsObject();
+                break;
+            }
+        }
+
+        if (obj == null)
+        {
+            obj = new JsonObject { ["PnpDeviceId"] = device.PnpDeviceId };
+            array.Add((JsonNode)obj);
+        }
+
+        obj["IsActive"] = enable;
+        ApplicationData.Current.LocalSettings.Values["XHCIs"] = array.ToJsonString();
+
         if (enable)
         {
-            var json = ApplicationData.Current.LocalSettings.Values["XHCIs"]?.ToString();
-            var array = !string.IsNullOrEmpty(json) ? JsonNode.Parse(json)?.AsArray() : null;
-            var intervals = array?.FirstOrDefault(x => x?["PnpDeviceId"]?.ToString() == device.PnpDeviceId)?["Intervals"]?.AsObject();
+            var intervals = obj["Intervals"]?.AsObject();
 
             if (intervals == null)
             {
@@ -694,10 +714,8 @@ internal static class DeviceHelper
             }
 
             foreach (var kvp in intervals)
-            {
                 if (ulong.TryParse(kvp.Key, out ulong addr) && uint.TryParse(kvp.Value?.ToString(), out uint val))
                     hw.WriteMemory32(addr, val);
-            }
         }
         else
         {
@@ -724,17 +742,29 @@ internal static class DeviceHelper
         {
             ulong addr = runtime + 0x24 + (0x20 * (ulong)i);
             hw.ReadMemory32(addr, out uint val);
-            intervals[addr.ToString()] = JsonValue.Create(val);
+            intervals[addr.ToString()] = val;
         }
 
-        var settings = ApplicationData.Current.LocalSettings;
-        var json = settings.Values["XHCIs"]?.ToString();
-        var array = (!string.IsNullOrEmpty(json) ? JsonNode.Parse(json)?.AsArray() : null) ?? [];
-        
-        for (int i = array.Count - 1; i >= 0; i--)
-            if (array[i]?["PnpDeviceId"]?.ToString() == device.PnpDeviceId) array.RemoveAt(i);
+        var json = ApplicationData.Current.LocalSettings.Values["XHCIs"]?.ToString();
+        var array = !string.IsNullOrEmpty(json) ? JsonNode.Parse(json)?.AsArray() : [];
 
-        array.Add((JsonNode)new JsonObject { ["PnpDeviceId"] = JsonValue.Create(device.PnpDeviceId), ["Intervals"] = intervals });
-        settings.Values["XHCIs"] = array.ToJsonString();
+        JsonObject obj = null;
+        foreach (var item in array)
+        {
+            if (item?["PnpDeviceId"]?.ToString() == device.PnpDeviceId)
+            {
+                obj = item.AsObject();
+                break;
+            }
+        }
+
+        if (obj == null)
+        {
+            obj = new JsonObject { ["PnpDeviceId"] = device.PnpDeviceId };
+            array.Add((JsonNode)obj);
+        }
+        
+        obj["Intervals"] = intervals;
+        ApplicationData.Current.LocalSettings.Values["XHCIs"] = array.ToJsonString();
     }
 }

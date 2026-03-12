@@ -19,6 +19,12 @@ public sealed partial class DevicesPage : Page
         InitializeComponent();
         GetBluetoothState();
         GetXHCIControllers();
+        Loaded += DevicesPage_Loaded;
+    }
+
+    private void DevicesPage_Loaded(object sender, RoutedEventArgs e)
+    {
+        isInitializingIMODState = false;
     }
 
     private void GetBluetoothState()
@@ -68,8 +74,7 @@ public sealed partial class DevicesPage : Page
             Title = Bluetooth.IsOn ? "Enabling Bluetooth..." : "Disabling Bluetooth...",
             IsClosable = false,
             IsOpen = true,
-            Severity = InfoBarSeverity.Informational,
-            Margin = new Thickness(4, -4, 4, 12)
+            Severity = InfoBarSeverity.Informational
         });
 
         // declare services and drivers
@@ -105,8 +110,7 @@ public sealed partial class DevicesPage : Page
             Title = Bluetooth.IsOn ? "Successfully enabled Bluetooth." : "Successfully disabled Bluetooth.",
             IsClosable = false,
             IsOpen = true,
-            Severity = InfoBarSeverity.Success,
-            Margin = new Thickness(4, -4, 4, 12)
+            Severity = InfoBarSeverity.Success
         };
         BluetoothInfo.Children.Add(infoBar);
 
@@ -132,7 +136,7 @@ public sealed partial class DevicesPage : Page
         }
     }
 
-    private async void GetXHCIControllers()
+    private void GetXHCIControllers()
     {
         var devices = DeviceHelper.GetDevices(DeviceType.XHCI);
         XHCIs.Clear();
@@ -140,10 +144,8 @@ public sealed partial class DevicesPage : Page
         foreach (var device in devices)
         {
             XHCIs.Add(device);
-            device.IsActive = await Task.Run(() => DeviceHelper.GetIMODState(device));
+            device.IsActive = DeviceHelper.GetIMODState(device);
         }
-
-        isInitializingIMODState = false;
     }
 
     private async void IMOD_Toggled(object sender, RoutedEventArgs e)
@@ -167,12 +169,11 @@ public sealed partial class DevicesPage : Page
             Title = isOn ? "Enabling XHCI Interrupt Moderation (IMOD)..." : "Disabling XHCI Interrupt Moderation (IMOD)...",
             IsClosable = false,
             IsOpen = true,
-            Severity = InfoBarSeverity.Informational,
-            Margin = new Thickness(4, -28, 4, 36)
+            Severity = InfoBarSeverity.Informational
         });
 
         // toggle imod
-        await Task.Run(() => DeviceHelper.ToggleImod(device, isOn));
+        DeviceHelper.ToggleImod(device, isOn);
 
         // delay
         await Task.Delay(500);
@@ -189,8 +190,7 @@ public sealed partial class DevicesPage : Page
             Title = isOn ? "Successfully enabled XHCI Interrupt Moderation (IMOD)." : "Successfully disabled XHCI Interrupt Moderation (IMOD).",
             IsClosable = false,
             IsOpen = true,
-            Severity = InfoBarSeverity.Success,
-            Margin = new Thickness(4, -28, 4, 36)
+            Severity = InfoBarSeverity.Success
         });
 
         // delay

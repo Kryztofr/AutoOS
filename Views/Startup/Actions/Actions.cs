@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics;
 using Downloader;
-using Microsoft.UI.Xaml.Media;
 
 namespace AutoOS.Views.Startup.Actions;
 
