@@ -34,7 +34,7 @@ public partial class GpuInfo : INotifyPropertyChanged
         set { if (isInstalled != value) { isInstalled = value; OnPropertyChanged(); } }
     }
 
-    private bool pstates = true;
+    private bool pstates = false;
     public bool PStates
     {
         get => pstates;

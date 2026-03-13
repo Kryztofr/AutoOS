@@ -14,7 +14,14 @@ public static class StartupStage
     {
         bool MSI = Directory.Exists(@"C:\Program Files (x86)\MSI Afterburner\Profiles\") && Directory.GetFiles(@"C:\Program Files (x86)\MSI Afterburner\Profiles\").Any(f => !f.EndsWith("MSIAfterburner.cfg", StringComparison.OrdinalIgnoreCase));
         bool OBS = localSettings.Values["OBS"]?.ToString() == "1";
-        bool HID = localSettings.Values["HumanInterfaceDevices"]?.ToString() == "0";
+        if (localSettings.Values["XHCIs"] == null)
+        {
+            var json = new JsonArray();
+            foreach (var device in DeviceHelper.GetDevices(DeviceType.XHCI))
+                json.Add((JsonNode)new JsonObject { ["PnpDeviceId"] = JsonValue.Create(device.PnpDeviceId), ["IsActive"] = JsonValue.Create(false) });
+            localSettings.Values["XHCIs"] = json.ToJsonString();
+        }
+
         bool IMOD = JsonNode.Parse(localSettings.Values["XHCIs"]?.ToString() ?? "[]")?.AsArray()?.Any(x => x?["IsActive"]?.GetValue<bool>() == false) == true;
         bool Discord = Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Discord"));
 
@@ -151,6 +158,6 @@ public static class StartupStage
 
         await Task.Delay(700);
 
-        Application.Current.Exit();
+        //Application.Current.Exit();
     }
 }

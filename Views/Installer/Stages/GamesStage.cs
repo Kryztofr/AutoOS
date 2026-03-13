@@ -13,7 +13,6 @@ public static partial class GamesStage
     {
         WindowHandle = WindowNative.GetWindowHandle(App.MainWindow);
         bool Fortnite = ApplicationStage.Fortnite;
-        bool NVIDIA = GraphicsStage.NVIDIA;
 
         InstallPage.Status.Text = "Configuring Games...";
 
@@ -31,10 +30,6 @@ public static partial class GamesStage
             // setting fortnite frame rate
             ("Setting Fortnite Frame Rate", async () => iniHelper.AddValue("FrameRateLimit", $"{MonitorHelper.GetMonitors().Max(m => m.RefreshRate)}.000000", "/Script/FortniteGame.FortGameUserSettings"), () => Fortnite == true),
             ("Setting Fortnite Frame Rate", async () => await Task.Delay(1000), () => Fortnite == true),
-            
-            // setting fortnite rendering mode
-            ("Setting Fortnite Rendering Mode", async () => iniHelper.AddValue("PreferredRHI", "dx11", "D3DRHIPreference"), () => Fortnite == true && NVIDIA == true),
-            ("Setting Fortnite Rendering Mode", async () => await Task.Delay(1000), () => Fortnite == true && NVIDIA == true),
             
             // import fortnite settings
             ("Importing Fortnite settings", async () => await ProcessActions.RunNsudo("CurrentUser", @"cmd /c mkdir ""%LocalAppData%\FortniteGame\Saved\Config\WindowsClient"""), () => Fortnite == true),
