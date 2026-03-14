@@ -136,12 +136,16 @@ namespace AutoOS
                 XamlRoot = MainWindow.Content.XamlRoot
             };
 
-            var result = await dialog.ShowAsync();
-
-            if (result == ContentDialogResult.Primary)
+            try
             {
-                Current.Exit();
+                var result = await dialog.ShowAsync();
+
+                if (result == ContentDialogResult.Primary)
+                {
+                    Current.Exit();
+                }
             }
+            catch { }
         }
     }
 }

@@ -488,6 +488,10 @@ public sealed partial class BiosSettingPage : Page, INotifyPropertyChanged
                 senderButton.IsEnabled = true;
             }
         }
+        else
+        {
+            senderButton.IsEnabled = true;
+        }
     }
 
     private async void Import_Click(object sender, RoutedEventArgs e)
