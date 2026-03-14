@@ -135,7 +135,7 @@ public static class ApplicationStage
 
             // install icloud
             ("Installing iCloud", async () => await StoreHelper.Install("AppleInc.iCloud_nzyj5cx40ttqa"), () => iCloud == true),
-            ("Installing iCloud", async () => icloudVersion = await Task.Run(() => { var process = new Process { StartInfo = new ProcessStartInfo("powershell.exe", "Get-AppxPackage -Name \"AppleInc.iCloud\" | Select-Object -ExpandProperty Version") { RedirectStandardOutput = true, CreateNoWindow = true } }; process.Start(); return process.StandardOutput.ReadToEnd().Trim();}), () => iCloud == true),
+            ("Installing iCloud", async () => icloudVersion = StoreHelper.GetVersion("AppleInc.iCloud_nzyj5cx40ttqa"), () => iCloud == true),
 
             // log in to icloud
             ("Please log in to your iCloud account", async () => await Task.Delay(1000), () => iCloud == true),
@@ -153,7 +153,7 @@ public static class ApplicationStage
 
             // install bitwarden
             ("Installing Bitwarden", async () => await StoreHelper.Install("8bitSolutionsLLC.bitwardendesktop_h4e712dmw3xyy"), () => Bitwarden == true),
-            ("Installing Bitwarden", async () => bitwardenVersion = await Task.Run(() => { var process = new Process { StartInfo = new ProcessStartInfo("powershell.exe", "Get-AppxPackage -Name \"8bitSolutionsLLC.bitwardendesktop\" | Select-Object -ExpandProperty Version") { RedirectStandardOutput = true, CreateNoWindow = true } }; process.Start(); return process.StandardOutput.ReadToEnd().Trim(); }), () => Bitwarden == true),
+            ("Installing Bitwarden", async () => bitwardenVersion = StoreHelper.GetVersion("8bitSolutionsLLC.bitwardendesktop_h4e712dmw3xyy"), () => Bitwarden == true),
 
             // log in to bitwarden
             ("Please log in to your Bitwarden account", async () => await Task.Delay(1000), () => Bitwarden == true),
@@ -164,7 +164,7 @@ public static class ApplicationStage
 
             // install 1password
             ("Installing 1Password", async () => await StoreHelper.Install("DC5C6510.2032887045529_2v019pwa6amcg"), () => OnePassword == true),
-            ("Installing 1Password", async () => onePasswordVersion = await Task.Run(() => { var process = new Process { StartInfo = new ProcessStartInfo("powershell.exe", "Get-AppxPackage -Name \"DC5C6510.2032887045529\" | Select-Object -ExpandProperty Version") { RedirectStandardOutput = true, CreateNoWindow = true } }; process.Start(); return process.StandardOutput.ReadToEnd().Trim(); }), () => OnePassword == true),
+            ("Installing 1Password", async () => onePasswordVersion = StoreHelper.GetVersion("DC5C6510.2032887045529_2v019pwa6amcg"), () => OnePassword == true),
 
             // log in to 1password
             ("Please log in to your 1Password account", async () => await Task.Delay(1000), () => OnePassword == true),
@@ -357,7 +357,7 @@ public static class ApplicationStage
 
             // install trello
             ("Installing Trello", async () => await StoreHelper.Install("45273LiamForsyth.PawsforTrello_7pb5ddty8z1pa"), () => Trello == true),
-            ("Installing Trello", async () => trelloVersion = await Task.Run(() => { var process = new Process { StartInfo = new ProcessStartInfo("powershell.exe", "Get-AppxPackage -Name \"45273LiamForsyth.PawsforTrello\" | Select-Object -ExpandProperty Version") { RedirectStandardOutput = true, CreateNoWindow = true } }; process.Start(); return process.StandardOutput.ReadToEnd().Trim(); }), () => Trello == true),
+            ("Installing Trello", async () => trelloVersion = StoreHelper.GetVersion("45273LiamForsyth.PawsforTrello_7pb5ddty8z1pa"), () => Trello == true),
 
             // pin trello to the taskbar
             ("Pinning Trello to the taskbar", async () => await ProcessActions.RunPowerShellScript("taskbarpin.ps1", @"-Type UWA -Path 45273LiamForsyth.PawsforTrello_7pb5ddty8z1pa!trello"), () => Trello == true),
@@ -371,7 +371,7 @@ public static class ApplicationStage
 
             // install dolby access
             ("Installing Dolby Access", async () => await StoreHelper.Install("DolbyLaboratories.DolbyAccess_rz1tebttyb220"), () => AppleMusic == true),
-            ("Installing Dolby Access", async () => dolbyAccessVersion = await Task.Run(() => { var process = new Process { StartInfo = new ProcessStartInfo("powershell.exe", "Get-AppxPackage -Name \"DolbyLaboratories.DolbyAccess\" | Select-Object -ExpandProperty Version") { RedirectStandardOutput = true, CreateNoWindow = true } }; process.Start(); return process.StandardOutput.ReadToEnd().Trim(); }), () => AppleMusic == true),
+            ("Installing Dolby Access", async () => dolbyAccessVersion = StoreHelper.GetVersion("DolbyLaboratories.DolbyAccess_rz1tebttyb220"), () => AppleMusic == true),
 
             // log in to dolby access
             ("Please log in to your Dolby Access account", async () => await Task.Delay(1000), () => AppleMusic == true),
@@ -382,7 +382,7 @@ public static class ApplicationStage
 
             // install apple music
             ("Installing Apple Music", async () => await StoreHelper.Install("AppleInc.AppleMusicWin_nzyj5cx40ttqa"), () => AppleMusic == true),
-            ("Installing Apple Music", async () => appleMusicVersion = await Task.Run(() => { var process = new Process { StartInfo = new ProcessStartInfo("powershell.exe", "Get-AppxPackage -Name \"AppleInc.AppleMusicWin\" | Select-Object -ExpandProperty Version") { RedirectStandardOutput = true, CreateNoWindow = true } }; process.Start(); return process.StandardOutput.ReadToEnd().Trim(); }), () => AppleMusic == true),
+            ("Installing Apple Music", async () => appleMusicVersion = StoreHelper.GetVersion("AppleInc.AppleMusicWin_nzyj5cx40ttqa"), () => AppleMusic == true),
             
             // enable "keep miniplayer on top of all other windows"
             (@"Enabling ""Keep Miniplayer on top of all other windows""", async () => await ProcessActions.RunPowerShellScript("applemusic.ps1", ""), () => AppleMusic == true),
@@ -399,7 +399,7 @@ public static class ApplicationStage
 
             // install tidal
             ("Installing TIDAL", async () => await StoreHelper.Install("WiMPMusic.27241E05630EA_kn85bz84x7te4"), () => Tidal == true),
-            ("Installing TIDAL", async () => tidalVersion = await Task.Run(() => { var process = new Process { StartInfo = new ProcessStartInfo("powershell.exe", "Get-AppxPackage -Name \"WiMPMusic.27241E05630EA\" | Select-Object -ExpandProperty Version") { RedirectStandardOutput = true, CreateNoWindow = true } }; process.Start(); return process.StandardOutput.ReadToEnd().Trim(); }), () => Tidal == true),
+            ("Installing TIDAL", async () => tidalVersion = StoreHelper.GetVersion("WiMPMusic.27241E05630EA_kn85bz84x7te4"), () => Tidal == true),
 
             // pin tidal to the taskbar
             ("Pinning TIDAL to the taskbar", async () => await ProcessActions.RunPowerShellScript("taskbarpin.ps1", @"-Type UWA -Path WiMPMusic.27241E05630EA_kn85bz84x7te4!TIDAL"), () => Tidal == true),
@@ -425,7 +425,7 @@ public static class ApplicationStage
 
             // install amazon music
             ("Installing Amazon Music", async () => await StoreHelper.Install("AmazonMobileLLC.AmazonMusic_kc6t79cpj4tp0"), () => AmazonMusic == true),
-            ("Installing Amazon Music", async () => amazonMusicVersion = await Task.Run(() => { var process = new Process { StartInfo = new ProcessStartInfo("powershell.exe", "Get-AppxPackage -Name \"AmazonMobileLLC.AmazonMusic\" | Select-Object -ExpandProperty Version") { RedirectStandardOutput = true, CreateNoWindow = true } }; process.Start(); return process.StandardOutput.ReadToEnd().Trim(); }), () => AmazonMusic == true),
+            ("Installing Amazon Music", async () => amazonMusicVersion = StoreHelper.GetVersion("AmazonMobileLLC.AmazonMusic_kc6t79cpj4tp0"), () => AmazonMusic == true),
 
             // pin amazon music to the taskbar
             ("Pinning Amazon Music to the taskbar", async () => await ProcessActions.RunPowerShellScript("taskbarpin.ps1", @"-Type UWA -Path AmazonMobileLLC.AmazonMusic_kc6t79cpj4tp0!AmazonMobileLLC.AmazonMusic"), () => AmazonMusic == true),
@@ -438,7 +438,7 @@ public static class ApplicationStage
 
             // install deezer music
             ("Installing Deezer Music", async () => await StoreHelper.Install("Deezer.62021768415AF_q7m17pa7q8kj0"), () => DeezerMusic == true),
-            ("Installing Deezer Music", async () => deezerMusicVersion = await Task.Run(() => { var process = new Process { StartInfo = new ProcessStartInfo("powershell.exe", "Get-AppxPackage -Name \"Deezer.62021768415AF\" | Select-Object -ExpandProperty Version") { RedirectStandardOutput = true, CreateNoWindow = true } }; process.Start(); return process.StandardOutput.ReadToEnd().Trim(); }), () => DeezerMusic == true),
+            ("Installing Deezer Music", async () => deezerMusicVersion = StoreHelper.GetVersion("Deezer.62021768415AF_q7m17pa7q8kj0"), () => DeezerMusic == true),
 
             // pin deezer music to the taskbar
             ("Pinning Deezer Music to the taskbar", async () => await ProcessActions.RunPowerShellScript("taskbarpin.ps1", @"-Type UWA -Path Deezer.62021768415AF_q7m17pa7q8kj0!Deezer.Music"), () => DeezerMusic == true),
@@ -539,7 +539,7 @@ public static class ApplicationStage
 
             // install whatsapp
             ("Installing WhatsApp", async () => await StoreHelper.Install("5319275A.WhatsAppDesktop_cv1g1gvanyjgm"), () => WhatsApp == true),
-            ("Installing WhatsApp", async () => whatsAppVersion = await Task.Run(() => { var process = new Process { StartInfo = new ProcessStartInfo("powershell.exe", "Get-AppxPackage -Name \"5319275A.WhatsAppDesktop\" | Select-Object -ExpandProperty Version") { RedirectStandardOutput = true, CreateNoWindow = true } }; process.Start(); return process.StandardOutput.ReadToEnd().Trim(); }), () => WhatsApp == true),
+            ("Installing WhatsApp", async () => whatsAppVersion = StoreHelper.GetVersion("5319275A.WhatsAppDesktop_cv1g1gvanyjgm"), () => WhatsApp == true),
 
             // disable "minimize to system tray"
 			(@"Disabling ""Minimize to system tray""", async () => await ProcessActions.RunPowerShellScript("whatsapp.ps1", ""), () => WhatsApp == true),

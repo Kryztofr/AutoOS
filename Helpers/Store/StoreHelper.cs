@@ -197,7 +197,23 @@ public static partial class StoreHelper
             };
 
             await tcs.Task;
-        } catch { }
+        }
+        catch { }
+    }
+
+    public static string GetVersion(string packageFamilyName)
+    {
+        try
+        {
+            var manager = new PackageManager();
+            foreach (var package in manager.FindPackagesForUser(string.Empty, packageFamilyName))
+            {
+                var version = package.Id.Version;
+                return $"{version.Major}.{version.Minor}.{version.Build}.{version.Revision}";
+            }
+        }
+        catch { }
+        return string.Empty;
     }
 
     private static async Task<string> GetProductID(string term)
