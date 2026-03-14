@@ -18,8 +18,6 @@ public static class OptionalFeatureStage
         var actions = new List<(string Title, Func<Task> Action, Func<bool> Condition)>
         {
             // disable optional features
-            (@"Disabling ""MicrosoftWindowsPowerShellV2Root"" optional feature", async () => await ProcessActions.RunPowerShell(@"Disable-WindowsOptionalFeature -FeatureName MicrosoftWindowsPowerShellV2Root -Online -NoRestart -ErrorAction Stop"), null),
-            (@"Disabling ""MicrosoftWindowsPowerShellV2"" optional feature", async () => await ProcessActions.RunPowerShell(@"Disable-WindowsOptionalFeature -FeatureName MicrosoftWindowsPowerShellV2 -Online -NoRestart -ErrorAction Stop"), null),
             (@"Disabling ""WorkFolders-Client"" optional feature", async () => await ProcessActions.RunPowerShell(@"Disable-WindowsOptionalFeature -FeatureName WorkFolders-Client -Online -NoRestart -ErrorAction Stop"), null),
             (@"Disabling ""WCF-Services45"" optional feature", async () => await ProcessActions.RunPowerShell(@"Disable-WindowsOptionalFeature -FeatureName WCF-Services45 -Online -NoRestart -ErrorAction Stop"), null),
             (@"Disabling ""WCF-TCP-PortSharing45"" optional feature", async () => await ProcessActions.RunPowerShell(@"Disable-WindowsOptionalFeature -FeatureName WCF-TCP-PortSharing45 -Online -NoRestart -ErrorAction Stop"), null),
@@ -32,7 +30,6 @@ public static class OptionalFeatureStage
             (@"Removing ""Browser.InternetExplorer"" capability", async () => await ProcessActions.RunPowerShell(@"Remove-WindowsCapability -Online -Name (Get-WindowsCapability -Online | Where Name -like ""Browser.InternetExplorer*"").Name"), null),
             (@"Removing ""Media.WindowsMediaPlayer"" capability", async () => await ProcessActions.RunPowerShell(@"Remove-WindowsCapability -Online -Name (Get-WindowsCapability -Online | Where Name -like ""Media.WindowsMediaPlayer*"").Name"), null),
             (@"Removing ""Microsoft.Windows.PowerShell.ISE"" capability", async () => await ProcessActions.RunPowerShell(@"Remove-WindowsCapability -Online -Name (Get-WindowsCapability -Online | Where Name -like ""Microsoft.Windows.PowerShell.ISE*"").Name"), null),
-            (@"Removing ""Microsoft.Windows.WordPad"" capability", async () => await ProcessActions.RunPowerShell(@"Remove-WindowsCapability -Online -Name (Get-WindowsCapability -Online | Where Name -like ""Microsoft.Windows.WordPad**"").Name"), null),
         };
 
         var filteredActions = actions.Where(a => a.Condition == null || a.Condition.Invoke()).ToList();

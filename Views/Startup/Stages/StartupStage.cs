@@ -158,6 +158,6 @@ public static class StartupStage
 
         await Task.Delay(700);
 
-        //Application.Current.Exit();
+        Application.Current.Exit();
     }
 }

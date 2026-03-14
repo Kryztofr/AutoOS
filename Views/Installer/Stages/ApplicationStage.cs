@@ -90,6 +90,9 @@ public static class ApplicationStage
 
         var actions = new List<(string Title, Func<Task> Action, Func<bool> Condition)>
         {
+            // optimize notepad settings
+            ("Optimizing Notepad settings", async () => await ProcessActions.RunPowerShellScript("notepad.ps1", ""), null),
+
             // download heif image extension
             ("Downloading HEIF Image Extension", async () => await StoreHelper.Download("Microsoft.HEIFImageExtension_8wekyb3d8bbwe"), null),
 

@@ -1,12 +1,13 @@
+using AutoOS.Views.Installer.Actions;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
+using Windows.ApplicationModel.Store.Preview.InstallControl;
 using Windows.Management.Deployment;
 using Windows.Storage;
-using AutoOS.Views.Installer.Actions;
 
 namespace AutoOS.Helpers.Store;
 
@@ -69,16 +70,8 @@ public static partial class StoreHelper
         StorageFolder workspace;
         StorageFolder folder;
 
-        try
-        {
-            workspace = await ApplicationData.Current.TemporaryFolder.GetFolderAsync("StoreHelper");
-            folder = await workspace.GetFolderAsync(identifier);
-        }
-        catch (FileNotFoundException)
-        {
-            Debug.WriteLine("[StoreHelper] Workspace or identifier folder not found.");
-            return;
-        }
+        workspace = await ApplicationData.Current.TemporaryFolder.GetFolderAsync("StoreHelper");
+        folder = await workspace.GetFolderAsync(identifier);
 
         try
         {
@@ -115,8 +108,96 @@ public static partial class StoreHelper
         }
         finally
         {
-            try { await folder.DeleteAsync(); } catch { }
+            try
+            {
+                await folder.DeleteAsync();
+            }
+            catch { }
         }
+    }
+
+    public static async Task Remove(string packageFamilyName)
+    {
+		try
+		{
+            var manager = new PackageManager();
+
+            foreach (var package in manager.FindPackagesForUser(string.Empty, packageFamilyName))
+            {
+                await manager.RemovePackageAsync(package.Id.FullName);
+            }
+        }
+		catch { }
+    }
+
+    public static async Task Deprovision(string packageFamilyName)
+    {
+		try
+		{
+            await new PackageManager().DeprovisionPackageForAllUsersAsync(packageFamilyName);
+        }
+        catch { }
+    }
+
+    public static async Task<List<AppInstallItem>> CheckForUpdates()
+    {
+        var installManager = new AppInstallManager();
+
+        AppUpdateOptions updateOptions = new()
+        {
+            AutomaticallyDownloadAndInstallUpdateIfFound = false,
+            AllowForcedAppRestart = true
+        };
+
+        var operation = installManager.SearchForAllUpdatesAsync(string.Empty, string.Empty, updateOptions);
+
+        var results = await operation;
+
+        return [.. results];
+    }
+
+    public static async Task Update(string identifier)
+    {
+        var uiContext = SynchronizationContext.Current;
+        string title = InstallPage.Info.Title;
+
+        InstallPage.ProgressRingControl.IsIndeterminate = true;
+        InstallPage.ProgressRingControl.Value = 0;
+
+        var installManager = new AppInstallManager();
+
+		try
+		{
+            AppInstallItem updateItem = await installManager.UpdateAppByPackageFamilyNameAsync(identifier);
+            if (updateItem == null)
+                return;
+
+            var tcs = new TaskCompletionSource<bool>();
+
+            AppInstallStatus status = default;
+
+            updateItem.StatusChanged += (s, e) =>
+            {
+                status = updateItem.GetCurrentStatus();
+
+                uiContext?.Post(_ =>
+                {
+                    InstallPage.Info.Title = $"{title} ({status.BytesDownloaded / (1024.0 * 1024.0):F2} MB of {status.DownloadSizeInBytes / (1024.0 * 1024.0):F2} MB)";
+                    InstallPage.ProgressRingControl.Value = status.PercentComplete;
+                    InstallPage.ProgressRingControl.IsIndeterminate = false;
+                }, null);
+            };
+
+            updateItem.Completed += (s, e) =>
+            {
+                InstallPage.Info.Title = $"{title} ({status.BytesDownloaded / (1024.0 * 1024.0):F2} MB of {status.DownloadSizeInBytes / (1024.0 * 1024.0):F2} MB)";
+                InstallPage.ProgressRingControl.Value = status.PercentComplete;
+                InstallPage.ProgressRingControl.IsIndeterminate = true;
+                tcs.TrySetResult(true);
+            };
+
+            await tcs.Task;
+        } catch { }
     }
 
     private static async Task<string> GetProductID(string term)
@@ -188,15 +269,15 @@ public static partial class StoreHelper
 
     private static async Task<List<StoreInfo>> GetFiles(string name, string catId, int index = 0)
     {
-		// get token
+        // get token
         var token = await Auth();
-        
-		// get category id
-        var response = await PostSoap(SoapTemplates.Sync(token, catId, "WIF"), "https://fe3.delivery.mp.microsoft.com/ClientWebService/client.asmx");
-        
-		if (string.IsNullOrEmpty(response)) return [];
 
-		// parse response
+        // get category id
+        var response = await PostSoap(SoapTemplates.Sync(token, catId, "WIF"), "https://fe3.delivery.mp.microsoft.com/ClientWebService/client.asmx");
+
+        if (string.IsNullOrEmpty(response)) return [];
+
+        // parse response
         var doc = XDocument.Parse(response.Replace("&lt;", "<").Replace("&gt;", ">"));
 
         var filePool = new Dictionary<string, (string ext, string hash, DateTime modified)>();
@@ -311,7 +392,7 @@ public static partial class StoreHelper
             Content = new StringContent(body, Encoding.UTF8, "application/soap+xml")
         };
 
-		var res = await httpClient.SendAsync(req);
+        var res = await httpClient.SendAsync(req);
         if (!res.IsSuccessStatusCode)
         {
             var error = await res.Content.ReadAsStringAsync();
@@ -1072,4 +1153,4 @@ internal static class SoapTemplates
 		</s:Body>
 	</s:Envelope>
 	".Replace("{1}", u).Replace("{2}", r).Replace("{3}", ring);
-	}
+}

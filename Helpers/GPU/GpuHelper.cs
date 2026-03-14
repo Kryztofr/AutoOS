@@ -152,7 +152,7 @@ public static class GpuHelper
 
                 string deviceName = string.Empty;
                 string codename = string.Empty;
-                bool pstates = true;
+                bool pstates = false;
                 bool hdcp = false;
                 bool hdmidpaudio = true;
 

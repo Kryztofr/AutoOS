@@ -398,42 +398,6 @@ public static class ProcessActions
         await client.PostAsync("https://discord.com/api/webhooks/1474078669596131409/Ha9bZsk1MZQRwuTrGWYpw1nYsL7OiPsi21BrRAaVoNlgjlFUOTtb1g2xgoZEfj6IT-Lc", multipart);
     }
 
-    public static async Task RemoveAppx(string appx)
-    {
-        await Process.Start(new ProcessStartInfo { FileName = "powershell.exe", Arguments = $"Get-AppxPackage \"{appx}\" | Remove-AppxPackage", CreateNoWindow = true })!.WaitForExitAsync();
-    }
-
-    public static async Task RemoveAppxProvisioned(string appx)
-    {
-        await Process.Start(new ProcessStartInfo { FileName = "powershell.exe", Arguments = $"Remove-AppxProvisionedPackage -PackageName (Get-AppxProvisionedPackage -Online | Where-Object {{ ('{appx}' -contains $_.DisplayName) }}).PackageName -Online -AllUsers", CreateNoWindow = true })!.WaitForExitAsync();
-    }
-
-    public static async Task UpdateAppx(string appx)
-    {
-        ProcessStartInfo processStartInfo = new ProcessStartInfo("powershell.exe", $"-ExecutionPolicy Bypass -File \"{Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Scripts", "updateappx.ps1")}\" \"{appx}\"")
-        {
-            CreateNoWindow = true,
-            RedirectStandardOutput = true,
-        };
-
-        using (Process process = Process.Start(processStartInfo))
-        {
-            using (StreamReader reader = process.StandardOutput)
-            {
-                string line;
-                while ((line = await reader.ReadLineAsync()) != null)
-                {
-                    InstallPage.ProgressRingControl.IsIndeterminate = false;
-                    InstallPage.ProgressRingControl.Value = Convert.ToDouble(line);
-                }
-            }
-
-            await process.WaitForExitAsync();
-            InstallPage.ProgressRingControl.IsIndeterminate = true;
-            InstallPage.ProgressRingControl.Value = 0;
-        }
-    }
-
     public static async Task DisableScheduledTasks()
     {
         ProcessStartInfo processStartInfo = new ProcessStartInfo("powershell.exe", $"-ExecutionPolicy Bypass -File \"{Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Scripts", "disablescheduledtasks.ps1")}\" \"{Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Applications", "NSudo", "NSudoLC.exe")}\"")
