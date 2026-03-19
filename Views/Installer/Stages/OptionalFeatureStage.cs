@@ -1,4 +1,4 @@
-﻿using AutoOS.Views.Installer.Actions;
+using AutoOS.Views.Installer.Actions;
 using Microsoft.UI.Xaml.Media;
 using WinRT.Interop;
 

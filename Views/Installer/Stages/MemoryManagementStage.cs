@@ -1,4 +1,4 @@
-﻿using AutoOS.Helpers.Registry;
+using AutoOS.Helpers.Registry;
 using AutoOS.Views.Installer.Actions;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.Win32;

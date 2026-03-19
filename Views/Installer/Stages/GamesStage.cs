@@ -1,4 +1,4 @@
-﻿using AutoOS.Helpers.Monitor;
+using AutoOS.Helpers.Monitor;
 using AutoOS.Helpers.Registry;
 using Microsoft.Win32;
 using System.Diagnostics;
@@ -6,6 +6,7 @@ using AutoOS.Helpers.Services;
 using Microsoft.UI.Xaml.Media;
 using AutoOS.Views.Installer.Actions;
 using WinRT.Interop;
+using Windows.Storage;
 using System.Text.Json;
 
 namespace AutoOS.Views.Installer.Stages;
@@ -25,7 +26,7 @@ public static partial class GamesStage
 
         string fortnitePath = string.Empty;
 
-        string iniPath = Path.Combine(Path.GetTempPath(), "GameUserSettings.ini");
+        string iniPath = Path.Combine(ApplicationData.Current.TemporaryFolder.Path, "GameUserSettings.ini");
         File.Copy(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Scripts", "GameUserSettings.ini"), iniPath);
         InIHelper iniHelper = new(iniPath);
 

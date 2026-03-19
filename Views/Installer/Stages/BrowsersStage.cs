@@ -1,4 +1,4 @@
-﻿using AutoOS.Views.Installer.Actions;
+using AutoOS.Views.Installer.Actions;
 using Microsoft.UI.Xaml.Media;
 using System.Diagnostics;
 using System.Text.Json;
@@ -8,6 +8,7 @@ using AutoOS.Helpers.Store;
 using AutoOS.Helpers.Registry;
 using AutoOS.Helpers.Services;
 using Microsoft.Win32;
+using Windows.Storage;
 using AutoOS.Helpers.TaskScheduler;
 
 namespace AutoOS.Views.Installer.Stages;
@@ -101,11 +102,11 @@ public static class BrowsersStage
             ("Disabling Microsoft Edge services", async () => TaskSchedulerHelper.Toggle("MicrosoftEdgeUpdateTaskMachineUA", false), null),
 
             // download google chrome
-            ("Downloading Google Chrome", async () => await ProcessActions.RunDownload("http://dl.google.com/chrome/install/375.126/chrome_installer.exe", Path.GetTempPath(), "ChromeSetup.exe"), () => Chrome == true),
+            ("Downloading Google Chrome", async () => await ProcessActions.RunDownload("http://dl.google.com/chrome/install/375.126/chrome_installer.exe", ApplicationData.Current.TemporaryFolder.Path, "ChromeSetup.exe"), () => Chrome == true),
 
             // install google chrome
-            ("Installing Google Chrome", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "ChromeSetup.exe"), Arguments = "--silent --install --system-level --do-not-launch-chrome", WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => Chrome == true),
-            ("Installing Google Chrome", async () => chromeVersion = FileVersionInfo.GetVersionInfo(Path.Combine(Path.GetTempPath(), "ChromeSetup.exe")).ProductVersion, () => Chrome == true),
+            ("Installing Google Chrome", async () => { await Process.Start(new ProcessStartInfo { FileName = Path.Combine(ApplicationData.Current.TemporaryFolder.Path, "ChromeSetup.exe"), Arguments = "--silent --install --system-level --do-not-launch-chrome", WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(); await (await ApplicationData.Current.TemporaryFolder.GetFileAsync("ChromeSetup.exe")).DeleteAsync(); }, () => Chrome == true),
+            ("Installing Google Chrome", async () => chromeVersion = FileVersionInfo.GetVersionInfo(Path.Combine(ApplicationData.Current.TemporaryFolder.Path, "ChromeSetup.exe")).ProductVersion, () => Chrome == true),
             ("Installing Google Chrome", async () => chromeVersion2 = FileVersionInfo.GetVersionInfo(@"C:\Program Files\Google\Chrome\Application\chrome.exe").ProductVersion, () => Chrome == true),
 
             // pin google chrome to the taskbar
@@ -166,10 +167,10 @@ public static class BrowsersStage
             ("Disabling Google Chrome services", async () => TaskSchedulerHelper.Toggle("GoogleUpdaterTaskSystem", false), () => Chrome == true),
 
             // download thorium
-            ("Downloading Thorium", async () => await ProcessActions.RunDownload("https://github.com/Alex313031/Thorium-Win/releases/download/M130.0.6723.174/thorium_SSE4_mini_installer.exe", Path.GetTempPath(), "ThoriumSetup.exe"), () => Thorium == true),
+            ("Downloading Thorium", async () => await ProcessActions.RunDownload("https://github.com/Alex313031/Thorium-Win/releases/download/M130.0.6723.174/thorium_SSE4_mini_installer.exe", ApplicationData.Current.TemporaryFolder.Path, "ThoriumSetup.exe"), () => Thorium == true),
 
             // install thorium
-            ("Installing Thorium", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "ThoriumSetup.exe"), Arguments = "--silent --install --system-level --do-not-launch-chrome", WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => Thorium == true),
+            ("Installing Thorium", async () => { await Process.Start(new ProcessStartInfo { FileName = Path.Combine(ApplicationData.Current.TemporaryFolder.Path, "ThoriumSetup.exe"), Arguments = "--silent --install --system-level --do-not-launch-chrome", WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(); await (await ApplicationData.Current.TemporaryFolder.GetFileAsync("ThoriumSetup.exe")).DeleteAsync(); }, () => Thorium == true),
             ("Installing Thorium", async () => thoriumVersion = FileVersionInfo.GetVersionInfo(@"C:\Program Files\Thorium\Application\thorium.exe").ProductVersion, () => Thorium == true),
 
             // disable thorium services
@@ -223,10 +224,10 @@ public static class BrowsersStage
             ("Removing Thorium shortcut from the desktop", async () => File.Delete(@"C:\Users\Public\Desktop\Thorium.lnk"), () => Thorium == true),
 
             // download brave
-            ("Downloading Brave", async () => await ProcessActions.RunDownload("https://github.com/brave/brave-browser/releases/latest/download/BraveBrowserStandaloneSetup.exe", Path.GetTempPath(), "BraveBrowserStandaloneSetup.exe"), () => Brave == true),
+            ("Downloading Brave", async () => await ProcessActions.RunDownload("https://github.com/brave/brave-browser/releases/latest/download/BraveBrowserStandaloneSetup.exe", ApplicationData.Current.TemporaryFolder.Path, "BraveBrowserStandaloneSetup.exe"), () => Brave == true),
 
             // install brave
-            ("Installing Brave", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "BraveBrowserStandaloneSetup.exe"), Arguments = "/silent /install", WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => Brave == true),
+            ("Installing Brave", async () => { await Process.Start(new ProcessStartInfo { FileName = Path.Combine(ApplicationData.Current.TemporaryFolder.Path, "BraveBrowserStandaloneSetup.exe"), Arguments = "/silent /install", WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(); await (await ApplicationData.Current.TemporaryFolder.GetFileAsync("BraveBrowserStandaloneSetup.exe")).DeleteAsync(); }, () => Brave == true),
             ("Installing Brave", async () => braveVersion = FileVersionInfo.GetVersionInfo(@"C:\Program Files\BraveSoftware\Brave-Browser\Application\brave.exe").ProductVersion, () => Brave == true),
 
             // pin brave to the taskbar
@@ -289,10 +290,10 @@ public static class BrowsersStage
             ("Installing 1Password Extension", async () => await ProcessActions.RunPowerShell(@"$BaseKey = 'HKLM:\SOFTWARE\Policies\BraveSoftware\Brave\ExtensionInstallForcelist'; $Index = (Get-Item $BaseKey).Property | Sort-Object {[int]$_} | Select-Object -Last 1; $NewIndex = [int]$Index + 1; reg add 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\BraveSoftware\Brave\ExtensionInstallForcelist' /v $NewIndex /t REG_SZ /d 'aeblfdkhhhdcdjpifhhbdiojplfjncoa' /f"), () => Brave == true && OnePassword == true),
 
             // download vivaldi
-            ("Downloading Vivaldi", async () => await ProcessActions.RunDownload("https://vivaldi.com/download/Vivaldi.x64.exe", Path.GetTempPath(), "Vivaldi.x64.exe"), () => Vivaldi == true),
+            ("Downloading Vivaldi", async () => await ProcessActions.RunDownload("https://vivaldi.com/download/Vivaldi.x64.exe", ApplicationData.Current.TemporaryFolder.Path, "Vivaldi.x64.exe"), () => Vivaldi == true),
 
             // install vivaldi
-            ("Installing Vivaldi", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "Vivaldi.x64.exe"), Arguments = "--vivaldi-silent --do-not-launch-chrome --system-level", WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => Vivaldi == true),
+            ("Installing Vivaldi", async () => { await Process.Start(new ProcessStartInfo { FileName = Path.Combine(ApplicationData.Current.TemporaryFolder.Path, "Vivaldi.x64.exe"), Arguments = "--vivaldi-silent --do-not-launch-chrome --system-level", WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(); await (await ApplicationData.Current.TemporaryFolder.GetFileAsync("Vivaldi.x64.exe")).DeleteAsync(); }, () => Vivaldi == true),
             ("Installing Vivaldi", async () => vivaldiVersion = FileVersionInfo.GetVersionInfo(Environment.ExpandEnvironmentVariables(@"C:\Program Files\Vivaldi\Application\vivaldi.exe")).ProductVersion, () => Vivaldi == true),
 
             // pin vivaldi to the taskbar
@@ -343,16 +344,16 @@ public static class BrowsersStage
             ("Disabling Vivaldi services", async () => RegistryHelper.DeleteKey(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Active Setup\Installed Components\{9C142C0C-124C-4467-B117-EBCC62801D7B}"), () => Vivaldi == true),
 
             // download arc dependency
-            ("Downloading Arc Dependency", async () => await ProcessActions.RunDownload("https://releases.arc.net/windows/dependencies/x64/Microsoft.VCLibs.x64.14.00.Desktop.14.0.33728.0.appx", Path.GetTempPath(), "Microsoft.VCLibs.x64.14.00.Desktop.14.0.33728.0.appx"), () => Arc == true),
+            ("Downloading Arc Dependency", async () => await ProcessActions.RunDownload("https://releases.arc.net/windows/dependencies/x64/Microsoft.VCLibs.x64.14.00.Desktop.14.0.33728.0.appx", ApplicationData.Current.TemporaryFolder.Path, "Microsoft.VCLibs.x64.14.00.Desktop.14.0.33728.0.appx"), () => Arc == true),
 
             // install arc dependency
-            ("Installing Arc Dependency", async () => await Process.Start(new ProcessStartInfo { FileName = "powershell", Arguments = $"-Command \"Add-AppxPackage -Path {Path.Combine(Path.GetTempPath(), "Microsoft.VCLibs.x64.14.00.Desktop.14.0.33728.0.appx")}\"", UseShellExecute = false, CreateNoWindow = true })!.WaitForExitAsync(), () => Arc == true),
+            ("Installing Arc Dependency", async () => { await Process.Start(new ProcessStartInfo { FileName = "powershell", Arguments = @$"-Command ""Add-AppxPackage -Path {Path.Combine(ApplicationData.Current.TemporaryFolder.Path, "Microsoft.VCLibs.x64.14.00.Desktop.14.0.33728.0.appx")}""", UseShellExecute = false, CreateNoWindow = true })!.WaitForExitAsync(); await (await ApplicationData.Current.TemporaryFolder.GetFileAsync("Microsoft.VCLibs.x64.14.00.Desktop.14.0.33728.0.appx")).DeleteAsync(); }, () => Arc == true),
 
             // download arc
-            ("Downloading Arc", async () => await ProcessActions.RunDownload("https://releases.arc.net/windows/prod/1.72.0.296/Arc.x64.msix", Path.GetTempPath(), "Arc.x64.msix"), () => Arc == true),
+            ("Downloading Arc", async () => await ProcessActions.RunDownload("https://releases.arc.net/windows/prod/1.72.0.296/Arc.x64.msix", ApplicationData.Current.TemporaryFolder.Path, "Arc.x64.msix"), () => Arc == true),
 
             // install arc
-            ("Installing Arc", async () => await Process.Start(new ProcessStartInfo { FileName = "powershell", Arguments = $"-Command \"Add-AppxPackage -Path {Path.Combine(Path.GetTempPath(), "Arc.x64.msix")}\"", UseShellExecute = false, CreateNoWindow = true })!.WaitForExitAsync(), () => Arc == true),
+            ("Installing Arc", async () => { await Process.Start(new ProcessStartInfo { FileName = "powershell", Arguments = $"-Command \"Add-AppxPackage -Path {Path.Combine(ApplicationData.Current.TemporaryFolder.Path, "Arc.x64.msix")}\"", UseShellExecute = false, CreateNoWindow = true })!.WaitForExitAsync(); await (await ApplicationData.Current.TemporaryFolder.GetFileAsync("Arc.x64.msix")).DeleteAsync(); }, () => Arc == true),
             ("Installing Arc", async () => arcVersion = StoreHelper.GetVersion("TheBrowserCompany.Arc_ttt1ap7aakyb4"), () => Arc == true),
 
             // pin arc to the taskbar
@@ -395,10 +396,10 @@ public static class BrowsersStage
             ("Please log in to your Arc account", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(@"C:\Program Files\WindowsApps\TheBrowserCompany.Arc_" + arcVersion + @"_x64__ttt1ap7aakyb4", "Arc.exe"), WindowStyle = ProcessWindowStyle.Maximized })!.WaitForExitAsync(), () => Arc == true),
 
             // download comet
-            ("Downloading Comet", async () => await ProcessActions.RunDownload("https://www.perplexity.ai/rest/browser/download?platform=win_x64&channel=stable", Path.GetTempPath(), "Comet.exe"), () => Comet == true),
+            ("Downloading Comet", async () => await ProcessActions.RunDownload("https://www.perplexity.ai/rest/browser/download?platform=win_x64&channel=stable", ApplicationData.Current.TemporaryFolder.Path, "Comet.exe"), () => Comet == true),
 
             // install comet
-            ("Installing Comet", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "Comet.exe"), Arguments = "-silent --do-not-launch-chrome --system-level", WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => Comet == true),
+            ("Installing Comet", async () => { await Process.Start(new ProcessStartInfo { FileName = Path.Combine(ApplicationData.Current.TemporaryFolder.Path, "Comet.exe"), Arguments = "-silent --do-not-launch-chrome --system-level", WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(); await (await ApplicationData.Current.TemporaryFolder.GetFileAsync("Comet.exe")).DeleteAsync(); }, () => Comet == true),
             ("Installing Comet", async () => cometVersion = FileVersionInfo.GetVersionInfo(Environment.ExpandEnvironmentVariables(@"C:\Program Files\Perplexity\Comet\Application\comet.exe")).ProductVersion, () => Comet == true),
 
             // pin comet to the taskbar
@@ -449,10 +450,10 @@ public static class BrowsersStage
             ("Disabling Comet services", async () => RegistryHelper.DeleteKey(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Active Setup\Installed Components\{1F7C13D9-45E8-47E9-A2B5-6B2EF21B91F4}"), () => Comet == true),
 
             // download firefox
-            ("Downloading Firefox", async () => await ProcessActions.RunDownload($"https://releases.mozilla.org/pub/firefox/releases/{firefoxVersion}/win64/en-US/Firefox%20Setup%20{firefoxVersion}.exe", Path.GetTempPath(), "FirefoxSetup.exe"), () => Firefox == true),
+            ("Downloading Firefox", async () => await ProcessActions.RunDownload($"https://releases.mozilla.org/pub/firefox/releases/{firefoxVersion}/win64/en-US/Firefox%20Setup%20{firefoxVersion}.exe", ApplicationData.Current.TemporaryFolder.Path, "FirefoxSetup.exe"), () => Firefox == true),
 
             // install firefox
-            ("Installing Firefox", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "FirefoxSetup.exe"), Arguments = "/S /MaintenanceService=false /DesktopShortcut=false /StartMenuShortcut=true", WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => Firefox == true),
+            ("Installing Firefox", async () => { await Process.Start(new ProcessStartInfo { FileName = Path.Combine(ApplicationData.Current.TemporaryFolder.Path, "FirefoxSetup.exe"), Arguments = "/S /MaintenanceService=false /DesktopShortcut=false /StartMenuShortcut=true", WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(); await (await ApplicationData.Current.TemporaryFolder.GetFileAsync("FirefoxSetup.exe")).DeleteAsync(); }, () => Firefox == true),
 
             // pin firefox to the taskbar
             ("Pinning Firefox to the taskbar", async () => await ProcessActions.RunPowerShellScript("taskbarpin.ps1", @"-Type Link -Path ""C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Firefox.lnk"""), () => Firefox == true),
@@ -510,10 +511,10 @@ public static class BrowsersStage
             ("Installing 1Password Extension", async () => await Task.Delay(500), () => Firefox == true && OnePassword == true),
 
             // download zen
-            ("Downloading Zen", async () => await ProcessActions.RunDownload("https://github.com/zen-browser/desktop/releases/latest/download/zen.installer.exe", Path.GetTempPath(), "zen.installer.exe"), () => Zen == true),
+            ("Downloading Zen", async () => await ProcessActions.RunDownload("https://github.com/zen-browser/desktop/releases/latest/download/zen.installer.exe", ApplicationData.Current.TemporaryFolder.Path, "zen.installer.exe"), () => Zen == true),
 
             // install zen
-            ("Installing Zen", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "zen.installer.exe"), Arguments = "/S /MaintenanceService=false /DesktopShortcut=false /StartMenuShortcut=true", WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => Zen == true),
+            ("Installing Zen", async () => { await Process.Start(new ProcessStartInfo { FileName = Path.Combine(ApplicationData.Current.TemporaryFolder.Path, "zen.installer.exe"), Arguments = "/S /MaintenanceService=false /DesktopShortcut=false /StartMenuShortcut=true", WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(); await (await ApplicationData.Current.TemporaryFolder.GetFileAsync("zen.installer.exe")).DeleteAsync(); }, () => Zen == true),
 
             // pin zen to the taskbar
             ("Pinning Zen to the taskbar", async () => await ProcessActions.RunPowerShellScript("taskbarpin.ps1", @"-Type Link -Path ""C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Zen.lnk"""), () => Zen == true),

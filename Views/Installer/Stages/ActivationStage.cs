@@ -1,4 +1,4 @@
-﻿using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Media;
 using WinRT.Interop;
 using System.Diagnostics;
 using AutoOS.Views.Installer.Actions;

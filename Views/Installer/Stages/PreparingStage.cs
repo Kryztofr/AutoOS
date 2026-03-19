@@ -1,4 +1,4 @@
-﻿using AutoOS.Helpers.CPU;
+using AutoOS.Helpers.CPU;
 using AutoOS.Helpers.Device;
 using AutoOS.Helpers.GPU;
 using Microsoft.UI.Xaml.Media;

@@ -1,4 +1,4 @@
-﻿using AutoOS.Helpers.Registry;
+using AutoOS.Helpers.Registry;
 using AutoOS.Views.Installer.Actions;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.Win32;
@@ -24,6 +24,7 @@ public static class CleanupStage
         var actions = new List<(string Title, Func<Task> Action, Func<bool> Condition)>
         {
             // clean temp directories
+            ("Cleaning temp directories", async () => await Task.WhenAll(Process.GetProcessesByName("TiWorker").Select(async process => { process.Kill(); await process.WaitForExitAsync(); })), null),
             ("Cleaning temp directories", async () => await RegistryHelper.RunAs(RegistryHelper.Identity.TrustedInstaller, async () => { ProcessActions.CleanDirectory(@"C:\Windows\Logs"); }), null),
             ("Cleaning temp directories", async () => await RegistryHelper.RunAs(RegistryHelper.Identity.TrustedInstaller, async () => { ProcessActions.CleanDirectory(@"C:\Windows\Panther"); }), null),
             ("Cleaning temp directories", async () => await RegistryHelper.RunAs(RegistryHelper.Identity.TrustedInstaller, async () => { ProcessActions.CleanDirectory(@"C:\Windows\SoftwareDistribution"); }), null),
@@ -34,7 +35,7 @@ public static class CleanupStage
             ("Cleaning temp directories", async () => await RegistryHelper.RunAs(RegistryHelper.Identity.TrustedInstaller, async () => { ProcessActions.CleanDirectory(@"C:\Windows\System32\winevt\Logs"); }), null),
             ("Cleaning temp directories", async () => await RegistryHelper.RunAs(RegistryHelper.Identity.TrustedInstaller, async () => { ProcessActions.CleanDirectory(@"C:\Windows\SystemTemp"); }), null),
             ("Cleaning temp directories", async () => await RegistryHelper.RunAs(RegistryHelper.Identity.TrustedInstaller, async () => { ProcessActions.CleanDirectory(@"C:\Windows\Temp"); }), null),
-            ("Cleaning temp directories", async () => ProcessActions.CleanDirectory(Path.GetTempPath()), null),
+            ("Cleaning temp directories", async () => ProcessActions.CleanDirectory(ApplicationData.Current.TemporaryFolder.Path), null),
             ("Cleaning temp directories", async () => File.Delete(@"C:\DumpStack.log"), null),
 
             // run disk cleanup

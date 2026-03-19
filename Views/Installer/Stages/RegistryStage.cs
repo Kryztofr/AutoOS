@@ -1,4 +1,4 @@
-﻿using AutoOS.Helpers.Registry;
+using AutoOS.Helpers.Registry;
 using AutoOS.Helpers.Services;
 using AutoOS.Helpers.TaskScheduler;
 using Microsoft.Win32;

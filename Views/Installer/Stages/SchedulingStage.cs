@@ -1,4 +1,4 @@
-﻿using AutoOS.Helpers.Scheduling;
+using AutoOS.Helpers.Scheduling;
 using AutoOS.Helpers.Registry;
 using Microsoft.Win32;
 using Microsoft.UI.Xaml.Media;

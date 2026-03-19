@@ -4,6 +4,7 @@ using Microsoft.UI.Xaml.Media;
 using WinRT.Interop;
 using AutoOS.Helpers.Device;
 using Microsoft.Win32;
+using Windows.Storage;
 using System.Diagnostics;
 
 namespace AutoOS.Views.Installer.Stages;
@@ -57,12 +58,12 @@ public static class AudioStage
             ("Disabling Multimedia Class Scheduler Service (MMCSS)", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\MMCSS", "Start", 4, RegistryValueKind.DWord), () => NetAdapterCx == true),
 
             // download dolby ac-3 feature on demand
-            ("Downloading Dolby AC-3 Feature on Demand", async () => await ProcessActions.RunDownload("https://www.dl.dropboxusercontent.com/scl/fi/g7qcrrpxt3o3gudzk1icg/Dolby-AC-3-FoD.zip?rlkey=i9koe4r0cu0nemf1f4j7pm026&st=bhgsaiec&dl=0", Path.GetTempPath(), "Dolby-AC-3-FoD.zip"), null),
+            ("Downloading Dolby AC-3 Feature on Demand", async () => await ProcessActions.RunDownload("https://www.dl.dropboxusercontent.com/scl/fi/g7qcrrpxt3o3gudzk1icg/Dolby-AC-3-FoD.zip?rlkey=i9koe4r0cu0nemf1f4j7pm026&st=bhgsaiec&dl=0", ApplicationData.Current.TemporaryFolder.Path, "Dolby-AC-3-FoD.zip"), null),
 
             // install dolby ac-3 feature on demand
-            ("Installing Dolby AC-3 Feature on Demand", async () => await ProcessActions.RunExtract(Path.Combine(Path.GetTempPath(), "Dolby-AC-3-FoD.zip"), Path.Combine(Path.GetTempPath(), "Dolby-AC-3-FoD")), null),
-            ("Installing Dolby AC-3 Feature on Demand", async () => await Process.Start(new ProcessStartInfo { FileName = "dism.exe", Arguments = $@"/online /Add-Package /PackagePath:""{Path.Combine(Path.GetTempPath(), @"Dolby-AC-3-FoD\Microsoft-Windows-DolbyCodec-Package~31bf3856ad364e35~amd64~~10.0.26100.1.mum") }""", UseShellExecute = false, CreateNoWindow = true })!.WaitForExitAsync(), null),
-            ("Installing Dolby AC-3 Feature on Demand", async () => await Process.Start(new ProcessStartInfo { FileName = "dism.exe", Arguments = $@"/online /Add-Package /PackagePath:""{Path.Combine(Path.GetTempPath(), @"Dolby-AC-3-FoD\Microsoft-Windows-DolbyCodec-WOW64-Package~31bf3856ad364e35~wow64~~10.0.26100.1.mum") }""", UseShellExecute = false, CreateNoWindow = true })!.WaitForExitAsync(), null)
+            ("Installing Dolby AC-3 Feature on Demand", async () => { await ProcessActions.RunExtract(Path.Combine(ApplicationData.Current.TemporaryFolder.Path, "Dolby-AC-3-FoD.zip"), Path.Combine(ApplicationData.Current.TemporaryFolder.Path, "Dolby-AC-3-FoD")); await (await ApplicationData.Current.TemporaryFolder.GetFileAsync("Dolby-AC-3-FoD.zip")).DeleteAsync(); }, null),
+            ("Installing Dolby AC-3 Feature on Demand", async () => await Process.Start(new ProcessStartInfo { FileName = "dism.exe", Arguments = $@"/online /Add-Package /PackagePath:""{Path.Combine(ApplicationData.Current.TemporaryFolder.Path, @"Dolby-AC-3-FoD\Microsoft-Windows-DolbyCodec-Package~31bf3856ad364e35~amd64~~10.0.26100.1.mum") }""", UseShellExecute = false, CreateNoWindow = true })!.WaitForExitAsync(), null),
+            ("Installing Dolby AC-3 Feature on Demand", async () => await Process.Start(new ProcessStartInfo { FileName = "dism.exe", Arguments = $@"/online /Add-Package /PackagePath:""{Path.Combine(ApplicationData.Current.TemporaryFolder.Path, @"Dolby-AC-3-FoD\Microsoft-Windows-DolbyCodec-WOW64-Package~31bf3856ad364e35~wow64~~10.0.26100.1.mum") }""", UseShellExecute = false, CreateNoWindow = true })!.WaitForExitAsync(), null)
         };
 
         var filteredActions = actions.Where(a => a.Condition == null || a.Condition.Invoke()).ToList();
