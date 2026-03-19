@@ -3,7 +3,6 @@ using Microsoft.Win32;
 using System.Diagnostics;
 using Windows.Win32;
 using Windows.Win32.System.Services;
-using static AutoOS.Helpers.Registry.RegistryHelper;
 
 namespace AutoOS.Helpers.Services;
 
@@ -93,6 +92,55 @@ public static class ServicesHelper
         PInvoke.ControlService(serviceHandle, PInvoke.SERVICE_CONTROL_STOP, out SERVICE_STATUS status);
     }
 
+    public unsafe static void DisableFailureActions(string serviceName)
+    {
+        using var scmHandle = PInvoke.OpenSCManager(null, null, PInvoke.SC_MANAGER_CONNECT);
+        if (scmHandle.IsInvalid) return;
+
+        using var serviceHandle = PInvoke.OpenService(scmHandle, serviceName, PInvoke.SERVICE_QUERY_CONFIG | PInvoke.SERVICE_CHANGE_CONFIG);
+        if (serviceHandle.IsInvalid) return;
+
+        var failureActions = new SERVICE_FAILURE_ACTIONSW
+        {
+            dwResetPeriod = 0,
+            lpRebootMsg = null,
+            lpCommand = null,
+            cActions = 0,
+            lpsaActions = null
+        };
+
+        PInvoke.ChangeServiceConfig2W(serviceHandle, SERVICE_CONFIG.SERVICE_CONFIG_FAILURE_ACTIONS, &failureActions);
+
+        var failureFlag = new SERVICE_FAILURE_ACTIONS_FLAG
+        {
+            fFailureActionsOnNonCrashFailures = false
+        };
+
+        PInvoke.ChangeServiceConfig2W(serviceHandle, SERVICE_CONFIG.SERVICE_CONFIG_FAILURE_ACTIONS_FLAG, &failureFlag);
+    }
+
+    public static void CreateService(string serviceName, string binPath)
+    {
+        using var scmHandle = PInvoke.OpenSCManager(null, null, PInvoke.SC_MANAGER_CREATE_SERVICE);
+        if (scmHandle.IsInvalid) return;
+
+        uint tagId;
+        using var serviceHandle = PInvoke.CreateService(
+            scmHandle,
+            serviceName,
+            serviceName,
+            0xF01FF,
+            ENUM_SERVICE_TYPE.SERVICE_WIN32_OWN_PROCESS,
+            SERVICE_START_TYPE.SERVICE_AUTO_START,
+            SERVICE_ERROR.SERVICE_ERROR_NORMAL,
+            binPath,
+            null,
+            out tagId,
+            null,
+            null,
+            null);
+    }
+
     public static void GroupServices()
     {
         string[] services =
@@ -113,7 +161,7 @@ public static class ServicesHelper
 
         foreach (var service in services)
         {
-            RegistryHelper.SetValue(Identity.TrustedInstaller, $@"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\{service}", "SvcHostSplitDisable", 1, RegistryValueKind.DWord);
+            RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, $@"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\{service}", "SvcHostSplitDisable", 1, RegistryValueKind.DWord);
         }
 
         using var baseKey = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Services");
@@ -123,7 +171,7 @@ public static class ServicesHelper
             {
                 if (subKeyName.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
                 {
-                    RegistryHelper.SetValue(Identity.TrustedInstaller, $@"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\{subKeyName}", "SvcHostSplitDisable", 1, RegistryValueKind.DWord);
+                    RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, $@"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\{subKeyName}", "SvcHostSplitDisable", 1, RegistryValueKind.DWord);
                 }
             }
         }
