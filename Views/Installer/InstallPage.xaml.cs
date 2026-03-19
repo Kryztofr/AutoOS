@@ -1,4 +1,11 @@
-﻿using AutoOS.Views.Installer.Stages;
+﻿using AutoOS.Views.Installer.Actions;
+using AutoOS.Views.Installer.Stages;
+using Microsoft.UI.Xaml.Media;
+using Microsoft.Win32;
+using System.Diagnostics;
+using Windows.ApplicationModel;
+using WinRT.Interop;
+using Windows.Storage;
 
 namespace AutoOS.Views.Installer;
 
@@ -9,6 +16,7 @@ public sealed partial class InstallPage : Page
     public static InfoBar Info { get; private set; }
     public static Microsoft.UI.Xaml.Controls.ProgressRing ProgressRingControl { get; private set; }
     public static Button ResumeButton { get; private set; }
+    private static readonly ApplicationDataContainer localSettings = ApplicationData.Current.LocalSettings;
 
     public InstallPage()
     {
@@ -39,25 +47,176 @@ public sealed partial class InstallPage : Page
         ProgressRingControl = ProgressRingItem;
         ResumeButton = ResumeButtonItem;
 
+        Progress.ValueChanged += (s, e) =>
+        {
+            PercentageText.Text = $"{(int)e.NewValue}%";
+        };
+
         await PreparingStage.Run();
-        await PowerStage.Run();
-        await RegistryStage.Run();
-        await SecurityStage.Run();
-        await MemoryManagementStage.Run();
-        await ActivationStage.Run();
-        await GraphicsStage.Run();
-        await NetworkStage.Run();
-        await AudioStage.Run();
-        await DeviceStage.Run();
-        await ScheduledTasksStage.Run();
-        await OptionalFeatureStage.Run();
-        await AppxStage.Run();
-        await RuntimesStage.Run();
-        await BrowsersStage.Run();
-        await ApplicationStage.Run();
-        await GamesStage.Run();
-        await SchedulingStage.Run();
-        await ServicesStage.Run();
-        await CleanupStage.Run();
+        await RunStage("Configuring Powerplans...", PowerStage.GetActions(), 5);
+        await RunStage("Configuring Registry...", RegistryStage.GetActions(), 10);
+        await RunStage("Configuring Security...", SecurityStage.GetActions(), 5);
+        await RunStage("Configuring Memory Management...", MemoryManagementStage.GetActions(), 5);
+        await RunStage("Activating Windows...", ActivationStage.GetActions(), 2);
+        await RunStage("Configuring Graphics Cards...", await GraphicsStage.GetActions(), 5);
+        await RunStage("Configuring Network Adapters...", NetworkStage.GetActions(), 5);
+        await RunStage("Configuring Audio Devices...", AudioStage.GetActions(), 5);
+        await RunStage("Configuring Devices...", DeviceStage.GetActions(), 5);
+        await RunStage("Configuring Scheduled Tasks...", ScheduledTasksStage.GetActions(), 5);
+        await RunStage("Configuring Optional Features...", OptionalFeatureStage.GetActions(), 5);
+        await RunStage("Configuring AppX Packages...", AppxStage.GetActions(), 10);
+        await RunStage("Configuring Runtimes...", RuntimesStage.GetActions(), 5);
+        await RunStage("Configuring Browsers...", BrowsersStage.GetActions(), 5);
+        await RunStage("Configuring Applications...", ApplicationStage.GetActions(), 10);
+        await RunStage("Configuring Games...", GamesStage.GetActions(), 2);
+        await RunStage("Configuring Affinities...", SchedulingStage.GetActions(), 5);
+        await RunStage("Configuring Services and Drivers...", ServicesStage.GetActions(), 2);
+        await RunStage("Cleaning up...", CleanupStage.GetActions(), 4);
+        Status.Text = "Installation finished.";
+        Info.Severity = InfoBarSeverity.Success;
+        Progress.Foreground = new SolidColorBrush((Windows.UI.Color)Application.Current.Resources["SystemFillColorSuccess"]);
+        ProgressRingControl.Foreground = new SolidColorBrush((Windows.UI.Color)Application.Current.Resources["SystemFillColorSuccess"]);
+        localSettings.Values["Version"] = ProcessInfoHelper.Version;
+        localSettings.Values["Install_End"] = DateTimeOffset.Now.ToString("O");
+        Registry.SetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\AutoOS", "IsInstalled", 1, RegistryValueKind.DWord);
+        StartupTaskState state = await (await StartupTask.GetAsync("AutoOS")).RequestEnableAsync();
+        Registry.SetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\Explorer", "LockedStartLayout", 0, RegistryValueKind.DWord);
+        await ProcessActions.Log();
+        Info.Title = "Restarting in 3...";
+        await Task.Delay(1000);
+        Info.Title = "Restarting in 2...";
+        await Task.Delay(1000);
+        Info.Title = "Restarting in 1...";
+        await Task.Delay(1000);
+        Info.Title = "Restarting...";
+        await Task.Delay(750);
+        ProcessStartInfo processStartInfo = new()
+        {
+            FileName = "cmd.exe",
+            Arguments = $"/c shutdown /r /t 0",
+            UseShellExecute = false,
+            CreateNoWindow = true,
+        };
+        Process.Start(processStartInfo);
+    }
+
+    public static async Task RunStage(string status, List<(string Title, Func<Task> Action, Func<bool> Condition)> actions, double stagePercentage)
+    {
+        var windowHandle = WindowNative.GetWindowHandle(App.MainWindow);
+        Status.Text = status;
+
+        string previousTitle = string.Empty;
+
+        var filteredActions = actions.Where(a => a.Condition == null || a.Condition.Invoke()).ToList();
+        int groupedTitleCount = 0;
+
+        List<Func<Task>> currentGroup = [];
+
+        for (int i = 0; i < filteredActions.Count; i++)
+        {
+            if (i == 0 || filteredActions[i].Title != filteredActions[i - 1].Title)
+            {
+                groupedTitleCount++;
+            }
+        }
+
+        double incrementPerTitle = groupedTitleCount > 0 ? stagePercentage / (double)groupedTitleCount : 0;
+
+        foreach (var (title, action, condition) in filteredActions)
+        {
+            if (previousTitle != string.Empty && previousTitle != title && currentGroup.Count > 0)
+            {
+                foreach (var groupedAction in currentGroup)
+                {
+                    try
+                    {
+                        await groupedAction();
+                    }
+                    catch (Exception ex)
+                    {
+                        await ProcessActions.LogError(ex);
+
+                        Info.Title = $"{previousTitle}: {ex.Message}";
+                        Info.Severity = InfoBarSeverity.Error;
+                        Progress.Foreground = (Brush)Application.Current.Resources["SystemFillColorCriticalBrush"];
+                        Helpers.Taskbar.TaskbarHelper.SetProgressState(windowHandle, Helpers.Taskbar.TaskbarStates.Error);
+                        ProgressRingControl.Visibility = Visibility.Collapsed;
+                        ResumeButton.Visibility = Visibility.Visible;
+
+                        var tcs = new TaskCompletionSource<bool>();
+
+                        RoutedEventHandler resumeHandler = null;
+                        resumeHandler = (sender, e) =>
+                        {
+                            ResumeButton.Click -= resumeHandler;
+                            Info.Severity = InfoBarSeverity.Informational;
+                            Progress.ClearValue(ProgressBar.ForegroundProperty);
+                            Helpers.Taskbar.TaskbarHelper.SetProgressState(windowHandle, Helpers.Taskbar.TaskbarStates.Normal);
+                            ProgressRingControl.Visibility = Visibility.Visible;
+                            ResumeButton.Visibility = Visibility.Collapsed;
+
+                            tcs.TrySetResult(true);
+                        };
+
+                        ResumeButton.Click += resumeHandler;
+                        await tcs.Task;
+                    }
+                }
+
+                Progress.Value += incrementPerTitle;
+                Helpers.Taskbar.TaskbarHelper.SetProgressValue(windowHandle, Progress.Value, 100);
+                await Task.Delay(150);
+                currentGroup.Clear();
+            }
+
+            Info.Title = title + "...";
+            currentGroup.Add(action);
+            previousTitle = title;
+        }
+
+        if (currentGroup.Count > 0)
+        {
+            foreach (var groupedAction in currentGroup)
+            {
+                try
+                {
+                    await groupedAction();
+                }
+                catch (Exception ex)
+                {
+                    Info.Title += ": " + ex.Message;
+                    Info.Severity = InfoBarSeverity.Error;
+                    Progress.Foreground = (Brush)Application.Current.Resources["SystemFillColorCriticalBrush"];
+                    Helpers.Taskbar.TaskbarHelper.SetProgressState(windowHandle, Helpers.Taskbar.TaskbarStates.Error);
+                    ProgressRingControl.Foreground = (Brush)Application.Current.Resources["SystemFillColorCriticalBrush"];
+                    ProgressRingControl.Visibility = Visibility.Collapsed;
+                    ResumeButton.Visibility = Visibility.Visible;
+                    await ProcessActions.LogError(ex);
+
+                    var tcs = new TaskCompletionSource<bool>();
+
+                    ResumeButton.Click += (sender, e) =>
+                    {
+                        tcs.TrySetResult(true);
+                        Info.Severity = InfoBarSeverity.Informational;
+                        Progress.ClearValue(ProgressBar.ForegroundProperty);
+                        Helpers.Taskbar.TaskbarHelper.SetProgressState(windowHandle, Helpers.Taskbar.TaskbarStates.Normal);
+                        ProgressRingControl.Foreground = null;
+                        ProgressRingControl.Visibility = Visibility.Visible;
+                        ResumeButton.Visibility = Visibility.Collapsed;
+                    };
+
+                    await tcs.Task;
+                }
+            }
+
+            Progress.Value += incrementPerTitle;
+            Helpers.Taskbar.TaskbarHelper.SetProgressValue(windowHandle, Progress.Value, 100);
+        }
+        if (filteredActions.Count == 0)
+        {
+            Progress.Value += stagePercentage;
+            Helpers.Taskbar.TaskbarHelper.SetProgressValue(windowHandle, Progress.Value, 100);
+        }
     }
 }

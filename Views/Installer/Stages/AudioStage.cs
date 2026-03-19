@@ -1,7 +1,5 @@
 using AutoOS.Views.Installer.Actions;
 using AutoOS.Helpers.Registry;
-using Microsoft.UI.Xaml.Media;
-using WinRT.Interop;
 using AutoOS.Helpers.Device;
 using Microsoft.Win32;
 using Windows.Storage;
@@ -11,18 +9,11 @@ namespace AutoOS.Views.Installer.Stages;
 
 public static class AudioStage
 {
-    public static IntPtr WindowHandle { get; private set; }
-    public static async Task Run()
+    public static List<(string Title, Func<Task> Action, Func<bool> Condition)> GetActions()
     {
-        WindowHandle = WindowNative.GetWindowHandle(App.MainWindow);
         bool NetAdapterCx = PreparingStage.NetAdapterCx;
 
-        InstallPage.Status.Text = "Configuring Audio Devices...";
-
-        string previousTitle = string.Empty;
-        int stagePercentage = 5;
-
-        var actions = new List<(string Title, Func<Task> Action, Func<bool> Condition)>
+        return new List<(string Title, Func<Task> Action, Func<bool> Condition)>
         {
             // disable system beeps
             ("Disabling system beeps", async () => RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_CURRENT_USER\Control Panel\Sound", "Beep", "no", RegistryValueKind.String), null),
@@ -61,121 +52,11 @@ public static class AudioStage
             ("Downloading Dolby AC-3 Feature on Demand", async () => await ProcessActions.RunDownload("https://www.dl.dropboxusercontent.com/scl/fi/g7qcrrpxt3o3gudzk1icg/Dolby-AC-3-FoD.zip?rlkey=i9koe4r0cu0nemf1f4j7pm026&st=bhgsaiec&dl=0", ApplicationData.Current.TemporaryFolder.Path, "Dolby-AC-3-FoD.zip"), null),
 
             // install dolby ac-3 feature on demand
-            ("Installing Dolby AC-3 Feature on Demand", async () => { await ProcessActions.RunExtract(Path.Combine(ApplicationData.Current.TemporaryFolder.Path, "Dolby-AC-3-FoD.zip"), Path.Combine(ApplicationData.Current.TemporaryFolder.Path, "Dolby-AC-3-FoD")); await (await ApplicationData.Current.TemporaryFolder.GetFileAsync("Dolby-AC-3-FoD.zip")).DeleteAsync(); }, null),
+            ("Installing Dolby AC-3 Feature on Demand", async () => await ProcessActions.RunExtract(Path.Combine(ApplicationData.Current.TemporaryFolder.Path, "Dolby-AC-3-FoD.zip"), Path.Combine(ApplicationData.Current.TemporaryFolder.Path, "Dolby-AC-3-FoD")), null),
             ("Installing Dolby AC-3 Feature on Demand", async () => await Process.Start(new ProcessStartInfo { FileName = "dism.exe", Arguments = $@"/online /Add-Package /PackagePath:""{Path.Combine(ApplicationData.Current.TemporaryFolder.Path, @"Dolby-AC-3-FoD\Microsoft-Windows-DolbyCodec-Package~31bf3856ad364e35~amd64~~10.0.26100.1.mum") }""", UseShellExecute = false, CreateNoWindow = true })!.WaitForExitAsync(), null),
-            ("Installing Dolby AC-3 Feature on Demand", async () => await Process.Start(new ProcessStartInfo { FileName = "dism.exe", Arguments = $@"/online /Add-Package /PackagePath:""{Path.Combine(ApplicationData.Current.TemporaryFolder.Path, @"Dolby-AC-3-FoD\Microsoft-Windows-DolbyCodec-WOW64-Package~31bf3856ad364e35~wow64~~10.0.26100.1.mum") }""", UseShellExecute = false, CreateNoWindow = true })!.WaitForExitAsync(), null)
+            ("Installing Dolby AC-3 Feature on Demand", async () => await Process.Start(new ProcessStartInfo { FileName = "dism.exe", Arguments = $@"/online /Add-Package /PackagePath:""{Path.Combine(ApplicationData.Current.TemporaryFolder.Path, @"Dolby-AC-3-FoD\Microsoft-Windows-DolbyCodec-WOW64-Package~31bf3856ad364e35~wow64~~10.0.26100.1.mum") }""", UseShellExecute = false, CreateNoWindow = true })!.WaitForExitAsync(), null),
+            ("Installing Dolby AC-3 Feature on Demand", async () => await (await ApplicationData.Current.TemporaryFolder.GetFileAsync("Dolby-AC-3-FoD.zip")).DeleteAsync(), null),
+            ("Installing Dolby AC-3 Feature on Demand", async () => await (await ApplicationData.Current.TemporaryFolder.GetFolderAsync("Dolby-AC-3-FoD")).DeleteAsync(), null)
         };
-
-        var filteredActions = actions.Where(a => a.Condition == null || a.Condition.Invoke()).ToList();
-        int groupedTitleCount = 0;
-
-        List<Func<Task>> currentGroup = [];
-
-        for (int i = 0; i < filteredActions.Count; i++)
-        {
-            if (i == 0 || filteredActions[i].Title != filteredActions[i - 1].Title)
-            {
-                groupedTitleCount++;
-            }
-        }
-
-        double incrementPerTitle = groupedTitleCount > 0 ? stagePercentage / (double)groupedTitleCount : 0;
-
-        foreach (var (title, action, condition) in filteredActions)
-        {
-            if (previousTitle != string.Empty && previousTitle != title && currentGroup.Count > 0)
-            {
-                foreach (var groupedAction in currentGroup)
-                {
-                    try
-                    {
-                        await groupedAction();
-                    }
-                    catch (Exception ex)
-                    {
-                        await ProcessActions.LogError(ex);
-
-                        InstallPage.Info.Title = $"{previousTitle}: {ex.Message}";
-                        InstallPage.Info.Severity = InfoBarSeverity.Error;
-                        InstallPage.Progress.Foreground = (Brush)Application.Current.Resources["SystemFillColorCriticalBrush"];
-                        Helpers.Taskbar.TaskbarHelper.SetProgressState(WindowHandle, Helpers.Taskbar.TaskbarStates.Error);
-                        InstallPage.ProgressRingControl.Visibility = Visibility.Collapsed;
-                        InstallPage.ResumeButton.Visibility = Visibility.Visible;
-
-                        var tcs = new TaskCompletionSource<bool>();
-
-                        RoutedEventHandler resumeHandler = null;
-                        resumeHandler = (sender, e) =>
-                        {
-                            InstallPage.ResumeButton.Click -= resumeHandler;
-                            InstallPage.Info.Severity = InfoBarSeverity.Informational;
-                            InstallPage.Progress.ClearValue(ProgressBar.ForegroundProperty);
-                            Helpers.Taskbar.TaskbarHelper.SetProgressState(WindowHandle, Helpers.Taskbar.TaskbarStates.Normal);
-                            InstallPage.ProgressRingControl.Visibility = Visibility.Visible;
-                            InstallPage.ResumeButton.Visibility = Visibility.Collapsed;
-
-                            tcs.TrySetResult(true);
-                        };
-
-                        InstallPage.ResumeButton.Click += resumeHandler;
-                        await tcs.Task;
-                    }
-                }
-
-                InstallPage.Progress.Value += incrementPerTitle;
-                Helpers.Taskbar.TaskbarHelper.SetProgressValue(WindowHandle, InstallPage.Progress.Value, 100);
-                await Task.Delay(150);
-                currentGroup.Clear();
-            }
-
-            InstallPage.Info.Title = title + "...";
-            currentGroup.Add(action);
-            previousTitle = title;
-        }
-
-        if (currentGroup.Count > 0)
-        {
-            foreach (var groupedAction in currentGroup)
-            {
-                try
-                {
-                    await groupedAction();
-                }
-                catch (Exception ex)
-                {
-                    InstallPage.Info.Title += ": " + ex.Message;
-                    InstallPage.Info.Severity = InfoBarSeverity.Error;
-                    InstallPage.Progress.Foreground = (Brush)Application.Current.Resources["SystemFillColorCriticalBrush"];
-                    Helpers.Taskbar.TaskbarHelper.SetProgressState(WindowHandle, Helpers.Taskbar.TaskbarStates.Error);
-                    InstallPage.ProgressRingControl.Foreground = (Brush)Application.Current.Resources["SystemFillColorCriticalBrush"];
-                    InstallPage.ProgressRingControl.Visibility = Visibility.Collapsed;
-                    InstallPage.ResumeButton.Visibility = Visibility.Visible;
-                    await ProcessActions.LogError(ex);
-
-                    var tcs = new TaskCompletionSource<bool>();
-
-                    InstallPage.ResumeButton.Click += (sender, e) =>
-                    {
-                        tcs.TrySetResult(true);
-                        InstallPage.Info.Severity = InfoBarSeverity.Informational;
-                        InstallPage.Progress.ClearValue(ProgressBar.ForegroundProperty);
-                        Helpers.Taskbar.TaskbarHelper.SetProgressState(WindowHandle, Helpers.Taskbar.TaskbarStates.Normal);
-                        InstallPage.ProgressRingControl.Foreground = null;
-                        InstallPage.ProgressRingControl.Visibility = Visibility.Visible;
-                        InstallPage.ResumeButton.Visibility = Visibility.Collapsed;
-                    };
-
-                    await tcs.Task;
-                }
-            }
-
-            InstallPage.Progress.Value += incrementPerTitle;
-            Helpers.Taskbar.TaskbarHelper.SetProgressValue(WindowHandle, InstallPage.Progress.Value, 100);
-        }
-        if (filteredActions.Count == 0)
-        {
-            InstallPage.Progress.Value += stagePercentage;
-            Helpers.Taskbar.TaskbarHelper.SetProgressValue(WindowHandle, InstallPage.Progress.Value, 100);
-        }
     }
 }

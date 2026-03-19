@@ -105,6 +105,11 @@ namespace AutoOS.Views.Settings.Power
             PInvoke.PowerSetActiveScheme(default, scheme);
         }
 
+        internal static uint RestoreDefaultPowerSchemes()
+        {
+            return (uint)PInvoke.PowerRestoreDefaultPowerSchemes();
+        }
+
         internal static uint ReadValueMin(Guid subgroup, Guid setting)
         {
             uint value;

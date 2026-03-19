@@ -1,7 +1,5 @@
 using AutoOS.Views.Installer.Actions;
 using AutoOS.Helpers.Registry;
-using Microsoft.UI.Xaml.Media;
-using WinRT.Interop;
 using System.Diagnostics;
 using AutoOS.Helpers.Services;
 using Microsoft.Win32;
@@ -11,10 +9,8 @@ namespace AutoOS.Views.Installer.Stages;
 
 public static class SecurityStage
 {
-    public static IntPtr WindowHandle { get; private set; }
-    public static async Task Run()
+    public static List<(string Title, Func<Task> Action, Func<bool> Condition)> GetActions()
     {
-        WindowHandle = WindowNative.GetWindowHandle(App.MainWindow);
         bool WindowsDefender = PreparingStage.WindowsDefender;
         bool UserAccountControl = PreparingStage.UserAccountControl;
         bool DEP = PreparingStage.DEP;
@@ -25,12 +21,7 @@ public static class SecurityStage
         bool SpectreMeltdownMitigations = PreparingStage.SpectreMeltdownMitigations;
         bool ProcessMitigations = PreparingStage.ProcessMitigations;
 
-        InstallPage.Status.Text = "Configuring Security...";
-
-        string previousTitle = string.Empty;
-        int stagePercentage = 5;
-
-        var actions = new List<(string Title, Func<Task> Action, Func<bool> Condition)>
+        return new List<(string Title, Func<Task> Action, Func<bool> Condition)>
         {
             // enable "hide windows security systray" policy
             (@"Enabling ""Hide Windows Security Systray"" policy", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows Defender Security Center\Systray", "HideSystray", 1, RegistryValueKind.DWord), null),
@@ -53,7 +44,7 @@ public static class SecurityStage
             ("Disabling Windows Defender", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows Defender", "DisableAntiSpyware", 1, RegistryValueKind.DWord), () => WindowsDefender == false),
             ("Disabling Windows Defender", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows Defender", "DisableAntiVirus", 1, RegistryValueKind.DWord), () => WindowsDefender == false),
             ("Disabling Windows Defender", async () => await RegistryHelper.RunAs(RegistryHelper.Identity.TrustedInstaller, new ProcessStartInfo(@"C:\Program Files\Windows Defender\MpCmdRun.exe", "-DisableService -HighPriority") { CreateNoWindow = true }), () => WindowsDefender == false),
-            ("Disabling Windows Defender", async () => { while (new ServiceController("WdFilter").Status != ServiceControllerStatus.Stopped) await Task.Delay(100); }, null),
+            ("Disabling Windows Defender", async () => { while (new ServiceController("WdFilter").Status != ServiceControllerStatus.Stopped) await Task.Delay(100); }, () => WindowsDefender == false),
             ("Disabling Windows Defender", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\MsSecCore", "Start", 4, RegistryValueKind.DWord), () => WindowsDefender == false),
             ("Disabling Windows Defender", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\SecurityHealthService", "Start", 4, RegistryValueKind.DWord), () => WindowsDefender == false),
             ("Disabling Windows Defender", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Sense", "Start", 4, RegistryValueKind.DWord), () => WindowsDefender == false),
@@ -104,117 +95,5 @@ public static class SecurityStage
             ("Disabling process mitigations", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\Kernel", "MitigationAuditOptions", Enumerable.Repeat((byte)0x22, 24).ToArray(), RegistryValueKind.Binary), () => ProcessMitigations == false),
             ("Disabling process mitigations", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\Kernel", "MitigationOptions", Enumerable.Repeat((byte)0x22, 24).ToArray(), RegistryValueKind.Binary), () => ProcessMitigations == false),
         };
-
-        var filteredActions = actions.Where(a => a.Condition == null || a.Condition.Invoke()).ToList();
-        int groupedTitleCount = 0;
-
-        List<Func<Task>> currentGroup = [];
-
-        for (int i = 0; i < filteredActions.Count; i++)
-        {
-            if (i == 0 || filteredActions[i].Title != filteredActions[i - 1].Title)
-            {
-                groupedTitleCount++;
-            }
-        }
-
-        double incrementPerTitle = groupedTitleCount > 0 ? stagePercentage / (double)groupedTitleCount : 0;
-
-        foreach (var (title, action, condition) in filteredActions)
-        {
-            if (previousTitle != string.Empty && previousTitle != title && currentGroup.Count > 0)
-            {
-                foreach (var groupedAction in currentGroup)
-                {
-                    try
-                    {
-                        await groupedAction();
-                    }
-                    catch (Exception ex)
-                    {
-                        await ProcessActions.LogError(ex);
-
-                        InstallPage.Info.Title = $"{previousTitle}: {ex.Message}";
-                        InstallPage.Info.Severity = InfoBarSeverity.Error;
-                        InstallPage.Progress.Foreground = (Brush)Application.Current.Resources["SystemFillColorCriticalBrush"];
-                        Helpers.Taskbar.TaskbarHelper.SetProgressState(WindowHandle, Helpers.Taskbar.TaskbarStates.Error);
-                        InstallPage.ProgressRingControl.Visibility = Visibility.Collapsed;
-                        InstallPage.ResumeButton.Visibility = Visibility.Visible;
-
-                        var tcs = new TaskCompletionSource<bool>();
-
-                        RoutedEventHandler resumeHandler = null;
-                        resumeHandler = (sender, e) =>
-                        {
-                            InstallPage.ResumeButton.Click -= resumeHandler;
-                            InstallPage.Info.Severity = InfoBarSeverity.Informational;
-                            InstallPage.Progress.ClearValue(ProgressBar.ForegroundProperty);
-                            Helpers.Taskbar.TaskbarHelper.SetProgressState(WindowHandle, Helpers.Taskbar.TaskbarStates.Normal);
-                            InstallPage.ProgressRingControl.Visibility = Visibility.Visible;
-                            InstallPage.ResumeButton.Visibility = Visibility.Collapsed;
-
-                            tcs.TrySetResult(true);
-                        };
-
-                        InstallPage.ResumeButton.Click += resumeHandler;
-                        await tcs.Task;
-                    }
-                }
-
-                InstallPage.Progress.Value += incrementPerTitle;
-                Helpers.Taskbar.TaskbarHelper.SetProgressValue(WindowHandle, InstallPage.Progress.Value, 100);
-                await Task.Delay(150);
-                currentGroup.Clear();
-            }
-
-            InstallPage.Info.Title = title + "...";
-            currentGroup.Add(action);
-            previousTitle = title;
-        }
-
-        if (currentGroup.Count > 0)
-        {
-            foreach (var groupedAction in currentGroup)
-            {
-                try
-                {
-                    await groupedAction();
-                }
-                catch (Exception ex)
-                {
-                    InstallPage.Info.Title += ": " + ex.Message;
-                    InstallPage.Info.Severity = InfoBarSeverity.Error;
-                    InstallPage.Progress.Foreground = (Brush)Application.Current.Resources["SystemFillColorCriticalBrush"];
-                    Helpers.Taskbar.TaskbarHelper.SetProgressState(WindowHandle, Helpers.Taskbar.TaskbarStates.Error);
-                    InstallPage.ProgressRingControl.Foreground = (Brush)Application.Current.Resources["SystemFillColorCriticalBrush"];
-                    InstallPage.ProgressRingControl.Visibility = Visibility.Collapsed;
-                    InstallPage.ResumeButton.Visibility = Visibility.Visible;
-                    await ProcessActions.LogError(ex);
-
-                    var tcs = new TaskCompletionSource<bool>();
-
-                    InstallPage.ResumeButton.Click += (sender, e) =>
-                    {
-                        tcs.TrySetResult(true);
-                        InstallPage.Info.Severity = InfoBarSeverity.Informational;
-                        InstallPage.Progress.ClearValue(ProgressBar.ForegroundProperty);
-                        Helpers.Taskbar.TaskbarHelper.SetProgressState(WindowHandle, Helpers.Taskbar.TaskbarStates.Normal);
-                        InstallPage.ProgressRingControl.Foreground = null;
-                        InstallPage.ProgressRingControl.Visibility = Visibility.Visible;
-                        InstallPage.ResumeButton.Visibility = Visibility.Collapsed;
-                    };
-
-                    await tcs.Task;
-                }
-            }
-
-            InstallPage.Progress.Value += incrementPerTitle;
-            Helpers.Taskbar.TaskbarHelper.SetProgressValue(WindowHandle, InstallPage.Progress.Value, 100);
-        }
-        if (filteredActions.Count == 0)
-        {
-            InstallPage.Progress.Value += stagePercentage;
-            Helpers.Taskbar.TaskbarHelper.SetProgressValue(WindowHandle, InstallPage.Progress.Value, 100);
-        }
     }
 }

@@ -3,9 +3,6 @@ using AutoOS.Helpers.Registry;
 using Microsoft.Win32;
 using System.Diagnostics;
 using AutoOS.Helpers.Services;
-using Microsoft.UI.Xaml.Media;
-using AutoOS.Views.Installer.Actions;
-using WinRT.Interop;
 using Windows.Storage;
 using System.Text.Json;
 
@@ -13,16 +10,9 @@ namespace AutoOS.Views.Installer.Stages;
 
 public static partial class GamesStage
 {
-    public static IntPtr WindowHandle { get; private set; }
-    public static async Task Run()
+    public static List<(string Title, Func<Task> Action, Func<bool> Condition)> GetActions()
     {
-        WindowHandle = WindowNative.GetWindowHandle(App.MainWindow);
         bool Fortnite = ApplicationStage.Fortnite;
-
-        InstallPage.Status.Text = "Configuring Games...";
-
-        string previousTitle = string.Empty;
-        int stagePercentage = 2;
 
         string fortnitePath = string.Empty;
 
@@ -57,116 +47,6 @@ public static partial class GamesStage
             ("Disabling fullscreen optimizations for Fortnite", async () => RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers", $@"{fortnitePath}\FortniteGame\Binaries\Win64\FortniteClient-Win64-Shipping.exe", "~ DISABLEDXMAXIMIZEDWINDOWEDMODE", RegistryValueKind.String), () => Fortnite == true),
         };
 
-        var filteredActions = actions.Where(a => a.Condition == null || a.Condition.Invoke()).ToList();
-        int groupedTitleCount = 0;
-
-        List<Func<Task>> currentGroup = [];
-
-        for (int i = 0; i < filteredActions.Count; i++)
-        {
-            if (i == 0 || filteredActions[i].Title != filteredActions[i - 1].Title)
-            {
-                groupedTitleCount++;
-            }
-        }
-
-        double incrementPerTitle = groupedTitleCount > 0 ? stagePercentage / (double)groupedTitleCount : 0;
-
-        foreach (var (title, action, condition) in filteredActions)
-        {
-            if (previousTitle != string.Empty && previousTitle != title && currentGroup.Count > 0)
-            {
-                foreach (var groupedAction in currentGroup)
-                {
-                    try
-                    {
-                        await groupedAction();
-                    }
-                    catch (Exception ex)
-                    {
-                        await ProcessActions.LogError(ex);
-
-                        InstallPage.Info.Title = $"{previousTitle}: {ex.Message}";
-                        InstallPage.Info.Severity = InfoBarSeverity.Error;
-                        InstallPage.Progress.Foreground = (Brush)Application.Current.Resources["SystemFillColorCriticalBrush"];
-                        Helpers.Taskbar.TaskbarHelper.SetProgressState(WindowHandle, Helpers.Taskbar.TaskbarStates.Error);
-                        InstallPage.ProgressRingControl.Visibility = Visibility.Collapsed;
-                        InstallPage.ResumeButton.Visibility = Visibility.Visible;
-
-                        var tcs = new TaskCompletionSource<bool>();
-
-                        RoutedEventHandler resumeHandler = null;
-                        resumeHandler = (sender, e) =>
-                        {
-                            InstallPage.ResumeButton.Click -= resumeHandler;
-                            InstallPage.Info.Severity = InfoBarSeverity.Informational;
-                            InstallPage.Progress.ClearValue(ProgressBar.ForegroundProperty);
-                            Helpers.Taskbar.TaskbarHelper.SetProgressState(WindowHandle, Helpers.Taskbar.TaskbarStates.Normal);
-                            InstallPage.ProgressRingControl.Visibility = Visibility.Visible;
-                            InstallPage.ResumeButton.Visibility = Visibility.Collapsed;
-
-                            tcs.TrySetResult(true);
-                        };
-
-                        InstallPage.ResumeButton.Click += resumeHandler;
-                        await tcs.Task;
-                    }
-                }
-
-                InstallPage.Progress.Value += incrementPerTitle;
-                Helpers.Taskbar.TaskbarHelper.SetProgressValue(WindowHandle, InstallPage.Progress.Value, 100);
-                await Task.Delay(150);
-                currentGroup.Clear();
-            }
-
-            InstallPage.Info.Title = title + "...";
-            currentGroup.Add(action);
-            previousTitle = title;
-        }
-
-        if (currentGroup.Count > 0)
-        {
-            foreach (var groupedAction in currentGroup)
-            {
-                try
-                {
-                    await groupedAction();
-                }
-                catch (Exception ex)
-                {
-                    InstallPage.Info.Title += ": " + ex.Message;
-                    InstallPage.Info.Severity = InfoBarSeverity.Error;
-                    InstallPage.Progress.Foreground = (Brush)Application.Current.Resources["SystemFillColorCriticalBrush"];
-                    Helpers.Taskbar.TaskbarHelper.SetProgressState(WindowHandle, Helpers.Taskbar.TaskbarStates.Error);
-                    InstallPage.ProgressRingControl.Foreground = (Brush)Application.Current.Resources["SystemFillColorCriticalBrush"];
-                    InstallPage.ProgressRingControl.Visibility = Visibility.Collapsed;
-                    InstallPage.ResumeButton.Visibility = Visibility.Visible;
-                    await ProcessActions.LogError(ex);
-
-                    var tcs = new TaskCompletionSource<bool>();
-
-                    InstallPage.ResumeButton.Click += (sender, e) =>
-                    {
-                        tcs.TrySetResult(true);
-                        InstallPage.Info.Severity = InfoBarSeverity.Informational;
-                        InstallPage.Progress.ClearValue(ProgressBar.ForegroundProperty);
-                        Helpers.Taskbar.TaskbarHelper.SetProgressState(WindowHandle, Helpers.Taskbar.TaskbarStates.Normal);
-                        InstallPage.ProgressRingControl.Foreground = null;
-                        InstallPage.ProgressRingControl.Visibility = Visibility.Visible;
-                        InstallPage.ResumeButton.Visibility = Visibility.Collapsed;
-                    };
-
-                    await tcs.Task;
-                }
-            }
-
-            InstallPage.Progress.Value += incrementPerTitle;
-            Helpers.Taskbar.TaskbarHelper.SetProgressValue(WindowHandle, InstallPage.Progress.Value, 100);
-        }
-        if (filteredActions.Count == 0)
-        {
-            InstallPage.Progress.Value += stagePercentage;
-            Helpers.Taskbar.TaskbarHelper.SetProgressValue(WindowHandle, InstallPage.Progress.Value, 100);
-        }
+        return actions;
     }
 }

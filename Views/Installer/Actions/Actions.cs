@@ -52,28 +52,25 @@ public static class ProcessActions
 
         await Task.Delay(1000);
 
-        using (var httpClient = new HttpClient())
+        while (true)
         {
-            while (true)
+            try
             {
-                try
+                var response = await httpClient.GetAsync("http://www.google.com");
+                if (response.IsSuccessStatusCode)
                 {
-                    var response = await httpClient.GetAsync("http://www.google.com");
-                    if (response.IsSuccessStatusCode)
-                    {
-                        InstallPage.Info.Severity = InfoBarSeverity.Informational;
-                        InstallPage.Progress.ClearValue(ProgressBar.ForegroundProperty);
-                        Helpers.Taskbar.TaskbarHelper.SetProgressState(WindowHandle, Helpers.Taskbar.TaskbarStates.Normal);
-                        InstallPage.ProgressRingControl.Foreground = null;
-                        InstallPage.Info.Title = "Internet connection successfully established...";
-                        await Task.Delay(500);
-                        break;
-                    }
+                    InstallPage.Info.Severity = InfoBarSeverity.Informational;
+                    InstallPage.Progress.ClearValue(ProgressBar.ForegroundProperty);
+                    Helpers.Taskbar.TaskbarHelper.SetProgressState(WindowHandle, Helpers.Taskbar.TaskbarStates.Normal);
+                    InstallPage.ProgressRingControl.Foreground = null;
+                    InstallPage.Info.Title = "Internet connection successfully established...";
+                    await Task.Delay(500);
+                    break;
                 }
-                catch
-                {
+            }
+            catch
+            {
 
-                }
             }
         }
     }
@@ -194,10 +191,7 @@ public static class ProcessActions
 
     public static async Task<string> GetLatestObsStudioUrl()
     {
-        using var client = new HttpClient();
-        client.DefaultRequestHeaders.UserAgent.ParseAdd("AutoOS");
-
-        string json = await client.GetStringAsync("https://api.github.com/repos/obsproject/obs-studio/releases/latest");
+        string json = await httpClient.GetStringAsync("https://api.github.com/repos/obsproject/obs-studio/releases/latest");
         using var doc = JsonDocument.Parse(json);
 
         return doc.RootElement
@@ -216,7 +210,8 @@ public static class ProcessActions
         {
             foreach (var process in Process.GetProcessesByName(name))
             {
-                try { process.Kill(); await process.WaitForExitAsync(); } catch { }
+                process.Kill(); 
+                await process.WaitForExitAsync();
             }
         }
 
@@ -287,7 +282,7 @@ public static class ProcessActions
                     Directory.Delete(dir, true);
             }
         }
-        catch {   }
+        catch { }
     }
 
     public static async Task Log(bool bios = false)

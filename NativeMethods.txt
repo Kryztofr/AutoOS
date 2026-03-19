@@ -81,6 +81,7 @@ PowerReadValueIncrement
 PowerReadValueUnitsSpecifier
 PowerWriteFriendlyName
 PowerWriteDescription
+PowerRestoreDefaultPowerSchemes
 PowerDuplicateScheme
 PowerDeleteScheme
 GetPwrCapabilities

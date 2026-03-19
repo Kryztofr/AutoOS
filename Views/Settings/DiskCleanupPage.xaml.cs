@@ -89,6 +89,8 @@ public sealed partial class DiskCleanupPage : Page
     private async void RunDiskCleanup_Checked(object sender, RoutedEventArgs e)
     {
         // clean temp directories
+        await Task.WhenAll(Process.GetProcessesByName("TiWorker").Select(async process => { process.Kill(); await process.WaitForExitAsync(); }));
+
         RegistryHelper.RunAs(RegistryHelper.Identity.TrustedInstaller, () =>
         {
             ProcessActions.CleanDirectory(@"C:\Windows\Logs");

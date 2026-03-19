@@ -22,9 +22,14 @@
             <StackPanel Margin="{ThemeResource ContentPageMargin}"
                         Padding="{ThemeResource ContentPagePadding}"
                         dev:PanelAttach.ChildrenTransitions="Default">
-                <TextBlock x:Name="StatusText"
-                           Margin="0,100,0,12"
-                           Style="{StaticResource SubtitleTextBlockStyle}" />
+                <Grid Margin="0,100,0,12">
+                    <TextBlock x:Name="StatusText"
+                               Style="{StaticResource SubtitleTextBlockStyle}"
+                               HorizontalAlignment="Left" />
+                    <TextBlock x:Name="PercentageText"
+                               Style="{StaticResource SubtitleTextBlockStyle}"
+                               HorizontalAlignment="Right" />
+                </Grid>
                 <ProgressBar x:Name="ProgressBar" />
                 <InfoBar x:Name="InfoBar"
                          Margin="0,8,0,36"

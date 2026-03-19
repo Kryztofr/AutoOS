@@ -130,7 +130,7 @@ public static class PreparingStage
             var output = Process.Start(new ProcessStartInfo
             {
                 FileName = "powershell",
-                Arguments = "-Command \"(Get-PhysicalDisk -SerialNumber (Get-Disk -Number (Get-Partition -DriveLetter $env:SystemDrive.Substring(0, 1)).DiskNumber).SerialNumber.TrimStart()).MediaType\"",
+                Arguments = @"-Command ""(Get-PhysicalDisk -SerialNumber (Get-Disk -Number (Get-Partition -DriveLetter $env:SystemDrive.Substring(0, 1)).DiskNumber).SerialNumber.TrimStart()).MediaType""",
                 RedirectStandardOutput = true,
                 UseShellExecute = false,
                 CreateNoWindow = true
