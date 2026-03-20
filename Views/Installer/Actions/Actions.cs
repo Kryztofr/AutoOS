@@ -301,13 +301,13 @@ public static class ProcessActions
 
         string ram = $"{(RamHelper.GetRam() is var r ? $"{r.CapacityGB:N1} GB {r.DDRVersion} @ {r.MaxSpeedMHz} MHz" : "")}";
 
-        var gpuList = PreparingStage.GPUs.Count > 0 ? PreparingStage.GPUs : GpuHelper.GetGPUs();
-        string gpus = string.Join(", ", gpuList.Select(g => $"{g.DeviceName} (DeviceId: {g.DeviceId}, Install: {g.Install}, {g.CurrentVersion})"));
+        var currentGpus = GpuHelper.GetGPUs();
+        string gpus = string.Join(", ", currentGpus.Select(gpu => $"{gpu.DeviceName} (DeviceId: {gpu.DeviceId}, VendorId: {gpu.VendorId}, Install: {PreparingStage.GPUs.FirstOrDefault(x => x.PnPDeviceId == gpu.PnPDeviceId)?.Install ?? true}, {gpu.CurrentVersion})"));
 
         string monitors = string.Join(", ", MonitorHelper.GetMonitors().Select(m => $"{m.DeviceName} ({m.Resolution.Width}x{m.Resolution.Height} @ {m.RefreshRate} Hz)"));
 
         var nicsList = DeviceHelper.GetDevices(DeviceType.NIC);
-        string nics = nicsList.Count > 0 ? string.Join("\n", nicsList.Select(n => $"{n.FriendlyName} (DeviceId: {n.DeviceId}, VendorId: {n.VendorId}, Current Version: {n.DriverType} {n.CurrentVersion}, Connected: {n.IsActive})")) : "N/A";
+        string nics = nicsList.Count > 0 ? string.Join("\n", nicsList.Select(n => $"{n.FriendlyName} (DeviceId: {n.DeviceId}, Current Version: {n.DriverType} {n.CurrentVersion}, Connected: {n.IsActive})")) : "N/A";
 
         using var key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion");
         string build = key.GetValue("CurrentBuild")?.ToString() ?? "";
@@ -380,8 +380,8 @@ public static class ProcessActions
 
         string ram = $"{(RamHelper.GetRam() is var r ? $"{r.CapacityGB:N1} GB {r.DDRVersion} @ {r.MaxSpeedMHz} MHz" : "")}";
 
-        var gpuList = PreparingStage.GPUs.Count > 0 ? PreparingStage.GPUs : GpuHelper.GetGPUs();
-        string gpus = string.Join(", ", gpuList.Select(g => $"{g.DeviceName} (DeviceId: {g.DeviceId}, Install: {g.Install}, {g.CurrentVersion})"));
+        var currentGpus = GpuHelper.GetGPUs();
+        string gpus = string.Join(", ", currentGpus.Select(gpu => $"{gpu.DeviceName} (DeviceId: {gpu.DeviceId}, Install: {PreparingStage.GPUs.FirstOrDefault(x => x.PnPDeviceId == gpu.PnPDeviceId)?.Install ?? true}, {gpu.CurrentVersion})"));
 
         string monitors = string.Join(", ", MonitorHelper.GetMonitors().Select(m => $"{m.DeviceName} ({m.Resolution.Width}x{m.Resolution.Height} @ {m.RefreshRate} Hz)"));
 

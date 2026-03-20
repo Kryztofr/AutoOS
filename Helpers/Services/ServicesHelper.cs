@@ -78,11 +78,18 @@ public static class ServicesHelper
         if (scmHandle.IsInvalid) throw new Win32Exception(Marshal.GetLastWin32Error(), "OpenSCManager failed");
 
         using var serviceHandle = PInvoke.OpenService(scmHandle, serviceName, (uint)PInvoke.SERVICE_START);
-        if (serviceHandle.IsInvalid) throw new Win32Exception(Marshal.GetLastWin32Error(), "OpenService failed");
+        if (serviceHandle.IsInvalid)
+        {
+            int error = Marshal.GetLastWin32Error();
+            if (error == 1060) return;
+            throw new Win32Exception(error, "OpenService failed");
+        }
 
         if (!PInvoke.StartService(serviceHandle, null))
         {
-            throw new Win32Exception(Marshal.GetLastWin32Error(), "StartService failed");
+            int error = Marshal.GetLastWin32Error();
+            if (error == 1056) return;
+            throw new Win32Exception(error, "StartService failed");
         }
     }
 
@@ -92,7 +99,12 @@ public static class ServicesHelper
         if (scmHandle.IsInvalid) throw new Win32Exception(Marshal.GetLastWin32Error(), "OpenSCManager failed");
 
         using var serviceHandle = PInvoke.OpenService(scmHandle, serviceName, (uint)PInvoke.SERVICE_STOP);
-        if (serviceHandle.IsInvalid) throw new Win32Exception(Marshal.GetLastWin32Error(), "OpenService failed");
+        if (serviceHandle.IsInvalid)
+        {
+            int error = Marshal.GetLastWin32Error();
+            if (error == 1060) return;
+            throw new Win32Exception(error, "OpenService failed");
+        }
 
         if (!PInvoke.ControlService(serviceHandle, (uint)PInvoke.SERVICE_CONTROL_STOP, out SERVICE_STATUS status))
         {
@@ -108,7 +120,12 @@ public static class ServicesHelper
         if (scmHandle.IsInvalid) throw new Win32Exception(Marshal.GetLastWin32Error(), "OpenSCManager failed");
 
         using var serviceHandle = PInvoke.OpenService(scmHandle, serviceName, (uint)PInvoke.SERVICE_ALL_ACCESS);
-        if (serviceHandle.IsInvalid) throw new Win32Exception(Marshal.GetLastWin32Error(), "OpenService failed");
+        if (serviceHandle.IsInvalid)
+        {
+            int error = Marshal.GetLastWin32Error();
+            if (error == 1060) return;
+            throw new Win32Exception(error, "OpenService failed");
+        }
 
         var actions = stackalloc SC_ACTION[3];
         actions[0] = new SC_ACTION { Type = SC_ACTION_TYPE.SC_ACTION_NONE, Delay = 0 };
