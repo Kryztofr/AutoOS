@@ -12,7 +12,7 @@ public static class ServicesHelper
 {
     public unsafe static void KillServiceProcess(string baseServiceName)
     {
-        using var scmHandle = PInvoke.OpenSCManager(null, null, PInvoke.SERVICE_QUERY_CONFIG);
+        using var scmHandle = PInvoke.OpenSCManager(null, null, (uint)PInvoke.SC_MANAGER_ENUMERATE_SERVICE);
         if (scmHandle.IsInvalid) return;
 
         SC_HANDLE rawScmHandle = (SC_HANDLE)scmHandle.DangerousGetHandle();

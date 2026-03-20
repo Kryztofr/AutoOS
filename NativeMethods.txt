@@ -23,18 +23,13 @@ SetupDiEnumDeviceInfo
 SetupDiDestroyDeviceInfoList
 SetupDiGetDeviceRegistryProperty
 SetupDiGetDeviceInstanceId
-SetupDiOpenDevRegKey
 SetupDiSetClassInstallParams
 SetupDiCreateDeviceInfoList
 SetupDiCallClassInstaller
-SetupDiGetDeviceInstallParams
 SetupDiGetDeviceProperty
 SetupDiOpenDeviceInfo
 SP_PROPCHANGE_PARAMS
 SP_CLASSINSTALL_HEADER
-SP_DEVINSTALL_PARAMS_W
-SETUP_DI_DEVICE_INSTALL_FLAGS
-DIREG_DEV
 DEVPKEY_Device_DriverVersion
 DEVPKEY_PciDevice_InterruptMessageMaximum
 CM_Enable_DevNode
@@ -59,9 +54,6 @@ EnumDisplaySettings
 ChangeDisplaySettingsEx
 DISPLAY_DEVICE_STATE_FLAGS
 CDS_TYPE
-keybd_event
-KEYBD_EVENT_FLAGS
-VIRTUAL_KEY
 
 PowerEnumerate
 PowerReadFriendlyName
@@ -101,7 +93,6 @@ PROCESS_BASIC_INFORMATION
 LocalFree
 
 OpenSCManager
-SERVICE_QUERY_CONFIG
 EnumServicesStatusEx
 ENUM_SERVICE_STATUS_PROCESSW
 SC_ENUM_TYPE
@@ -114,14 +105,13 @@ ControlService
 SERVICE_STATUS
 SERVICE_CONTROL_STOP
 ChangeServiceConfig2W
-QueryServiceStatus
-SERVICE_QUERY_STATUS
 SERVICE_START
 SERVICE_STOP
 SERVICE_CHANGE_CONFIG
 SERVICE_FAILURE_ACTIONSW
 SERVICE_FAILURE_ACTIONS_FLAG
 SC_ACTION
+SC_ACTION_TYPE
 SC_MANAGER_CONNECT
 SC_MANAGER_ENUMERATE_SERVICE
 SC_MANAGER_CREATE_SERVICE
@@ -142,8 +132,6 @@ DuplicateTokenEx
 LookupPrivilegeValue
 AdjustTokenPrivileges
 CloseHandle
-WTSGetActiveConsoleSessionId
-WTSQueryUserToken
 TOKEN_PRIVILEGES
 TOKEN_ACCESS_MASK
 TOKEN_TYPE
@@ -152,12 +140,8 @@ GetTokenInformation
 TOKEN_INFORMATION_CLASS
 TOKEN_PRIVILEGES_ATTRIBUTES
 HANDLE
-CreateProcessAsUser
 STARTUPINFOW
 PROCESS_INFORMATION
 PROCESS_CREATION_FLAGS
 WaitForSingleObject
-GetExitCodeProcess
 CreateProcessWithTokenW
-CloseHandle
-WaitForSingleObject
