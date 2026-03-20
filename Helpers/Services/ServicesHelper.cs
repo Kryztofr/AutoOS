@@ -107,16 +107,21 @@ public static class ServicesHelper
         using var scmHandle = PInvoke.OpenSCManager(null, null, (uint)PInvoke.SC_MANAGER_CONNECT);
         if (scmHandle.IsInvalid) throw new Win32Exception(Marshal.GetLastWin32Error(), "OpenSCManager failed");
 
-        using var serviceHandle = PInvoke.OpenService(scmHandle, serviceName, (uint)(PInvoke.SERVICE_QUERY_CONFIG | PInvoke.SERVICE_CHANGE_CONFIG));
+        using var serviceHandle = PInvoke.OpenService(scmHandle, serviceName, (uint)PInvoke.SERVICE_ALL_ACCESS);
         if (serviceHandle.IsInvalid) throw new Win32Exception(Marshal.GetLastWin32Error(), "OpenService failed");
+
+        var actions = stackalloc SC_ACTION[3];
+        actions[0] = new SC_ACTION { Type = SC_ACTION_TYPE.SC_ACTION_NONE, Delay = 0 };
+        actions[1] = new SC_ACTION { Type = SC_ACTION_TYPE.SC_ACTION_NONE, Delay = 0 };
+        actions[2] = new SC_ACTION { Type = SC_ACTION_TYPE.SC_ACTION_NONE, Delay = 0 };
 
         var failureActions = new SERVICE_FAILURE_ACTIONSW
         {
             dwResetPeriod = 0,
-            lpRebootMsg = null,
-            lpCommand = null,
-            cActions = 0,
-            lpsaActions = null
+            lpRebootMsg = default,
+            lpCommand = default,
+            cActions = 3,
+            lpsaActions = actions
         };
 
         if (!PInvoke.ChangeServiceConfig2W(serviceHandle, SERVICE_CONFIG.SERVICE_CONFIG_FAILURE_ACTIONS, &failureActions))

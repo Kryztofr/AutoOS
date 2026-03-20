@@ -131,7 +131,11 @@ public sealed partial class InstallPage : Page
                     }
                     catch (Exception ex)
                     {
-                        await ProcessActions.LogError(ex);
+                        try
+                        {
+                            await ProcessActions.LogError(ex);
+                        }
+                        catch {   }
 
                         Info.Title = $"{previousTitle}: {ex.Message}";
                         Info.Severity = InfoBarSeverity.Error;
