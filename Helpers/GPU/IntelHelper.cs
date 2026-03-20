@@ -80,7 +80,42 @@ namespace AutoOS.Helpers.GPU
             return (newestVersion, newestDownloadUrl);
         }
 
-        public static List<(string Title, Func<Task> Action, Func<bool> Condition)> DriverActions(GpuInfo gpu, string newestDownloadUrl, ProgressButton progressButton = null)
+        public static List<(string Title, Func<Task> Action, Func<bool> Condition)> InstallActions(GpuInfo gpu, string newestDownloadUrl, ProgressButton progressButton = null)
+        {
+            string codename = gpu.Codename;
+            static string Normalize(string s) => s.Replace(" ", "").Replace("-", "").ToLowerInvariant();
+
+            string[] intel6th = ["Skylake", "Apollo Lake"];
+
+            bool Intel_6th = false;
+
+            if (intel6th.Any(c => Normalize(codename).Contains(Normalize(c))))
+                Intel_6th = true;
+
+            var actions = new List<(string Title, Func<Task> Action, Func<bool> Condition)>
+            {
+                // download intel driver
+                (@"Downloading INTEL driver", async () => await ProcessActions.RunDownload(newestDownloadUrl, Path.GetTempPath(), "driver.zip"), () => Intel_6th == true),
+
+                 // extract intel driver
+                (@"Extracting INTEL driver", async () => await ProcessActions.RunExtract(Path.Combine(Path.GetTempPath(), "driver.zip"), Path.Combine(Path.GetTempPath(), "driver")), () => Intel_6th == true),
+
+                // download intel driver
+                (@"Downloading INTEL driver", async () => await ProcessActions.RunDownload(newestDownloadUrl, Path.GetTempPath(), "driver.exe"), () => Intel_6th == false),
+
+                // extract intel driver
+                (@"Extracting INTEL driver", async () => await ProcessActions.RunExtract(Path.Combine(Path.GetTempPath(), "driver.exe"), Path.Combine(Path.GetTempPath(), "driver")), () => Intel_6th == false),
+
+                // update/install intel driver
+                (gpu.IsInstalled ?  "Updating INTEL driver" : "Installing INTEL driver", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "driver", "Installer.exe"), Arguments = "/silent", UseShellExecute = false, CreateNoWindow = true })!.WaitForExitAsync(), null),
+                (gpu.IsInstalled ?  "Updating INTEL driver" : "Installing INTEL driver", async () => await Task.Delay(3000), null),
+                (gpu.IsInstalled ? "Updating INTEL driver" : "Installing INTEL driver", async () => GpuHelper.RefreshGpu(gpu), null)
+            };
+
+            return actions;
+        }
+
+        public static List<(string Title, Func<Task> Action, Func<bool> Condition)> TweakActions(GpuInfo gpu)
         {
             string codename = gpu.Codename;
             static string Normalize(string s) => s.Replace(" ", "").Replace("-", "").ToLowerInvariant();
@@ -88,7 +123,7 @@ namespace AutoOS.Helpers.GPU
             string[] intel6th = ["Skylake", "Apollo Lake"];
             string[] intel7to10 = ["Kaby Lake", "Coffee Lake", "Whiskey Lake", "Comet Lake", "Ice Lake", "Lakefield", "Elkhart Lake"];
             string[] intel11to14 = ["Tiger Lake", "Alder Lake", "Raptor Lake", "DG1"];
-            string[] intelArc = ["Arc", "Battlemage", "Meteor Lake", "Lunar Lake", "Arrow Lake", "Panther Lake"];
+            //string[] intelArc = ["Arc", "Battlemage", "Meteor Lake", "Lunar Lake", "Arrow Lake", "Panther Lake"];
 
             bool Intel_6th = false;
             bool Intel_7th_10th = false;
@@ -106,23 +141,6 @@ namespace AutoOS.Helpers.GPU
 
             var actions = new List<(string Title, Func<Task> Action, Func<bool> Condition)>
             {
-                // download intel driver
-                (@"Downloading INTEL driver", async () => await ProcessActions.RunDownload(newestDownloadUrl, Path.GetTempPath(), "driver.zip"), () => Intel_6th == true),
-
-                 // extract intel driver
-                (@"Extracting INTEL driver", async () => await ProcessActions.RunExtract(Path.Combine(Path.GetTempPath(), "driver.zip"), Path.Combine(Path.GetTempPath(), "driver")), () => Intel_6th == true),
-
-                // download intel driver
-                (@"Downloading INTEL driver", async () => await ProcessActions.RunDownload(newestDownloadUrl, Path.GetTempPath(), "driver.exe"), null),
-
-                // extract intel driver
-                (@"Extracting INTEL driver", async () => await ProcessActions.RunExtract(Path.Combine(Path.GetTempPath(), "driver.exe"), Path.Combine(Path.GetTempPath(), "driver")), null),
-
-                // update/install intel driver
-                (gpu.IsInstalled ?  "Updating INTEL driver" : "Installing INTEL driver", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "driver", "Installer.exe"), Arguments = "/silent", UseShellExecute = false, CreateNoWindow = true })!.WaitForExitAsync(), null),
-                (gpu.IsInstalled ?  "Updating INTEL driver" : "Installing INTEL driver", async () => await Task.Delay(3000), null),
-                (gpu.IsInstalled ? "Updating INTEL driver" : "Installing INTEL driver", async () => GpuHelper.RefreshGpu(gpu), null),
-
                 // download intel® graphics command center (beta)
                 ("Downloading Intel® Graphics Command Center (Beta)", async () => await StoreHelper.Download("AppUp.IntelGraphicsCommandCenterBeta_8wekyb3d8bbwe"), () => Intel_6th == true || Intel_7th_10th == true || Intel_11th_14th == true || Intel_11th_14th == true),
 

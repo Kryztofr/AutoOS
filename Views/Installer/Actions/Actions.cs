@@ -302,7 +302,7 @@ public static class ProcessActions
         string ram = $"{(RamHelper.GetRam() is var r ? $"{r.CapacityGB:N1} GB {r.DDRVersion} @ {r.MaxSpeedMHz} MHz" : "")}";
 
         var currentGpus = GpuHelper.GetGPUs();
-        string gpus = string.Join(", ", currentGpus.Select(gpu => $"{gpu.DeviceName} (DeviceId: {gpu.DeviceId}, VendorId: {gpu.VendorId}, Install: {PreparingStage.GPUs.FirstOrDefault(x => x.PnPDeviceId == gpu.PnPDeviceId)?.Install ?? true}, {gpu.CurrentVersion})"));
+        string gpus = string.Join(", ", currentGpus.Select(gpu => $"{gpu.DeviceName} (DeviceId: {gpu.DeviceId}, Install: {PreparingStage.GPUs.FirstOrDefault(x => x.PnPDeviceId == gpu.PnPDeviceId)?.Install ?? true}, {gpu.CurrentVersion})"));
 
         string monitors = string.Join(", ", MonitorHelper.GetMonitors().Select(m => $"{m.DeviceName} ({m.Resolution.Width}x{m.Resolution.Height} @ {m.RefreshRate} Hz)"));
 

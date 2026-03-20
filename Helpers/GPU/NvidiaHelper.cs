@@ -141,7 +141,7 @@ namespace AutoOS.Helpers.GPU
             }
         }
 
-        public static List<(string Title, Func<Task> Action, Func<bool> Condition)> DriverActions(GpuInfo gpu, string newestDownloadUrl, ProgressButton progressButton = null)
+        public static List<(string Title, Func<Task> Action, Func<bool> Condition)> InstallActions(GpuInfo gpu, string newestDownloadUrl, ProgressButton progressButton = null)
         {
             var actions = new List<(string Title, Func<Task> Action, Func<bool> Condition)>
             {
@@ -157,8 +157,16 @@ namespace AutoOS.Helpers.GPU
                 // update/install nvidia driver
                 (gpu.IsInstalled ? "Updating NVIDIA driver" : "Installing NVIDIA driver", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "driver", "setup.exe"), Arguments = $"/s{(gpu.IsInstalled ? " /clean" : "")}", CreateNoWindow = true })!.WaitForExitAsync(), null),
                 (gpu.IsInstalled ? "Updating NVIDIA driver" : "Installing NVIDIA driver", async () => await Task.Delay(3000), null),
-                (gpu.IsInstalled ? "Updating NVIDIA driver" : "Installing NVIDIA driver", async () => GpuHelper.RefreshGpu(gpu), null),
+                (gpu.IsInstalled ? "Updating NVIDIA driver" : "Installing NVIDIA driver", async () => GpuHelper.RefreshGpu(gpu), null)
+            };
 
+            return actions;
+        }
+
+        public static List<(string Title, Func<Task> Action, Func<bool> Condition)> TweakActions(GpuInfo gpu)
+        {
+            var actions = new List<(string Title, Func<Task> Action, Func<bool> Condition)>
+            {
                 // disable nvidia tray icon
                 (@"Disabling ""Show Notification Tray Icon""", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\NVIDIA Corporation\NvTray", "StartOnLogin", 0, RegistryValueKind.DWord), null),
                 (@"Disabling ""Show Notification Tray Icon""", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\nvlddmkm\Global\NVTweak", "HideXGpuTrayIcon", 1, RegistryValueKind.DWord), null),

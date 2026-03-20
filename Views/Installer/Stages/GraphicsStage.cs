@@ -13,7 +13,6 @@ public static class GraphicsStage
     private static readonly ApplicationDataContainer localSettings = ApplicationData.Current.LocalSettings;
     public static async Task<List<(string Title, Func<Task> Action, Func<bool> Condition)>> GetActions()
     {
-        int PCores = PreparingStage.PCores;
         var GPUs = PreparingStage.GPUs;
         bool MSI = PreparingStage.MSI;
         bool CRU = PreparingStage.CRU;
@@ -87,53 +86,51 @@ public static class GraphicsStage
         var gpus = PreparingStage.GPUs.Where(g => g.Install).ToList();
 
         var latestDrivers = new Dictionary<string, (string Version, string Url)>();
-        var intelActions = new List<(string Title, Func<Task> Action, Func<bool> Condition)>();
-        var amdActions = new List<(string Title, Func<Task> Action, Func<bool> Condition)>();
-        var nvidiaActions = new List<(string Title, Func<Task> Action, Func<bool> Condition)>();
+        var driverInstallActions = new List<(string Title, Func<Task> Action, Func<bool> Condition)>();
+        var driverTweakActions = new List<(string Title, Func<Task> Action, Func<bool> Condition)>();
 
         foreach (var gpu in gpus)
         {
-            string newestVersion = "";
-            string newestDownloadUrl = "";
-
-            switch (gpu.VendorId)
+            (string newestVersion, string newestDownloadUrl) = gpu.VendorId switch
             {
-                case "10de":
-                    (newestVersion, newestDownloadUrl) = await NvidiaHelper.CheckUpdate(gpu);
-                    break;
-                case "1002":
-                    (newestVersion, newestDownloadUrl) = await AmdHelper.CheckUpdate(gpu);
-                    break;
-                case "8086":
-                    (newestVersion, newestDownloadUrl) = await IntelHelper.CheckUpdate(gpu);
-                    break;
+                "10de" => await NvidiaHelper.CheckUpdate(gpu),
+                "1002" => await AmdHelper.CheckUpdate(gpu),
+                "8086" => await IntelHelper.CheckUpdate(gpu),
+                _ => ("", "")
+            };
+
+            if (!latestDrivers.TryGetValue(gpu.VendorId, out var driver) || driver.Version != newestVersion)
+            {
+                latestDrivers[gpu.VendorId] = (newestVersion, newestDownloadUrl);
+
+                switch (gpu.VendorId)
+                {
+                    case "10de":
+                        driverInstallActions.AddRange(NvidiaHelper.InstallActions(gpu, newestDownloadUrl));
+                        break;
+                    case "1002":
+                        driverInstallActions.AddRange(AmdHelper.InstallActions(gpu, newestDownloadUrl));
+                        break;
+                    case "8086":
+                        driverInstallActions.AddRange(IntelHelper.InstallActions(gpu, newestDownloadUrl));
+                        break;
+                }
             }
 
-            if (latestDrivers.TryGetValue(gpu.VendorId, out var driver) && driver.Version == newestVersion)
-                continue;
-
-            latestDrivers[gpu.VendorId] = (newestVersion, newestDownloadUrl);
-
             switch (gpu.VendorId)
             {
-                case "8086":
-                    intelActions = IntelHelper.DriverActions(gpu, newestDownloadUrl);
-                    break;
-
-                case "1002":
-                    amdActions = AmdHelper.DriverActions(gpu, newestDownloadUrl);
-                    break;
-
                 case "10de":
-                    nvidiaActions = NvidiaHelper.DriverActions(gpu, newestDownloadUrl);
+                    driverTweakActions.AddRange(NvidiaHelper.TweakActions(gpu));
+                    break;
+                case "1002":
+                    driverTweakActions.AddRange(AmdHelper.TweakActions(gpu));
+                    break;
+                case "8086":
+                    driverTweakActions.AddRange(IntelHelper.TweakActions(gpu));
                     break;
             }
         }
 
-        actions.InsertRange(0, nvidiaActions);
-        actions.InsertRange(0, amdActions);
-        actions.InsertRange(0, intelActions);
-
-        return actions;
+        return [.. driverInstallActions, .. actions.Take(2), .. actions.Skip(2).Take(8), .. driverTweakActions, .. actions.Skip(10)];
     }
 }

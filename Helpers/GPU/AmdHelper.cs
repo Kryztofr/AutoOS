@@ -67,7 +67,7 @@ public static class AmdHelper
         return (newestVersion, newestDownloadUrl);
     }
 
-    public static List<(string Title, Func<Task> Action, Func<bool> Condition)> DriverActions(GpuInfo gpu, string newestDownloadUrl, ProgressButton progressButton = null)
+    public static List<(string Title, Func<Task> Action, Func<bool> Condition)> InstallActions(GpuInfo gpu, string newestDownloadUrl, ProgressButton progressButton = null)
     {
         var actions = new List<(string Title, Func<Task> Action, Func<bool> Condition)>
         {
@@ -83,8 +83,16 @@ public static class AmdHelper
             // install amd driver
             (gpu.IsInstalled ? "Updating AMD driver" : "Installing AMD driver", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "driver", "Setup.exe"), Arguments = "-install", UseShellExecute = false, CreateNoWindow = true })!.WaitForExitAsync(), null),
             (gpu.IsInstalled ? "Updating AMD driver" : "Installing AMD driver", async () => await Task.Delay(3000), null),
-            (gpu.IsInstalled ? "Updating AMD driver" : "Installing AMD driver", async () => GpuHelper.RefreshGpu(gpu), null),
+            (gpu.IsInstalled ? "Updating AMD driver" : "Installing AMD driver", async () => GpuHelper.RefreshGpu(gpu), null)
+        };
 
+        return actions;
+    }
+
+    public static List<(string Title, Func<Task> Action, Func<bool> Condition)> TweakActions(GpuInfo gpu)
+    {
+        var actions = new List<(string Title, Func<Task> Action, Func<bool> Condition)>
+        {
             // accept eula
             ("Accepting EULA", async () => RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_CURRENT_USER\Software\AMD\CN\DisplayOverride", "EulaAccepted", "true", RegistryValueKind.String), null),
 

@@ -270,18 +270,8 @@ Without your guide this project wouldn't exist. It inspired me to attempt to aut
 
 ---
 
-**Revi Team:**  
-Thank you for [SVCGROUP.ps1](https://github.com/meetrevision/playbook/blob/main/src/Executables/SVCGROUP.ps1) and for first introducing me to custom ISOs.
-
----
-
 **Imribiy:**  
 Thank you for your research on [Configuring services and features](https://github.com/imribiy/XOS/tree/main/configure-services-and-features) and [AMD GPU Tweaks](https://github.com/imribiy/amd-gpu-tweaks).  
-
----
-
-**djdallmann:**  
-Thank you for your research on [Network Performance](https://github.com/djdallmann/GamingPCSetup/blob/master/CONTENT/RESEARCH/NETWORK/README.md).
 
 ---
 

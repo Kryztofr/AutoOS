@@ -101,20 +101,17 @@ public sealed partial class GraphicsPage : Page
                     {
                         case "10de":
                             (newestVersion, newestDownloadUrl) = await NvidiaHelper.CheckUpdate(gpu);
-                            var nvidiaActions = new List<(string Title, Func<Task> Action, Func<bool> Condition)>();
-                            nvidiaActions = NvidiaHelper.DriverActions(gpu, newestDownloadUrl, progressButton);
+                            var nvidiaActions = NvidiaHelper.InstallActions(gpu, newestDownloadUrl, progressButton).Concat(NvidiaHelper.TweakActions(gpu)).ToList();
                             await RunActions(progressButton, nvidiaActions);
                             break;
                         case "1002":
                             (newestVersion, newestDownloadUrl) = await AmdHelper.CheckUpdate(gpu);
-                            var amdActions = new List<(string Title, Func<Task> Action, Func<bool> Condition)>();
-                            amdActions = AmdHelper.DriverActions(gpu, newestDownloadUrl, progressButton);
+                            var amdActions = AmdHelper.InstallActions(gpu, newestDownloadUrl, progressButton).Concat(AmdHelper.TweakActions(gpu)).ToList();
                             await RunActions(progressButton, amdActions);
                             break;
                         case "8086":
                             (newestVersion, newestDownloadUrl) = await IntelHelper.CheckUpdate(gpu);
-                            var intelActions = new List<(string Title, Func<Task> Action, Func<bool> Condition)>();
-                            intelActions = IntelHelper.DriverActions(gpu, newestDownloadUrl, progressButton);
+                            var intelActions = IntelHelper.InstallActions(gpu, newestDownloadUrl, progressButton).Concat(IntelHelper.TweakActions(gpu)).ToList();
                             await RunActions(progressButton, intelActions);
                             break;
                     }
@@ -172,20 +169,17 @@ public sealed partial class GraphicsPage : Page
                     {
                         case "10de":
                             (newestVersion, newestDownloadUrl) = await NvidiaHelper.CheckUpdate(gpu);
-                            var nvidiaActions = new List<(string Title, Func<Task> Action, Func<bool> Condition)>();
-                            nvidiaActions = NvidiaHelper.DriverActions(gpu, newestDownloadUrl, progressButton);
+                            var nvidiaActions = NvidiaHelper.InstallActions(gpu, newestDownloadUrl, progressButton).Concat(NvidiaHelper.TweakActions(gpu)).ToList();
                             await RunActions(progressButton, nvidiaActions);
                             break;
                         case "1002":
                             (newestVersion, newestDownloadUrl) = await AmdHelper.CheckUpdate(gpu);
-                            var amdActions = new List<(string Title, Func<Task> Action, Func<bool> Condition)>();
-                            amdActions = AmdHelper.DriverActions(gpu, newestDownloadUrl, progressButton);
+                            var amdActions = AmdHelper.InstallActions(gpu, newestDownloadUrl, progressButton).Concat(AmdHelper.TweakActions(gpu)).ToList();
                             await RunActions(progressButton, amdActions);
                             break;
                         case "8086":
                             (newestVersion, newestDownloadUrl) = await IntelHelper.CheckUpdate(gpu);
-                            var intelActions = new List<(string Title, Func<Task> Action, Func<bool> Condition)>();
-                            intelActions = IntelHelper.DriverActions(gpu, newestDownloadUrl, progressButton);
+                            var intelActions = IntelHelper.InstallActions(gpu, newestDownloadUrl, progressButton).Concat(IntelHelper.TweakActions(gpu)).ToList();
                             await RunActions(progressButton, intelActions);
                             break;
                     }
