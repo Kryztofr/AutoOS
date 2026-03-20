@@ -167,6 +167,9 @@ public static class ApplicationStage
             ("Please log in to your 1Password account", async () => { var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "1Password", "settings", "settings.json"); Directory.CreateDirectory(Path.GetDirectoryName(path) !); await File.WriteAllTextAsync(path, "{ \"version\": 1, \"updates.updateChannel\": \"PRODUCTION\", \"authTags\": {}, \"app.keepInTray\": false }"); }, () => OnePassword == true),
             ("Please log in to your 1Password account", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(@"C:\Program Files\WindowsApps\DC5C6510.2032887045529_" + onePasswordVersion + "_x64__2v019pwa6amcg", "1Password.exe"), WindowStyle = ProcessWindowStyle.Maximized })!.WaitForExitAsync(), () => OnePassword == true),
 
+            // disable 1password startup entry
+            ("Disabling 1Password startup entry", async () => RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_CURRENT_USER\Software\Classes\Local Settings\Software\Microsoft\Windows\CurrentVersion\AppModel\SystemAppData\DC5C6510.2032887045529_2v019pwa6amcg\1PasswordStartup", "State", 1, RegistryValueKind.DWord), () => OnePassword == true),
+
             // download nanazip
             ("Downloading NanaZip", async () => await StoreHelper.Download("40174MouriNaruto.NanaZip_8672y6p4v2rg0"), null),
 
@@ -216,8 +219,8 @@ public static class ApplicationStage
             ("Installing Windhawk", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Windhawk\Engine\Mods\auto-theme-switcher\Settings", "CustomLight", LightTime, RegistryValueKind.String), null),
             ("Installing Windhawk", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Windhawk\Engine\Mods\auto-theme-switcher\Settings", "CustomDark", DarkTime, RegistryValueKind.String), null),
             ("Installing Windhawk", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Windhawk\Engine\Mods\taskbar-notification-icons-show-all", "Disabled", 1, RegistryValueKind.DWord), () => AlwaysShowTrayIcons == false),
-            ("Installing Windhawk", async () => ServicesHelper.CreateService("Windhawk", @"""C:\Program Files\Windhawk\windhawk.exe"" -service"), null),
             ("Installing Windhawk", async () => await ProcessActions.RunPowerShell(@"$s=New-Object -ComObject WScript.Shell;$sc=$s.CreateShortcut([IO.Path]::Combine($env:APPDATA,'Microsoft\Windows\Start Menu\Programs\Windhawk.lnk'));$sc.TargetPath='C:\Program Files\Windhawk\windhawk.exe';$sc.Save()"), null),
+            ("Installing Windhawk", async () => ServicesHelper.CreateService("Windhawk", @"""C:\Program Files\Windhawk\windhawk.exe"" -service"), null),
             ("Installing Windhawk", async () => ServicesHelper.StartService("Windhawk"), null),
             
             // download startallback
@@ -706,7 +709,6 @@ public static class ApplicationStage
             
             // extract rockstar games launcher
             ("Extracting Rockstar Games Launcher", async () => rockstarGamesLauncherVersion = FileVersionInfo.GetVersionInfo(Path.Combine(ApplicationData.Current.TemporaryFolder.Path, "Rockstar-Games-Launcher.exe")).ProductVersion, () => RockstarGamesLauncher == true),
-            // extract rockstar games launcher
             ("Extracting Rockstar Games Launcher", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Applications", "7-Zip", "7z.exe"), Arguments = @$"x ""{Path.Combine(ApplicationData.Current.TemporaryFolder.Path, "Rockstar-Games-Launcher.exe")}"" -t# -aoa -bd -bb1 -o""{Path.Combine(ApplicationData.Current.TemporaryFolder.Path, "Rockstar-Games-Launcher")}"" -y"  , CreateNoWindow = true })!.WaitForExitAsync(), () => RockstarGamesLauncher == true),
             ("Extracting Rockstar Games Launcher", async () => await (await ApplicationData.Current.TemporaryFolder.GetFileAsync("Rockstar-Games-Launcher.exe")).DeleteAsync(), () => RockstarGamesLauncher == true),
             ("Extracting Rockstar Games Launcher", async () => { Directory.CreateDirectory(@"C:\Program Files\Rockstar Games\Launcher"); Directory.CreateDirectory(@"C:\Program Files\Rockstar Games\Launcher\Redistributables\VCRed"); Directory.CreateDirectory(@"C:\Program Files\Rockstar Games\Launcher\ThirdParty\Steam"); Directory.CreateDirectory(@"C:\Program Files\Rockstar Games\Launcher\ThirdParty\Epic"); }, () => RockstarGamesLauncher == true),

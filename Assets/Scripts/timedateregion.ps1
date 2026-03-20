@@ -642,3 +642,50 @@ net stop w32time
 Set-ItemProperty -Path "HKCU:\Keyboard Layout\Toggle" -Name "Hotkey" -Type String -Value "3"
 Set-ItemProperty -Path "HKCU:\Keyboard Layout\Toggle" -Name "Language Hotkey" -Type String -Value "3"
 Set-ItemProperty -Path "HKCU:\Keyboard Layout\Toggle" -Name "Layout Hotkey" -Type String -Value "3"
+
+# Loop to activate the new keyboard layout
+$code = @"
+using System;
+using System.Runtime.InteropServices;
+
+public static class Win32Input {
+    [DllImport("user32.dll")]
+    public static extern IntPtr GetForegroundWindow();
+
+    [DllImport("user32.dll", CharSet = CharSet.Auto)]
+    public static extern IntPtr LoadKeyboardLayout(string pwszKLID, uint Flags);
+
+    [DllImport("user32.dll")]
+    public static extern IntPtr ActivateKeyboardLayout(IntPtr hkl, uint Flags);
+
+    [DllImport("user32.dll")]
+    public static extern IntPtr PostMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
+
+    [DllImport("user32.dll")]
+    public static extern IntPtr GetKeyboardLayout(uint idThread);
+}
+"@
+
+Add-Type -TypeDefinition $code -ErrorAction SilentlyContinue
+
+$WM_INPUTLANGCHANGEREQUEST = 0x0050
+$hwndBroadcast = [IntPtr]0xffff
+
+while ($true) {
+    try {
+        $currentHKL = [Win32Input]::GetKeyboardLayout(0)
+        $targetHKL = [Win32Input]::LoadKeyboardLayout(($list[1].Split(':')[1]), 0x00000001)
+
+        if ($currentHKL -eq $targetHKL) {
+            break
+        }
+
+        [Win32Input]::ActivateKeyboardLayout($targetHKL, 0)
+        $foregroundHWnd = [Win32Input]::GetForegroundWindow()
+        [Win32Input]::PostMessage($hwndBroadcast, $WM_INPUTLANGCHANGEREQUEST, [IntPtr]0, $targetHKL)
+        [Win32Input]::PostMessage($foregroundHWnd, $WM_INPUTLANGCHANGEREQUEST, [IntPtr]0, $targetHKL)
+    }
+    catch { }
+
+    Start-Sleep -Milliseconds 100
+}

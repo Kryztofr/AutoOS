@@ -383,9 +383,9 @@ public static partial class StoreHelper
         }
 
         return [.. results
-        .OrderByDescending(r => r.Name.Contains(arch))
+        .OrderByDescending(r => Version.TryParse(r.Version, out var v) ? v : new Version(0, 0, 0, 0))
+        .ThenByDescending(r => r.Name.Contains(arch))
         .ThenByDescending(r => r.Name.Contains("neutral"))
-        .ThenByDescending(r => Version.TryParse(r.Version, out var v) ? v : new Version(0, 0, 0, 0))
         .ThenByDescending(r => r.LastModified)
         .Skip(index)
         .Take(1)];

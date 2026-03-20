@@ -1,7 +1,4 @@
 using Microsoft.Win32;
-using Windows.Storage;
-using Windows.Win32;
-using Windows.Win32.UI.Input.KeyboardAndMouse;
 using System.Diagnostics;
 using AutoOS.Helpers.Registry;
 
@@ -10,9 +7,6 @@ namespace AutoOS.Views.Installer
     public sealed partial class HomeLandingPage : Page
     {
         private static readonly HttpClient httpClient = new();
-
-        private readonly ApplicationDataContainer localSettings = ApplicationData.Current.LocalSettings;
-
         public HomeLandingPage()
         {
             InitializeComponent();
@@ -46,7 +40,7 @@ namespace AutoOS.Views.Installer
                 string ubrStr = key.GetValue("UBR")?.ToString() ?? "";
                 if (int.TryParse(buildStr, out int build) && int.TryParse(ubrStr, out int ubr))
                 {
-                    if (build != 26200 || (build == 26200 && ubr < 7899))
+                    if (build != 26200 || (build == 26200 && ubr < 7922))
                     {
                         var dialog = new ContentDialog
                         {
@@ -65,16 +59,6 @@ namespace AutoOS.Views.Installer
             // enable app access to location
             await RegistryHelper.RunAs(RegistryHelper.Identity.TrustedInstaller, new ProcessStartInfo { FileName = @"C:\Windows\system32\SystemSettingsAdminFlows.exe", Arguments = "SetCamSystemGlobal location 1", CreateNoWindow = true });
             RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy", "LetAppsAccessLocation", 1, RegistryValueKind.DWord);
-
-            // switch keyboard layout
-            if (!(localSettings.Values["HasChangedLayout"] as bool? == true))
-            {
-                PInvoke.keybd_event((byte)VIRTUAL_KEY.VK_LWIN, 0, KEYBD_EVENT_FLAGS.KEYEVENTF_EXTENDEDKEY, 0);
-                PInvoke.keybd_event((byte)VIRTUAL_KEY.VK_SPACE, 0, KEYBD_EVENT_FLAGS.KEYEVENTF_EXTENDEDKEY, 0);
-                PInvoke.keybd_event((byte)VIRTUAL_KEY.VK_SPACE, 0, KEYBD_EVENT_FLAGS.KEYEVENTF_KEYUP, 0);
-                PInvoke.keybd_event((byte)VIRTUAL_KEY.VK_LWIN, 0, KEYBD_EVENT_FLAGS.KEYEVENTF_KEYUP, 0);
-                localSettings.Values["HasChangedLayout"] = true;
-            }
 
             // download pci ids
             string pciPath = Path.Combine(PathHelper.GetAppDataFolderPath(), "pci.ids");

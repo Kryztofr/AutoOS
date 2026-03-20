@@ -3,6 +3,8 @@ using Microsoft.Win32;
 using System.Diagnostics;
 using Windows.Win32;
 using Windows.Win32.System.Services;
+using System.ComponentModel;
+using System.Runtime.InteropServices;
 
 namespace AutoOS.Helpers.Services;
 
@@ -72,33 +74,41 @@ public static class ServicesHelper
 
     public static void StartService(string serviceName)
     {
-        using var scmHandle = PInvoke.OpenSCManager(null, null, PInvoke.SC_MANAGER_CONNECT);
-        if (scmHandle.IsInvalid) return;
+        using var scmHandle = PInvoke.OpenSCManager(null, null, (uint)PInvoke.SC_MANAGER_CONNECT);
+        if (scmHandle.IsInvalid) throw new Win32Exception(Marshal.GetLastWin32Error(), "OpenSCManager failed");
 
-        using var serviceHandle = PInvoke.OpenService(scmHandle, serviceName, PInvoke.SERVICE_START);
-        if (serviceHandle.IsInvalid) return;
+        using var serviceHandle = PInvoke.OpenService(scmHandle, serviceName, (uint)PInvoke.SERVICE_START);
+        if (serviceHandle.IsInvalid) throw new Win32Exception(Marshal.GetLastWin32Error(), "OpenService failed");
 
-        PInvoke.StartService(serviceHandle, null);
+        if (!PInvoke.StartService(serviceHandle, null))
+        {
+            throw new Win32Exception(Marshal.GetLastWin32Error(), "StartService failed");
+        }
     }
 
     public static void StopService(string serviceName)
     {
-        using var scmHandle = PInvoke.OpenSCManager(null, null, PInvoke.SC_MANAGER_CONNECT);
-        if (scmHandle.IsInvalid) return;
+        using var scmHandle = PInvoke.OpenSCManager(null, null, (uint)PInvoke.SC_MANAGER_CONNECT);
+        if (scmHandle.IsInvalid) throw new Win32Exception(Marshal.GetLastWin32Error(), "OpenSCManager failed");
 
-        using var serviceHandle = PInvoke.OpenService(scmHandle, serviceName, PInvoke.SERVICE_STOP);
-        if (serviceHandle.IsInvalid) return;
+        using var serviceHandle = PInvoke.OpenService(scmHandle, serviceName, (uint)PInvoke.SERVICE_STOP);
+        if (serviceHandle.IsInvalid) throw new Win32Exception(Marshal.GetLastWin32Error(), "OpenService failed");
 
-        PInvoke.ControlService(serviceHandle, PInvoke.SERVICE_CONTROL_STOP, out SERVICE_STATUS status);
+        if (!PInvoke.ControlService(serviceHandle, (uint)PInvoke.SERVICE_CONTROL_STOP, out SERVICE_STATUS status))
+        {
+            int error = Marshal.GetLastWin32Error();
+            if (error == 1062) return;
+            throw new Win32Exception(error, "ControlService failed");
+        }
     }
 
     public unsafe static void DisableFailureActions(string serviceName)
     {
-        using var scmHandle = PInvoke.OpenSCManager(null, null, PInvoke.SC_MANAGER_CONNECT);
-        if (scmHandle.IsInvalid) return;
+        using var scmHandle = PInvoke.OpenSCManager(null, null, (uint)PInvoke.SC_MANAGER_CONNECT);
+        if (scmHandle.IsInvalid) throw new Win32Exception(Marshal.GetLastWin32Error(), "OpenSCManager failed");
 
-        using var serviceHandle = PInvoke.OpenService(scmHandle, serviceName, PInvoke.SERVICE_QUERY_CONFIG | PInvoke.SERVICE_CHANGE_CONFIG);
-        if (serviceHandle.IsInvalid) return;
+        using var serviceHandle = PInvoke.OpenService(scmHandle, serviceName, (uint)(PInvoke.SERVICE_QUERY_CONFIG | PInvoke.SERVICE_CHANGE_CONFIG));
+        if (serviceHandle.IsInvalid) throw new Win32Exception(Marshal.GetLastWin32Error(), "OpenService failed");
 
         var failureActions = new SERVICE_FAILURE_ACTIONSW
         {
@@ -109,36 +119,46 @@ public static class ServicesHelper
             lpsaActions = null
         };
 
-        PInvoke.ChangeServiceConfig2W(serviceHandle, SERVICE_CONFIG.SERVICE_CONFIG_FAILURE_ACTIONS, &failureActions);
+        if (!PInvoke.ChangeServiceConfig2W(serviceHandle, SERVICE_CONFIG.SERVICE_CONFIG_FAILURE_ACTIONS, &failureActions))
+        {
+            throw new Win32Exception(Marshal.GetLastWin32Error(), "ChangeServiceConfig2W (Actions) failed");
+        }
 
         var failureFlag = new SERVICE_FAILURE_ACTIONS_FLAG
         {
             fFailureActionsOnNonCrashFailures = false
         };
 
-        PInvoke.ChangeServiceConfig2W(serviceHandle, SERVICE_CONFIG.SERVICE_CONFIG_FAILURE_ACTIONS_FLAG, &failureFlag);
+        if (!PInvoke.ChangeServiceConfig2W(serviceHandle, SERVICE_CONFIG.SERVICE_CONFIG_FAILURE_ACTIONS_FLAG, &failureFlag))
+        {
+            throw new Win32Exception(Marshal.GetLastWin32Error(), "ChangeServiceConfig2W (Flag) failed");
+        }
     }
 
-    public static void CreateService(string serviceName, string binPath)
+    public unsafe static void CreateService(string serviceName, string path)
     {
-        using var scmHandle = PInvoke.OpenSCManager(null, null, PInvoke.SC_MANAGER_CREATE_SERVICE);
-        if (scmHandle.IsInvalid) return;
+        using var scmHandle = PInvoke.OpenSCManager(null, null, (uint)PInvoke.SC_MANAGER_CREATE_SERVICE);
+        if (scmHandle.IsInvalid) throw new Win32Exception(Marshal.GetLastWin32Error(), "OpenSCManager failed");
 
-        uint tagId;
-        using var serviceHandle = PInvoke.CreateService(
-            scmHandle,
-            serviceName,
-            serviceName,
-            0xF01FF,
-            ENUM_SERVICE_TYPE.SERVICE_WIN32_OWN_PROCESS,
-            SERVICE_START_TYPE.SERVICE_AUTO_START,
-            SERVICE_ERROR.SERVICE_ERROR_NORMAL,
-            binPath,
-            null,
-            out tagId,
-            null,
-            null,
-            null);
+        fixed (char* pszServiceName = serviceName)
+        fixed (char* pszBinPath = path)
+        {
+            SC_HANDLE rawScmHandle = (SC_HANDLE)scmHandle.DangerousGetHandle();
+            SC_HANDLE serviceHandleRaw = PInvoke.CreateService(
+                rawScmHandle,
+                pszServiceName,
+                pszServiceName,
+                (uint)PInvoke.SERVICE_ALL_ACCESS,
+                ENUM_SERVICE_TYPE.SERVICE_WIN32_OWN_PROCESS,
+                SERVICE_START_TYPE.SERVICE_AUTO_START,
+                SERVICE_ERROR.SERVICE_ERROR_NORMAL,
+                pszBinPath,
+                null,
+                null,
+                null,
+                null,
+                null);
+        }
     }
 
     public static void GroupServices()

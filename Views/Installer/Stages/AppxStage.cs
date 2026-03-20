@@ -1,6 +1,7 @@
 using AutoOS.Helpers.Store;
 using System.Diagnostics;
 using AutoOS.Helpers.TaskScheduler;
+using AutoOS.Helpers.Registry;
 
 namespace AutoOS.Views.Installer.Stages;
 
@@ -15,7 +16,7 @@ public static class AppxStage
             ("Uninstalling OneDrive", async () => await Process.Start(new ProcessStartInfo("cmd.exe", @"/c for %a in (""SysWOW64"" ""System32"") do (if exist ""%windir%\%~a\OneDriveSetup.exe"" (""%windir%\%~a\OneDriveSetup.exe"" /uninstall)) & reg delete ""HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Desktop\NameSpace\{018D5C66-4533-4307-9B53-224DE2ED1FE6}"" /f") { CreateNoWindow = true })!.WaitForExitAsync(), null),
             ("Uninstalling OneDrive", async () => await Task.WhenAll(Process.GetProcessesByName("UserOOBEBroker").Select(async process => { process.Kill(); await process.WaitForExitAsync(); })), null),
             ("Uninstalling OneDrive", async () => Directory.Delete(@"C:\ProgramData\Microsoft OneDrive", true), null),
-            ("Uninstalling OneDrive", async () => Directory.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), @"Microsoft\OneDrive"), true), null),
+            ("Uninstalling OneDrive", async () => await RegistryHelper.RunAs(RegistryHelper.Identity.TrustedInstaller, async () => Directory.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), @"Microsoft\OneDrive"), true)), null),
             ("Uninstalling OneDrive", async () => TaskSchedulerHelper.Unregister("OneDrive Startup Task"), null),
         };
 
