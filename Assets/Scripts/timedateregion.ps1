@@ -642,6 +642,7 @@ net stop w32time
 Set-ItemProperty -Path "HKCU:\Keyboard Layout\Toggle" -Name "Hotkey" -Type String -Value "3"
 Set-ItemProperty -Path "HKCU:\Keyboard Layout\Toggle" -Name "Language Hotkey" -Type String -Value "3"
 Set-ItemProperty -Path "HKCU:\Keyboard Layout\Toggle" -Name "Layout Hotkey" -Type String -Value "3"
+Start-Sleep -Milliseconds 1000
 
 # Loop to activate the new keyboard layout
 $code = @"
@@ -674,7 +675,7 @@ $hwndBroadcast = [IntPtr]0xffff
 while ($true) {
     try {
         $currentHKL = [Win32Input]::GetKeyboardLayout(0)
-        $targetHKL = [Win32Input]::LoadKeyboardLayout(($list[1].Split(':')[1]), 0x00000001)
+        $targetHKL = [Win32Input]::LoadKeyboardLayout($list[1].Split(':')[1], 0x00000001)
 
         if ($currentHKL -eq $targetHKL) {
             break
@@ -686,6 +687,5 @@ while ($true) {
         [Win32Input]::PostMessage($foregroundHWnd, $WM_INPUTLANGCHANGEREQUEST, [IntPtr]0, $targetHKL)
     }
     catch { }
-
-    Start-Sleep -Milliseconds 100
+    Start-Sleep -Milliseconds 1000
 }
