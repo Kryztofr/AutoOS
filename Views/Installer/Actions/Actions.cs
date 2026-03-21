@@ -20,7 +20,7 @@ namespace AutoOS.Views.Installer.Actions;
 public static class ProcessActions
 {
     public static IntPtr WindowHandle { get; private set; }
-    private static readonly HttpClient httpClient = new(new SocketsHttpHandler
+    public static readonly HttpClient httpClient = new(new SocketsHttpHandler
     {
         SslOptions = new SslClientAuthenticationOptions
         {

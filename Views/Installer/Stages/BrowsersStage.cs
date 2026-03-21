@@ -46,7 +46,6 @@ public static class BrowsersStage
         string cometVersion = "";
         string firefoxVersion = "";
 
-        using HttpClient client = new();
 
         return new List<(string Title, Func<Task> Action, Func<bool> Condition)>
         {
@@ -449,7 +448,7 @@ public static class BrowsersStage
             ("Disabling Comet services", async () => RegistryHelper.DeleteKey(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Active Setup\Installed Components\{1F7C13D9-45E8-47E9-A2B5-6B2EF21B91F4}"), () => Comet == true),
 
             // download firefox
-            ("Downloading Firefox", async () => firefoxVersion = JsonDocument.Parse(await client.GetStringAsync("https://product-details.mozilla.org/1.0/firefox_versions.json")).RootElement.GetProperty("LATEST_FIREFOX_VERSION").GetString(), () => Firefox == true),
+            ("Downloading Firefox", async () => firefoxVersion = JsonDocument.Parse(await ProcessActions.httpClient.GetStringAsync("https://product-details.mozilla.org/1.0/firefox_versions.json")).RootElement.GetProperty("LATEST_FIREFOX_VERSION").GetString(), () => Firefox == true),
             ("Downloading Firefox", async () => await ProcessActions.RunDownload($"https://releases.mozilla.org/pub/firefox/releases/{firefoxVersion}/win64/en-US/Firefox%20Setup%20{firefoxVersion}.exe", ApplicationData.Current.TemporaryFolder.Path, "FirefoxSetup.exe"), () => Firefox == true),
 
             // install firefox
