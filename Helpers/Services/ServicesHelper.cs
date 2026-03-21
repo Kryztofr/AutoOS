@@ -114,6 +114,37 @@ public static class ServicesHelper
         }
     }
 
+    internal static unsafe void SetStartupType(string serviceName, SERVICE_START_TYPE startType)
+    {
+        using var scmHandle = PInvoke.OpenSCManager(null, null, (uint)PInvoke.SC_MANAGER_CONNECT);
+        if (scmHandle.IsInvalid)
+            throw new Win32Exception(Marshal.GetLastWin32Error());
+
+        using var serviceHandle = PInvoke.OpenService(scmHandle, serviceName, (uint)PInvoke.SERVICE_CHANGE_CONFIG);
+        if (serviceHandle.IsInvalid)
+        {
+            int error = Marshal.GetLastWin32Error();
+            if (error == 1060) return;
+            throw new Win32Exception(error);
+        }
+
+        if (!PInvoke.ChangeServiceConfig(
+            (SC_HANDLE)serviceHandle.DangerousGetHandle(),
+            (ENUM_SERVICE_TYPE)0xFFFFFFFF,
+            startType,
+            (SERVICE_ERROR)0xFFFFFFFF,
+            null,
+            null,
+            (uint*)null,
+            null,
+            null,
+            null,
+            null))
+        {
+            throw new Win32Exception(Marshal.GetLastWin32Error());
+        }
+    }
+
     public unsafe static void DisableFailureActions(string serviceName)
     {
         using var scmHandle = PInvoke.OpenSCManager(null, null, (uint)PInvoke.SC_MANAGER_CONNECT);

@@ -32,8 +32,6 @@ SP_PROPCHANGE_PARAMS
 SP_CLASSINSTALL_HEADER
 DEVPKEY_Device_DriverVersion
 DEVPKEY_PciDevice_InterruptMessageMaximum
-CM_Enable_DevNode
-CM_Disable_DevNode
 CM_Locate_DevNode
 CM_Get_DevNode_Status
 CM_Get_First_Log_Conf
@@ -116,6 +114,7 @@ SC_MANAGER_CONNECT
 SC_MANAGER_ENUMERATE_SERVICE
 SC_MANAGER_CREATE_SERVICE
 CreateService
+ChangeServiceConfig
 SERVICE_ERROR
 SERVICE_START_TYPE
 SERVICE_ALL_ACCESS
@@ -125,7 +124,6 @@ IP_ADAPTER_ADDRESSES_LH
 IF_OPER_STATUS
 
 RegisterApplicationRestart
-REGISTER_APPLICATION_RESTART_FLAGS
 
 OpenProcessToken
 DuplicateTokenEx

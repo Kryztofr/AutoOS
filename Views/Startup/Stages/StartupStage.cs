@@ -6,6 +6,7 @@ using AutoOS.Helpers.Services;
 using System.Text.Json.Nodes;
 using Windows.Storage;
 using AutoOS.Views.Installer.Actions;
+using Windows.Win32.System.Services;
 
 namespace AutoOS.Views.Startup.Stages;
 
@@ -48,9 +49,10 @@ public static class StartupStage
         var actions = new List<(string Title, Func<Task> Action, Func<bool> Condition)>
         {
             // sync time
-            ("Syncing time", async () => ServicesHelper.StartService("w32time"), null),
+            ("Syncing time", async () => ServicesHelper.SetStartupType("W32Time", SERVICE_START_TYPE.SERVICE_DEMAND_START), null),
+            ("Syncing time", async () => ServicesHelper.StartService("W32Time"), null),
             ("Syncing time", async () => await Process.Start(new ProcessStartInfo("w32tm", "/resync") { CreateNoWindow = true })!.WaitForExitAsync(), null),
-            ("Syncing time", async () => ServicesHelper.StopService("w32time"), null),
+            ("Syncing time", async () => ServicesHelper.StopService("W32Time"), null),
 
             // apply msi afterburner profile
             ("Applying MSI Afterburner profile", async () => await Process.Start(new ProcessStartInfo { FileName = @"C:\Program Files (x86)\MSI Afterburner\MSIAfterburner.exe", Arguments = "/Profile1 /q" })!.WaitForExitAsync(), () => MSI == true),
@@ -121,13 +123,18 @@ public static class StartupStage
                     }
                     catch (Exception ex)
                     {
+                        try
+                        {
+                            await ProcessActions.LogError(ex);
+                        }
+                        catch { }
                         StartupWindow.Status.Text = ex.Message;
                         StartupWindow.Progress.Foreground = (Brush)Application.Current.Resources["SystemFillColorCriticalBrush"];
                     }
                 }
 
                 StartupWindow.Progress.Value += incrementPerTitle;
-                await Task.Delay(150);
+                await Task.Delay(100);
                 currentGroup.Clear();
             }
 
@@ -146,6 +153,11 @@ public static class StartupStage
                 }
                 catch (Exception ex)
                 {
+                    try
+                    {
+                        await ProcessActions.LogError(ex);
+                    }
+                    catch { }
                     StartupWindow.Status.Text = ex.Message;
                     StartupWindow.Progress.Foreground = (Brush)Application.Current.Resources["SystemFillColorCriticalBrush"];
                 }
@@ -155,9 +167,7 @@ public static class StartupStage
 
         StartupWindow.Status.Text = "Done.";
         StartupWindow.Progress.Foreground = new SolidColorBrush((Windows.UI.Color)Application.Current.Resources["SystemFillColorSuccess"]);
-
-        await Task.Delay(700);
-
+        await Task.Delay(500);
         Application.Current.Exit();
     }
 }
