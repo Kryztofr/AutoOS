@@ -14,11 +14,13 @@ using System.Text;
 using System.Text.Json;
 using WinRT.Interop;
 using System.Net.Http.Headers;
+using Windows.Storage;
 
 namespace AutoOS.Views.Installer.Actions;
 
 public static class ProcessActions
 {
+    private static readonly ApplicationDataContainer localSettings = ApplicationData.Current.LocalSettings;
     public static IntPtr WindowHandle { get; private set; }
     public static readonly HttpClient httpClient = new(new SocketsHttpHandler
     {
@@ -287,7 +289,6 @@ public static class ProcessActions
 
     public static async Task Log(bool bios = false)
     {
-        var localSettings = Windows.Storage.ApplicationData.Current.LocalSettings;
         string installStart = localSettings.Values["Install_Start"]?.ToString() ?? "N/A";
         string installEnd = localSettings.Values["Install_End"]?.ToString() ?? "N/A";
 
@@ -366,7 +367,6 @@ public static class ProcessActions
 
     public static async Task LogError(Exception ex)
     {
-        var localSettings = Windows.Storage.ApplicationData.Current.LocalSettings;
         string installStart = localSettings.Values["Install_Start"]?.ToString() ?? "N/A";
         string installEnd = localSettings.Values["Install_End"]?.ToString() ?? "N/A";
 

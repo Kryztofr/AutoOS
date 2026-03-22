@@ -1,5 +1,4 @@
 ﻿using Microsoft.Win32;
-using System.Diagnostics;
 
 namespace AutoOS.Views.Settings;
 
@@ -111,10 +110,6 @@ public sealed partial class UpdatePage : Page
 
         if (!string.IsNullOrEmpty(current))
         {
-            if (string.Compare("23H2", current, StringComparison.OrdinalIgnoreCase) >= 0)
-                TargetVersion.Items.Add(new ComboBoxItem { Content = "23H2" });
-            if (string.Compare("24H2", current, StringComparison.OrdinalIgnoreCase) >= 0)
-                TargetVersion.Items.Add(new ComboBoxItem { Content = "24H2" });
             if (string.Compare("25H2", current, StringComparison.OrdinalIgnoreCase) >= 0)
                 TargetVersion.Items.Add(new ComboBoxItem { Content = "25H2" });
         }

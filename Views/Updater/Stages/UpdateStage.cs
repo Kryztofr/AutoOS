@@ -1,4 +1,4 @@
-using AutoOS.Views.Installer.Actions;
+using AutoOS.Views.Settings.Power;
 
 namespace AutoOS.Views.Updater.Stages;
 
@@ -8,9 +8,8 @@ public static class UpdateStage
     {
         return
         [
-            // revert split audio services
-            ("Reverting splitting audio services", async () => await ProcessActions.RunPowerShell(@"Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Services\Audiosrv' -Name 'ImagePath' -Value '%systemroot%\system32\svchost.exe -k LocalServiceNetworkRestricted -p' -Type ExpandString"), null),
-            ("Reverting splitting audio services", async () => await ProcessActions.RunPowerShell(@"Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Services\AudioEndpointBuilder' -Name 'ImagePath' -Value '%systemroot%\system32\svchost.exe -k LocalSystemNetworkRestricted -p' -Type ExpandString"), null),
+            //(@"Setting ""Processor efficiency containment concurrency threshold"" to 100", async () => PowerApi.WriteACValueIndex(guid, new Guid("54533251-82be-4824-96c1-47b60b740d00"), new Guid("69439b22-221b-4830-bd34-f7bcece24583"), 100), null),
+            //(@"Setting ""Processor hybrid containment concurrency threshold"" to 100", async () => PowerApi.WriteACValueIndex(guid, new Guid("54533251-82be-4824-96c1-47b60b740d00"), new Guid("6788488b-1b90-4d11-8fa7-973e470dff47"), 100), null)
         ];
     }
 }
