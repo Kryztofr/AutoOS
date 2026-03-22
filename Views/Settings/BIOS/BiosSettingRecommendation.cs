@@ -633,7 +633,7 @@ public static class BiosSettingRecommendationsList
         new BiosSettingRecommendation { SetupQuestion = "Algorithm 1", Type = "Option", RecommendedOption = "Disabled" },
         new BiosSettingRecommendation { SetupQuestion = "Algorithm 2", Type = "Option", RecommendedOption = "Disabled" },
         new BiosSettingRecommendation { SetupQuestion = "Algorithm 3", Type = "Option", RecommendedOption = "Disabled" },
-        new BiosSettingRecommendation { SetupQuestion = "All Core Curve Optimizer Magnitude", Type = "Value", RecommendedOption = "15" },
+        new BiosSettingRecommendation { SetupQuestion = "All Core Curve Optimizer Magnitude", Type = "Value", RecommendedOption = "10" },
         new BiosSettingRecommendation { SetupQuestion = "All Core Curve Optimizer Sign", Type = "Option", RecommendedOption = "Negative" },
         new BiosSettingRecommendation { SetupQuestion = "App Compatibility Database", Type = "Option", RecommendedOption = "Disabled" },
         new BiosSettingRecommendation { SetupQuestion = "Audio LED Lighting", Type = "Option", RecommendedOption = "Disabled" },

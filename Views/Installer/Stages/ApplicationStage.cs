@@ -191,7 +191,7 @@ public static class ApplicationStage
             //("Installing Files", async () => RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_CURRENT_USER\Software\Classes\CLSID\{52205fd8-5dfb-447d-801a-d0b52f2e83e1}\shell\opennewwindow\command", "DelegateExecute", "2", RegistryValueKind.String), null),
 
             // download everything
-            ("Downloading Everything", async () => await ProcessActions.RunDownload("https://www.voidtools.com/Everything-1.5.0.1404a.x64-Setup.exe", ApplicationData.Current.TemporaryFolder.Path, "Everything.exe"), null),
+            ("Downloading Everything", async () => await ProcessActions.RunDownload("https://www.voidtools.com/Everything-1.5.0.1407a.x64-Setup.exe", ApplicationData.Current.TemporaryFolder.Path, "Everything.exe"), null),
             
             // install everything
             ("Installing Everything", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(ApplicationData.Current.TemporaryFolder.Path, "Everything.exe"), Arguments = "/S" , WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), null),
