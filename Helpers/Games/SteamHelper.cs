@@ -1,4 +1,3 @@
-﻿using Microsoft.Win32;
 using System.Diagnostics;
 using System.Globalization;
 using System.Text;
@@ -278,11 +277,11 @@ public static class SteamHelper
                 try
                 {
                     // read game manifest
-                    var appManifestData = KVSerializer.Create(KVSerializationFormat.KeyValues1Text)
-                        .Deserialize(File.OpenRead(Path.Combine(steamAppsDir, $"appmanifest_{gameId}.acf")));
+                    var appManifestData = KVSerializer.Create(KVSerializationFormat.KeyValues1Text).Deserialize(File.OpenRead(Path.Combine(steamAppsDir, $"appmanifest_{gameId}.acf")));
 
-                    // get metadata
                     var gameData = JsonDocument.Parse(await httpClient.GetStringAsync($"https://store.steampowered.com/api/appdetails?appids={gameId}&l=english", _)).RootElement.GetProperty(gameId);
+                    if (!gameData.TryGetProperty("success", out var success) || !success.GetBoolean()) continue;
+
                     // get playtime data
                     //var playTimeData = XDocument.Parse(await httpClient.GetStringAsync($"https://steamcommunity.com/profiles/{GetSteam64ID()}/?tab=all&xml=1", _));
 
@@ -328,12 +327,8 @@ public static class SteamHelper
                         }
                     }
 
-                    DateTimeOffset releaseDate = DateTimeOffset.Parse(
-                        gameData.GetProperty("data")
-                                .GetProperty("release_date")
-                                .GetProperty("date")
-                                .GetString()!
-                    );
+                    string dateStr = gameData.GetProperty("data").GetProperty("release_date").GetProperty("date").GetString();
+                    DateTimeOffset.TryParse(dateStr, out var releaseDate);
 
                     long? sizeBytes = long.TryParse(appManifestData["SizeOnDisk"]?.ToString(), out var result) ? result : null;
 
@@ -370,7 +365,7 @@ public static class SteamHelper
                                     .Where(s => !string.IsNullOrWhiteSpace(s))]
                                 : [],
                             InstallLocation = Path.Combine(steamAppsDir, "common", appManifestData["installdir"]?.ToString()).Replace("/", "\\"),
-                            ReleaseDate = releaseDate.ToString("d"),
+                            ReleaseDate = releaseDate != default ? releaseDate.ToString("d") : "Unknown",
                             Size = sizeBytes >= 1024 * 1024 * 1024
                                 ? $"{sizeBytes.Value / (1024d * 1024d * 1024d):F1} GB"
                                 : $"{sizeBytes.Value / (1024d * 1024d):F2} MB",
