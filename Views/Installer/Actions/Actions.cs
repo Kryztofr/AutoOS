@@ -1,4 +1,4 @@
-﻿using AutoOS.Helpers.Device;
+using AutoOS.Helpers.Device;
 using AutoOS.Helpers.GPU;
 using AutoOS.Helpers.Monitor;
 using AutoOS.Helpers.RAM;
@@ -22,22 +22,7 @@ public static class ProcessActions
 {
     private static readonly ApplicationDataContainer localSettings = ApplicationData.Current.LocalSettings;
     public static IntPtr WindowHandle { get; private set; }
-    public static readonly HttpClient httpClient = new(new SocketsHttpHandler
-    {
-        SslOptions = new SslClientAuthenticationOptions
-        {
-            EnabledSslProtocols = SslProtocols.Tls12 | SslProtocols.Tls13
-        }
-    })
-    {
-        DefaultRequestHeaders =
-        {
-            UserAgent =
-            {
-                new ProductInfoHeaderValue("AutoOS", ProcessInfoHelper.Version)
-            }
-        }
-    };
+    public static readonly HttpClient httpClient = new() { DefaultRequestHeaders = { UserAgent = { ProductInfoHeaderValue.Parse("AutoOS") } } };
 
     public static async Task RunPowerShell(string command)
     {
