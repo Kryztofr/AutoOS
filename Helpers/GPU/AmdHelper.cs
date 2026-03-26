@@ -96,8 +96,8 @@ public static class AmdHelper
             // accept eula
             ("Accepting EULA", async () => RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_CURRENT_USER\Software\AMD\CN\DisplayOverride", "EulaAccepted", "true", RegistryValueKind.String), null),
 
-            // disable issue detection
-            ("Disabling issue detection", async () => RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_CURRENT_USER\Software\AMD\AIM", "LaunchBugTool", 0, RegistryValueKind.DWord), null),
+            // settings -> system
+            (@"Disabling ""Issue detection""", async () => RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_CURRENT_USER\Software\AMD\AIM", "LaunchBugTool", 0, RegistryValueKind.DWord), null),
 
             // settings -> hotkeys
             (@"Disabling ""Use Hotkeys""", async () => RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_CURRENT_USER\Software\AMD\CN\R3DBk", "ChillHk", 4730, RegistryValueKind.DWord), null),

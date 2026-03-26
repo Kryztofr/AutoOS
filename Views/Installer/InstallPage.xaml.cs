@@ -16,6 +16,7 @@ public sealed partial class InstallPage : Page
     public static Microsoft.UI.Xaml.Controls.ProgressRing ProgressRingControl { get; private set; }
     public static Button ResumeButton { get; private set; }
     private static readonly ApplicationDataContainer localSettings = ApplicationData.Current.LocalSettings;
+    private static int currentStageCounter = 0;
 
     public InstallPage()
     {
@@ -51,7 +52,24 @@ public sealed partial class InstallPage : Page
             PercentageText.Text = $"{(int)e.NewValue}%";
         };
 
-        await PreparingStage.Run();
+        currentStageCounter = 0;
+        int savedStage = localSettings.Values["actionStage"] as int? ?? -1;
+
+        Progress.Value = localSettings.Values["actionProgress"] as double? ?? 0;
+        Helpers.Taskbar.TaskbarHelper.SetProgressValue(WindowNative.GetWindowHandle(App.MainWindow), Progress.Value, 100);
+
+        if (savedStage <= 0)
+        {
+            await PreparingStage.Run();
+            localSettings.Values["actionStage"] = 1;
+            localSettings.Values["actionIndex"] = -1;
+            localSettings.Values["actionProgress"] = 0.0;
+        }
+        else
+        {
+            await PreparingStage.Run();
+        }
+        currentStageCounter = 1;
         await RunStage("Configuring Powerplans...", PowerStage.GetActions(), 5);
         await RunStage("Configuring Registry...", RegistryStage.GetActions(), 5);
         await RunStage("Configuring Security...", SecurityStage.GetActions(), 5);
@@ -100,6 +118,15 @@ public sealed partial class InstallPage : Page
 
     public static async Task RunStage(string status, List<(string Title, Func<Task> Action, Func<bool> Condition)> actions, double stagePercentage)
     {
+        int stageIndex = currentStageCounter++;
+        int savedStage = localSettings.Values["actionStage"] as int? ?? -1;
+        int savedAction = localSettings.Values["actionIndex"] as int? ?? -1;
+
+        if (stageIndex < savedStage)
+        {
+            return;
+        }
+
         var windowHandle = WindowNative.GetWindowHandle(App.MainWindow);
         Status.Text = status;
 
@@ -118,16 +145,24 @@ public sealed partial class InstallPage : Page
         string previousTitle = string.Empty;
         List<Func<Task>> currentGroup = [];
 
+        int globalIndex = 0;
         foreach (var (title, action, _) in filteredActions)
         {
             if (previousTitle != string.Empty && previousTitle != title && currentGroup.Count > 0)
             {
+                int groupIndex = globalIndex - currentGroup.Count;
+                bool executed = false;
                 foreach (var groupedAction in currentGroup)
                 {
+                    if (stageIndex == savedStage && groupIndex <= savedAction) { groupIndex++; continue; }
+
+                    executed = true;
                     try
                     {
                         Info.Title = previousTitle + "...";
                         await groupedAction();
+                        localSettings.Values["actionStage"] = stageIndex;
+                        localSettings.Values["actionIndex"] = groupIndex;
                     }
                     catch (Exception ex)
                     {
@@ -159,27 +194,43 @@ public sealed partial class InstallPage : Page
 
                         ResumeButton.Click += resumeHandler;
                         await tcs.Task;
+
+                        localSettings.Values["actionStage"] = stageIndex;
+                        localSettings.Values["actionIndex"] = groupIndex;
                     }
+                    groupIndex++;
                 }
 
-                Progress.Value += incrementPerTitle;
-                Helpers.Taskbar.TaskbarHelper.SetProgressValue(windowHandle, Progress.Value, 100);
-                await Task.Delay(150);
+                if (executed)
+                {
+                    Progress.Value += incrementPerTitle;
+                    localSettings.Values["actionProgress"] = Progress.Value;
+                    Helpers.Taskbar.TaskbarHelper.SetProgressValue(windowHandle, Progress.Value, 100);
+                    await Task.Delay(150);
+                }
                 currentGroup.Clear();
             }
 
             currentGroup.Add(action);
             previousTitle = title;
+            globalIndex++;
         }
 
         if (currentGroup.Count > 0)
         {
+            int groupIndex = filteredActions.Count - currentGroup.Count;
+            bool executed = false;
             foreach (var groupedAction in currentGroup)
             {
+                if (stageIndex == savedStage && groupIndex <= savedAction) { groupIndex++; continue; }
+
+                executed = true;
                 try
                 {
                     Info.Title = previousTitle + "...";
                     await groupedAction();
+                    localSettings.Values["actionStage"] = stageIndex;
+                    localSettings.Values["actionIndex"] = groupIndex;
                 }
                 catch (Exception ex)
                 {
@@ -211,15 +262,28 @@ public sealed partial class InstallPage : Page
 
                     ResumeButton.Click += resumeHandler;
                     await tcs.Task;
+
+                    localSettings.Values["actionStage"] = stageIndex;
+                    localSettings.Values["actionIndex"] = groupIndex;
                 }
+                groupIndex++;
             }
-            Progress.Value += incrementPerTitle;
-            Helpers.Taskbar.TaskbarHelper.SetProgressValue(windowHandle, Progress.Value, 100);
+
+            if (executed)
+            {
+                Progress.Value += incrementPerTitle;
+                localSettings.Values["actionProgress"] = Progress.Value;
+                Helpers.Taskbar.TaskbarHelper.SetProgressValue(windowHandle, Progress.Value, 100);
+            }
         }
+
+        localSettings.Values["actionStage"] = stageIndex + 1;
+        localSettings.Values["actionIndex"] = -1;
 
         if (filteredActions.Count == 0)
         {
             Progress.Value += stagePercentage;
+            localSettings.Values["actionProgress"] = Progress.Value;
             Helpers.Taskbar.TaskbarHelper.SetProgressValue(windowHandle, Progress.Value, 100);
         }
     }

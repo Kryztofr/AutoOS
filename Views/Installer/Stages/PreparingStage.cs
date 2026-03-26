@@ -114,7 +114,8 @@ public static class PreparingStage
         InstallPage.Progress.Foreground = (Brush)Application.Current.Resources["SystemFillColorCautionBrush"];
         Helpers.Taskbar.TaskbarHelper.SetProgressState(WindowHandle, Helpers.Taskbar.TaskbarStates.Paused);
         InstallPage.ProgressRingControl.Foreground = (Brush)Application.Current.Resources["SystemFillColorCautionBrush"];
-        localSettings.Values["Install_Start"] = DateTimeOffset.Now.ToString("O");
+        if (localSettings.Values["Install_Start"] == null)
+            localSettings.Values["Install_Start"] = DateTimeOffset.Now.ToString("O");
 
         await Task.Run(async () =>
         {
