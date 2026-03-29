@@ -112,7 +112,7 @@
     <PackageReference Include="ValveKeyValue" Version="0.40.0.471" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="Helpers\Sound\SoundHelper.vcxproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="Helpers\Sound\SoundHelper.vcxproj" ReferenceOutputAssembly="false" Condition="'$(CppBuiltSeparately)' != 'true'" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Helpers\Sound\x64\$(Configuration)\SoundHelper.exe">
