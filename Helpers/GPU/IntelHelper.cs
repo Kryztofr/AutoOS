@@ -1,7 +1,6 @@
-﻿using AutoOS.Views.Installer.Actions;
+using AutoOS.Views.Installer.Actions;
 using AutoOS.Helpers.Registry;
 using AutoOS.Helpers.Services;
-using PuppeteerSharp;
 using System.Text.RegularExpressions;
 using AutoOS.Helpers.Store;
 using System.Diagnostics;
@@ -53,19 +52,20 @@ namespace AutoOS.Helpers.GPU
             else
                 throw new InvalidOperationException($"Unsupported Codename: {codename}");
 
-            await using var browser = await Puppeteer.LaunchAsync(new LaunchOptions
+            var startInfo = new ProcessStartInfo
             {
-                Headless = true,
-                ExecutablePath = @"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe"
-            });
+                FileName = "curl.exe",
+                Arguments = @$"-sL ""{driverPageUrl}""",
+                RedirectStandardOutput = true,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            };
 
-            var page = await browser.NewPageAsync();
-            await page.GoToAsync(driverPageUrl, new NavigationOptions { WaitUntil = [WaitUntilNavigation.DOMContentLoaded] });
+            using var process = Process.Start(startInfo);
+            string domHtml = await process.StandardOutput.ReadToEndAsync();
+            await process.WaitForExitAsync();
 
-            string bodyText = await page.EvaluateExpressionAsync<string>("document.body.innerText");
-            string domHtml = await page.EvaluateExpressionAsync<string>("document.documentElement.outerHTML");
-
-            var versionMatch = VersionRegex().Match(bodyText);
+            var versionMatch = VersionRegex().Match(domHtml);
             if (versionMatch.Success) newestVersion = versionMatch.Groups[1].Value;
 
             var fileMatch = is6thGen ? ZipFileRegex().Match(domHtml) : ExeFileRegex().Match(domHtml);
