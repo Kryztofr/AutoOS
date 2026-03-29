@@ -167,6 +167,7 @@ public static partial class StoreHelper
 
         try
         {
+            await KillProcesses(identifier);
             AppInstallItem updateItem = await installManager.UpdateAppByPackageFamilyNameAsync(identifier);
             if (updateItem == null)
                 return;
@@ -436,6 +437,38 @@ public static partial class StoreHelper
             return string.Empty;
         }
         return await res.Content.ReadAsStringAsync();
+    }
+
+    private static async Task KillProcesses(string packageFamilyName)
+    {
+		var manager = new PackageManager();
+		var package = manager.FindPackagesForUser(string.Empty, packageFamilyName).FirstOrDefault();
+		if (package == null) return;
+
+		string manifestPath = Path.Combine(package.InstalledLocation.Path, "AppxManifest.xml");
+		if (!File.Exists(manifestPath)) return;
+
+		var doc = XDocument.Load(manifestPath);
+		var ns = doc.Root.Name.Namespace;
+		var applications = doc.Descendants(ns + "Application");
+
+		foreach (var app in applications)
+		{
+			var exe = app.Attribute("Executable")?.Value;
+			if (!string.IsNullOrEmpty(exe))
+			{
+				var processName = Path.GetFileNameWithoutExtension(exe);
+				foreach (var process in Process.GetProcessesByName(processName))
+				{
+					try
+					{
+						process.Kill();
+						await process.WaitForExitAsync();
+					}
+					catch { }
+				}
+			}
+		}
     }
 }
 
