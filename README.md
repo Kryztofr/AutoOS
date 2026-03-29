@@ -110,15 +110,15 @@ AutoOS is a Native AOT WinUI 3 application that automates Windows setup and opti
 
 **Step 3:** Download your Ethernet, Wi-Fi and Bluetooth driver (No Audio, Chipset, etc). 
 
-**Intel:** [Ethernet](https://www.intel.com/content/www/us/en/download/727998/intel-network-adapter-driver-for-microsoft-windows-11.html) · [Wi-Fi](https://www.intel.com/content/www/us/en/download/19351/intel-wireless-wi-fi-drivers-for-windows-10-and-windows-11.html) · [Bluetooth](https://www.intel.com/content/www/us/en/download/18649/intel-wireless-bluetooth-drivers-for-windows-10-and-windows-11.html)
+**Intel:** [Ethernet](https://www.intel.com/content/www/us/en/download/727998/intel-network-adapter-driver-for-microsoft-windows-11.html) · [Wi-Fi](https://www.dl.dropboxusercontent.com/scl/fi/9qjxlr4x59dv9ncusmu3h/INTEL-WiFi.zip?rlkey=v1mzzc37onjmcpundt48u8i83&st=pnj3c3ax&dl=0) · [Bluetooth](https://www.dl.dropboxusercontent.com/scl/fi/qoylgflunti1fhzpcjnip/INTEL-Bluetooth.zip?rlkey=j23dopqk2ek1r5ju00zemwsf2&st=wopu40cj&dl=0)
 
-**Realtek:** [Ethernet (Win10/Win11 Auto Installation Program (NDIS) - Not Support Power Saving)](https://www.realtek.com/Download/List?cate_id=584)
+**Realtek:** [Ethernet (Win10/Win11 Auto Installation Program (NDIS) - Not Support Power Saving)](https://www.dl.dropboxusercontent.com/scl/fi/gr47u24zve7ll7lmel9ke/Install_Win11_Win10_10079_20_DMAROFF_01262026.zip?rlkey=pp7modxp8ht1zxcwlu5foam8l&st=vsxyeok0&dl=0)
 
 If your device is older and not supported by these drivers go to the Drivers / Support page or your Mainboard / PC and download them from there.
 
-On Prebuilts and Laptops you may need to disable VMD Controller in your BIOS or download the disk driver (Intel Rapid Storage Technology Driver) otherwise you may get a BSOD. 
+On Prebuilts and Laptops you may need to disable `VMD Controller` in your BIOS or download the disk driver (Intel Rapid Storage Technology Driver) otherwise you may get a BSOD. 
 
-Extract all `.zip` files (for `.exe` files, there may be an extract option in the setup, otherwise use 7-Zip, NanaZip, or WinRAR to extract them) and move all extracted folders into one folder.
+Extract all `.zip` files (for `.exe` files, there may be an `extract option` in the setup, otherwise use `7-Zip, NanaZip, or WinRAR` to extract them) and move all extracted folders into one folder.
 
 **Step 4:** Open PowerShell **as Administrator**.
 
@@ -132,13 +132,23 @@ irm https://raw.githubusercontent.com/tinodin/AutoOS/master/deploy.ps1 | iex
 
 If you get any errors during the script, it’s most likely because your current operating system has disabled services that are required. Make sure to use a default installation of Windows to run the script.
 
-**Step 6:** Once the script finished, restart your computer and boot into the default option. Make sure to `keep your ethernet cable connected` or `connect to your WiFi in the setup`. Then wait for Windows to finish installing.
+**Step 6:** Once the script finished, `restart` and boot into the `default option`. Make sure to `keep your ethernet cable connected` or `connect to your WiFi in the setup`. **DO NOT BYPASS THE NETWORK REQUIREMENT!**. Then wait for Windows to finish installing.
 
-**Step 7:** Once finished, wait for AutoOS to open up (On slower systems this may take a minute).
+**Step 7:** Once finished, wait for AutoOS to open up.
 
-**Step 8:** Select your settings and click "Install AutoOS". This process will take around 30 minutes.
+**Step 8:** Select your settings and click "Install AutoOS". This process will take around 20-30 minutes.
 
 If you want to delete your old Windows partition and merge the unallocated space with the AutoOS partition, use [Minitool Partition Wizard Free](https://cdn2.minitool.com/?p=pw&e=pw-free) (decline each offer in the installer). Then use the `Delete` function on the old Windows partition and the `Extend` function on the AutoOS partition and max out the slider. Click apply and restart. Make sure to delete `Minitool Partition Wizard Free` again after you are done.
+
+### What to do after the installation is finished?
+- `Disable` the toggle in `Services & Drivers` tab and restart whenever you are `Gaming`.
+- `Enable` it again and restart if you need functionality back for `Work` etc.
+- Go to the `Games` tab while `Services & Drivers` are disabled and press the `Play` button.
+- Once you are in Game, press the `Stop Processes` button. 
+- Press the `Restart Processes` button to restore the taskbar etc.
+- Check the `BIOS Settings` tab for recommendations.
+- Leave a `review`, share `suggestions`, or report `issues` on the `Discord Server`.
+- If you have experience with C# and WinUI3 and want to become a part of the project, let me know.
 
 ## 📷 Screenshots
 ### AutoOS Installer
