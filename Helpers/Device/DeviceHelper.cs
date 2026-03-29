@@ -22,6 +22,7 @@ public enum DeviceType
     XHCI,
     NIC,
     HDAUD,
+    AudioEndpoint,
     Other
 }
 
@@ -69,17 +70,83 @@ public partial class DeviceInfo : INotifyPropertyChanged
     public uint DevicePolicy { get; set; }
     public uint DevicePriority { get; set; }
     public ulong AssignmentSetOverride { get; set; }
-    public NicDriverType? DriverType { get; set; }
-    public NicDeviceType? NicType { get; set; }
+    public NicDriverType DriverType { get; set; }
+    public NicDeviceType NicType { get; set; }
+
     private bool isActive;
     public bool IsActive
     {
         get => isActive;
         set { if (isActive != value) { isActive = value; OnPropertyChanged(); } }
     }
-    public XhciDeviceType? XhciType { get; set; }
-    public ulong? BaseAddress { get; set; }
+
+    public XhciDeviceType XhciType { get; set; }
+    public ulong BaseAddress { get; set; }
     public string CurrentVersion { get; set; } = string.Empty;
+
+    public object AudioChannels { get; set; }
+    public object AudioBitDepths { get; set; }
+    public object AudioSampleRates { get; set; }
+
+    private object availableFormats;
+    public object AvailableFormats
+    {
+        get => availableFormats;
+        set { if (availableFormats != value) { availableFormats = value; OnPropertyChanged(); } }
+    }
+
+    private object selectedFormat;
+    public object SelectedFormat
+    {
+        get => selectedFormat;
+        set { if (selectedFormat != value) { selectedFormat = value; OnPropertyChanged(); } }
+    }
+
+    public string Description { get; set; } = string.Empty;
+
+    private float _volume;
+    public float Volume
+    {
+        get => _volume;
+        set { if (_volume != value) { _volume = value; OnPropertyChanged(); } }
+    }
+
+    private bool _isMuted;
+    public bool IsMuted
+    {
+        get => _isMuted;
+        set { if (_isMuted != value) { _isMuted = value; OnPropertyChanged(); } }
+    }
+    
+    private float _leftVolume;
+    public float LeftVolume
+    {
+        get => _leftVolume;
+        set { if (_leftVolume != value) { _leftVolume = value; OnPropertyChanged(); } }
+    }
+
+    private float _rightVolume;
+    public float RightVolume
+    {
+        get => _rightVolume;
+        set { if (_rightVolume != value) { _rightVolume = value; OnPropertyChanged(); } }
+    }
+
+    private object bufferSizes;
+    public object BufferSizes
+    {
+        get => bufferSizes;
+        set { if (bufferSizes != value) { bufferSizes = value; OnPropertyChanged(); } }
+    }
+
+    private object selectedBufferSize;
+    public object SelectedBufferSize
+    {
+        get => selectedBufferSize;
+        set { if (selectedBufferSize != value) { selectedBufferSize = value; OnPropertyChanged(); } }
+    }
+
+    public bool IsInputDevice { get; set; }
 
     public event PropertyChangedEventHandler PropertyChanged;
     private void OnPropertyChanged([CallerMemberName] string name = null)
@@ -92,6 +159,7 @@ internal static class DeviceHelper
     private static readonly Guid GUID_DEVCLASS_USB = new("36fc9e60-c465-11cf-8056-444553540000");
     private static readonly Guid GUID_DEVCLASS_NET = new("4d36e972-e325-11ce-bfc1-08002be10318");
     private static readonly Guid GUID_DEVCLASS_HDAUD = new("4d36e96c-e325-11ce-bfc1-08002be10318");
+    private static readonly Guid GUID_DEVCLASS_AUDIOENDPOINT = new("c166523c-fe0c-4a94-a586-f1a80cfbbf3e");
 
     public class ApplyResult
     {
@@ -117,6 +185,7 @@ internal static class DeviceHelper
             DeviceType.XHCI => GUID_DEVCLASS_USB,
             DeviceType.NIC => GUID_DEVCLASS_NET,
             DeviceType.HDAUD => GUID_DEVCLASS_HDAUD,
+            DeviceType.AudioEndpoint => GUID_DEVCLASS_AUDIOENDPOINT,
             DeviceType.Other => default,
             _ => throw new ArgumentException("Unknown device type")
         };
@@ -125,7 +194,7 @@ internal static class DeviceHelper
         if (type == DeviceType.Other) flags |= DIGCF_ALLCLASSES;
 
         HDEVINFO deviceInfoSetHandle = PInvoke.SetupDiGetClassDevs(type == DeviceType.Other ? null : &classGuid, null, HWND.Null, flags);
-        if (deviceInfoSetHandle.Value == -1) return devices;
+        if ((IntPtr)deviceInfoSetHandle == (IntPtr)(-1)) return devices;
 
         const int MAX_DEVICE_ID_LEN = 256;
         char* pIdBuffer = stackalloc char[MAX_DEVICE_ID_LEN];
@@ -241,12 +310,12 @@ internal static class DeviceHelper
                     if (requiredSize >= 4) maxMsiLimit = BitConverter.ToUInt32(msiBuffer, 0);
             }
 
-            NicDriverType? nicDriverType = null;
-            NicDeviceType? nicDeviceType = null;
+            NicDriverType nicDriverType = NicDriverType.NDIS;
+            NicDeviceType nicDeviceType = NicDeviceType.Virtual;
             bool isActive = false;
 
-            XhciDeviceType? xhciType = null;
-            ulong? baseAddress = null;
+            XhciDeviceType xhciType = XhciDeviceType.Hub;
+            ulong baseAddress = 0;
 
             if (type == DeviceType.NIC)
             {
@@ -264,7 +333,7 @@ internal static class DeviceHelper
             else if (type == DeviceType.XHCI)
             {
                 xhciType = XhciDeviceType.Controller;
-                baseAddress = GetDeviceBaseAddress(pnpDeviceId);
+                baseAddress = GetDeviceBaseAddress(pnpDeviceId) ?? 0;
             }
 
             var device = new DeviceInfo
@@ -654,12 +723,12 @@ internal static class DeviceHelper
         using var localHw = sharedHw == null ? new ReadWriteHelper() : null;
         var hw = sharedHw ?? localHw;
 
-        if (device.BaseAddress == null) return false;
+        if (device.BaseAddress == 0) return false;
         
-        hw.ReadMemory32(device.BaseAddress.Value + 0x18, out uint rtsoff);
-        ulong runtime = device.BaseAddress.Value + (rtsoff & ~0x1Fu);
+        hw.ReadMemory32(device.BaseAddress + 0x18, out uint rtsoff);
+        ulong runtime = device.BaseAddress + (rtsoff & ~0x1Fu);
 
-        hw.ReadMemory32(device.BaseAddress.Value + 0x04, out uint hcs1);
+        hw.ReadMemory32(device.BaseAddress + 0x04, out uint hcs1);
         int max = (int)((hcs1 >> 8) & 0x7FF);
 
         for (int i = 0; i < max; i++)
@@ -674,11 +743,11 @@ internal static class DeviceHelper
     public static void ToggleImod(DeviceInfo device, bool enable)
     {
         using var hw = new ReadWriteHelper();
-        if (device.BaseAddress == null) return;
+        if (device.BaseAddress == 0) return;
 
-        hw.ReadMemory32(device.BaseAddress.Value + 0x18, out uint rtsoff);
-        ulong runtime = device.BaseAddress.Value + (rtsoff & ~0x1Fu);
-        hw.ReadMemory32(device.BaseAddress.Value + 0x04, out uint hcs1);
+        hw.ReadMemory32(device.BaseAddress + 0x18, out uint rtsoff);
+        ulong runtime = device.BaseAddress + (rtsoff & ~0x1Fu);
+        hw.ReadMemory32(device.BaseAddress + 0x04, out uint hcs1);
         int max = (int)((hcs1 >> 8) & 0x7FF);
 
         var json = ApplicationData.Current.LocalSettings.Values["XHCIs"]?.ToString();
@@ -730,11 +799,11 @@ internal static class DeviceHelper
         using var localHw = sharedHw == null ? new ReadWriteHelper() : null;
         var hw = sharedHw ?? localHw;
 
-        if (device.BaseAddress == null || !GetIMODState(device, hw)) return;
+        if (device.BaseAddress == 0 || !GetIMODState(device, hw)) return;
 
-        hw.ReadMemory32(device.BaseAddress.Value + 0x18, out uint rtsoff);
-        ulong runtime = device.BaseAddress.Value + (rtsoff & ~0x1Fu);
-        hw.ReadMemory32(device.BaseAddress.Value + 0x04, out uint hcs1);
+        hw.ReadMemory32(device.BaseAddress + 0x18, out uint rtsoff);
+        ulong runtime = device.BaseAddress + (rtsoff & ~0x1Fu);
+        hw.ReadMemory32(device.BaseAddress + 0x04, out uint hcs1);
         int max = (int)((hcs1 >> 8) & 0x7FF);
 
         var intervals = new JsonObject();

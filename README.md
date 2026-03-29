@@ -44,14 +44,16 @@ AutoOS is a Native AOT WinUI 3 application that automates Windows setup and opti
 - Allows for importing a preconfigured MSI Afterburner overclock profile
 - Installs OBS Studio with optimal settings depending on your GPU
 - Adjusts your Ethernet and Wi-Fi adapters advanced settings
+- Sets the lowest possible Buffer Size for your input and output device
 - Disables Audio Enhancements and optimizes MMCSS settings depending on your NIC driver
 - Restores the Dolby AC-3 Feature on Demand to support Dolby Atmos on newer Windows Versions
 - Disables Device Power Management features
 - Enables MSI mode for supported devices, disables XHCI Interrupt Moderation (IMOD) for all controllers
-- Disables some Scheduled Tasks
-- Disables some unneeded Optional Features and removes some unneeded Capabilities
+- Disables some unneeded Scheduled Tasks
+- Disables some unneeded Optional Features
+- Removes some unneeded Capabilities
 - Uninstalls and deprovisions unneeded AppX packages and updates all installed AppX to their latest version
-- Installs Visual C++ Redistributable, Microsoft Edge WebView2 and DirectX Runtimes
+- Installs Visual C++ Redistributable, Microsoft Edge WebView2, Microsoft Windows App Runtime and DirectX Runtimes
 - Installs selected Browsers with selected Browser Extensions and preconfigured settings
 - Installs additional Image / Video Extensions
 - Installs NanaZip, Everything, StartAllBack and Windhawk with Mods for Start Menu, Taskbar, File Explorer etc.
@@ -64,16 +66,17 @@ AutoOS is a Native AOT WinUI 3 application that automates Windows setup and opti
 - Cleans up temporary files
 
 **AutoOS Settings**:
+- Adjust Volume, Format and Buffer Size of your current input and output device
 - Manually adjust or import a Custom Resolution Utility (CRU) profile 
 - Check for GPU Driver Updates and install them without losing settings
-- Toggle HDCP and HDMI/DP Audio for your GPUs
+- Toggle Dynamic P-States, HDCP and HDMI/DP Audio for your GPUs
 - Manually adjust or import an MSI Afterburner overclock profile
 - Toggle OBS Studio Replay Buffer
 - Manually adjust or automatically optimize GPU, XHCI and NIC Affinities
 - Toggle Bluetooth Services and Drivers, XHCI Interrupt Moderation (IMOD) per controller
 - Toggle Wi-Fi Services and Drivers and Wake-on-LAN (WOL)
 - Adjust, Edit, Delete, Export, Import Power plans and compare them
-- Toggle Services & Drivers States with configured functionality (Disable for Gaming and Enable for Work)
+- Toggle Services & Drivers States with configured functionality (Disable for Gaming / Enable for Work)
 - Manually adjust or merge over 600 recommended BIOS Settings
 - Clean up your drives
 - Toggle Windows Security Options
@@ -86,9 +89,9 @@ AutoOS is a Native AOT WinUI 3 application that automates Windows setup and opti
 **AutoOS Startup**:
 - Syncs the time
 - Applies the MSI Afterburner profile
+- Applies Buffer Sizes to audio devices selected in AutoOS Settings
 - Disables XHCI Interrupt Moderation (IMOD) for selected XHCI Controllers
 - Disables Device Power Management features
-- Launches LowAudioLatency
 - Launches OBS Studio
 - Debloats Discord
 - Cleans up temporary files
@@ -185,6 +188,10 @@ If you want to delete your old Windows partition and merge the unallocated space
 <tr>
   <td><img src="https://raw.githubusercontent.com/tinodin/AutoOS-Resources/main/AutoOS%20Settings%20%28Light%29/Home.png"/></td>
   <td><img src="https://raw.githubusercontent.com/tinodin/AutoOS-Resources/main/AutoOS%20Settings%20%28Dark%29/Home.png"/></td>
+</tr>
+<tr>
+  <td><img src="https://raw.githubusercontent.com/tinodin/AutoOS-Resources/main/AutoOS%20Settings%20%28Light%29/Sound.png"/></td>
+  <td><img src="https://raw.githubusercontent.com/tinodin/AutoOS-Resources/main/AutoOS%20Settings%20%28Dark%29/Sound.png"/></td>
 </tr>
 <tr>
   <td><img src="https://raw.githubusercontent.com/tinodin/AutoOS-Resources/main/AutoOS%20Settings%20%28Light%29/Display.png"/></td>
@@ -309,21 +316,17 @@ This project is licensed under the **GNU General Public License v3.0**. See the 
    - Changes: Added command line options for preinstall
    - Fork: [tinodin/RadeonSoftwareSlimmer](https://github.com/tinodin/RadeonSoftwareSlimmer)
 
-3. **LowAudioLatency**
-    - Licensed under the **MIT License**.
-    - Source: [sppdl/LowAudioLatency](https://github.com/spddl/LowAudioLatency)
-
-4. **Service List Builder**
+3. **Service List Builder**
    - Licensed under the **GNU General Public License v3.0**.
    - Source: [valleyofdoom/service-list-builder](https://github.com/valleyofdoom/service-list-builder)
    - Changes: Removed `shutdown /r /t 0` from created lists, added `--output-dir` switch because of MSIX restrictions.
    - Fork: [tinodin/service-list-builder](https://github.com/tinodin/service-list-builder)
 
-5. **ClassicWindowSwitcher**
+4. **ClassicWindowSwitcher**
    - Licensed under the **GNU General Public License v2.0**.
    - Source: [Ingan121/ClassicWindowSwitcher](https://github.com/Ingan121/ClassicWindowSwitcher)
 
-6. **Custom Resolution Utility (CRU)**
+5. **Custom Resolution Utility (CRU)**
 ```
 Copyright (C) 2012-2022 ToastyX
 https://monitortests.com/custom-resolution-utility
@@ -341,7 +344,7 @@ OTHER LIABILITY IN CONNECTION WITH THE USE OF THE SOFTWARE.
 ```
 - Source: [Custom Resolution Utility (CRU)](https://monitortests.com/custom-resolution-utility)
 
-7. **7-Zip**
+6. **7-Zip**
 ```
   7-Zip
   ~~~~~

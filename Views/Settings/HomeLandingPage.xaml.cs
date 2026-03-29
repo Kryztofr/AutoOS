@@ -70,41 +70,39 @@ namespace AutoOS.Views.Settings
 
                         await contentDialog.ShowAsync();
                     }
-
-                    var updateDialog = new UpdateDialog();
-                    var actions = UpdateStage.UpdateActions(updateDialog);
-
-                    if (actions.Count > 0)
-                    {
-                        var updater = new ContentDialog
-                        {
-                            Title = "Applying Update...",
-                            Content = updateDialog,
-                            Resources = new ResourceDictionary
-                            {
-                                ["ContentDialogMinHeight"] = 0.0,
-                                ["ContentDialogMinWidth"] = 500,
-                                ["ContentDialogMaxWidth"] = 1000
-                            },
-                            XamlRoot = XamlRoot
-                        };
-
-                        _ = updater.ShowAsync();
-                        await updateDialog.RunActions(actions);
-                        updateDialog.SetStatus("Update complete.");
-                        updateDialog.SetSuccess();
-                        await Task.Delay(1000);
-                        updater.Hide();
-                    }
-
-                    localSettings.Values["Version"] = currentVersion.ToString();
-                    Registry.SetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\AutoOS", "IsInstalled", 1, RegistryValueKind.DWord);
-                    await ProcessActions.Log();
                 }
                 catch
+                {   }
+
+                var updateDialog = new UpdateDialog();
+                var actions = UpdateStage.UpdateActions(updateDialog);
+
+                if (actions.Count > 0)
                 {
-                    return;
+                    var updater = new ContentDialog
+                    {
+                        Title = "Applying Update...",
+                        Content = updateDialog,
+                        Resources = new ResourceDictionary
+                        {
+                            ["ContentDialogMinHeight"] = 0.0,
+                            ["ContentDialogMinWidth"] = 500,
+                            ["ContentDialogMaxWidth"] = 1000
+                        },
+                        XamlRoot = XamlRoot
+                    };
+
+                    _ = updater.ShowAsync();
+                    await updateDialog.RunActions(actions);
+                    updateDialog.SetStatus("Update complete.");
+                    updateDialog.SetSuccess();
+                    await Task.Delay(1000);
+                    updater.Hide();
                 }
+
+                localSettings.Values["Version"] = currentVersion.ToString();
+                Registry.SetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\AutoOS", "IsInstalled", 1, RegistryValueKind.DWord);
+                await ProcessActions.Log();
             }
 
             bool includePrereleases = localSettings.Values["IncludePrerelease"] as bool? ?? false;

@@ -1,7 +1,8 @@
-﻿using System.Runtime.InteropServices;
+using System.Runtime.InteropServices;
 using System.Text;
 using Windows.Win32;
 using Windows.Win32.Foundation;
+using Windows.Win32.System.Power;
 
 namespace AutoOS.Views.Settings.Power
 {
@@ -183,6 +184,24 @@ namespace AutoOS.Views.Settings.Power
         internal static bool DeleteScheme(Guid scheme)
         {
             return (uint)PInvoke.PowerDeleteScheme(default, scheme) == 0;
+        }
+
+        internal static Guid GetPlanGuidByName(string name)
+        {
+            uint index = 0;
+            uint size = (uint)sizeof(Guid);
+            byte* pBuffer = stackalloc byte[(int)size];
+
+            while (true)
+            {
+                uint res = (uint)PInvoke.PowerEnumerate(default, null, null, POWER_DATA_ACCESSOR.ACCESS_SCHEME, index++, new Span<byte>(pBuffer, (int)size), ref size);
+                if (res != 0) break;
+
+                Guid schemeGuid = new(new ReadOnlySpan<byte>(pBuffer, (int)size));
+                if (string.Equals(ReadFriendlyName(schemeGuid, null, null), name, StringComparison.OrdinalIgnoreCase))
+                    return schemeGuid;
+            }
+            return Guid.Empty;
         }
     }
 }

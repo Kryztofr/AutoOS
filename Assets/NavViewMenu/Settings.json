@@ -17,6 +17,13 @@
           "HideItem": true
         },
         {
+          "UniqueId": "AutoOS.Views.Settings.SoundPage",
+          "Title": "Sound",
+          "Subtitle": "Sound",
+          "ImagePath": "ms-appx:///Assets/Fluent/Sound.png",
+          "HideItem": true
+        },
+        {
           "UniqueId": "AutoOS.Views.Settings.DisplayPage",
           "Title": "Displays",
           "Subtitle": "Displays",

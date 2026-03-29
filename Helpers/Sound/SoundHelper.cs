@@ -1,0 +1,783 @@
+using AutoOS.Helpers.Device;
+using System.Runtime.InteropServices;
+using Windows.Win32;
+using Windows.Win32.Foundation;
+using Windows.Win32.Media.Audio;
+using Windows.Win32.System.Com;
+using Windows.Win32.System.Variant;
+using System.Collections.Concurrent;
+using System.Diagnostics;
+using Windows.Storage;
+using System.Text.Json.Nodes;
+using Windows.Win32.UI.Shell.PropertiesSystem;
+using Windows.Win32.System.Com.StructuredStorage;
+using Windows.Win32.Media.Audio.Endpoints;
+using System.Runtime.CompilerServices;
+
+namespace AutoOS.Helpers.Sound;
+
+public partial class AudioFormatOption
+{
+    public uint SampleRate { get; set; }
+    public ushort Bits { get; set; }
+    public ushort Channels { get; set; }
+    public string DisplayName { get; set; } = string.Empty;
+    public bool IsCurrent { get; set; }
+    public override string ToString() => DisplayName;
+}
+
+public partial class AudioDetails
+{
+    public float CurrentVolume { get; set; }
+    public bool IsMuted { get; set; }
+    public uint CurrentSampleRate { get; set; }
+    public ushort CurrentBitDepth { get; set; }
+    public ushort CurrentChannels { get; set; }
+    public float LeftVolume { get; set; }
+    public float RightVolume { get; set; }
+    public List<AudioFormatOption> Formats { get; set; } = [];
+}
+
+public partial class BufferSizeOption
+{
+    public uint Frames { get; set; }
+    public float Ms { get; set; }
+    public string DisplayName { get; set; } = string.Empty;
+    public bool IsCurrent { get; set; }
+    public bool IsDefault { get; set; }
+    public override string ToString() => DisplayName;
+}
+
+[StructLayout(LayoutKind.Sequential)]
+internal unsafe struct IPolicyConfigVtbl
+{
+    public delegate* unmanaged[Stdcall]<void*, Guid*, void**, int> QueryInterface;
+    public delegate* unmanaged[Stdcall]<void*, uint> AddRef;
+    public delegate* unmanaged[Stdcall]<void*, uint> Release;
+    public delegate* unmanaged[Stdcall]<void*, char*, void**, int> GetMixFormat;
+    public delegate* unmanaged[Stdcall]<void*, char*, int, void**, int> GetDeviceFormat;
+    public delegate* unmanaged[Stdcall]<void*, char*, int> ResetDeviceFormat;
+    public delegate* unmanaged[Stdcall]<void*, char*, void*, void*, int> SetDeviceFormat;
+}
+
+[StructLayout(LayoutKind.Sequential)]
+internal unsafe struct IPolicyConfigNativeOut
+{
+    public IPolicyConfigVtbl* Vtbl;
+}
+
+public static partial class SoundHelper
+{
+    private static readonly ApplicationDataContainer localSettings = ApplicationData.Current.LocalSettings;
+    private static readonly ConcurrentDictionary<string, object> Observers = new();
+
+    private static readonly Guid KSDATAFORMAT_SUBTYPE_PCM = new("00000001-0000-0010-8000-00aa00389b71");
+    private static readonly Guid KSDATAFORMAT_SUBTYPE_IEEE_FLOAT = new("00000003-0000-0010-8000-00aa00389b71");
+
+    public static unsafe AudioDetails GetAudioDetails(DeviceInfo device)
+    {
+        PInvoke.CoInitializeEx(null, COINIT.COINIT_MULTITHREADED);
+        var details = new AudioDetails();
+
+        HRESULT hrEnum = PInvoke.CoCreateInstance(typeof(MMDeviceEnumerator).GUID, null, (CLSCTX)7, typeof(IMMDeviceEnumerator).GUID, out void* pEnumerator);
+        if (hrEnum.Value >= 0)
+        {
+            IMMDeviceEnumerator* enumerator = (IMMDeviceEnumerator*)pEnumerator;
+            IMMDevice* endpoint = null;
+            fixed (char* pId = device.RegistryPath) { enumerator->GetDevice(pId, &endpoint); }
+
+            if (endpoint != null)
+            {
+                Guid volId = typeof(IAudioEndpointVolume).GUID;
+                endpoint->Activate(volId, (CLSCTX)7, null, out void* pVolume);
+                if (pVolume != null)
+                {
+                    IAudioEndpointVolume* endpointVolume = (IAudioEndpointVolume*)pVolume;
+                    endpointVolume->GetMasterVolumeLevelScalar(out float vol);
+                    details.CurrentVolume = MathF.Round(vol * 100f);
+
+                    endpointVolume->GetChannelCount(out uint channelCount);
+                    if (channelCount >= 2)
+                    {
+                        endpointVolume->GetChannelVolumeLevelScalar(0, out float left);
+                        endpointVolume->GetChannelVolumeLevelScalar(1, out float right);
+                        details.LeftVolume = MathF.Round(left * 100f);
+                        details.RightVolume = MathF.Round(right * 100f);
+                    }
+
+                    endpointVolume->GetMute(out BOOL muted);
+                    details.IsMuted = (bool)muted;
+                    endpointVolume->Release();
+                }
+
+                IPropertyStore* store = null;
+                endpoint->OpenPropertyStore((STGM)0, &store);
+                if (store != null)
+                {
+                    PROPERTYKEY keyDeviceFormat = new() { fmtid = new Guid("F19F064D-082C-4E27-BC73-6882A1BB8E4C"), pid = 0 };
+                    PROPVARIANT prop = default;
+                    store->GetValue(&keyDeviceFormat, &prop);
+                    if (prop.Anonymous.Anonymous.vt == VARENUM.VT_BLOB)
+                    {
+                        WAVEFORMATEX* waveFormat = (WAVEFORMATEX*)prop.Anonymous.Anonymous.Anonymous.blob.pBlobData;
+                        details.CurrentSampleRate = waveFormat->nSamplesPerSec;
+                        details.CurrentBitDepth = waveFormat->wBitsPerSample;
+                        details.CurrentChannels = waveFormat->nChannels;
+                        if (waveFormat->wFormatTag == 0xFFFE)
+                        {
+                            var extDevice = (WAVEFORMATEXTENSIBLE*)waveFormat;
+                            details.CurrentBitDepth = extDevice->Samples.wValidBitsPerSample;
+                        }
+                    }
+                    PInvoke.PropVariantClear(&prop);
+                    store->Release();
+                }
+
+                Guid clientId = typeof(IAudioClient3).GUID;
+                endpoint->Activate(clientId, (CLSCTX)7, null, out void* pAudioClient);
+                if (pAudioClient != null)
+                {
+                    IAudioClient3* audioClient = (IAudioClient3*)pAudioClient;
+                    uint[] testRates = [44100, 48000, 88200, 96000, 176400, 192000, 352800, 384000];
+                    ushort[] testBits = [16, 24, 32];
+                    ushort testChannels = details.CurrentChannels > 0 ? details.CurrentChannels : (ushort)2;
+
+                    var formats = new List<AudioFormatOption>();
+                    foreach (var rate in testRates)
+                    {
+                        foreach (var bit in testBits)
+                        {
+                            WAVEFORMATEXTENSIBLE fmt = CreateWaveFormat(rate, bit, testChannels);
+                            HRESULT supportHr = (HRESULT)audioClient->IsFormatSupported(AUDCLNT_SHAREMODE.AUDCLNT_SHAREMODE_EXCLUSIVE, (WAVEFORMATEX*)&fmt, null);
+                            if (supportHr.Value == 0)
+                            {
+                                string quality = (bit, rate) switch
+                                {
+                                    (16, 44100) => " (CD Quality)",
+                                    (16, 48000) => " (DVD Quality)",
+                                    (24 or 32, >= 44100) => " (Studio Quality)",
+                                    (16, >= 88200) => " (Studio Quality)",
+                                    _ => ""
+                                };
+                                formats.Add(new AudioFormatOption
+                                {
+                                    SampleRate = rate,
+                                    Bits = bit,
+                                    Channels = testChannels,
+                                    DisplayName = $"{testChannels} channels, {bit} bit, {rate} Hz{quality}",
+                                    IsCurrent = (rate == details.CurrentSampleRate && bit == details.CurrentBitDepth)
+                                });
+                            }
+                        }
+                    }
+                    details.Formats = [.. formats.OrderBy(f => f.Channels).ThenBy(f => f.Bits).ThenBy(f => f.SampleRate)];
+                    audioClient->Release();
+                }
+                endpoint->Release();
+            }
+            enumerator->Release();
+        }
+        return details;
+    }
+
+    public static unsafe List<BufferSizeOption> GetBufferSizes(DeviceInfo device)
+    {
+        PInvoke.CoInitializeEx(null, COINIT.COINIT_MULTITHREADED);
+        var bufferSizes = new List<BufferSizeOption>();
+
+        HRESULT hrEnum = PInvoke.CoCreateInstance(typeof(MMDeviceEnumerator).GUID, null, (CLSCTX)7, typeof(IMMDeviceEnumerator).GUID, out void* pEnumerator);
+        if (hrEnum.Value >= 0)
+        {
+            IMMDeviceEnumerator* enumerator = (IMMDeviceEnumerator*)pEnumerator;
+            IMMDevice* endpoint = null;
+            fixed (char* pId = device.RegistryPath) { enumerator->GetDevice(pId, &endpoint); }
+
+            if (endpoint != null)
+            {
+                IPropertyStore* store = null;
+                endpoint->OpenPropertyStore((STGM)0, &store);
+                if (store != null)
+                {
+                    PROPERTYKEY keyFormFactor = new() { fmtid = new Guid("1da5d803-d492-4edd-8c23-e0c0ffee7f0e"), pid = 0 };
+                    PROPVARIANT formFactorProp = default;
+                    store->GetValue(&keyFormFactor, &formFactorProp);
+                    uint formFactor = formFactorProp.Anonymous.Anonymous.Anonymous.ulVal;
+                    string iconName = formFactor switch { 3 => "Headphones.png", 4 or 5 => "Microphone.png", _ => "Speaker.png" };
+                    device.DevObjName = $"ms-appx:///Assets/Fluent/{iconName}";
+                    PInvoke.PropVariantClear(&formFactorProp);
+                    store->Release();
+                }
+
+                Guid clientId = typeof(IAudioClient3).GUID;
+                endpoint->Activate(clientId, (CLSCTX)7, null, out void* pAudioClient);
+                if (pAudioClient != null)
+                {
+                    IAudioClient3* audioClient = (IAudioClient3*)pAudioClient;
+                    WAVEFORMATEX* format = null;
+                    audioClient->GetMixFormat(&format);
+                    if (format != null)
+                    {
+                        audioClient->GetSharedModeEnginePeriod(*format, out uint def, out uint fund, out uint min, out uint max);
+                        audioClient->GetCurrentSharedModeEnginePeriod(out _, out uint current);
+
+                        if (min > 0)
+                        {
+                            double factor = 1000.0 / format->nSamplesPerSec;
+                            var options = new HashSet<uint> { min, def, max, current }.Where(x => x > 0).OrderBy(x => x);
+                            foreach (var frames in options)
+                            {
+                                float ms = (float)Math.Round(frames * factor, 2);
+                                bufferSizes.Add(new BufferSizeOption
+                                {
+                                    Frames = frames,
+                                    Ms = ms,
+                                    DisplayName = $"{frames} samples ({ms:0.#} ms)",
+                                    IsCurrent = (frames == current),
+                                    IsDefault = (frames == def)
+                                });
+                            }
+                        }
+                        PInvoke.CoTaskMemFree(format);
+                    }
+                    audioClient->Release();
+                }
+                endpoint->Release();
+            }
+            enumerator->Release();
+        }
+
+        return [.. bufferSizes.DistinctBy(x => x.Frames)];
+    }
+
+    private static unsafe uint GetDefaultSampleRate(EDataFlow flow)
+    {
+        uint rate = 0;
+        PInvoke.CoInitializeEx(null, COINIT.COINIT_MULTITHREADED);
+        HRESULT hrEnum = PInvoke.CoCreateInstance(typeof(MMDeviceEnumerator).GUID, null, (CLSCTX)7, typeof(IMMDeviceEnumerator).GUID, out void* pEnumerator);
+        if (hrEnum.Value >= 0)
+        {
+            IMMDeviceEnumerator* enumerator = (IMMDeviceEnumerator*)pEnumerator;
+            IMMDevice* endpoint = null;
+            enumerator->GetDefaultAudioEndpoint(flow, ERole.eConsole, &endpoint);
+            if (endpoint != null)
+            {
+                endpoint->Activate(typeof(IAudioClient3).GUID, (CLSCTX)7, null, out void* pAudioClient);
+                if (pAudioClient != null)
+                {
+                    IAudioClient3* audioClient = (IAudioClient3*)pAudioClient;
+                    WAVEFORMATEX* format = null;
+                    audioClient->GetMixFormat(&format);
+                    if (format != null)
+                    {
+                        rate = format->nSamplesPerSec;
+                        PInvoke.CoTaskMemFree(format);
+                    }
+                    audioClient->Release();
+                }
+                endpoint->Release();
+            }
+            enumerator->Release();
+        }
+        return rate;
+    }
+
+    public static unsafe void SetAudioVolume(DeviceInfo device, float volume)
+    {
+        PInvoke.CoInitializeEx(null, COINIT.COINIT_MULTITHREADED);
+        HRESULT hrEnum = PInvoke.CoCreateInstance(typeof(MMDeviceEnumerator).GUID, null, (CLSCTX)7, typeof(IMMDeviceEnumerator).GUID, out void* pEnumerator);
+        if (hrEnum.Value >= 0)
+        {
+            IMMDeviceEnumerator* enumerator = (IMMDeviceEnumerator*)pEnumerator;
+            IMMDevice* endpoint = null;
+            fixed (char* pId = device.RegistryPath) { enumerator->GetDevice(pId, &endpoint); }
+            if (endpoint != null)
+            {
+                Guid iid = typeof(IAudioEndpointVolume).GUID;
+                endpoint->Activate(iid, (CLSCTX)7, null, out void* pVolume);
+                if (pVolume != null)
+                {
+                    ((IAudioEndpointVolume*)pVolume)->SetMasterVolumeLevelScalar(volume, null);
+                    ((IAudioEndpointVolume*)pVolume)->Release();
+                }
+                endpoint->Release();
+            }
+            enumerator->Release();
+        }
+    }
+
+    public static unsafe void SetAudioMute(DeviceInfo device, bool muted)
+    {
+        PInvoke.CoInitializeEx(null, COINIT.COINIT_MULTITHREADED);
+        HRESULT hrEnum = PInvoke.CoCreateInstance(typeof(MMDeviceEnumerator).GUID, null, (CLSCTX)7, typeof(IMMDeviceEnumerator).GUID, out void* pEnumerator);
+        if (hrEnum.Value >= 0)
+        {
+            IMMDeviceEnumerator* enumerator = (IMMDeviceEnumerator*)pEnumerator;
+            IMMDevice* endpoint = null;
+            fixed (char* pId = device.RegistryPath) { enumerator->GetDevice(pId, &endpoint); }
+            if (endpoint != null)
+            {
+                Guid iid = typeof(IAudioEndpointVolume).GUID;
+                endpoint->Activate(iid, (CLSCTX)7, null, out void* pVolume);
+                if (pVolume != null)
+                {
+                    ((IAudioEndpointVolume*)pVolume)->SetMute(muted ? (BOOL)1 : (BOOL)0, null);
+                    ((IAudioEndpointVolume*)pVolume)->Release();
+                }
+                endpoint->Release();
+            }
+            enumerator->Release();
+        }
+    }
+
+    public static unsafe void SetAudioChannelVolume(DeviceInfo device, uint channel, float volume)
+    {
+        PInvoke.CoInitializeEx(null, COINIT.COINIT_MULTITHREADED);
+        HRESULT hrEnum = PInvoke.CoCreateInstance(typeof(MMDeviceEnumerator).GUID, null, (CLSCTX)7, typeof(IMMDeviceEnumerator).GUID, out void* pEnumerator);
+        if (hrEnum.Value >= 0)
+        {
+            IMMDeviceEnumerator* enumerator = (IMMDeviceEnumerator*)pEnumerator;
+            IMMDevice* endpoint = null;
+            fixed (char* pId = device.RegistryPath) { enumerator->GetDevice(pId, &endpoint); }
+            if (endpoint != null)
+            {
+                Guid iid = typeof(IAudioEndpointVolume).GUID;
+                endpoint->Activate(iid, (CLSCTX)7, null, out void* pVolume);
+                if (pVolume != null)
+                {
+                    ((IAudioEndpointVolume*)pVolume)->SetChannelVolumeLevelScalar(channel, volume, null);
+                    ((IAudioEndpointVolume*)pVolume)->Release();
+                }
+                endpoint->Release();
+            }
+            enumerator->Release();
+        }
+    }
+
+    public static unsafe void SetAudioFormat(DeviceInfo device, uint sampleRate, ushort bits, ushort channels)
+    {
+        PInvoke.CoInitializeEx(null, COINIT.COINIT_MULTITHREADED);
+        Guid clsidEnum = typeof(MMDeviceEnumerator).GUID;
+        Guid iidEnum = typeof(IMMDeviceEnumerator).GUID;
+
+        if (PInvoke.CoCreateInstance(in clsidEnum, null, CLSCTX.CLSCTX_ALL, in iidEnum, out void* pEnumerator).Value >= 0)
+        {
+            IMMDeviceEnumerator* enumerator = (IMMDeviceEnumerator*)pEnumerator;
+            IMMDevice* endpoint = null;
+            fixed (char* pId = device.RegistryPath) { enumerator->GetDevice(pId, &endpoint); }
+            if (endpoint != null)
+            {
+                IPropertyStore* store = null;
+                endpoint->OpenPropertyStore((STGM)2, &store);
+                if (store != null)
+                {
+                    WAVEFORMATEXTENSIBLE endpointFormat = CreateWaveFormat(sampleRate, bits, channels);
+                    WAVEFORMATEXTENSIBLE mixFormat = default;
+                    mixFormat.Format.wFormatTag = 0xFFFE;
+                    mixFormat.Format.nChannels = channels;
+                    mixFormat.Format.nSamplesPerSec = sampleRate;
+                    mixFormat.Format.wBitsPerSample = 32;
+                    mixFormat.Format.nBlockAlign = (ushort)(channels * 4);
+                    mixFormat.Format.nAvgBytesPerSec = sampleRate * mixFormat.Format.nBlockAlign;
+                    mixFormat.Format.cbSize = 22;
+                    mixFormat.Samples.wValidBitsPerSample = 32;
+                    mixFormat.dwChannelMask = channels == 1 ? 4u : (channels == 2 ? 3u : 0u);
+                    mixFormat.SubFormat = KSDATAFORMAT_SUBTYPE_IEEE_FLOAT;
+
+                    void* pEndpointFormat = (void*)Marshal.AllocCoTaskMem(sizeof(WAVEFORMATEXTENSIBLE));
+                    void* pMixFormat = (void*)Marshal.AllocCoTaskMem(sizeof(WAVEFORMATEXTENSIBLE));
+                    *(WAVEFORMATEXTENSIBLE*)pEndpointFormat = endpointFormat;
+                    *(WAVEFORMATEXTENSIBLE*)pMixFormat = mixFormat;
+
+                    Guid clsidPolicy = new("870af99c-171d-4f9e-af0d-e63df40c2bc9");
+                    Guid iidPolicy = new("f8679f50-850a-41cf-9c72-430f290290c8");
+
+                    if (PInvoke.CoCreateInstance(clsidPolicy, null, CLSCTX.CLSCTX_ALL, iidPolicy, out void* pPolicyOut).Value >= 0)
+                    {
+                        var policy = (IPolicyConfigNativeOut*)pPolicyOut;
+                        fixed (char* pwzDeviceId = device.RegistryPath)
+                        {
+                            policy->Vtbl->SetDeviceFormat(pPolicyOut, pwzDeviceId, pEndpointFormat, pMixFormat);
+                        }
+                        policy->Vtbl->Release(pPolicyOut);
+                    }
+
+                    PROPVARIANT propDev = default;
+                    propDev.Anonymous.Anonymous.vt = VARENUM.VT_BLOB;
+                    propDev.Anonymous.Anonymous.Anonymous.blob.cbSize = (uint)sizeof(WAVEFORMATEXTENSIBLE);
+                    propDev.Anonymous.Anonymous.Anonymous.blob.pBlobData = (byte*)&endpointFormat;
+
+                    PROPVARIANT propMix = default;
+                    propMix.Anonymous.Anonymous.vt = VARENUM.VT_BLOB;
+                    propMix.Anonymous.Anonymous.Anonymous.blob.cbSize = (uint)sizeof(WAVEFORMATEXTENSIBLE);
+                    propMix.Anonymous.Anonymous.Anonymous.blob.pBlobData = (byte*)&mixFormat;
+
+                    PROPERTYKEY keyDeviceFormat = new() { fmtid = new Guid("F19F064D-082C-4E27-BC73-6882A1BB8E4C"), pid = 0 };
+                    PROPERTYKEY keyOemFormat = new() { fmtid = new Guid("E4870E26-3CC5-4CD2-BA46-CA0A9A70ED04"), pid = 0 };
+
+                    store->SetValue(in keyDeviceFormat, in propDev);
+                    store->SetValue(in keyOemFormat, in propMix);
+                    store->Commit();
+
+                    Marshal.FreeCoTaskMem((IntPtr)pEndpointFormat);
+                    Marshal.FreeCoTaskMem((IntPtr)pMixFormat);
+                    store->Release();
+                }
+                endpoint->Release();
+            }
+            enumerator->Release();
+        }
+    }
+
+    private static WAVEFORMATEXTENSIBLE CreateWaveFormat(uint rate, ushort bits, ushort channels)
+    {
+        WAVEFORMATEXTENSIBLE format = default;
+        format.Format.wFormatTag = 0xFFFE;
+        format.Format.nChannels = channels;
+        format.Format.nSamplesPerSec = rate;
+        format.Format.cbSize = 22;
+        format.dwChannelMask = channels == 1 ? 4u : (channels == 2 ? 3u : 0u);
+        format.Format.wBitsPerSample = bits;
+        format.Samples.wValidBitsPerSample = bits;
+        format.SubFormat = KSDATAFORMAT_SUBTYPE_PCM;
+        format.Format.nBlockAlign = (ushort)(format.Format.nChannels * (format.Format.wBitsPerSample / 8));
+        format.Format.nAvgBytesPerSec = format.Format.nSamplesPerSec * format.Format.nBlockAlign;
+        return format;
+    }
+
+    public static unsafe void RegisterVolumeCallback(DeviceInfo device, Action<float, bool, float, float> onNotify)
+    {
+        PInvoke.CoInitializeEx(null, COINIT.COINIT_MULTITHREADED);
+        Observers.TryRemove(device.RegistryPath, out var old);
+        if (old is IDisposable disp) disp.Dispose();
+
+        HRESULT hrEnum = PInvoke.CoCreateInstance(typeof(MMDeviceEnumerator).GUID, null, (CLSCTX)7, typeof(IMMDeviceEnumerator).GUID, out void* pEnumerator);
+        if (hrEnum.Value >= 0)
+        {
+            IMMDeviceEnumerator* enumerator = (IMMDeviceEnumerator*)pEnumerator;
+            IMMDevice* endpoint = null;
+            fixed (char* pId = device.RegistryPath) { enumerator->GetDevice(pId, &endpoint); }
+            if (endpoint != null)
+            {
+                Guid iid = typeof(IAudioEndpointVolume).GUID;
+                endpoint->Activate(iid, (CLSCTX)7, null, out void* pVol);
+                if (pVol != null)
+                {
+                    var client = new VolumeNotificationClient((IAudioEndpointVolume*)pVol, endpoint, onNotify);
+                    ((IAudioEndpointVolume*)pVol)->RegisterControlChangeNotify((IAudioEndpointVolumeCallback*)client.GetComPointer());
+                    Observers[device.RegistryPath] = client;
+                }
+                else endpoint->Release();
+            }
+            enumerator->Release();
+        }
+    }
+
+    public static unsafe void RegisterDeviceChangeCallback(Action onNotify)
+    {
+        PInvoke.CoInitializeEx(null, COINIT.COINIT_MULTITHREADED);
+        Observers.TryRemove("DeviceChange", out var old);
+        if (old is IDisposable disp) disp.Dispose();
+
+        HRESULT hrEnum = PInvoke.CoCreateInstance(typeof(MMDeviceEnumerator).GUID, null, (CLSCTX)7, typeof(IMMDeviceEnumerator).GUID, out void* pEnumerator);
+        if (hrEnum.Value >= 0)
+        {
+            IMMDeviceEnumerator* enumerator = (IMMDeviceEnumerator*)pEnumerator;
+            var client = new DeviceNotificationClient(onNotify, enumerator);
+            enumerator->RegisterEndpointNotificationCallback((IMMNotificationClient*)client.GetComPointer());
+            Observers["DeviceChange"] = client;
+        }
+    }
+
+
+
+    public static void ApplyAudioSettings(DeviceInfo device, BufferSizeOption option)
+    {
+        if (option == null) return;
+
+        var json = localSettings.Values["Audio"]?.ToString();
+        var array = JsonNode.Parse(json ?? "[]")?.AsArray() ?? [];
+        
+        JsonObject obj = null;
+        foreach (var item in array)
+        {
+            if (item?["PnpDeviceId"]?.ToString() == device.PnpDeviceId)
+            {
+                obj = item.AsObject();
+                break;
+            }
+        }
+
+        if (obj == null)
+        {
+            obj = new JsonObject { ["PnpDeviceId"] = device.PnpDeviceId };
+            array.Add((JsonNode)obj);
+        }
+
+        obj["BufferSize"] = option.Ms;
+        obj["IsInput"] = device.IsInputDevice;
+
+        localSettings.Values["Audio"] = array.ToJsonString();
+        SetBufferSizes();
+    }
+
+    public static unsafe void SetBufferSizes()
+    {
+        foreach (var process in Process.GetProcessesByName("SoundHelper"))
+        {
+            process.Kill();
+            process.WaitForExit();
+        }
+
+        var json = localSettings.Values["Audio"]?.ToString();
+        if (string.IsNullOrEmpty(json)) return;
+
+        var array = JsonNode.Parse(json)?.AsArray();
+        if (array == null || array.Count == 0) return;
+
+        PInvoke.CoInitializeEx(null, COINIT.COINIT_MULTITHREADED);
+        string currentOutputId = null;
+        string currentInputId = null;
+
+        if (PInvoke.CoCreateInstance(typeof(MMDeviceEnumerator).GUID, null, CLSCTX.CLSCTX_ALL, typeof(IMMDeviceEnumerator).GUID, out void* pEnumerator).Value >= 0)
+        {
+            IMMDeviceEnumerator* enumerator = (IMMDeviceEnumerator*)pEnumerator;
+            foreach (var flow in new[] { EDataFlow.eRender, EDataFlow.eCapture })
+            {
+                IMMDevice* endpoint = null;
+                enumerator->GetDefaultAudioEndpoint(flow, ERole.eConsole, &endpoint);
+                if (endpoint != null)
+                {
+                    PWSTR id = default;
+                    endpoint->GetId(&id);
+                    if (flow == EDataFlow.eRender) currentOutputId = id.ToString();
+                    else currentInputId = id.ToString();
+                    PInvoke.CoTaskMemFree(id);
+                    endpoint->Release();
+                }
+            }
+            enumerator->Release();
+        }
+
+        float outputMs = 0;
+        float inputMs = 0;
+
+        foreach (var item in array)
+        {
+            string id = item["PnpDeviceId"]?.GetValue<string>();
+            float ms = item["BufferSize"]?.GetValue<float>() ?? 0;
+            if (ms > 0 && ms < 10)
+            {
+                if (id == currentOutputId) outputMs = ms;
+                if (id == currentInputId) inputMs = ms;
+            }
+        }
+
+        if (outputMs > 0 || inputMs > 0)
+        {
+            File.Copy(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "SoundHelper.exe"), Path.Combine(ApplicationData.Current.LocalFolder.Path, "SoundHelper.exe"), true);
+
+            string args = "";
+            if (outputMs > 0) args += $"-output-ms {outputMs} ";
+            if (inputMs > 0) args += $"-input-ms {inputMs} ";
+
+            if (!string.IsNullOrEmpty(args))
+            {
+                Process.Start(new ProcessStartInfo 
+                { 
+                    FileName = Path.Combine(ApplicationData.Current.LocalFolder.Path, "SoundHelper.exe"), 
+                    Arguments = args.Trim(), 
+                    CreateNoWindow = true,
+                    UseShellExecute = false
+                });
+            }
+        }
+    }
+
+    private unsafe partial class VolumeNotificationClient : IDisposable
+    {
+        private static readonly VolumeCallbackVtbl* _vtbl;
+        private readonly void* _instance;
+        private readonly IAudioEndpointVolume* _volume;
+        private readonly IMMDevice* _endpoint;
+        private readonly Action<float, bool, float, float> _onNotify;
+
+        static VolumeNotificationClient()
+        {
+            _vtbl = (VolumeCallbackVtbl*)RuntimeHelpers.AllocateTypeAssociatedMemory(typeof(VolumeNotificationClient), sizeof(VolumeCallbackVtbl));
+            _vtbl->QueryInterface = &QueryInterface;
+            _vtbl->AddRef = &AddRef;
+            _vtbl->Release = &Release;
+            _vtbl->OnNotify = &OnNotify;
+        }
+
+        public VolumeNotificationClient(IAudioEndpointVolume* volume, IMMDevice* endpoint, Action<float, bool, float, float> onNotify)
+        {
+            _volume = volume;
+            _endpoint = endpoint;
+            _onNotify = onNotify;
+            _instance = (void*)Marshal.AllocHGlobal(sizeof(IntPtr) + sizeof(IntPtr));
+            *(IntPtr*)_instance = (IntPtr)_vtbl;
+            *(IntPtr*)((byte*)_instance + sizeof(IntPtr)) = (IntPtr)GCHandle.ToIntPtr(GCHandle.Alloc(this));
+        }
+
+        public void* GetComPointer() => _instance;
+
+        [UnmanagedCallersOnly(CallConvs = [typeof(CallConvStdcall)])]
+        private static int QueryInterface(IntPtr self, Guid* riid, IntPtr* ppv)
+        {
+            if (riid->Equals(new Guid("657804FA-D6AD-4496-8A60-352752AF4F89")))
+            {
+                *ppv = self;
+                return 0;
+            }
+            *ppv = IntPtr.Zero;
+            return unchecked((int)0x80004002);
+        }
+
+        [UnmanagedCallersOnly(CallConvs = [typeof(CallConvStdcall)])]
+        private static uint AddRef(IntPtr self) => 1;
+
+        [UnmanagedCallersOnly(CallConvs = [typeof(CallConvStdcall)])]
+        private static uint Release(IntPtr self) => 1;
+
+        [UnmanagedCallersOnly(CallConvs = [typeof(CallConvStdcall)])]
+        private static int OnNotify(IntPtr self, IntPtr pNotify)
+        {
+            var client = (VolumeNotificationClient)GCHandle.FromIntPtr(*(IntPtr*)((byte*)self + sizeof(IntPtr))).Target!;
+            client._volume->GetMasterVolumeLevelScalar(out float v);
+            client._volume->GetMute(out BOOL m);
+            client._volume->GetChannelCount(out uint c);
+            float l = 0, r = 0;
+            if (c >= 1) client._volume->GetChannelVolumeLevelScalar(0, out l);
+            if (c >= 2) client._volume->GetChannelVolumeLevelScalar(1, out r);
+            client._onNotify?.Invoke(MathF.Round(v * 100f), (bool)m, MathF.Round(l * 100f), MathF.Round(r * 100f));
+            return 0;
+        }
+
+        public void Dispose()
+        {
+            try
+            {
+                _volume->UnregisterControlChangeNotify((IAudioEndpointVolumeCallback*)_instance);
+            }
+            catch { }
+            _volume->Release();
+            _endpoint->Release();
+            GCHandle.FromIntPtr(*(IntPtr*)((byte*)_instance + sizeof(IntPtr))).Free();
+            Marshal.FreeHGlobal((IntPtr)_instance);
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        struct VolumeCallbackVtbl
+        {
+            public delegate* unmanaged[Stdcall]<IntPtr, Guid*, IntPtr*, int> QueryInterface;
+            public delegate* unmanaged[Stdcall]<IntPtr, uint> AddRef;
+            public delegate* unmanaged[Stdcall]<IntPtr, uint> Release;
+            public delegate* unmanaged[Stdcall]<IntPtr, IntPtr, int> OnNotify;
+        }
+    }
+
+    private unsafe partial class DeviceNotificationClient : IDisposable
+    {
+        private static readonly DeviceNotificationVtbl* _vtbl;
+        private readonly void* _instance;
+        private readonly Action _onNotify;
+        private readonly IMMDeviceEnumerator* _enumerator;
+
+        static DeviceNotificationClient()
+        {
+            _vtbl = (DeviceNotificationVtbl*)RuntimeHelpers.AllocateTypeAssociatedMemory(typeof(DeviceNotificationClient), sizeof(DeviceNotificationVtbl));
+            _vtbl->QueryInterface = &QueryInterface;
+            _vtbl->AddRef = &AddRef;
+            _vtbl->Release = &Release;
+            _vtbl->OnStateChanged = &OnStateChanged;
+            _vtbl->OnAdded = &OnAdded;
+            _vtbl->OnRemoved = &OnRemoved;
+            _vtbl->OnDefaultChanged = &OnDefaultChanged;
+            _vtbl->OnPropChanged = &OnPropChanged;
+        }
+
+        public DeviceNotificationClient(Action onNotify, IMMDeviceEnumerator* enumerator)
+        {
+            _onNotify = onNotify;
+            _enumerator = enumerator;
+            _instance = (void*)Marshal.AllocHGlobal(sizeof(IntPtr) + sizeof(IntPtr));
+            *(IntPtr*)_instance = (IntPtr)_vtbl;
+            *(IntPtr*)((byte*)_instance + sizeof(IntPtr)) = (IntPtr)GCHandle.ToIntPtr(GCHandle.Alloc(this));
+        }
+
+        public void* GetComPointer() => _instance;
+
+        [UnmanagedCallersOnly(CallConvs = [typeof(CallConvStdcall)])]
+        private static int QueryInterface(IntPtr self, Guid* riid, IntPtr* ppv)
+        {
+            if (riid->Equals(new Guid("7991222B-0258-4425-9614-D44351C1AF50")))
+            {
+                *ppv = self;
+                return 0;
+            }
+            *ppv = IntPtr.Zero;
+            return unchecked((int)0x80004002);
+        }
+
+        [UnmanagedCallersOnly(CallConvs = [typeof(CallConvStdcall)])]
+        private static uint AddRef(IntPtr self) => 1;
+
+        [UnmanagedCallersOnly(CallConvs = [typeof(CallConvStdcall)])]
+        private static uint Release(IntPtr self) => 1;
+
+        [UnmanagedCallersOnly(CallConvs = [typeof(CallConvStdcall)])]
+        private static int OnStateChanged(IntPtr self, char* id, uint state)
+        {
+            Invoke(self);
+            return 0;
+        }
+
+        [UnmanagedCallersOnly(CallConvs = [typeof(CallConvStdcall)])]
+        private static int OnAdded(IntPtr self, char* id)
+        {
+            Invoke(self);
+            return 0;
+        }
+
+        [UnmanagedCallersOnly(CallConvs = [typeof(CallConvStdcall)])]
+        private static int OnRemoved(IntPtr self, char* id)
+        {
+            Invoke(self);
+            return 0;
+        }
+
+        [UnmanagedCallersOnly(CallConvs = [typeof(CallConvStdcall)])]
+        private static int OnDefaultChanged(IntPtr self, EDataFlow f, ERole r, char* id)
+        {
+            Invoke(self);
+            return 0;
+        }
+
+        [UnmanagedCallersOnly(CallConvs = [typeof(CallConvStdcall)])]
+        private static int OnPropChanged(IntPtr self, char* id, PROPERTYKEY k) => 0;
+
+        private static void Invoke(IntPtr self) => ((DeviceNotificationClient)GCHandle.FromIntPtr(*(IntPtr*)((byte*)self + sizeof(IntPtr))).Target!)._onNotify?.Invoke();
+
+        public void Dispose()
+        {
+            _enumerator->UnregisterEndpointNotificationCallback((IMMNotificationClient*)_instance);
+            _enumerator->Release();
+            GCHandle.FromIntPtr(*(IntPtr*)((byte*)_instance + sizeof(IntPtr))).Free();
+            Marshal.FreeHGlobal((IntPtr)_instance);
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        struct DeviceNotificationVtbl
+        {
+            public delegate* unmanaged[Stdcall]<IntPtr, Guid*, IntPtr*, int> QueryInterface;
+            public delegate* unmanaged[Stdcall]<IntPtr, uint> AddRef;
+            public delegate* unmanaged[Stdcall]<IntPtr, uint> Release;
+            public delegate* unmanaged[Stdcall]<IntPtr, char*, uint, int> OnStateChanged;
+            public delegate* unmanaged[Stdcall]<IntPtr, char*, int> OnAdded;
+            public delegate* unmanaged[Stdcall]<IntPtr, char*, int> OnRemoved;
+            public delegate* unmanaged[Stdcall]<IntPtr, EDataFlow, ERole, char*, int> OnDefaultChanged;
+            public delegate* unmanaged[Stdcall]<IntPtr, char*, PROPERTYKEY, int> OnPropChanged;
+        }
+    }
+}

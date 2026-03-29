@@ -9,6 +9,10 @@ using System.Text.RegularExpressions;
 using ValveKeyValue;
 using Windows.Storage;
 using WinRT.Interop;
+using Windows.Win32;
+using Windows.Win32.Media.Audio;
+using Windows.Win32.System.Com;
+using Windows.Win32.Foundation;
 
 namespace AutoOS.Views.Installer.Stages;
 
@@ -85,6 +89,7 @@ public static class PreparingStage
     public static bool Wifi;
     public static bool TxIntDelay;
     public static bool NetAdapterCx;
+    public static bool SOUND;
 
     public static bool INTELCPU;
     public static bool AMDCPU;
@@ -313,8 +318,62 @@ public static class PreparingStage
 
             var nics = DeviceHelper.GetDevices(DeviceType.NIC);
             Wifi = nics.Any(device => device.NicType == NicDeviceType.WiFi);
-			TxIntDelay = nics.Any(device => Registry.LocalMachine.OpenSubKey(device.RegistryPath).GetValue("TxIntDelay") != null);
+            TxIntDelay = nics.Any(device => Registry.LocalMachine.OpenSubKey(device.RegistryPath).GetValue("TxIntDelay") != null);
             NetAdapterCx = nics.Any(device => device.IsActive && device.DriverType == NicDriverType.NetAdapterCx);
+
+            unsafe
+            {
+                PInvoke.CoInitializeEx(null, COINIT.COINIT_MULTITHREADED);
+                HRESULT hrEnum = PInvoke.CoCreateInstance(typeof(MMDeviceEnumerator).GUID, null, CLSCTX.CLSCTX_ALL, typeof(IMMDeviceEnumerator).GUID, out void* pEnumerator);
+                if (hrEnum.Value >= 0)
+                {
+                    IMMDeviceEnumerator* enumerator = (IMMDeviceEnumerator*)pEnumerator;
+                    var audioJson = new JsonArray();
+                    IMMDevice** pEndpoint = stackalloc IMMDevice*[1];
+                    PWSTR* pId = stackalloc PWSTR[1];
+                    WAVEFORMATEX** pFormat = stackalloc WAVEFORMATEX*[1];
+                    uint* pParams = stackalloc uint[4];
+
+                    foreach (var flow in new[] { EDataFlow.eRender, EDataFlow.eCapture })
+                    {
+                        enumerator->GetDefaultAudioEndpoint(flow, ERole.eConsole, pEndpoint);
+                        if (*pEndpoint != null)
+                        {
+                            IMMDevice* endpoint = *pEndpoint;
+                            endpoint->Activate(typeof(IAudioClient3).GUID, CLSCTX.CLSCTX_ALL, null, out void* pAudioClient);
+                            if (pAudioClient != null)
+                            {
+                                IAudioClient3* audioClient = (IAudioClient3*)pAudioClient;
+                                audioClient->GetMixFormat(pFormat);
+                                WAVEFORMATEX* format = *pFormat;
+                                if (format != null)
+                                {
+                                    audioClient->GetSharedModeEnginePeriod(format, pParams, pParams + 1, pParams + 2, pParams + 3);
+                                    if (pParams[2] > 0 && pParams[2] < pParams[0])
+                                    {
+                                        endpoint->GetId(pId);
+                                        PWSTR id = *pId;
+                                        float ms = (float)Math.Round((double)pParams[2] * 1000.0 / format->nSamplesPerSec, 1);
+                                        audioJson.Add((JsonNode)new JsonObject
+                                        {
+                                            ["PnpDeviceId"] = id.ToString(),
+                                            ["BufferSize"] = ms,
+                                            ["IsInput"] = (flow == EDataFlow.eCapture)
+                                        });
+                                        SOUND = true;
+                                        PInvoke.CoTaskMemFree(id);
+                                    }
+                                    PInvoke.CoTaskMemFree(format);
+                                }
+                                audioClient->Release();
+                            }
+                            endpoint->Release();
+                        }
+                    }
+                    localSettings.Values["Audio"] = audioJson.ToJsonString();
+                    enumerator->Release();
+                }
+            }
         });
 
         InstallPage.Info.Severity = InfoBarSeverity.Informational;

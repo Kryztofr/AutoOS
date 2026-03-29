@@ -88,7 +88,7 @@ public static class ServicesHelper
         if (!PInvoke.StartService(serviceHandle, null))
         {
             int error = Marshal.GetLastWin32Error();
-            if (error == 1056) return;
+            if (error == 1056 || error == 1061) return;
             throw new Win32Exception(error, "StartService failed");
         }
     }
@@ -109,7 +109,7 @@ public static class ServicesHelper
         if (!PInvoke.ControlService(serviceHandle, (uint)PInvoke.SERVICE_CONTROL_STOP, out SERVICE_STATUS status))
         {
             int error = Marshal.GetLastWin32Error();
-            if (error == 1062) return;
+            if (error == 1062 || error == 1061 || error == 1052) return;
             throw new Win32Exception(error, "ControlService failed");
         }
     }

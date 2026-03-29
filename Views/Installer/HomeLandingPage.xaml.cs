@@ -29,7 +29,7 @@ namespace AutoOS.Views.Installer
                             Content = "AutoOS currently only on fresh installations of Windows.\nPlease follow the Getting Started guide in the README on GitHub.",
                             CloseButtonText = "OK",
                             DefaultButton = ContentDialogButton.Close,
-                            XamlRoot = App.MainWindow.Content.XamlRoot
+                            XamlRoot = XamlRoot
                         };
                         await dialog.ShowAsync();
                         Application.Current.Exit();
@@ -48,7 +48,7 @@ namespace AutoOS.Views.Installer
                             Content = $"AutoOS is currently only supported on new versions of Windows 11 25H2. \nPlease download it from the Getting Started guide in the README on GitHub.",
                             CloseButtonText = "OK",
                             DefaultButton = ContentDialogButton.Close,
-                            XamlRoot = App.MainWindow.Content.XamlRoot
+                            XamlRoot = XamlRoot
                         };
                         await dialog.ShowAsync();
                         Application.Current.Exit();
