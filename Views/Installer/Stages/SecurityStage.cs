@@ -61,7 +61,7 @@ public static class SecurityStage
             (@"Disabling ""Turn on telemetry for Defender core service"" policy", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows Defender\Features", "DisableCoreService1DSTelemetry", 1, RegistryValueKind.DWord), () => WindowsDefender == false),
 
             // disable smartscreen
-<            ("Disabling Smartscreen", async () => await RegistryHelper.RunAs(RegistryHelper.Identity.TrustedInstaller, async () => { foreach (var process in Process.GetProcessesByName("smartscreen")) { process.Kill(); await process.WaitForExitAsync(); } if (File.Exists(@"C:\Windows\System32\smartscreen.exe")) File.Move(@"C:\Windows\System32\smartscreen.exe", @"C:\Windows\System32\smartscreen.exee"); }), null),
+            ("Disabling Smartscreen", async () => await RegistryHelper.RunAs(RegistryHelper.Identity.TrustedInstaller, async () => { foreach (var process in Process.GetProcessesByName("smartscreen")) { process.Kill(); await process.WaitForExitAsync(); } if (File.Exists(@"C:\Windows\System32\smartscreen.exe")) File.Move(@"C:\Windows\System32\smartscreen.exe", @"C:\Windows\System32\smartscreen.exee"); }), null),
 
             // enable windows hardware quality labs (whql) driver enforcement
             ("Enabling Windows Hardware Quality Labs (WHQL) driver enforcement", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\CI\Policy", "WhqlSettings", 1, RegistryValueKind.DWord), null),

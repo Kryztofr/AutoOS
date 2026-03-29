@@ -2,6 +2,7 @@ using AutoOS.Views.Installer.Actions;
 using AutoOS.Helpers.Device;
 using AutoOS.Helpers.Registry;
 using System.Diagnostics;
+using Microsoft.Win32;
 
 namespace AutoOS.Views.Installer.Stages;
 
@@ -40,7 +41,11 @@ public static class DeviceStage
             ("Disabling XHCI Interrupt Moderation (IMOD)", async () => { foreach (var device in DeviceHelper.GetDevices(DeviceType.XHCI)) DeviceHelper.ToggleImod(device, false); }, null),
             
             // disable reserved storage
-            ("Disabling reserved storage", async () => await ProcessActions.RunPowerShell(@"DISM /Online /Set-ReservedStorageState /State:Disabled"), null)
+            ("Disabling reserved storage", async () => await ProcessActions.RunPowerShell(@"DISM /Online /Set-ReservedStorageState /State:Disabled"), null),
+
+            // optimize raw mouse throttling
+            ("Setting raw mouse throttle duration to 20 ms", async () => RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_CURRENT_USER\Control Panel\Mouse", "RawMouseThrottleDuration", 20, RegistryValueKind.DWord), null),
+            ("Setting raw mouse throttle leeway to 0ms", async () => RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_CURRENT_USER\Control Panel\Mouse", "RawMouseThrottleLeeway", 0, RegistryValueKind.DWord), null)
         };
     }
 }
