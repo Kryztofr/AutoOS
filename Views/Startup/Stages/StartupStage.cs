@@ -41,6 +41,7 @@ public static class StartupStage
                     IMMDevice** pEndpoint = stackalloc IMMDevice*[1];
                     PWSTR* pId = stackalloc PWSTR[1];
                     WAVEFORMATEX** pFormat = stackalloc WAVEFORMATEX*[1];
+                    uint* pParams = stackalloc uint[4];
 
                     foreach (var flow in new[] { EDataFlow.eRender, EDataFlow.eCapture })
                     {
@@ -48,11 +49,7 @@ public static class StartupStage
                         if (*pEndpoint != null)
                         {
                             IMMDevice* endpoint = *pEndpoint;
-                            endpoint->GetId(pId);
-                            PWSTR id = *pId;
-                            string deviceId = id.ToString();
-                            void* pAudioClient = null;
-                            endpoint->Activate(typeof(IAudioClient3).GUID, CLSCTX.CLSCTX_ALL, null, out pAudioClient);
+                            endpoint->Activate(typeof(IAudioClient3).GUID, CLSCTX.CLSCTX_ALL, null, out void* pAudioClient);
                             if (pAudioClient != null)
                             {
                                 IAudioClient3* audioClient = (IAudioClient3*)pAudioClient;
@@ -60,14 +57,24 @@ public static class StartupStage
                                 WAVEFORMATEX* format = *pFormat;
                                 if (format != null)
                                 {
-                                    audioClient->GetCurrentSharedModeEnginePeriod(out _, out uint current);
-                                    float ms = (float)Math.Round((double)current / format->nSamplesPerSec * 1000.0, 2);
-                                    array.Add((JsonNode)new JsonObject { ["PnpDeviceId"] = deviceId, ["BufferSize"] = ms, ["IsInput"] = (flow == EDataFlow.eCapture) });
+                                    audioClient->GetSharedModeEnginePeriod(format, pParams, pParams + 1, pParams + 2, pParams + 3);
+                                    if (pParams[2] > 0 && pParams[2] < pParams[0])
+                                    {
+                                        endpoint->GetId(pId);
+                                        PWSTR id = *pId;
+                                        float ms = (float)Math.Round((double)pParams[2] * 1000.0 / format->nSamplesPerSec, 1);
+                                        array.Add((JsonNode)new JsonObject
+                                        {
+                                            ["PnpDeviceId"] = id.ToString(),
+                                            ["BufferSize"] = ms,
+                                            ["IsInput"] = (flow == EDataFlow.eCapture)
+                                        });
+                                        PInvoke.CoTaskMemFree(id);
+                                    }
                                     PInvoke.CoTaskMemFree(format);
                                 }
                                 audioClient->Release();
                             }
-                            PInvoke.CoTaskMemFree(id);
                             endpoint->Release();
                         }
                     }
