@@ -1162,7 +1162,7 @@ public partial class HeaderCarousel : ItemsControl
         // make all accounts inactive
         foreach (var user in kv.Children)
         {
-            if (user["AccountName"]?.ToString() == SteamAccounts.SelectedItem.ToString())
+            if (user["AccountName"]?.Value.ToString() == SteamAccounts.SelectedItem.ToString())
             {
                 user["MostRecent"] = "1";
                 user["AllowAutoLogin"] = "1";
@@ -1312,7 +1312,7 @@ public partial class HeaderCarousel : ItemsControl
             PrimaryButtonText = "Yes",
             CloseButtonText = "No",
             DefaultButton = ContentDialogButton.Close,
-            XamlRoot = this.XamlRoot,
+            XamlRoot = XamlRoot,
         };
         ContentDialogResult result = await contentDialog.ShowAsync();
 
@@ -1323,10 +1323,10 @@ public partial class HeaderCarousel : ItemsControl
             SteamHelper.CloseSteam();
 
             // read file
-            var kv = KVSerializer.Create(KVSerializationFormat.KeyValues1Text)
-                                 .Deserialize(new MemoryStream(System.Text.Encoding.UTF8.GetBytes(File.ReadAllText(SteamHelper.SteamLoginUsersPath))));
+            var kv = KVSerializer.Create(KVSerializationFormat.KeyValues1Text).Deserialize(new MemoryStream(Encoding.UTF8.GetBytes(File.ReadAllText(SteamHelper.SteamLoginUsersPath))));
+
             // remove selected account
-            var newChildren = kv.Children.Where(c => c != kv.Children.First(child => child.Value["AccountName"]?.ToString() == SteamAccounts.SelectedItem.ToString()));
+            var newChildren = kv.Children.Where(c => c != kv.Children.First(child => child["AccountName"]?.Value.ToString() == SteamAccounts.SelectedItem.ToString()));
             var newRoot = new KVObject(kv.Name, newChildren);
 
             // write changes
