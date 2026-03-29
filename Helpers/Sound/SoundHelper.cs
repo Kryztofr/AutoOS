@@ -494,7 +494,7 @@ public static partial class SoundHelper
     {
         if (option == null) return;
 
-        var json = localSettings.Values["Audio"]?.ToString();
+        var json = localSettings.Values["Sound"]?.ToString();
         var array = JsonNode.Parse(json ?? "[]")?.AsArray() ?? [];
         
         JsonObject obj = null;
@@ -516,7 +516,7 @@ public static partial class SoundHelper
         obj["BufferSize"] = option.Ms;
         obj["IsInput"] = device.IsInputDevice;
 
-        localSettings.Values["Audio"] = array.ToJsonString();
+        localSettings.Values["Sound"] = array.ToJsonString();
         SetBufferSizes();
     }
 
@@ -528,7 +528,7 @@ public static partial class SoundHelper
             process.WaitForExit();
         }
 
-        var json = localSettings.Values["Audio"]?.ToString();
+        var json = localSettings.Values["Sound"]?.ToString();
         if (string.IsNullOrEmpty(json)) return;
 
         var array = JsonNode.Parse(json)?.AsArray();

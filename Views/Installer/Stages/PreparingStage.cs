@@ -370,7 +370,7 @@ public static class PreparingStage
                             endpoint->Release();
                         }
                     }
-                    localSettings.Values["Audio"] = audioJson.ToJsonString();
+                    localSettings.Values["Sound"] = audioJson.ToJsonString();
                     enumerator->Release();
                 }
             }
