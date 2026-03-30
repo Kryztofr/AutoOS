@@ -13,6 +13,7 @@ using Windows.Win32;
 using Windows.Win32.Media.Audio;
 using Windows.Win32.System.Com;
 using Windows.Win32.Foundation;
+using System.Runtime.InteropServices;
 
 namespace AutoOS.Views.Installer.Stages;
 
@@ -336,7 +337,15 @@ public static class PreparingStage
 
                     foreach (var flow in new[] { EDataFlow.eRender, EDataFlow.eCapture })
                     {
-                        enumerator->GetDefaultAudioEndpoint(flow, ERole.eConsole, pEndpoint);
+                        try
+                        {
+                            enumerator->GetDefaultAudioEndpoint(flow, ERole.eConsole, pEndpoint);
+                        }
+                        catch (COMException ex) when (ex.HResult == unchecked((int)0x80070490))
+                        {
+                            continue;
+                        }
+
                         if (*pEndpoint != null)
                         {
                             IMMDevice* endpoint = *pEndpoint;
