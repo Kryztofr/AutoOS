@@ -132,7 +132,7 @@ irm https://raw.githubusercontent.com/tinodin/AutoOS/master/deploy.ps1 | iex
 
 If you get any errors during the script, it’s most likely because your current operating system has disabled services that are required. Make sure to use a default installation of Windows to run the script.
 
-**Step 6:** Once the script finished, `restart` and boot into the `default option`. Make sure to `keep your ethernet cable connected` or `connect to your WiFi in the setup`. **DO NOT BYPASS THE NETWORK REQUIREMENT!**. Then wait for Windows to finish installing.
+**Step 6:** Once the script finished, `restart` and boot into the `default option`. Make sure to `keep your ethernet cable connected` or `connect to your WiFi in the setup`. **DO NOT BYPASS THE NETWORK REQUIREMENT!** Then wait for Windows to finish installing.
 
 **Step 7:** Once finished, wait for AutoOS to open up.
 
