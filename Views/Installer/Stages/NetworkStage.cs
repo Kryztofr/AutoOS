@@ -36,9 +36,6 @@ public static class NetworkStage
             // check connection
             ("Waiting for internet connection to reestablish", async () => await ProcessActions.RunConnectionCheck(), () => Wifi == true),
 
-            // disable power management settings
-            ("Disabling power management settings", async () => await ProcessActions.RunPowerShellScript("networkpowermanagement.ps1", ""), null),
-
             // set txintdelay to 0
             ("Setting TxIntDelay to 0", async () => DeviceHelper.GetDevices(DeviceType.NIC).Where(d => Registry.LocalMachine.OpenSubKey(d.RegistryPath).GetValue("TxIntDelay") != null).ToList().ForEach(d => Registry.LocalMachine.OpenSubKey(d.RegistryPath, true).SetValue("TxIntDelay", 0, RegistryValueKind.DWord)), () => TxIntDelay == true),
 

@@ -30,7 +30,6 @@ public static class PowerStage
             // sleep
             (@"Disabling ""Allow Away Mode Policy""", async () => PowerApi.WriteACValueIndex(guid, new Guid("238c9fa8-0aad-41ed-83f4-97be242c8f20"), new Guid("25dfa149-5dd1-4736-b5ab-e8a37b5b8187"), 0), null),
             (@"Disabling ""Allow hybrid sleep""", async () => PowerApi.WriteACValueIndex(guid, new Guid("238c9fa8-0aad-41ed-83f4-97be242c8f20"), new Guid("94ac6d29-73ce-41a6-809f-6363ba21b47e"), 0), null),
-            (@"Disabling ""Allow Standby States""", async () => PowerApi.WriteACValueIndex(guid, new Guid("238c9fa8-0aad-41ed-83f4-97be242c8f20"), new Guid("abfc2519-3608-4c2a-94ea-171b0ed546ab"), 0), null),
             (@"Disabling ""Allow wake timers""", async () => PowerApi.WriteACValueIndex(guid, new Guid("238c9fa8-0aad-41ed-83f4-97be242c8f20"), new Guid("bd3b718a-0680-4d9d-8ab2-e1d2b4ac806d"), 0), null),
             (@"Setting ""System unattended sleep timeout"" to 0", async () => PowerApi.WriteACValueIndex(guid, new Guid("238c9fa8-0aad-41ed-83f4-97be242c8f20"), new Guid("7bc4a2f9-d8fc-4469-b07b-33eb785aaca0"), 0), null),
 

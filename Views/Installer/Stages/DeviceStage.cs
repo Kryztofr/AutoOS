@@ -25,9 +25,6 @@ public static class DeviceStage
             // disable dma remapping
             ("Disabling DMA remapping", async () => await RegistryHelper.RunAs(RegistryHelper.Identity.TrustedInstaller, new ProcessStartInfo("cmd.exe", @"/c for %a in (DmaRemappingCompatible) do for /f ""delims="" %b in ('reg query ""HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services"" /s /f ""%a"" ^| findstr ""HKEY""') do reg add ""%b"" /v ""%a"" /t REG_DWORD /d 0 /f") { CreateNoWindow = true }), null),
 
-            // disable device power management
-            ("Disabling device power management", async () => await ProcessActions.RunPowerShellScript("devicepowermanagement.ps1", ""), null),
-
             // enable msi mode for supported devices
             ("Enabling MSI mode for supported devices", async () => await RegistryHelper.RunAs(RegistryHelper.Identity.TrustedInstaller, new ProcessStartInfo("cmd.exe", @"/c for /f ""tokens=*"" %i in ('reg query ""HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Enum\PCI"" ^| findstr ""HKEY""') do for /f ""tokens=*"" %a in ('reg query ""%i"" ^| findstr ""HKEY""') do @for /f ""tokens=3"" %v in ('reg query ""%a\Device Parameters\Interrupt Management\MessageSignaledInterruptProperties"" /v MSISupported 2^>nul ^| findstr MSISupported') do @if ""%v""==""0x0"" reg add ""%a\Device Parameters\Interrupt Management\MessageSignaledInterruptProperties"" /v MSISupported /t REG_DWORD /d 1 /f") { CreateNoWindow = true }), null),
 

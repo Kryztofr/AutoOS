@@ -932,7 +932,7 @@ public static class BiosSettingRecommendationsList
         new BiosSettingRecommendation { SetupQuestion = "ZEN5 Gaming Optimizations", Type = "Option", RecommendedOption = "Level 2" },
 
         // both
-        new BiosSettingRecommendation { SetupQuestion = "ACPI Sleep State", Type = "Option", RecommendedOption = "Suspend Disabled" },
+        //new BiosSettingRecommendation { SetupQuestion = "ACPI Sleep State", Type = "Option", RecommendedOption = "Suspend Disabled" }, // breaks sleep
         new BiosSettingRecommendation { SetupQuestion = "ACPI Standby State", Type = "Option", RecommendedOption = "Suspend Disabled" },
         new BiosSettingRecommendation { SetupQuestion = "APP Center Download & Install", Type = "Option", RecommendedOption = "Disabled" },
         new BiosSettingRecommendation { SetupQuestion = "ASPM", Type = "Option", RecommendedOption = "Disabled" }, // already disable on AMD
