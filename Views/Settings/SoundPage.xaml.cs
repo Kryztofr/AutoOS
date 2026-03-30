@@ -185,25 +185,31 @@ namespace AutoOS.Views.Settings
         private void Volume_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
         {
             if (isInitializingAudioState) return;
+
             if (sender is Slider slider && slider.DataContext is DeviceInfo device)
             {
                 float vol = (float)e.NewValue / 100f;
-                SoundHelper.SetAudioVolume(device, vol);
-                
-                if (Math.Abs(device.LeftVolume - device.RightVolume) < 0.1)
+
+                float actualVol = SoundHelper.SetAudioVolume(device, vol);
+                float actualPercentage = MathF.Round(actualVol * 100f);
+
+                device.Volume = actualPercentage;
+                device.LeftVolume = actualPercentage;
+                device.RightVolume = actualPercentage;
+
+                if (Math.Abs(slider.Value - actualPercentage) > 0.1)
                 {
-                    device.LeftVolume = (float)e.NewValue;
-                    device.RightVolume = (float)e.NewValue;
+                    slider.Value = actualPercentage;
                 }
 
                 if (!device.IsInputDevice)
                 {
-                    if (e.NewValue == 0 && !device.IsMuted)
+                    if (actualPercentage == 0 && !device.IsMuted)
                     {
                         device.IsMuted = true;
                         SoundHelper.SetAudioMute(device, true);
                     }
-                    else if (e.NewValue > 0 && device.IsMuted)
+                    else if (actualPercentage > 0 && device.IsMuted)
                     {
                         device.IsMuted = false;
                         SoundHelper.SetAudioMute(device, false);

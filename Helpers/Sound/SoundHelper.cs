@@ -101,8 +101,13 @@ public static partial class SoundHelper
                     {
                         endpointVolume->GetChannelVolumeLevelScalar(0, out float left);
                         endpointVolume->GetChannelVolumeLevelScalar(1, out float right);
-                        details.LeftVolume = MathF.Round(left * 100f);
-                        details.RightVolume = MathF.Round(right * 100f);
+                        details.LeftVolume = float.IsFinite(left) ? MathF.Round(left * 100f) : 100f;
+                        details.RightVolume = float.IsFinite(right) ? MathF.Round(right * 100f) : 100f;
+                    }
+                    else
+                    {
+                        details.LeftVolume = details.CurrentVolume;
+                        details.RightVolume = details.CurrentVolume;
                     }
 
                     endpointVolume->GetMute(out BOOL muted);
@@ -293,28 +298,36 @@ public static partial class SoundHelper
         return rate;
     }
 
-    public static unsafe void SetAudioVolume(DeviceInfo device, float volume)
+    public static unsafe float SetAudioVolume(DeviceInfo device, float volume)
     {
+        float safeVol = float.IsFinite(volume) ? Math.Clamp(volume, 0.0f, 1.0f) : 1.0f;
+        float actualVol = 1.0f;
+
         PInvoke.CoInitializeEx(null, COINIT.COINIT_MULTITHREADED);
         HRESULT hrEnum = PInvoke.CoCreateInstance(typeof(MMDeviceEnumerator).GUID, null, (CLSCTX)7, typeof(IMMDeviceEnumerator).GUID, out void* pEnumerator);
-        if (hrEnum.Value >= 0)
+
+        if (hrEnum.Succeeded)
         {
             IMMDeviceEnumerator* enumerator = (IMMDeviceEnumerator*)pEnumerator;
             IMMDevice* endpoint = null;
             fixed (char* pId = device.RegistryPath) { enumerator->GetDevice(pId, &endpoint); }
+
             if (endpoint != null)
             {
                 Guid iid = typeof(IAudioEndpointVolume).GUID;
                 endpoint->Activate(iid, (CLSCTX)7, null, out void* pVolume);
                 if (pVolume != null)
                 {
-                    ((IAudioEndpointVolume*)pVolume)->SetMasterVolumeLevelScalar(volume, null);
-                    ((IAudioEndpointVolume*)pVolume)->Release();
+                    var ev = (IAudioEndpointVolume*)pVolume;
+                    ev->SetMasterVolumeLevelScalar(safeVol, null);
+                    ev->GetMasterVolumeLevelScalar(out actualVol);
+                    ev->Release();
                 }
                 endpoint->Release();
             }
             enumerator->Release();
         }
+        return actualVol;
     }
 
     public static unsafe void SetAudioMute(DeviceInfo device, bool muted)
