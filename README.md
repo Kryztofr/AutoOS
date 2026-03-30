@@ -53,7 +53,7 @@ AutoOS is a Native AOT WinUI 3 application that automates Windows setup and opti
 - Disables some unneeded Optional Features
 - Removes some unneeded Capabilities
 - Uninstalls and deprovisions unneeded AppX packages and updates all installed AppX to their latest version
-- Installs Visual C++ Redistributable, Microsoft Edge WebView2, Microsoft Windows App Runtime and DirectX Runtimes
+- Installs Visual C++ Redistributable, Microsoft Edge WebView2, Microsoft Windows App Runtime and DirectX
 - Installs selected Browsers with selected Browser Extensions and preconfigured settings
 - Installs additional Image / Video Extensions
 - Installs NanaZip, Everything, StartAllBack and Windhawk with Mods for Start Menu, Taskbar, File Explorer etc.
@@ -136,7 +136,9 @@ If you get any errors during the script, it’s most likely because your current
 
 **Step 7:** Once finished, wait for AutoOS to open up.
 
-**Step 8:** Select your settings and click "Install AutoOS". This process will take around 20-30 minutes.
+**Step 8:** Carefully look through every tab and select your preferences and apps. Then click "Install AutoOS". This process will take around 20-30 minutes.
+
+**DO NOT MANUALLY INSTALL ANY APPS (Discord etc.) BEFORE THE PROCESS IS COMPLETE!**
 
 If you want to delete your old Windows partition and merge the unallocated space with the AutoOS partition, use [Minitool Partition Wizard Free](https://cdn2.minitool.com/?p=pw&e=pw-free) (decline each offer in the installer). Then use the `Delete` function on the old Windows partition and the `Extend` function on the AutoOS partition and max out the slider. Click apply and restart. Make sure to delete `Minitool Partition Wizard Free` again after you are done.
 
@@ -148,7 +150,15 @@ If you want to delete your old Windows partition and merge the unallocated space
 - Press the `Restart Processes` button to restore the taskbar etc.
 - Check the `BIOS Settings` tab for recommendations.
 - Leave a `review`, share `suggestions`, or report `issues` on the `Discord Server`.
+- [Donate](https://www.paypal.com/donate/?hosted_button_id=GVEVUSHUWXEAG) if you appreciate the immense time and effort I have put into creating this project for free.
 - If you have experience with `C# and WinUI3` and want to become a part of the project, let me know.
+
+### What **NOT** to do after the installation is finished?
+- Run other `tweaks` or `optimizers` like `CTT` etc.
+- Apply `timer resolution` because it does more harm than good.
+- `Uninstall` `MSI Afterburner, OBS, Everything, Windhawk, StartAllBack` or any of the `runtimes`.
+- `Install` `7-Zip`, because `NanaZip` is already installed.
+- `Uninstall` more AppX Packages like `Xbox Game Bar` or `Microsoft Edge` because it **breaks functionality**.
 
 ## 📷 Screenshots
 ### AutoOS Installer
@@ -281,14 +291,8 @@ reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\S
 
 ## 🙏 Credits
 
-**Amitxv / Valleyofdoom:**  
-Thank you for your [PC-Tuning Guide](https://github.com/valleyofdoom/PC-Tuning) and your useful utilities.
-Without your guide this project wouldn't exist. It inspired me to attempt to automate it and ultimately start this project.
-
----
-
 **Imribiy:**  
-Thank you for your research on [Configuring services and features](https://github.com/imribiy/XOS/tree/main/configure-services-and-features) and [AMD GPU Tweaks](https://github.com/imribiy/amd-gpu-tweaks).  
+Thank you for creating [AMD GPU Tweaks](https://github.com/imribiy/amd-gpu-tweaks).  
 
 ---
 
