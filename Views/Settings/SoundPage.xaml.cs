@@ -2,6 +2,8 @@ using AutoOS.Helpers.Device;
 using AutoOS.Helpers.Sound;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.Media.Audio;
@@ -9,8 +11,6 @@ using Windows.Win32.System.Com;
 using Windows.Win32.System.Com.StructuredStorage;
 using Windows.Win32.System.Variant;
 using Windows.Win32.UI.Shell.PropertiesSystem;
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
 
 namespace AutoOS.Views.Settings
 {
@@ -75,22 +75,52 @@ namespace AutoOS.Views.Settings
         private unsafe void GetAudioDevices()
         {
             isInitializingAudioState = true;
-
             PInvoke.CoInitializeEx(null, COINIT.COINIT_MULTITHREADED);
-            HRESULT hrEnum = PInvoke.CoCreateInstance(typeof(MMDeviceEnumerator).GUID, null, (CLSCTX)7, typeof(IMMDeviceEnumerator).GUID, out void* pEnumerator);
-            if (hrEnum.Value >= 0)
+
+            if (PInvoke.CoCreateInstance(typeof(MMDeviceEnumerator).GUID, null, (CLSCTX)7, typeof(IMMDeviceEnumerator).GUID, out void* pEnumerator).Succeeded)
             {
                 IMMDeviceEnumerator* enumerator = (IMMDeviceEnumerator*)pEnumerator;
 
-                CurrentOutput = ProcessEndpoint(enumerator, EDataFlow.eRender);
-                CurrentInput = ProcessEndpoint(enumerator, EDataFlow.eCapture);
+                var newOutput = ProcessEndpoint(enumerator, EDataFlow.eRender);
+                UpdateDevice(ref _currentOutput, newOutput, nameof(CurrentOutput));
+
+                var newInput = ProcessEndpoint(enumerator, EDataFlow.eCapture);
+                UpdateDevice(ref _currentInput, newInput, nameof(CurrentInput));
 
                 enumerator->Release();
             }
-
             isInitializingAudioState = false;
         }
 
+        private void UpdateDevice(ref DeviceInfo currentField, DeviceInfo newNode, string propertyName)
+        {
+            if (newNode == null)
+            {
+                if (currentField != null)
+                {
+                    if (propertyName == nameof(CurrentOutput)) CurrentOutput = null;
+                    else CurrentInput = null;
+                }
+                return;
+            }
+
+            if (currentField == null || currentField.PnpDeviceId != newNode.PnpDeviceId)
+            {
+                if (propertyName == nameof(CurrentOutput))
+                    CurrentOutput = newNode;
+                else
+                    CurrentInput = newNode;
+            }
+            else
+            {
+                currentField.AvailableFormats = newNode.AvailableFormats;
+                currentField.BufferSizes = newNode.BufferSizes;
+                currentField.SelectedFormat = newNode.SelectedFormat;
+                currentField.SelectedBufferSize = newNode.SelectedBufferSize;
+                OnPropertyChanged(propertyName);
+            }
+        }
+        
         private unsafe DeviceInfo ProcessEndpoint(IMMDeviceEnumerator* enumerator, EDataFlow flow)
         {
             IMMDevice* endpoint = null;

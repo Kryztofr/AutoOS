@@ -513,8 +513,6 @@ public static partial class SoundHelper
         }
     }
 
-
-
     public static void ApplyAudioSettings(DeviceInfo device, BufferSizeOption option)
     {
         if (option == null) return;
@@ -569,16 +567,23 @@ public static partial class SoundHelper
             foreach (var flow in new[] { EDataFlow.eRender, EDataFlow.eCapture })
             {
                 IMMDevice* endpoint = null;
-                enumerator->GetDefaultAudioEndpoint(flow, ERole.eConsole, &endpoint);
-                if (endpoint != null)
+                try
                 {
-                    PWSTR id = default;
-                    endpoint->GetId(&id);
-                    if (flow == EDataFlow.eRender) currentOutputId = id.ToString();
-                    else currentInputId = id.ToString();
-                    PInvoke.CoTaskMemFree(id);
-                    endpoint->Release();
+                    enumerator->GetDefaultAudioEndpoint(flow, ERole.eConsole, &endpoint);
+                    if (endpoint != null)
+                    {
+                        PWSTR id = default;
+                        endpoint->GetId(&id);
+                        if (flow == EDataFlow.eRender)
+                            currentOutputId = id.ToString();
+                        else
+                            currentInputId = id.ToString();
+                        PInvoke.CoTaskMemFree(id);
+                        endpoint->Release();
+                    }
                 }
+                catch
+                {   }
             }
             enumerator->Release();
         }
