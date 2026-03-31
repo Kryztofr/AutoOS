@@ -122,7 +122,7 @@ Extract all `.zip` files (for `.exe` files, there may be an `extract option` in 
 
 **Step 4:** Open PowerShell **as Administrator**.
 
-**Step 5:** Paste this into the PowerShell window to download and run the deployment script.
+**Step 5:** Paste this into the PowerShell window to download and run the deployment script. Then select the **ISO** and your **drivers** folder or skip the driver installation if you are sure that you don't need them.
 
 ```ps1
 $PSDefaultParameterValues['Invoke-WebRequest:UseBasicParsing'] = $true
