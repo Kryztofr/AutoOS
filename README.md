@@ -122,7 +122,7 @@ Extract all `.zip` files (for `.exe` files, there may be an `extract option` in 
 
 **Step 4:** Open PowerShell **as Administrator**.
 
-**Step 5:** Paste this into the PowerShell window to download and run the deployment script. Then select the **ISO** and your **drivers** folder or skip the driver installation if you are sure that you don't need them.
+**Step 5:** Paste this into the PowerShell window to download and run the deployment script. Then select the **ISO** and your **drivers folder** or skip the driver installation if you are sure that you don't need them.
 
 ```ps1
 $PSDefaultParameterValues['Invoke-WebRequest:UseBasicParsing'] = $true
@@ -137,8 +137,6 @@ If you get any errors during the script, it’s most likely because your current
 **Step 7:** Once finished, wait for AutoOS to open up.
 
 **Step 8:** Carefully look through every tab and select your preferences and apps. Then click "Install AutoOS". This process will take around 20-30 minutes.
-
-**DO NOT MANUALLY INSTALL ANY APPS (Discord etc.) BEFORE THE PROCESS IS COMPLETE!**
 
 If you want to delete your old Windows partition and merge the unallocated space with the AutoOS partition, use [Minitool Partition Wizard Free](https://cdn2.minitool.com/?p=pw&e=pw-free) (decline each offer in the installer). Then use the `Delete` function on the old Windows partition and the `Extend` function on the AutoOS partition and max out the slider. Click apply and restart. Make sure to delete `Minitool Partition Wizard Free` again after you are done.
 
