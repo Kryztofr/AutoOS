@@ -81,7 +81,7 @@ public static class ApplicationStage
         string scheduleMode = ScheduleMode switch
         {
             "Sunset to sunrise" => "LocationService",
-            "Custom hours" => "CustomHours",
+            "Custom" => "Custom",
             _ => ScheduleMode
         };
 
@@ -205,7 +205,7 @@ public static class ApplicationStage
             ("Removing Everything desktop shortcut", async () => File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "Everything 1.5a.lnk")), null),
 
             // download windhawk
-            ("Downloading Windhawk", async () => await ProcessActions.RunDownload("https://www.dl.dropboxusercontent.com/scl/fi/1id8mn7onjmyvd5ky1hka/Windhawk.zip?rlkey=0y77dk0u8crd34gnhszpt4nqc&st=391uel11&dl=0", ApplicationData.Current.TemporaryFolder.Path, "Windhawk.zip"), null),
+            ("Downloading Windhawk", async () => await ProcessActions.RunDownload("https://www.dl.dropboxusercontent.com/scl/fi/4zm2ml31uy39i0ypx1rz4/Windhawk.zip?rlkey=jjuwmjnnpu5c1nptxjciktt2p&st=hrsh668c&dl=0", ApplicationData.Current.TemporaryFolder.Path, "Windhawk.zip"), null),
 
             // install windhawk
             ("Installing Windhawk", async () => await ProcessActions.RunExtract(Path.Combine(ApplicationData.Current.TemporaryFolder.Path, "Windhawk.zip"), @"C:\Program Files\Windhawk"), null),

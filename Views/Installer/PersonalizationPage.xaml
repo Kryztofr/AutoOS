@@ -67,7 +67,7 @@
                                 <ComboBoxItem Content="Always Light" />
                                 <ComboBoxItem Content="Always Dark" />
                                 <ComboBoxItem Content="Sunset to sunrise" />
-                                <ComboBoxItem Content="Custom hours" />
+                                <ComboBoxItem Content="Custom" />
                             </ComboBox>
                         </dev:SettingsCard>
                         <dev:SettingsCard x:Name="LightTimeCard"

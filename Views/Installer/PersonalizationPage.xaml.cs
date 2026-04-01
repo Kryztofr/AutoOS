@@ -153,11 +153,11 @@ public sealed partial class PersonalizationPage : Page
             "Always Light" => 0,
             "Always Dark" => 1,
             "Sunset to sunrise" => 2,
-            "Custom hours" => 3,
+            "Custom" => 3,
             _ => 2
         };
 
-        // load custom hours
+        // load custom
         LightTime.Time = (localSettings.Values["LightTime"] is string lightTimeStr && TimeSpan.TryParse(lightTimeStr, out var lt)) ? lt : TimeSpan.Parse("07:00");
         localSettings.Values["LightTime"] = LightTime.Time.ToString(@"hh\:mm");
 
@@ -177,7 +177,7 @@ public sealed partial class PersonalizationPage : Page
             TimeLine.StartTime = new TimeSpan(sunTimes.SunriseHour, sunTimes.SunriseMinute, 0);
             TimeLine.EndTime = new TimeSpan(sunTimes.SunsetHour, sunTimes.SunsetMinute, 0);
         }
-        else if (scheduleMode == "Custom hours")
+        else if (scheduleMode == "Custom")
         {
             TimeLine.StartTime = LightTime.Time;
             TimeLine.EndTime = DarkTime.Time;
@@ -227,9 +227,9 @@ public sealed partial class PersonalizationPage : Page
     {
         var mode = (ScheduleMode.SelectedItem as ComboBoxItem)?.Content as string;
 
-        LightTimeCard.Visibility = mode == "Custom hours" ? Visibility.Visible : Visibility.Collapsed;
-        DarkTimeCard.Visibility = mode == "Custom hours" ? Visibility.Visible : Visibility.Collapsed;
-        TimelineCard.Visibility = (mode == "Custom hours" || mode == "Sunset to sunrise") ? Visibility.Visible : Visibility.Collapsed;
+        LightTimeCard.Visibility = mode == "Custom" ? Visibility.Visible : Visibility.Collapsed;
+        DarkTimeCard.Visibility = mode == "Custom" ? Visibility.Visible : Visibility.Collapsed;
+        TimelineCard.Visibility = (mode == "Custom" || mode == "Sunset to sunrise") ? Visibility.Visible : Visibility.Collapsed;
     }
 
     private void GetContextMenuState()
