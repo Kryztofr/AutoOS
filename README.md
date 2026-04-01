@@ -143,6 +143,7 @@ If you want to delete your old Windows partition and merge the unallocated space
 ### What to do after the installation is finished?
 - `Disable` the toggle in `Services & Drivers` tab and restart whenever you are `Gaming`.
 - `Enable` it again and restart if you need functionality back for `Work` etc.
+- For `Riot Games` titles to show up in the `Games` tab, you will have to install them through the `Epic Games Launcher` as well.
 - Go to the `Games` tab while `Services & Drivers` are disabled and press the `Play` button.
 - Once you are in the `Game`, press the `Stop Processes` button. 
 - Press the `Restart Processes` button to restore the taskbar etc.
