@@ -123,7 +123,7 @@
                                     </dev:SettingsCard>
                                 </dev:SettingsExpander.Items>
                             </dev:SettingsExpander>
-                            <dev:SettingsCard Margin="0,-2"
+                            <dev:SettingsCard Margin="0,-1,0,0"
                                               Header="Volume"
                                               Visibility="{x:Bind CurrentOutput.SupportPerChannelVolume, Mode=OneWay, Converter={StaticResource ActiveIconVisibilityConverter}}">
                                 <StackPanel Orientation="Horizontal"

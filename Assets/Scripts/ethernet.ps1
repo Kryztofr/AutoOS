@@ -328,4 +328,9 @@ Get-NetAdapter | Where-Object { $_.PhysicalMediaType -eq "802.3" } | ForEach-Obj
     if ($adapterProperties | Where-Object { $_.DisplayName -eq "Ultra Low Power Mode" }) {
         Set-NetAdapterAdvancedProperty -Name $adapterName -DisplayName "Ultra Low Power Mode" -DisplayValue "Disabled"
     }
+
+    # PCI Express Link Power Saving
+    if ($adapterProperties | Where-Object { $_.DisplayName -eq "PCI Express Link Power Saving" }) {
+        Set-NetAdapterAdvancedProperty -Name $adapterName -DisplayName "PCI Express Link Power Saving" -DisplayValue "Disabled"
+    }
 }

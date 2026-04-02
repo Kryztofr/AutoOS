@@ -329,15 +329,10 @@ public static partial class SoundHelper
                 endpoint->Activate(iid, (CLSCTX)7, null, out void* pVolume);
                 if (pVolume != null)
                 {
-                    try
-                    {
-                        var ev = (IAudioEndpointVolume*)pVolume;
-                        ev->SetMasterVolumeLevelScalar(safeVol, null);
-                        ev->GetMasterVolumeLevelScalar(out actualVol);
-                        ev->Release();
-                    }
-                    catch (Exception ex) when (ex.HResult == unchecked((int)0x80070057))
-                    {   }
+                    var ev = (IAudioEndpointVolume*)pVolume;
+                    ev->SetMasterVolumeLevelScalar(safeVol, null);
+                    ev->GetMasterVolumeLevelScalar(out actualVol);
+                    ev->Release();
                 }
                 endpoint->Release();
             }
@@ -372,21 +367,33 @@ public static partial class SoundHelper
 
     public static unsafe void SetAudioChannelVolume(DeviceInfo device, uint channel, float volume)
     {
+        float safeVol = float.IsFinite(volume) ? Math.Clamp(volume, 0.0f, 1.0f) : 0.0f;
+
         PInvoke.CoInitializeEx(null, COINIT.COINIT_MULTITHREADED);
         HRESULT hrEnum = PInvoke.CoCreateInstance(typeof(MMDeviceEnumerator).GUID, null, (CLSCTX)7, typeof(IMMDeviceEnumerator).GUID, out void* pEnumerator);
-        if (hrEnum.Value >= 0)
+
+        if (hrEnum.Succeeded)
         {
             IMMDeviceEnumerator* enumerator = (IMMDeviceEnumerator*)pEnumerator;
             IMMDevice* endpoint = null;
             fixed (char* pId = device.RegistryPath) { enumerator->GetDevice(pId, &endpoint); }
+
             if (endpoint != null)
             {
                 Guid iid = typeof(IAudioEndpointVolume).GUID;
                 endpoint->Activate(iid, (CLSCTX)7, null, out void* pVolume);
+
                 if (pVolume != null)
                 {
-                    ((IAudioEndpointVolume*)pVolume)->SetChannelVolumeLevelScalar(channel, volume, null);
-                    ((IAudioEndpointVolume*)pVolume)->Release();
+                    IAudioEndpointVolume* ev = (IAudioEndpointVolume*)pVolume;
+                    ev->GetChannelCount(out uint actualChannelCount);
+
+                    if (channel < actualChannelCount)
+                    {
+                        ev->SetChannelVolumeLevelScalar(channel, safeVol, null);
+                    }
+
+                    ev->Release();
                 }
                 endpoint->Release();
             }
