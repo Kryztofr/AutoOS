@@ -323,4 +323,9 @@ Get-NetAdapter | Where-Object { $_.PhysicalMediaType -eq "802.3" } | ForEach-Obj
     if ($adapterProperties | Where-Object { $_.DisplayName -eq "WOL Link Power Saving" }) {
         Set-NetAdapterAdvancedProperty -Name $adapterName -DisplayName "WOL Link Power Saving" -DisplayValue "Disabled"
     }
+    
+    # Ultra Low Power Mode
+    if ($adapterProperties | Where-Object { $_.DisplayName -eq "Ultra Low Power Mode" }) {
+        Set-NetAdapterAdvancedProperty -Name $adapterName -DisplayName "Ultra Low Power Mode" -DisplayValue "Disabled"
+    }
 }
