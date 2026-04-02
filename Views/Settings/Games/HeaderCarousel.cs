@@ -1609,9 +1609,9 @@ public partial class HeaderCarousel : ItemsControl
                 "UserManager",
                 "WFDSConMgrSvc",
                 "Windhawk",
-                "WinHttpAutoProxySvc",
+                //"WinHttpAutoProxySvc",
                 //"Winmgmt",
-                "Wcmsvc"
+                //"Wcmsvc"
             };
 
             foreach (var serviceName in serviceNames)
