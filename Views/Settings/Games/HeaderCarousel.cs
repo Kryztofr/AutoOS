@@ -1685,9 +1685,9 @@ public partial class HeaderCarousel : ItemsControl
                 "UdkUserSvc",
                 "UserManager",
                 "WFDSConMgrSvc",
-                "WinHttpAutoProxySvc",
+                //"WinHttpAutoProxySvc",
                 "Winmgmt",
-                "Wcmsvc"
+                //"Wcmsvc"
             };
 
             foreach (var serviceName in serviceNames)
@@ -1799,30 +1799,20 @@ public partial class HeaderCarousel : ItemsControl
 
         if (Launcher == "Epic Games")
         {
-            var exeNames = Directory.GetFiles(InstallLocation, "*.exe", SearchOption.AllDirectories)
-                .Select(Path.GetFileNameWithoutExtension)
-                .Distinct()
-                .ToList();
-
-            if (exeNames.Count == 0) return;
+            string offlineExecutable = Path.GetFileNameWithoutExtension(LaunchExecutable);
+            string onlineExecutable = Title switch
+            {
+                "Fortnite" => "FortniteClient-Win64-Shipping",
+                "Fall Guys" => "FallGuys_client_game",
+                _ => string.Empty
+            };
+            if (Title == "Fall Guys") offlineExecutable = "FallGuys_client";
 
             StartGameWatcher(() =>
-                exeNames.Any(name => Process.GetProcessesByName(name).Length > 0)
+                (!string.IsNullOrEmpty(offlineExecutable) && Process.GetProcessesByName(Path.GetFileNameWithoutExtension(offlineExecutable)).Length > 0) ||
+                (!string.IsNullOrEmpty(onlineExecutable) && Process.GetProcessesByName(Path.GetFileNameWithoutExtension(onlineExecutable)).Length > 0) ||
+                (ProcessNames?.Any(process => !string.IsNullOrEmpty(process) && Process.GetProcessesByName(Path.GetFileNameWithoutExtension(process)).Length > 0) ?? false)
             );
-            //string offlineExecutable = Path.GetFileNameWithoutExtension(LaunchExecutable);
-            //string onlineExecutable = Title switch
-            //{
-            //    "Fortnite" => "FortniteClient-Win64-Shipping",
-            //    "Fall Guys" => "FallGuys_client_game",
-            //    _ => string.Empty
-            //};
-            //if (Title == "Fall Guys") offlineExecutable = "FallGuys_client";
-
-            //StartGameWatcher(() =>
-            //    (!string.IsNullOrEmpty(offlineExecutable) && Process.GetProcessesByName(Path.GetFileNameWithoutExtension(offlineExecutable)).Length > 0) ||
-            //    (!string.IsNullOrEmpty(onlineExecutable) && Process.GetProcessesByName(Path.GetFileNameWithoutExtension(onlineExecutable)).Length > 0) ||
-            //    (ProcessNames?.Any(p => !string.IsNullOrEmpty(p) && Process.GetProcessesByName(Path.GetFileNameWithoutExtension(p)).Length > 0) ?? false)
-            //);
         }
         else if (Launcher == "Steam")
         {
