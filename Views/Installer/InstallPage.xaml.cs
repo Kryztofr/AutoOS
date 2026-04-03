@@ -100,6 +100,7 @@ public sealed partial class InstallPage : Page
         try
         {
             await ProcessActions.Log();
+            await Helpers.Network.NetworkHelper.LogNetworkSettings();
         }
         catch { }
         Info.Title = "Restarting in 3...";

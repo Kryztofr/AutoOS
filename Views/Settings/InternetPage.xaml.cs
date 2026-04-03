@@ -1,217 +1,330 @@
-﻿using System.Diagnostics;
-using Microsoft.Win32;
+using AutoOS.Helpers.Device;
+using AutoOS.Helpers.Network;
+using Microsoft.UI.Xaml.Media;
+using System.Collections.ObjectModel;
 
 namespace AutoOS.Views.Settings;
 
 public sealed partial class InternetPage : Page
 {
-    private bool initialWIFIState = false;
-    private bool isInitializingWIFIState = true;
-    private bool isInitializingWOLState = true;
+    private bool isInitializingAdvancedNetworkSettings = true;
+    private readonly Dictionary<DeviceInfo, Dictionary<string, (string Value, string DisplayValue)>> _pendingChanges = new();
+    public ObservableCollection<DeviceInfo> NetworkAdapters { get; } = [];
 
     public InternetPage()
     {
         InitializeComponent();
-        GetWIFIState();
-        GetWOLState();
+        GetNetworkAdapters();
+        Loaded += InternetPage_Loaded;
     }
 
-    private void GetWIFIState()
+    private void InternetPage_Loaded(object sender, RoutedEventArgs e)
     {
-        // declare services and drivers
-        var groups = new[]
-        {
-            (new[] { "WlanSvc", "Wcmsvc" }, 2),
-            (new[] { "NlaSvc", "WinHttpAutoProxySvc", "Netwtw10", "Netwtw14" }, 3),
-            (new[] { "tdx", "vwififlt"}, 1)
-        };
+        isInitializingAdvancedNetworkSettings = false;
+    }
 
-        // check if values match
-        foreach (var group in groups)
+    private void GetNetworkAdapters()
+    {
+        NetworkAdapters.Clear();
+        foreach (var device in DeviceHelper.GetDevices(DeviceType.NIC))
         {
-            foreach (var service in group.Item1)
+            if (device.NicType == NicDeviceType.WiFi || device.NicType == NicDeviceType.LAN)
             {
-                using var key = Registry.LocalMachine.OpenSubKey($@"SYSTEM\CurrentControlSet\Services\{service}");
-                if (key == null) continue;
-
-                var startValue = key.GetValue("Start");
-                if (startValue == null || (int)startValue != group.Item2)
-                {
-                    isInitializingWIFIState = false;
-                    return;
-                }
+                device.AdvancedSettings = Helpers.Network.NetworkHelper.GetAdvancedSettings(device);
+                NetworkAdapters.Add(device);
             }
         }
-
-        initialWIFIState = true;
-        WiFi.IsOn = true;
-        isInitializingWIFIState = false;
     }
 
-    private async void WiFi_Toggled(object sender, RoutedEventArgs e)
+    private void SettingsGroup_Loaded(object sender, RoutedEventArgs e)
     {
-        if (isInitializingWIFIState) return;
+        if (sender is not SettingsGroup settingsGroup) return;
+        if (settingsGroup.DataContext is not DeviceInfo device) return;
+        var settings = device.AdvancedSettings;
+        settingsGroup.Description = $"Current version: {device.DriverType} {device.CurrentVersion}";
 
-        // disable hittestvisible to avoid double-clicking
-        WiFi.IsHitTestVisible = false;
-
-        // remove infobar
-        WiFiInfo.Children.Clear();
-
-        // add infobar
-        WiFiInfo.Children.Add(new InfoBar
+        foreach (var setting in settings.OrderBy(s => !char.IsDigit(s.Name[0])).ThenBy(s => s.Name))
         {
-            Title = WiFi.IsOn ? "Enabling Wi-Fi..." : "Disabling Wi-Fi...",
+            FrameworkElement control = setting.Type switch
+            {
+                NetworkSettingType.Dword or NetworkSettingType.Int => CreateNumberBox(setting),
+                NetworkSettingType.Edit => CreateTextBox(setting),
+                _ => CreateComboBox(setting)
+            };
+
+            var settingsCard = new SettingsCard
+            {
+                Header = setting.Name,
+                Description = setting.Key,
+                Content = control
+            };
+
+            settingsGroup.Items.Add(settingsCard);
+        }
+    }
+
+    private ComboBox CreateComboBox(NetworkAdvancedSetting setting)
+    {
+        var sortedOptions = setting.Options.OrderBy(opt => opt.Name).ToList();
+        int selectedIndex = sortedOptions.FindIndex(opt => opt.Value == setting.CurrentValue);
+        if (selectedIndex < 0) selectedIndex = 0;
+
+        var comboBox = new ComboBox
+        {
+            MinWidth = 300,
+            DisplayMemberPath = "Name",
+            ItemsSource = sortedOptions,
+            SelectedIndex = selectedIndex,
+            Tag = setting
+        };
+        comboBox.SelectionChanged += AdvancedSetting_SelectionChanged;
+        return comboBox;
+    }
+
+    private NumberBox CreateNumberBox(NetworkAdvancedSetting setting)
+    {
+        var numberBox = new NumberBox
+        {
+            MinWidth = 300,
+            SpinButtonPlacementMode = NumberBoxSpinButtonPlacementMode.Inline,
+            Tag = setting
+        };
+
+        string currentValue = setting.CurrentValue;
+        if (setting.Base == 16 && currentValue.StartsWith("0x"))
+            currentValue = currentValue[2..];
+
+        if (int.TryParse(currentValue, setting.Base == 16 ? System.Globalization.NumberStyles.HexNumber : System.Globalization.NumberStyles.Integer, null, out int value))
+            numberBox.Value = value;
+
+        if (setting.Min.HasValue)
+            numberBox.Minimum = setting.Min.Value;
+        if (setting.Max.HasValue)
+            numberBox.Maximum = setting.Max.Value;
+        if (setting.Step.HasValue)
+            numberBox.SmallChange = setting.Step.Value;
+
+        numberBox.ValueChanged += AdvancedSetting_ValueChanged;
+        return numberBox;
+    }
+
+    private Microsoft.UI.Xaml.Controls.TextBox CreateTextBox(NetworkAdvancedSetting setting)
+    {
+        var textBox = new Microsoft.UI.Xaml.Controls.TextBox
+        {
+            MinWidth = 300,
+            Text = setting.CurrentValue,
+            Tag = setting
+        };
+
+        if (setting.LimitText.HasValue)
+            textBox.MaxLength = setting.LimitText.Value;
+
+        if (setting.UpperCase)
+        {
+            textBox.CharacterCasing = CharacterCasing.Upper;
+        }
+
+        textBox.LostFocus += AdvancedSetting_TextChanged;
+        return textBox;
+    }
+
+    private void AdvancedSetting_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (isInitializingAdvancedNetworkSettings) return;
+
+        var comboBox = (ComboBox)sender;
+        if (comboBox.SelectedItem is not NetworkSettingOption selectedOption || comboBox.Tag is not NetworkAdvancedSetting setting) return;
+
+        ChangeSetting(comboBox, setting, selectedOption.Value, selectedOption.Name);
+    }
+
+    private void AdvancedSetting_ValueChanged(NumberBox sender, NumberBoxValueChangedEventArgs args)
+    {
+        if (isInitializingAdvancedNetworkSettings) return;
+
+        if (sender.Tag is not NetworkAdvancedSetting setting) return;
+
+        string value = setting.Base == 16 ? $"0x{((int)sender.Value):X}" : ((int)sender.Value).ToString();
+        ChangeSetting(sender, setting, value, value);
+    }
+
+    private void AdvancedSetting_TextChanged(object sender, RoutedEventArgs e)
+    {
+        if (isInitializingAdvancedNetworkSettings) return;
+
+        var textBox = (Microsoft.UI.Xaml.Controls.TextBox)sender;
+        if (textBox.Tag is not NetworkAdvancedSetting setting) return;
+
+        string value = textBox.Text;
+        ChangeSetting(textBox, setting, value, value);
+    }
+
+    private void ChangeSetting(FrameworkElement control, NetworkAdvancedSetting setting, string value, string displayValue)
+    {
+        var settingsGroup = FindParent<SettingsGroup>(control);
+        if (settingsGroup?.DataContext is not DeviceInfo device) return;
+
+        if (!_pendingChanges.ContainsKey(device))
+            _pendingChanges[device] = new();
+
+        var deviceChanges = _pendingChanges[device];
+
+        if (setting.CurrentValue == value)
+            deviceChanges.Remove(setting.Key);
+        else
+            deviceChanges[setting.Key] = (value, displayValue);
+
+        var repeaterItem = FindParent<StackPanel>(settingsGroup);
+        if (repeaterItem == null) return;
+        var infoBarContainer = (StackPanel)repeaterItem.FindName("AdapterInfo");
+        if (infoBarContainer == null) return;
+
+        if (!_pendingChanges.TryGetValue(device, out var changes) || changes.Count == 0)
+        {
+            infoBarContainer.Children.Clear();
+            return;
+        }
+
+        if (infoBarContainer.Children.Count > 0 && infoBarContainer.Children[0] is InfoBar existingBar && existingBar.Title == "Unsaved changes")
+            return;
+
+        var infoBar = new InfoBar
+        {
+            Title = "You have unsaved changes. Applying changes will restart your network adapter.",
             IsClosable = false,
             IsOpen = true,
             Severity = InfoBarSeverity.Informational,
-            Margin = new Thickness(4, -4, 4, 12)
-        });
-
-        // declare services and drivers
-        var groups = new[]
-        {
-            (new[] { "WlanSvc", "Wcmsvc" }, 2),
-            (new[] { "NlaSvc", "WinHttpAutoProxySvc", "Netwtw10", "Netwtw14" }, 3),
-            (new[] { "tdx", "vwififlt"}, 1)
+            Margin = new Thickness(0, 0, 0, 12)
         };
 
-        // set start values
-        foreach (var group in groups)
+        var stackPanel = new StackPanel
         {
-            foreach (var service in group.Item1)
-            {
-                using var key = Registry.LocalMachine.OpenSubKey($@"SYSTEM\CurrentControlSet\Services\{service}", writable: true);
-                if (key == null) continue;
+            Orientation = Orientation.Horizontal,
+            Spacing = 8,
+            HorizontalAlignment = HorizontalAlignment.Right,
+            Margin = new Thickness(0, -52, 16, 0)
+        };
+        
+        var applyBtn = new Button { Content = "Apply", Style = (Style)Application.Current.Resources["AccentButtonStyle"] };
+        applyBtn.Click += async (s, e) =>
+        {
+            infoBar.Severity = InfoBarSeverity.Informational;
+            infoBar.Title = "Applying changes...";
+            infoBar.Message = string.Empty;
+            infoBar.Content = null;
 
-                Registry.SetValue($@"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\{service}", "Start", WiFi.IsOn ? group.Item2 : 4);
-            }
+            bool success = await Task.Run(() =>
+            {
+                foreach (var change in changes)
+                    Helpers.Network.NetworkHelper.SetAdvancedSetting(device, change.Key, change.Value.Value);
+                
+                return DeviceHelper.RestartDevice(device);
+            });
+
+            _pendingChanges.Remove(device);
+            UpdateSettings(settingsGroup, device);
+
+            infoBar.Severity = success ? InfoBarSeverity.Success : InfoBarSeverity.Error;
+            infoBar.Title = success ? "Successfully applied changes." : "Failed to apply changes.";
+            infoBar.IsHitTestVisible = true;
+
+            await Task.Delay(2000);
+            infoBarContainer.Children.Clear();
+        };
+
+        var cancelBtn = new Button { Content = "Cancel" };
+        cancelBtn.Click += (s, e) =>
+        {
+            _pendingChanges.Remove(device);
+            UpdateSettings(settingsGroup, device);
+            infoBarContainer.Children.Clear();
+        };
+
+        stackPanel.Children.Add(cancelBtn);
+        stackPanel.Children.Add(applyBtn);
+        
+        infoBar.Content = stackPanel;
+
+        infoBarContainer.Children.Clear();
+        infoBarContainer.Children.Add(infoBar);
+    }
+
+    private async void Optimize_Checked(object sender, RoutedEventArgs e)
+    {
+        var button = (ProgressButton)sender;
+        var settingsGroup = FindParent<SettingsGroup>(button);
+
+        if (settingsGroup?.DataContext is not DeviceInfo device) return;
+
+        _pendingChanges.Remove(device);
+        UpdateSettings(settingsGroup, device);
+
+        var repeaterItem = FindParent<StackPanel>(settingsGroup);
+        if (repeaterItem != null)
+        {
+            var infoBarContainer = (StackPanel)repeaterItem.FindName("AdapterInfo");
+            if (infoBarContainer != null)
+                infoBarContainer.Children.Clear();
         }
 
-        // delay
-        await Task.Delay(500);
-
-        // re-enable hittestvisible
-        WiFi.IsHitTestVisible = true;
-
-        // remove infobar
-        WiFiInfo.Children.Clear();
-
-        // add infobar
-        var infoBar = new InfoBar
+        bool anyChanged = Helpers.Network.NetworkHelper.OptimizeAdapter(device);
+        
+        if (anyChanged)
         {
-            Title = WiFi.IsOn ? "Successfully enabled Wi-Fi." : "Successfully disabled Wi-Fi.",
-            IsClosable = false,
-            IsOpen = true,
-            Severity = InfoBarSeverity.Success,
-            Margin = new Thickness(4, -4, 4, 12)
-        };
-        WiFiInfo.Children.Add(infoBar);
-
-        // add restart button if needed
-        if (WiFi.IsOn != initialWIFIState)
-        {
-            infoBar.Title += " A restart is required to apply the change.";
-            infoBar.ActionButton = new Button
-            {
-                Content = "Restart",
-                HorizontalAlignment = HorizontalAlignment.Right
-            };
-            ((Button)infoBar.ActionButton).Click += (s, args) =>
-            Process.Start(new ProcessStartInfo("shutdown", "/r /f /t 0") { CreateNoWindow = true });
+            UpdateSettings(settingsGroup, device);
+            await Task.Run(() => DeviceHelper.RestartDevice(device));
         }
         else
         {
-            // delay
-            await Task.Delay(2000);
-
-            // remove infobar
-            WiFiInfo.Children.Clear();
+            await Task.Delay(500);
         }
+        
+        button.IsChecked = false;
     }
 
-    private async void GetWOLState()
+    private void UpdateSettings(SettingsGroup settingsGroup, DeviceInfo device)
     {
-        // hide toggle switch
-        WOL.Visibility = Visibility.Collapsed;
+        isInitializingAdvancedNetworkSettings = true;
 
-        // check state
-        var process = new Process
+        using var deviceKey = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(device.RegistryPath);
+
+        foreach (var item in settingsGroup.Items)
         {
-            StartInfo = new ProcessStartInfo
+            if (item is not SettingsCard card || card.Content is not FrameworkElement control) continue;
+            if (control.Tag is not NetworkAdvancedSetting setting) continue;
+
+            string newValue = deviceKey.GetValue(setting.Key)?.ToString() ?? string.Empty;
+            setting.CurrentValue = newValue;
+
+            switch (control)
             {
-                FileName = "powershell.exe",
-                Arguments = $@"-ExecutionPolicy Bypass -File ""{Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Scripts", "wol.ps1")}""",
-                CreateNoWindow = true,
-                RedirectStandardOutput = true
+                case ComboBox combobox:
+                    combobox.SelectedIndex = setting.Options.FindIndex(opt => opt.Value == newValue);
+                    break;
+
+                case NumberBox numberbox:
+                    if (setting.Base == 16 && newValue.StartsWith("0x")) newValue = newValue[2..];
+                    if (int.TryParse(newValue, setting.Base == 16 ? System.Globalization.NumberStyles.HexNumber : System.Globalization.NumberStyles.Integer, null, out int val))
+                        numberbox.Value = val;
+                    break;
+
+                case Microsoft.UI.Xaml.Controls.TextBox textbox:
+                    textbox.Text = newValue;
+                    break;
             }
-        };
-        process.Start();
-        WOL.IsOn = (await process.StandardOutput.ReadToEndAsync()).Contains("ENABLED");
+        }
 
-        // hide progress ring
-        wolProgress.Visibility = Visibility.Collapsed;
-
-        // show toggle
-        WOL.Visibility = Visibility.Visible;
-
-        isInitializingWOLState = false;
+        isInitializingAdvancedNetworkSettings = false;
     }
 
-    private async void WOL_Toggled(object sender, RoutedEventArgs e)
+    public static T FindParent<T>(DependencyObject child) where T : DependencyObject
     {
-        if (isInitializingWOLState) return;
+        DependencyObject parent = VisualTreeHelper.GetParent(child);
 
-        // disable hittestvisible to avoid double-clicking
-        WOL.IsHitTestVisible = false;
+        while (parent != null && parent is not T)
+            parent = VisualTreeHelper.GetParent(parent);
 
-        // remove infobar
-        EthernetInfo.Children.Clear();
-
-        // add infobar
-        EthernetInfo.Children.Add(new InfoBar
-        {
-            Title = WOL.IsOn ? "Enabling Wake-on-LAN (WOL)..." : "Disabling Wake-on-LAN (WOL)...",
-            IsClosable = false,
-            IsOpen = true,
-            Severity = InfoBarSeverity.Informational,
-            Margin = new Thickness(0, 0, 0, 12)
-        });
-
-        // toggle wol
-        var process = new Process
-        {
-            StartInfo = new ProcessStartInfo
-            {
-                FileName = "powershell.exe",
-                Arguments = $"-ExecutionPolicy Bypass -File \"{Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Scripts", WOL.IsOn ? "wol-enable.ps1" : "wol-disable.ps1")}\"",
-                CreateNoWindow = true,
-            }
-        };
-
-        process.Start();
-        await process.WaitForExitAsync();
-
-        // re-enable hittestvisible
-        WOL.IsHitTestVisible = true;
-
-        // remove infobar
-        EthernetInfo.Children.Clear();
-
-        // add infobar
-        EthernetInfo.Children.Add(new InfoBar
-        {
-            Title = WOL.IsOn ? "Successfully enabled Wake-on-LAN (WOL)" : "Successfully disabled Wake-on-LAN (WOL)",
-            IsClosable = false,
-            IsOpen = true,
-            Severity = InfoBarSeverity.Success,
-            Margin = new Thickness(0, 0, 0, 12)
-        });
-
-        // delay
-        await Task.Delay(2000);
-
-        // remove infobar
-        EthernetInfo.Children.Clear();
+        return parent as T;
     }
 }

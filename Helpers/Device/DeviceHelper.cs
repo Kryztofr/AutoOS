@@ -1,3 +1,4 @@
+using AutoOS.Helpers.Network;
 using AutoOS.Helpers.ReadWrite;
 using Microsoft.Win32;
 using System.Collections.Concurrent;
@@ -154,6 +155,10 @@ public partial class DeviceInfo : INotifyPropertyChanged
     }
 
     public bool IsInputDevice { get; set; }
+
+    public bool IsWiFi => NicType == NicDeviceType.WiFi;
+    public bool IsLAN => NicType == NicDeviceType.LAN;
+    public List<NetworkAdvancedSetting> AdvancedSettings { get; set; }
 
     public event PropertyChangedEventHandler PropertyChanged;
     private void OnPropertyChanged([CallerMemberName] string name = null)
@@ -368,7 +373,8 @@ internal static class DeviceHelper
                 CurrentVersion = driverVersion
             };
 
-            devices.Add(device);
+            if (device.State == DeviceState.Enabled)
+                devices.Add(device);
         }
 
         PInvoke.SetupDiDestroyDeviceInfoList(deviceInfoSetHandle);

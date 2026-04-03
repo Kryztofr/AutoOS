@@ -103,6 +103,7 @@ namespace AutoOS.Views.Settings
                 localSettings.Values["Version"] = currentVersion.ToString();
                 Registry.SetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\AutoOS", "IsInstalled", 1, RegistryValueKind.DWord);
                 await ProcessActions.Log();
+                await Helpers.Network.NetworkHelper.LogNetworkSettings();
             }
 
             try
