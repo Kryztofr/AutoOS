@@ -56,6 +56,7 @@ public sealed partial class InstallPage : Page
         int savedStage = localSettings.Values["actionStage"] as int? ?? -1;
 
         Progress.Value = localSettings.Values["actionProgress"] as double? ?? 0;
+        PercentageText.Text = $"{Progress.Value}%";
         Helpers.Taskbar.TaskbarHelper.SetProgressValue(WindowNative.GetWindowHandle(App.MainWindow), Progress.Value, 100);
 
         if (savedStage <= 0)
