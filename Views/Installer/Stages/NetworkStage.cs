@@ -43,8 +43,8 @@ public static class NetworkStage
 
         foreach (var adapter in DeviceHelper.GetDevices(DeviceType.NIC).Where(d => d.NicType == NicDeviceType.WiFi || d.NicType == NicDeviceType.LAN).ToList())
         {
-            actions.Add(($@"Optimizing advanced network settings for {adapter.FriendlyName}", async () => await Task.Run(() => Helpers.Network.NetworkHelper.OptimizeAdapter(adapter)), null));
-            actions.Add(($@"Optimizing advanced network settings for {adapter.FriendlyName}", async () => await Task.Delay(500), null));
+            actions.Add(($@"Optimizing advanced network adapter settings for {adapter.FriendlyName}", async () => await Task.Run(() => Helpers.Network.NetworkHelper.OptimizeAdapter(adapter)), null));
+            actions.Add(($@"Optimizing advanced network adapter settings for {adapter.FriendlyName}", async () => await Task.Delay(500), null));
             actions.Add((@"Restarting " + adapter.FriendlyName, async () => await Task.Run(() => DeviceHelper.RestartDevice(adapter)), null));
             
             if (adapter.IsActive)

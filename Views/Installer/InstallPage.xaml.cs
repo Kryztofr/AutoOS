@@ -75,10 +75,11 @@ public sealed partial class InstallPage : Page
         await RunStage("Configuring Registry...", RegistryStage.GetActions(), 5);
         await RunStage("Configuring Security...", SecurityStage.GetActions(), 5);
         await RunStage("Configuring Memory Management...", MemoryManagementStage.GetActions(), 5);
-        await RunStage("Activating Windows...", ActivationStage.GetActions(), 2);
+        await RunStage("Configuring Windows Activation...", ActivationStage.GetActions(), 2);
         await RunStage("Configuring Graphics Cards...", await GraphicsStage.GetActions(), 5);
         await RunStage("Configuring Network Adapters...", NetworkStage.GetActions(), 5);
         await RunStage("Configuring Audio Devices...", AudioStage.GetActions(), 5);
+        await RunStage("Configuring Affinities...", SchedulingStage.GetActions(), 5);
         await RunStage("Configuring Devices...", DeviceStage.GetActions(), 5);
         await RunStage("Configuring Scheduled Tasks...", ScheduledTasksStage.GetActions(), 5);
         await RunStage("Configuring Optional Features...", OptionalFeatureStage.GetActions(), 5);
@@ -87,7 +88,6 @@ public sealed partial class InstallPage : Page
         await RunStage("Configuring Browsers...", BrowsersStage.GetActions(), 5);
         await RunStage("Configuring Applications...", ApplicationStage.GetActions(), 15);
         await RunStage("Configuring Games...", GamesStage.GetActions(), 2);
-        await RunStage("Configuring Affinities...", SchedulingStage.GetActions(), 5);
         await RunStage("Configuring Services and Drivers...", ServicesStage.GetActions(), 2);
         await RunStage("Cleaning up...", CleanupStage.GetActions(), 4);
         Status.Text = "Installation finished.";
