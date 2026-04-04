@@ -2,6 +2,7 @@ using AutoOS.Helpers.Device;
 using AutoOS.Helpers.Network;
 using Microsoft.UI.Xaml.Media;
 using System.Collections.ObjectModel;
+using Windows.Win32;
 
 namespace AutoOS.Views.Settings;
 
@@ -43,7 +44,7 @@ public sealed partial class InternetPage : Page
         var settings = device.AdvancedSettings;
         settingsGroup.Description = $"Current version: {device.DriverType} {device.CurrentVersion}";
 
-        foreach (var setting in settings.OrderBy(s => !char.IsDigit(s.Name[0])).ThenBy(s => s.Name))
+        foreach (var setting in settings.OrderBy(s => !char.IsDigit(s.Name[0])).ThenBy(s => s.Name, Comparer<string>.Create(NaturalSort)))
         {
             FrameworkElement control = setting.Type switch
             {
@@ -65,7 +66,8 @@ public sealed partial class InternetPage : Page
 
     private ComboBox CreateComboBox(NetworkAdvancedSetting setting)
     {
-        var sortedOptions = setting.Options.OrderBy(opt => opt.Name).ToList();
+        var sortedOptions = setting.Options.OrderBy(opt => opt.Name, Comparer<string>.Create(NaturalSort)).ToList();
+
         int selectedIndex = sortedOptions.FindIndex(opt => opt.Value == setting.CurrentValue);
         if (selectedIndex < 0) selectedIndex = 0;
 
@@ -300,7 +302,8 @@ public sealed partial class InternetPage : Page
             switch (control)
             {
                 case ComboBox combobox:
-                    combobox.SelectedIndex = setting.Options.FindIndex(opt => opt.Value == newValue);
+                    var options = (List<NetworkSettingOption>)combobox.ItemsSource;
+                    combobox.SelectedIndex = options.FindIndex(opt => opt.Value == newValue);
                     break;
 
                 case NumberBox numberbox:
@@ -316,6 +319,36 @@ public sealed partial class InternetPage : Page
         }
 
         isInitializingAdvancedNetworkSettings = false;
+    }
+
+    private static int NaturalSort(string x, string y)
+    {
+        if (x == y) return 0;
+        if (x == null) return -1;
+        if (y == null) return 1;
+
+        bool xIsUsec = x.Contains("usec", StringComparison.OrdinalIgnoreCase);
+        bool yIsUsec = y.Contains("usec", StringComparison.OrdinalIgnoreCase);
+        bool xIsMsec = x.Contains("msec", StringComparison.OrdinalIgnoreCase);
+        bool yIsMsec = y.Contains("msec", StringComparison.OrdinalIgnoreCase);
+
+        if (xIsUsec && yIsMsec) return -1;
+        if (yIsUsec && xIsMsec) return 1;
+
+        bool xIsMbps = x.Contains("Mbps", StringComparison.OrdinalIgnoreCase);
+        bool yIsMbps = y.Contains("Mbps", StringComparison.OrdinalIgnoreCase);
+        bool xIsGbps = x.Contains("Gbps", StringComparison.OrdinalIgnoreCase);
+        bool yIsGbps = y.Contains("Gbps", StringComparison.OrdinalIgnoreCase);
+
+        if (xIsMbps && yIsGbps) return -1;
+        if (yIsMbps && xIsGbps) return 1;
+
+        string[] rates = { "Disabled", "Off", "Minimal", "Low", "Medium", "Middle", "High", "Extreme", "Adaptive" };
+        int xInt = Array.FindIndex(rates, i => x.Equals(i, StringComparison.OrdinalIgnoreCase));
+        int yInt = Array.FindIndex(rates, i => y.Equals(i, StringComparison.OrdinalIgnoreCase));
+        if (xInt != -1 && yInt != -1) return xInt.CompareTo(yInt);
+
+        return PInvoke.StrCmpLogical(x, y);
     }
 
     public static T FindParent<T>(DependencyObject child) where T : DependencyObject

@@ -9,6 +9,7 @@ IFileOpenDialog
 IFileSaveDialog
 SHCreateItemFromParsingName
 SHGetKnownFolderPath
+StrCmpLogicalW
 
 PostMessage
 SendMessageTimeout
@@ -173,3 +174,4 @@ IAudioClient
 IAudioRenderClient
 AUDCLNT_SHAREMODE
 IMMEndpoint
+StrCmpLogicalW

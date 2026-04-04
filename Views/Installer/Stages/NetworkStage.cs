@@ -22,20 +22,8 @@ public static class NetworkStage
             (@"Setting NetBIOS setting to ""Disable NetBIOS over TCP/IP""", async () => await ProcessActions.RunPowerShell(@"Get-ChildItem 'HKLM:\SYSTEM\CurrentControlSet\Services\NetBT\Parameters\Interfaces' | ForEach-Object { Set-ItemProperty -Path $_.PSPath -Name 'NetbiosOptions' -Value 2 -Type DWord -Force }"), null),
 
             // advanced tcp/ip settings -> wins
-            (@"Disabling ""Enable LMHOSTS lookup""", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\NetBT\Parameters", "EnableLMHOSTS", 0, RegistryValueKind.DWord), null)
-        };
+            (@"Disabling ""Enable LMHOSTS lookup""", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\NetBT\Parameters", "EnableLMHOSTS", 0, RegistryValueKind.DWord), null),
 
-        foreach (var adapter in DeviceHelper.GetDevices(DeviceType.NIC).Where(d => d.NicType == NicDeviceType.WiFi || d.NicType == NicDeviceType.LAN).ToList())
-        {
-            actions.Add(($@"Optimizing advanced network settings for {adapter.FriendlyName}", async () => await Task.Run(() => Helpers.Network.NetworkHelper.OptimizeAdapter(adapter)), null));
-            actions.Add((@"Restarting " + adapter.FriendlyName, async () => await Task.Run(() => DeviceHelper.RestartDevice(adapter)), null));
-            
-            if (adapter.IsActive)
-                actions.Add(("Waiting for internet connection to reestablish", async () => await ProcessActions.RunConnectionCheck(), null));
-        }
-
-        actions.AddRange(
-        [
             // set txintdelay to 0
             ("Setting TxIntDelay to 0", async () => DeviceHelper.GetDevices(DeviceType.NIC).Where(d => Registry.LocalMachine.OpenSubKey(d.RegistryPath).GetValue("TxIntDelay") != null).ToList().ForEach(d => Registry.LocalMachine.OpenSubKey(d.RegistryPath, true).SetValue("TxIntDelay", 0, RegistryValueKind.DWord)), () => TxIntDelay == true),
 
@@ -51,7 +39,17 @@ public static class NetworkStage
             
             // disable "packet coalescing filter"
             (@"Disabling ""Packet Coalescing Filter""", async () => await ProcessActions.RunPowerShell(@"Set-NetOffloadGlobalSetting -PacketCoalescingFilter Disabled"), null)
-        ]);
+        };
+
+        foreach (var adapter in DeviceHelper.GetDevices(DeviceType.NIC).Where(d => d.NicType == NicDeviceType.WiFi || d.NicType == NicDeviceType.LAN).ToList())
+        {
+            actions.Add(($@"Optimizing advanced network settings for {adapter.FriendlyName}", async () => await Task.Run(() => Helpers.Network.NetworkHelper.OptimizeAdapter(adapter)), null));
+            actions.Add(($@"Optimizing advanced network settings for {adapter.FriendlyName}", async () => await Task.Delay(500), null));
+            actions.Add((@"Restarting " + adapter.FriendlyName, async () => await Task.Run(() => DeviceHelper.RestartDevice(adapter)), null));
+            
+            if (adapter.IsActive)
+                actions.Add(("Waiting for internet connection to reestablish", async () => await ProcessActions.RunConnectionCheck(), null));
+        }
 
         return actions;
     }

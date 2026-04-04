@@ -1,4 +1,4 @@
-﻿using AutoOS.Helpers.Picker;
+using AutoOS.Helpers.Picker;
 using AutoOS.Views.Installer.Actions;
 using AutoOS.Views.Settings.BIOS;
 using Microsoft.Win32;

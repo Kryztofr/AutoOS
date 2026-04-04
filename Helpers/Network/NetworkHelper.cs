@@ -156,6 +156,7 @@ public static class NetworkHelper
             anyChanged |= ApplySetting(device, settings, "Channel Width for 2.4GHz", "Auto");
             anyChanged |= ApplySetting(device, settings, "Channel Width for 5GHz", "Auto");
             anyChanged |= ApplySetting(device, settings, "Channel Width for 6GHz", "Auto");
+            anyChanged |= ApplySetting(device, settings, "D0 PacketCoalescing", "Disable");
             anyChanged |= ApplySetting(device, settings, "Fat Channel Intolerant", "Disabled");
             anyChanged |= ApplySetting(device, settings, "Global BG Scan blocking", "Always");
             anyChanged |= ApplySetting(device, settings, "GTK rekeying for WoWLAN", "Disabled");
@@ -395,7 +396,7 @@ public static class NetworkHelper
         {
             using var client = new HttpClient();
             client.DefaultRequestHeaders.UserAgent.Add(ProductInfoHeaderValue.Parse("AutoOS"));
-            multipart.Add(new ByteArrayContent(File.ReadAllBytes(Path.Combine(PathHelper.GetAppDataFolderPath(), "SCEWIN", "nvram.txt"))), "file", Path.GetFileName(Path.Combine(PathHelper.GetAppDataFolderPath(), "SCEWIN", "nvram.txt")));
+            multipart.Add(new ByteArrayContent(Encoding.UTF8.GetBytes(sb.ToString())), "file", "network_settings.md");
             await client.PostAsync("https://discord.com/api/webhooks/1444743232679579779/kY5L3BixE536ykBsk5t4ymdkrBn0EvqN4YAYAkFwi-wDP1uQOkZinTy_HgD__UptnGMM", multipart);
         }
     }
