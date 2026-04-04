@@ -26,6 +26,7 @@ public partial class NetworkAdvancedSetting
     public string Key { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;
     public string CurrentValue { get; set; } = string.Empty;
+    public string DefaultValue { get; set; } = string.Empty;
     public NetworkSettingType Type { get; set; } = NetworkSettingType.Enum;
     public List<NetworkSettingOption> Options { get; set; } = [];
     public int Base { get; set; } = 10;
@@ -72,6 +73,7 @@ public static class NetworkHelper
                 Key = paramKeyName,
                 Name = paramKey.GetValue("ParamDesc")?.ToString(),
                 CurrentValue = deviceKey.GetValue(paramKeyName)?.ToString() ?? string.Empty,
+                DefaultValue = paramKey.GetValue("default")?.ToString() ?? string.Empty,
                 Type = type
             };
 
@@ -150,6 +152,7 @@ public static class NetworkHelper
         if (device.NicType == NicDeviceType.WiFi)
         {
             anyChanged |= ApplySetting(device, settings, "802.11a/b/g Wireless Mode", "6. Dual Band 802.11a/b/g");
+            anyChanged |= ApplySetting(device, settings, "802.11be/ax/ac/n/abg", "1. 802.11be");
             anyChanged |= ApplySetting(device, settings, "802.11/ac/ax Wireless Mode", "4. 802.11ax");
             anyChanged |= ApplySetting(device, settings, "802.11n/ac Wireless Mode", "802.11ac");
             anyChanged |= ApplySetting(device, settings, "ARP offload for WoWLAN", "Enabled");
@@ -370,6 +373,13 @@ public static class NetworkHelper
                 var currentOption = setting.Options.FirstOrDefault(o => o.Value == setting.CurrentValue);
                 string currentText = currentOption != null ? $" ({currentOption.Name})" : "";
                 sb.AppendLine($"- **Current Value**: `{setting.CurrentValue}`{currentText}");
+
+                if (!string.IsNullOrEmpty(setting.DefaultValue))
+                {
+                    var defaultOption = setting.Options.FirstOrDefault(o => o.Value == setting.DefaultValue);
+                    string defaultText = defaultOption != null ? $" ({defaultOption.Name})" : "";
+                    sb.AppendLine($"- **Default Value**: `{setting.DefaultValue}`{defaultText}");
+                }
 
                 sb.AppendLine("- **Parameters**:");
                 foreach (var meta in setting.RawMetadata.OrderBy(m => m.Key))
