@@ -547,6 +547,8 @@ public partial class HeaderCarousel : ItemsControl
     private void Tile_PointerEntered(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
     {
         var tile = (HeaderCarouselItem)sender;
+        if (!tile.IsLoaded) return;
+
         if (tile != selectedTile)
         {
             selectedTile = tile;
@@ -572,7 +574,10 @@ public partial class HeaderCarousel : ItemsControl
 
     private void Tile_GotFocus(object sender, RoutedEventArgs e)
     {
-        selectedTile = (HeaderCarouselItem)sender;
+        var tile = (HeaderCarouselItem)sender;
+        if (!tile.IsLoaded) return;
+
+        selectedTile = tile;
         SelectTile();
     }
 

@@ -172,4 +172,3 @@ PKEY_AudioEndpoint_FormFactor
 IAudioClient
 IAudioRenderClient
 AUDCLNT_SHAREMODE
-IMMEndpointStrCmpLogicalW

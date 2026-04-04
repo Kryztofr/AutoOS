@@ -1,4 +1,4 @@
-﻿using Microsoft.UI.Composition;
+using Microsoft.UI.Composition;
 using Microsoft.UI.Xaml.Hosting;
 using System.Numerics;
 using WinRT;
@@ -113,6 +113,8 @@ public partial class HeaderCarouselItem : Button
 
     private void PlaySelectAnimation()
     {
+        if (!this.IsLoaded || visual == null || _dropShadow == null || compositor == null) return;
+
         visual.StopAnimation("Scale");
         _dropShadow.StopAnimation(nameof(_dropShadow.Opacity));
         _dropShadow.StopAnimation(nameof(_dropShadow.BlurRadius));
@@ -135,6 +137,8 @@ public partial class HeaderCarouselItem : Button
 
     private void PlayDeselectAnimation()
     {
+        if (!this.IsLoaded || visual == null || _dropShadow == null || compositor == null) return;
+
         visual.StopAnimation("Scale");
         _dropShadow.StopAnimation(nameof(_dropShadow.Opacity));
         _dropShadow.StopAnimation(nameof(_dropShadow.BlurRadius));
