@@ -10,7 +10,6 @@ IFileSaveDialog
 SHCreateItemFromParsingName
 SHGetKnownFolderPath
 StrCmpLogicalW
-
 PostMessage
 SendMessageTimeout
 SEND_MESSAGE_TIMEOUT_FLAGS
@@ -173,5 +172,4 @@ PKEY_AudioEndpoint_FormFactor
 IAudioClient
 IAudioRenderClient
 AUDCLNT_SHAREMODE
-IMMEndpoint
-StrCmpLogicalW
+IMMEndpointStrCmpLogicalW

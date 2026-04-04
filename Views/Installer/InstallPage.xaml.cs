@@ -146,7 +146,8 @@ public sealed partial class InstallPage : Page
             }
         }
 
-        double incrementPerTitle = groupedTitleCount > 0 ? stagePercentage / (double)groupedTitleCount : 0;
+        double startProgress = Progress.Value;
+        int executedGroupsCount = 0;
         string previousTitle = string.Empty;
         List<Func<Task>> currentGroup = [];
 
@@ -208,7 +209,8 @@ public sealed partial class InstallPage : Page
 
                 if (executed)
                 {
-                    Progress.Value += incrementPerTitle;
+                    executedGroupsCount++;
+                    Progress.Value = startProgress + (stagePercentage * executedGroupsCount) / groupedTitleCount;
                     localSettings.Values["actionProgress"] = Progress.Value;
                     Helpers.Taskbar.TaskbarHelper.SetProgressValue(windowHandle, Progress.Value, 100);
                     await Task.Delay(150);
@@ -276,7 +278,8 @@ public sealed partial class InstallPage : Page
 
             if (executed)
             {
-                Progress.Value += incrementPerTitle;
+                executedGroupsCount++;
+                Progress.Value = startProgress + (stagePercentage * executedGroupsCount) / groupedTitleCount;
                 localSettings.Values["actionProgress"] = Progress.Value;
                 Helpers.Taskbar.TaskbarHelper.SetProgressValue(windowHandle, Progress.Value, 100);
             }
@@ -287,7 +290,7 @@ public sealed partial class InstallPage : Page
 
         if (filteredActions.Count == 0)
         {
-            Progress.Value += stagePercentage;
+            Progress.Value = startProgress + stagePercentage;
             localSettings.Values["actionProgress"] = Progress.Value;
             Helpers.Taskbar.TaskbarHelper.SetProgressValue(windowHandle, Progress.Value, 100);
         }
