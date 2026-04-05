@@ -168,6 +168,7 @@ public static class NetworkHelper
             anyChanged |= ApplySetting(device, settings, "Channel Width for 5GHz", "Auto");
             anyChanged |= ApplySetting(device, settings, "Channel Width for 6GHz", "Auto");
             anyChanged |= ApplySetting(device, settings, "D0 PacketCoalescing", "Disable");
+            anyChanged |= ApplySetting(device, settings, "Dynamic MIMO Power Save", "Disable");
             anyChanged |= ApplySetting(device, settings, "EnableAdaptivity", "Auto");
             anyChanged |= ApplySetting(device, settings, "Fat Channel Intolerant", "Disabled");
             anyChanged |= ApplySetting(device, settings, "Global BG Scan blocking", "Always");
@@ -203,6 +204,7 @@ public static class NetworkHelper
             anyChanged |= ApplySetting(device, settings, "Wake on Pattern Match", "Disabled");
             anyChanged |= ApplySetting(device, settings, "WakeOnPatternMatch", "Disable");
             anyChanged |= ApplySetting(device, settings, "Wireless Mode", "6. 802.11a/b/g");
+            anyChanged |= ApplySetting(device, settings, "Wireless Mode", "12 - 11 a/b/g/n/ac");
         }
         else if (device.NicType == NicDeviceType.LAN)
         {

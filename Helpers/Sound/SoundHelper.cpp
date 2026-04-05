@@ -132,8 +132,16 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 
     for (int i = 1; i < argc; i++) {
         wstring arg = argv[i];
-        if (arg == L"-output-ms" && i + 1 < argc) gOutputMs = (float)_wtof(argv[++i]);
-        else if (arg == L"-input-ms" && i + 1 < argc) gInputMs = (float)_wtof(argv[++i]);
+        if ((arg == L"-output-ms" || arg == L"-output") && i + 1 < argc) {
+            wstring val = argv[++i];
+            for (size_t j = 0; j < val.length(); ++j) if (val[j] == L',') val[j] = L'.';
+            gOutputMs = (float)_wtof(val.c_str());
+        }
+        else if ((arg == L"-input-ms" || arg == L"-input") && i + 1 < argc) {
+            wstring val = argv[++i];
+            for (size_t j = 0; j < val.length(); ++j) if (val[j] == L',') val[j] = L'.';
+            gInputMs = (float)_wtof(val.c_str());
+        }
     }
 
     (void)CoInitializeEx(NULL, COINIT_MULTITHREADED);

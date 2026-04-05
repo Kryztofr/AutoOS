@@ -630,8 +630,8 @@ public static partial class SoundHelper
             File.Copy(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "SoundHelper.exe"), Path.Combine(ApplicationData.Current.LocalFolder.Path, "SoundHelper.exe"), true);
 
             string args = "";
-            if (outputMs > 0) args += $"-output-ms {outputMs} ";
-            if (inputMs > 0) args += $"-input-ms {inputMs} ";
+            if (outputMs > 0) args += $"-output-ms {outputMs.ToString(System.Globalization.CultureInfo.InvariantCulture)} ";
+            if (inputMs > 0) args += $"-input-ms {inputMs.ToString(System.Globalization.CultureInfo.InvariantCulture)} ";
 
             if (!string.IsNullOrEmpty(args))
             {
