@@ -51,13 +51,13 @@ After Windows is installed you are greeted with the **AutoOS Installer**.
 
 ### AutoOS Installer
 In **AutoOS Installer** you can:
-- Personalize your Windows Theme preferences which are integrated using my [Auto Theme Switcher Windhawk Mod](https://windhawk.net/mods/auto-theme-switcher).
+- Personalize your Windows Theme settings which are integrated using my [Auto Theme Switcher Windhawk Mod](https://windhawk.net/mods/auto-theme-switcher).
 - Select your Browsers and Browser Extensions.
 - Select your Applications.
 - Import a pre-configured Custom Resolution Utility (CRU) profile.
 - Select which Graphics Card drivers are installed. The Graphic Cards are detected using SetupAPI and [pciids](https://github.com/pciutils/pciids) and the drivers are queried using official API endpoints to ensure compability with all NVIDIA, AMD and recent Intel GPUs.
 - Import a pre-configured MSI Afterburner profile.
-- Select your Windows Security preferences.
+- Select your Windows Security settings.
 
 Pressing **Install AutoOS** in the **AutoOS Installer** does the following:
 - Creates an optimized Power plan
@@ -136,9 +136,6 @@ Up until this point all the work has been done by me and me alone. I have spent 
 
 ## 🚀 Installation Guide
 
-> [!NOTE]
-> If you want to change the display language of Windows, do so **after** AutoOS is fully set up.
-
 **Step 1:** Before installing, please join my [Discord Server](https://discord.gg/bZU4dMMWpg) to receive installation support and stay informed about future updates or changes.
 
 **Step 2:** Download the latest Windows 25H2 ISO file from [here](https://drive.google.com/drive/folders/1BlAYofjlW1bU-WPG3jXygO1ezoJ4gPs7?usp=sharing) (Log into your Google Account if you get an error). Other ISOs are not supported to guarantee consistency and the latest features. 
@@ -151,7 +148,7 @@ Up until this point all the work has been done by me and me alone. I have spent 
 
 If your Ethernet / Wi-Fi / Bluetooth adapter is not listed above, go to the Drivers / Support page or your Mainboard / PC and download them from there.
 
-Extract all `.zip` files (for `.exe` files, there may be an `extract option` in the setup, otherwise use `7-Zip, NanaZip, or WinRAR` to extract them) and move all extracted folders into one folder.
+Extract all `.zip` files (for `.exe` files, there may be an `extract option` in the setup, otherwise use `7-Zip, NanaZip, or WinRAR` to extract them) and move all extracted folders `into one folder`. The folder should contain each driver and their `.inf` files.
 
 On Prebuilts and Laptops you may need to disable `VMD Controller` in your BIOS or download the disk driver (Intel Rapid Storage Technology Driver) otherwise you may get a BSOD. 
 
