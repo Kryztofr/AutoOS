@@ -274,6 +274,30 @@ public partial class HeaderCarousel : ItemsControl
             }
         }
 
+        if ((activeInstance.Play != null && !activeInstance.Play.IsEnabled) && 
+            (currentFocused == activeInstance.Play || (_lastFocusedElement == activeInstance.Play && (currentFocused == null || !IsElementDescendantOf(currentFocused, activeInstance)))))
+        {
+            if (activeInstance.selectedTile != null)
+            {
+                int idx = activeInstance.Items.IndexOf(activeInstance.selectedTile);
+                if (idx >= 0)
+                {
+                    (activeInstance.ContainerFromIndex(idx) as Control)?.Focus(FocusState.Programmatic);
+                    currentFocused = FocusManager.GetFocusedElement(root) as DependencyObject;
+                }
+            }
+            _lastFocusedElement = currentFocused;
+        }
+
+        if (root.Content != null && !IsElementDescendantOf(currentFocused, activeInstance))
+        {
+            if (_lastFocusedElement != null && IsElementDescendantOf(_lastFocusedElement, activeInstance.Metadata_ScrollViewer))
+            {
+                (_lastFocusedElement as Control)?.Focus(FocusState.Programmatic);
+                currentFocused = _lastFocusedElement;
+            }
+        }
+
         if (currentFocused == null)
         {
             _lastButtons = buttons;
@@ -298,7 +322,8 @@ public partial class HeaderCarousel : ItemsControl
         else if (isLeft || isRight)
         {
             if (isLeft && (currentFocused == activeInstance.Play || 
-                           currentFocused == activeInstance.Metadata_ScrollViewer || 
+                           currentFocused == activeInstance.StopProcesses ||
+                           IsElementDescendantOf(currentFocused, activeInstance.Metadata_ScrollViewer) || 
                            IsElementDescendantOf(currentFocused, activeInstance.SearchBox)))
             {
                 suppressHorizontal = true;
@@ -363,19 +388,63 @@ public partial class HeaderCarousel : ItemsControl
         CheckAndInject(buttons, GamepadButtons.DPadLeft, VirtualKey.GamepadDPadLeft, suppressHorizontal);
         CheckAndInject(buttons, GamepadButtons.DPadRight, VirtualKey.GamepadDPadRight, suppressHorizontal);
 
-        bool suppressUp = _scrollingButtons.HasFlag(GamepadButtons.DPadUp) || (buttons.HasFlag(GamepadButtons.DPadUp) && (
-            IsElementDescendantOf(currentFocused, activeInstance.SearchBox) ||
-            currentFocused == activeInstance.Sort ||
-            currentFocused == activeInstance.EpicGamesButton ||
-            currentFocused == activeInstance.SteamButton));
+        bool suppressUp = _scrollingButtons.HasFlag(GamepadButtons.DPadUp);
+        if (buttons.HasFlag(GamepadButtons.DPadUp) && !suppressUp)
+        {
+            if (IsElementDescendantOf(currentFocused, activeInstance.SearchBox) ||
+                currentFocused == activeInstance.Sort ||
+                currentFocused == activeInstance.EpicGamesButton ||
+                currentFocused == activeInstance.SteamButton)
+            {
+                suppressUp = true;
+            }
+            else if (IsElementDescendantOf(currentFocused, activeInstance.Metadata_ScrollViewer))
+            {
+                if (activeInstance.Metadata_ScrollViewer.VerticalOffset <= 2 && !_lastButtons.HasFlag(GamepadButtons.DPadUp))
+                {
+                    if (activeInstance.Play?.IsEnabled == true)
+                        activeInstance.Play.Focus(FocusState.Programmatic);
+                    else if (activeInstance.StopProcesses?.Visibility == Visibility.Visible && activeInstance.StopProcesses.IsEnabled)
+                        activeInstance.StopProcesses.Focus(FocusState.Programmatic);
+                    else if (activeInstance.Update?.Visibility == Visibility.Visible && activeInstance.Update.IsEnabled)
+                        activeInstance.Update.Focus(FocusState.Programmatic);
+                    
+                    suppressUp = true;
+                }
+            }
+        }
         CheckAndInject(buttons, GamepadButtons.DPadUp, VirtualKey.GamepadDPadUp, suppressUp);
 
-        CheckAndInject(buttons, GamepadButtons.DPadDown, VirtualKey.GamepadDPadDown, _scrollingButtons.HasFlag(GamepadButtons.DPadDown));
+        bool suppressDown = _scrollingButtons.HasFlag(GamepadButtons.DPadDown);
+        if (currentFocused is HeaderCarouselItem && buttons.HasFlag(GamepadButtons.DPadDown) && !_lastButtons.HasFlag(GamepadButtons.DPadDown))
+        {
+            if (activeInstance.Play == null || !activeInstance.Play.IsEnabled)
+            {
+                if (activeInstance.StopProcesses?.Visibility == Visibility.Visible && activeInstance.StopProcesses.IsEnabled)
+                {
+                    activeInstance.StopProcesses.Focus(FocusState.Programmatic);
+                    suppressDown = true;
+                }
+                else if (activeInstance.Metadata_ScrollViewer != null)
+                {
+                    activeInstance.Metadata_ScrollViewer.Focus(FocusState.Programmatic);
+                    suppressDown = true;
+                }
+            }
+        }
+        CheckAndInject(buttons, GamepadButtons.DPadDown, VirtualKey.GamepadDPadDown, suppressDown);
 
         if (currentFocused is HeaderCarouselItem)
         {
             if (buttons.HasFlag(GamepadButtons.A) && !_lastButtons.HasFlag(GamepadButtons.A))
-                activeInstance.Play?.Focus(FocusState.Programmatic);
+            {
+                if (activeInstance.Play?.IsEnabled == true)
+                    activeInstance.Play.Focus(FocusState.Programmatic);
+                else if (activeInstance.StopProcesses?.Visibility == Visibility.Visible && activeInstance.StopProcesses.IsEnabled)
+                    activeInstance.StopProcesses.Focus(FocusState.Programmatic);
+                else
+                    activeInstance.Metadata_ScrollViewer?.Focus(FocusState.Programmatic);
+            }
         }
         else
         {
@@ -648,7 +717,7 @@ public partial class HeaderCarousel : ItemsControl
         }
 
         var content = new StackPanel { Spacing = 14 };
-        content.Children.Add(CreateRow(["\uF10E", "\uF108"], "Navigate"));
+        content.Children.Add(CreateRow(["\uF108", "\uF10E",], "Navigate"));
         content.Children.Add(CreateRow(["\uF093"], "Select"));
         content.Children.Add(CreateRow(["\uF094"], "Go back"));
         content.Children.Add(CreateRow(["\uF10C"], "Jump to first game"));
@@ -1886,6 +1955,13 @@ public partial class HeaderCarousel : ItemsControl
         }
 
         localSettings.Values[$"LastPlayed_{tile.Title}"] = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+
+        if (selectedTile != null)
+        {
+            int idx = Items.IndexOf(selectedTile);
+            if (idx >= 0)
+                (ContainerFromIndex(idx) as Control)?.Focus(FocusState.Programmatic);
+        }
 
         if (currentSortKey == "Recently played")
         {
