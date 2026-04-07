@@ -13,6 +13,10 @@ using System.Text.RegularExpressions;
 using ValveKeyValue;
 using Windows.Foundation;
 using Windows.Storage;
+using Microsoft.UI.Xaml.Input;
+using Windows.Gaming.Input;
+using Windows.System;
+using Windows.UI.Input.Preview.Injection;
 using WinRT;
 
 namespace AutoOS.Views.Settings.Games;
@@ -69,6 +73,7 @@ public partial class HeaderCarousel : ItemsControl
     private TextBlock ElementsText;
 
     private AutoSuggestBox SearchBox;
+    private Button Sort;
     private string currentSortKey = "Title";
     private bool ascending = true;
 
@@ -85,6 +90,22 @@ public partial class HeaderCarousel : ItemsControl
     private int currentIndex;
 
     private BlurEffectManager _blurManager;
+
+    private static InputInjector _inputInjector;
+    private static DispatcherTimer _gamepadPollingTimer;
+    private static GamepadButtons _lastButtons = GamepadButtons.None;
+    private static bool _lastHorizontalState = false;
+    private const double ThumbstickThreshold = 0.5;
+
+    private static readonly Dictionary<GamepadButtons, DateTimeOffset> _buttonPressStartTimes = new();
+    private static readonly Dictionary<GamepadButtons, DateTimeOffset> _lastButtonRepeatTimes = new();
+    private static readonly TimeSpan _initialRepeatDelay = TimeSpan.FromMilliseconds(500);
+    private static readonly TimeSpan _subsequentRepeatDelay = TimeSpan.FromMilliseconds(100);
+    private static readonly List<HeaderCarousel> _activeInstances = [];
+    private static bool _staticEventsSubscribed = false;
+    private static DependencyObject _lastFocusedElement;
+    private static DateTimeOffset _bottomFocusTime;
+    private static GamepadButtons _scrollingButtons = GamepadButtons.None;
 
     public ObservableCollection<InfoItem> InfoItems { get; } = new ObservableCollection<InfoItem>();
 
@@ -111,6 +132,8 @@ public partial class HeaderCarousel : ItemsControl
         SearchBox = GetTemplateChild("SearchBox") as AutoSuggestBox;
         SearchBox.TextChanged += SearchBox_TextChanged;
         SearchBox.QuerySubmitted += SearchBox_QuerySubmitted;
+        
+        Sort = GetTemplateChild("Sort") as Button;
 
         SortByName = GetTemplateChild("SortByName") as RadioMenuFlyoutItem;
         SortByLauncher = GetTemplateChild("SortByLauncher") as RadioMenuFlyoutItem;
@@ -158,12 +181,16 @@ public partial class HeaderCarousel : ItemsControl
 
         Play = GetTemplateChild("Play") as Button;
         Play.Click += Play_Click;
+        Play.KeyDown += BottomButtons_KeyDown;
         Update = GetTemplateChild("Update") as Button;
         Update.Click += Update_Click;
+        Update.KeyDown += BottomButtons_KeyDown;
         StopProcesses = GetTemplateChild("StopProcesses") as Button;
         StopProcesses.Click += StopProcesses_Click;
+        StopProcesses.KeyDown += BottomButtons_KeyDown;
         RestartProcesses = GetTemplateChild("RestartProcesses") as Button;
         RestartProcesses.Click += RestartProcesses_Click;
+        RestartProcesses.KeyDown += BottomButtons_KeyDown;
 
         AgeRatingDescriptionText = GetTemplateChild("AgeRatingDescriptionText") as TextBlock;
         ElementsText = GetTemplateChild("ElementsText") as TextBlock;
@@ -184,6 +211,274 @@ public partial class HeaderCarousel : ItemsControl
             _blurManager = new BlurEffectManager(backDropImage);
 
             ApplyBackdropBlur();
+        }
+
+        InitializeGamepadSupport();
+    }
+
+    private void InitializeGamepadSupport()
+    {
+        if (_staticEventsSubscribed) return;
+        _staticEventsSubscribed = true;
+
+        _inputInjector = InputInjector.TryCreate();
+        
+        Gamepad.GamepadAdded += (s, e) =>
+        {
+            DispatcherQueue.TryEnqueue(() =>
+            {
+                _gamepadPollingTimer?.Start();
+            });
+        };
+
+        _gamepadPollingTimer = new DispatcherTimer
+        {
+            Interval = TimeSpan.FromMilliseconds(8)
+        };
+        _gamepadPollingTimer.Tick += GamepadPollingTimer_Tick;
+
+        if (Gamepad.Gamepads.Count > 0)
+        {
+            _gamepadPollingTimer.Start();
+        }
+    }
+
+    private static void GamepadPollingTimer_Tick(object sender, object e)
+    {
+        var activeInstance = _activeInstances.FirstOrDefault();
+        if (activeInstance?.XamlRoot is not XamlRoot root) return;
+
+        var gamepads = Gamepad.Gamepads;
+        if (gamepads.Count == 0) return;
+
+        var reading = gamepads[0].GetCurrentReading();
+        var buttons = reading.Buttons;
+
+        if (reading.LeftThumbstickX < -ThumbstickThreshold) buttons |= GamepadButtons.DPadLeft;
+        if (reading.LeftThumbstickX > ThumbstickThreshold) buttons |= GamepadButtons.DPadRight;
+        if (reading.LeftThumbstickY < -ThumbstickThreshold) buttons |= GamepadButtons.DPadDown;
+        if (reading.LeftThumbstickY > ThumbstickThreshold) buttons |= GamepadButtons.DPadUp;
+
+        var currentFocused = FocusManager.GetFocusedElement(root) as DependencyObject;
+
+        if ((buttons & ~_lastButtons) != GamepadButtons.None &&
+            VisualTreeHelper.GetOpenPopupsForXamlRoot(root).Count == 0 &&
+            activeInstance.selectedTile != null &&
+            !IsElementDescendantOf(currentFocused, activeInstance))
+        {
+            int idx = activeInstance.Items.IndexOf(activeInstance.selectedTile);
+            if (idx >= 0)
+            {
+                (activeInstance.ContainerFromIndex(idx) as Control)?.Focus(FocusState.Programmatic);
+                currentFocused = FocusManager.GetFocusedElement(root) as DependencyObject;
+            }
+        }
+
+        if (currentFocused == null)
+        {
+            _lastButtons = buttons;
+            return;
+        }
+
+        if (currentFocused != _lastFocusedElement)
+        {
+            _lastFocusedElement = currentFocused;
+            _bottomFocusTime = DateTimeOffset.Now;
+        }
+
+        bool isLeft = buttons.HasFlag(GamepadButtons.DPadLeft);
+        bool isRight = buttons.HasFlag(GamepadButtons.DPadRight);
+        bool suppressHorizontal = false;
+
+        if (currentFocused is HeaderCarouselItem focusedItem && activeInstance.Items.Contains(focusedItem))
+        {
+            int index = activeInstance.Items.IndexOf(focusedItem);
+            suppressHorizontal = (isLeft && index == 0) || (isRight && index == activeInstance.Items.Count - 1);
+        }
+        else if (isLeft || isRight)
+        {
+            if (isLeft && (currentFocused == activeInstance.Play || 
+                           currentFocused == activeInstance.Metadata_ScrollViewer || 
+                           IsElementDescendantOf(currentFocused, activeInstance.SearchBox)))
+            {
+                suppressHorizontal = true;
+                _lastHorizontalState = true;
+            }
+            else if (!_lastHorizontalState)
+            {
+                var direction = isLeft ? FocusNavigationDirection.Left : FocusNavigationDirection.Right;
+                var next = FocusManager.FindNextElement(direction, new FindNextElementOptions { SearchRoot = root.Content }) as UIElement;
+                
+                if (next != null && currentFocused is UIElement currentUI)
+                {
+                    try
+                    {
+                        double currentY = currentUI.TransformToVisual(root.Content).TransformPoint(new Point(0, 0)).Y;
+                        double nextY = next.TransformToVisual(root.Content).TransformPoint(new Point(0, 0)).Y;
+                        if (Math.Abs(currentY - nextY) > 50) next = null;
+                    }
+                    catch { }
+                }
+
+                if (next == null || next == currentFocused || next is HeaderCarouselItem)
+                {
+                    suppressHorizontal = true;
+                    _lastHorizontalState = true;
+                }
+            }
+        }
+
+        _lastHorizontalState = isLeft || isRight;
+
+        _scrollingButtons &= buttons;
+
+        bool isBottomButtonFocused = currentFocused is Button btn && (
+            btn == activeInstance.Play || 
+            btn == activeInstance.Update || 
+            btn == activeInstance.StopProcesses || 
+            btn == activeInstance.RestartProcesses);
+
+        if (isBottomButtonFocused)
+        {
+            double speed = 0;
+            if (reading.LeftThumbstickY < -0.2 || buttons.HasFlag(GamepadButtons.DPadDown))
+            {
+                speed = reading.LeftThumbstickY < -0.2 ? -reading.LeftThumbstickY * 15.0 : 15.0;
+            }
+            else if (reading.LeftThumbstickY > 0.2 || buttons.HasFlag(GamepadButtons.DPadUp))
+            {
+                speed = reading.LeftThumbstickY > 0.2 ? -reading.LeftThumbstickY * 15.0 : -15.0;
+            }
+
+            if (speed != 0 && activeInstance.Metadata_ScrollViewer is ScrollViewer sv && (DateTimeOffset.Now - _bottomFocusTime).TotalMilliseconds > 300)
+            {
+                if ((speed > 0 && sv.VerticalOffset < sv.ScrollableHeight) || (speed < 0 && sv.VerticalOffset > 0))
+                {
+                    sv.ChangeView(null, Math.Max(0, sv.VerticalOffset + speed), null, true);
+                    _scrollingButtons |= (speed > 0 ? GamepadButtons.DPadDown : GamepadButtons.DPadUp);
+                }
+            }
+        }
+
+        CheckAndInject(buttons, GamepadButtons.DPadLeft, VirtualKey.GamepadDPadLeft, suppressHorizontal);
+        CheckAndInject(buttons, GamepadButtons.DPadRight, VirtualKey.GamepadDPadRight, suppressHorizontal);
+        CheckAndInject(buttons, GamepadButtons.DPadUp, VirtualKey.GamepadDPadUp, _scrollingButtons.HasFlag(GamepadButtons.DPadUp));
+        CheckAndInject(buttons, GamepadButtons.DPadDown, VirtualKey.GamepadDPadDown, _scrollingButtons.HasFlag(GamepadButtons.DPadDown));
+
+        if (currentFocused is HeaderCarouselItem)
+        {
+            if (buttons.HasFlag(GamepadButtons.A) && !_lastButtons.HasFlag(GamepadButtons.A))
+                activeInstance.Play?.Focus(FocusState.Programmatic);
+        }
+        else
+        {
+            CheckAndInject(buttons, GamepadButtons.A, VirtualKey.GamepadA);
+        }
+
+        CheckAndInject(buttons, GamepadButtons.B, VirtualKey.GamepadB);
+        CheckAndInject(buttons, GamepadButtons.X, VirtualKey.GamepadX);
+        CheckAndInject(buttons, GamepadButtons.Y, VirtualKey.GamepadY);
+
+        if (IsElementDescendantOf(currentFocused, activeInstance))
+        {
+            if (buttons.HasFlag(GamepadButtons.LeftShoulder) && !_lastButtons.HasFlag(GamepadButtons.LeftShoulder))
+                activeInstance.JumpToStart();
+            else if (buttons.HasFlag(GamepadButtons.RightShoulder) && !_lastButtons.HasFlag(GamepadButtons.RightShoulder))
+                activeInstance.JumpToEnd();
+        }
+
+        _lastButtons = buttons;
+    }
+
+    private static bool IsElementDescendantOf(DependencyObject element, DependencyObject parent)
+    {
+        while (element != null)
+        {
+            if (element == parent) return true;
+            element = VisualTreeHelper.GetParent(element);
+        }
+        return false;
+    }
+
+    private static void CheckAndInject(GamepadButtons current, GamepadButtons target, VirtualKey key, bool suppressInjection = false)
+    {
+        if ((current & target) != 0)
+        {
+            var now = DateTimeOffset.Now;
+            if ((_lastButtons & target) == 0)
+            {
+                _buttonPressStartTimes[target] = now;
+                _lastButtonRepeatTimes[target] = now;
+                if (!suppressInjection) InjectKey(key);
+            }
+            else
+            {
+                if (_buttonPressStartTimes.TryGetValue(target, out var startTime))
+                {
+                    var holdDuration = now - startTime;
+                    if (holdDuration >= _initialRepeatDelay)
+                    {
+                        if (_lastButtonRepeatTimes.TryGetValue(target, out var lastRepeat) && (now - lastRepeat) >= _subsequentRepeatDelay)
+                        {
+                            _lastButtonRepeatTimes[target] = now;
+                            if (!suppressInjection) InjectKey(key);
+                        }
+                    }
+                }
+            }
+        }
+        else
+        {
+            _buttonPressStartTimes.Remove(target);
+            _lastButtonRepeatTimes.Remove(target);
+        }
+    }
+
+    private static void InjectKey(VirtualKey key)
+    {
+        if (_inputInjector == null) return;
+
+        var info = new InjectedInputKeyboardInfo
+        {
+            VirtualKey = (ushort)key,
+            KeyOptions = InjectedInputKeyOptions.None
+        };
+        _inputInjector.InjectKeyboardInput(new[] { info });
+
+        info.KeyOptions = InjectedInputKeyOptions.KeyUp;
+        _inputInjector.InjectKeyboardInput(new[] { info });
+    }
+
+    public void JumpToStart()
+    {
+        if (Items.Count > 0 && Items[0] is HeaderCarouselItem tile)
+        {
+            tile.Focus(FocusState.Programmatic);
+        }
+    }
+
+    public void JumpToEnd()
+    {
+        if (Items.Count > 0 && Items[^1] is HeaderCarouselItem tile)
+        {
+            tile.Focus(FocusState.Programmatic);
+        }
+    }
+
+    private void BottomButtons_KeyDown(object sender, KeyRoutedEventArgs e)
+    {
+        if (e.Key == VirtualKey.GamepadDPadDown || e.Key == VirtualKey.Down)
+        {
+            Metadata_ScrollViewer.ChangeView(null, Metadata_ScrollViewer.VerticalOffset + 100, null);
+            e.Handled = true;
+        }
+        else if (e.Key == VirtualKey.GamepadDPadUp || e.Key == VirtualKey.Up)
+        {
+            if (Metadata_ScrollViewer.VerticalOffset > 0)
+            {
+                Metadata_ScrollViewer.ChangeView(null, Math.Max(0, Metadata_ScrollViewer.VerticalOffset - 100), null);
+                e.Handled = true;
+            }
         }
     }
 
@@ -240,19 +535,9 @@ public partial class HeaderCarousel : ItemsControl
 
         if (Items[0] is HeaderCarouselItem tile)
         {
-            selectedTile?.IsSelected = false;
-            selectedTile = null;
-
             selectedTile = tile;
-            var panel = ItemsPanelRoot;
-            if (panel != null)
-            {
-                GeneralTransform transform = selectedTile.TransformToVisual(panel);
-                Point point = transform.TransformPoint(new Point(0, 0));
-                scrollViewer.ChangeView(point.X - (scrollViewer.ActualWidth / 2) + (selectedTile.ActualSize.X / 2), null, null);
-                SetTileVisuals();
-                PageTitle.RequestedTheme = ElementTheme.Dark;
-            }
+            SelectTile(true);
+            PageTitle.RequestedTheme = ElementTheme.Dark;
         }
 
         if (Items.Count > 1)
@@ -278,6 +563,8 @@ public partial class HeaderCarousel : ItemsControl
 
     private void HeaderCarousel_Unloaded(object sender, RoutedEventArgs e)
     {
+        _activeInstances.Remove(this);
+
         UnsubscribeToEvents();
 
         ElementSoundPlayer.State = ElementSoundPlayerState.Off;
@@ -291,6 +578,8 @@ public partial class HeaderCarousel : ItemsControl
 
     private void HeaderCarousel_Loaded(object sender, RoutedEventArgs e)
     {
+        if (!_activeInstances.Contains(this)) _activeInstances.Add(this);
+
         if (IsAutoScrollEnabled)
             selectionTimer.Tick += SelectionTimer_Tick;
 
@@ -355,22 +644,18 @@ public partial class HeaderCarousel : ItemsControl
 
         if (Items[GetNextUniqueRandom()] is HeaderCarouselItem tile)
         {
-            if (selectedTile != null)
-            {
-                selectedTile.IsSelected = false;
-                selectedTile = null;
-            }
-
             selectedTile = tile;
+
             var panel = ItemsPanelRoot;
-            if (panel != null)
+            if (panel != null && scrollViewer != null)
             {
                 GeneralTransform transform = selectedTile.TransformToVisual(panel);
                 Point point = transform.TransformPoint(new Point(0, 0));
                 scrollViewer.ChangeView(point.X - (scrollViewer.ActualWidth / 2) + (selectedTile.ActualSize.X / 2), null, null);
-                await Task.Delay(500);
-                SetTileVisuals();
             }
+
+            SelectTile();
+            await Task.Delay(500);
         }
     }
 
@@ -420,13 +705,13 @@ public partial class HeaderCarousel : ItemsControl
         return nextIndex;
     }
 
-    private void SetTileVisuals()
+    private void SetTileVisuals(bool playSound = false)
     {
         if (selectedTile != null)
         {
             selectedTile.IsSelected = true;
+            if (playSound) ElementSoundPlayer.Play(ElementSoundKind.Focus);
 
-            ElementSoundPlayer.Play(ElementSoundKind.Focus);
 
             if (selectedTile.BackgroundImageUrl != null && backDropImage.ImageUrl?.ToString() != selectedTile.BackgroundImageUrl)
                 backDropImage.ImageUrl = new Uri(selectedTile.BackgroundImageUrl);
@@ -434,8 +719,19 @@ public partial class HeaderCarousel : ItemsControl
             if (MetadataGrid.Visibility == Visibility.Collapsed)
                 MetadataGrid.Visibility = Visibility.Visible;
 
-            //Metadata_ScrollViewer.Focus(FocusState.Programmatic);
             Metadata_ScrollViewer.ChangeView(null, 0, null);
+
+            Play?.XYFocusUp = selectedTile;
+            Update?.XYFocusUp = selectedTile;
+            StopProcesses?.XYFocusUp = selectedTile;
+            RestartProcesses?.XYFocusUp = selectedTile;
+
+            if (selectedTile != null && SearchBox != null) selectedTile.XYFocusUp = SearchBox;
+
+            SearchBox?.XYFocusDown = selectedTile;
+            Sort?.XYFocusDown = selectedTile;
+            EpicGamesButton?.XYFocusDown = selectedTile;
+            SteamButton?.XYFocusDown = selectedTile;
 
             Title = selectedTile?.Title;
             Developers = selectedTile?.Developers;
@@ -552,7 +848,8 @@ public partial class HeaderCarousel : ItemsControl
         if (tile != selectedTile)
         {
             selectedTile = tile;
-            SelectTile();
+            SelectTile(true);
+            tile.Focus(FocusState.Programmatic);
         }
         else
         {
@@ -560,7 +857,7 @@ public partial class HeaderCarousel : ItemsControl
         }
     }
 
-    private void SelectTile()
+    private void SelectTile(bool playSound = false)
     {
         selectionTimer.Stop();
 
@@ -569,7 +866,12 @@ public partial class HeaderCarousel : ItemsControl
             t.IsSelected = false;
         }
 
-        SetTileVisuals();
+        if (selectedTile != null)
+        {
+            selectedTile.IsSelected = true;
+        }
+
+        SetTileVisuals(playSound);
     }
 
     private void Tile_GotFocus(object sender, RoutedEventArgs e)
@@ -577,8 +879,19 @@ public partial class HeaderCarousel : ItemsControl
         var tile = (HeaderCarouselItem)sender;
         if (!tile.IsLoaded) return;
 
+        if (selectedTile == tile && tile.IsSelected) return;
+ 
         selectedTile = tile;
-        SelectTile();
+        SelectTile(tile.FocusState != FocusState.Pointer);
+
+        if (Items.IndexOf(tile) == Items.Count - 1)
+        {
+            scrollViewer?.ChangeView(scrollViewer.ScrollableWidth, null, null);
+        }
+        else if (Items.IndexOf(tile) == 0)
+        {
+            scrollViewer?.ChangeView(0, null, null);
+        }
     }
 
     private void ApplyAutoScroll()

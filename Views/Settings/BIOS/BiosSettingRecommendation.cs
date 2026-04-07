@@ -644,7 +644,8 @@ public static class BiosSettingRecommendationsList
         new BiosSettingRecommendation { SetupQuestion = "BCLK2 Amplitude", Type = "Option", RecommendedOption = "900mV" },
         new BiosSettingRecommendation { SetupQuestion = "BCLK2 Slew Rate", Type = "Option", RecommendedOption = "Fast" },
         //new BiosSettingRecommendation { SetupQuestion = "Bank Interleaving", Type = "Option", RecommendedOption = "Enabled" }, // already enabled by default
-        new BiosSettingRecommendation { SetupQuestion = "Bank Swap", Type = "Option", RecommendedOption = "Enabled" }, // not sure about these
+        new BiosSettingRecommendation { SetupQuestion = "Bank Swap", Type = "Option", RecommendedOption = "Enabled" },
+        new BiosSettingRecommendation { SetupQuestion = "Bank Swap Mode", Type = "Option", RecommendedOption = "Swap APU" },
         new BiosSettingRecommendation { SetupQuestion = "BankGroup Swap", Type = "Option", RecommendedOption = "Disabled" },
         new BiosSettingRecommendation { SetupQuestion = "BankGroupSwap", Type = "Option", RecommendedOption = "Disabled" },
         new BiosSettingRecommendation { SetupQuestion = "BankGroupSwapAlt", Type = "Option", RecommendedOption = "Enabled" },
