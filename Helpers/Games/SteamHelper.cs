@@ -34,7 +34,7 @@ public static class SteamHelper
 
         var kv = KVSerializer.Create(KVSerializationFormat.KeyValues1Text).Deserialize(new MemoryStream(Encoding.UTF8.GetBytes(content)));
 
-        return [.. kv.Children
+        return [.. kv.Root.Children
             .Select(c =>
             {
                 string steam64Id = c.Key;
@@ -63,7 +63,7 @@ public static class SteamHelper
 
         var kv = KVSerializer.Create(KVSerializationFormat.KeyValues1Text)
                              .Deserialize(new MemoryStream(Encoding.UTF8.GetBytes(File.ReadAllText(SteamLoginUsersPath))));
-        return kv.Children.FirstOrDefault(c => c.Value["MostRecent"]?.ToString() == "1" && c.Value["AllowAutoLogin"]?.ToString() == "1").Key;
+        return kv.Root.Children.FirstOrDefault(c => c.Value["MostRecent"]?.ToString() == "1" && c.Value["AllowAutoLogin"]?.ToString() == "1").Key;
     }
 
     public static void CloseSteam()
@@ -88,7 +88,7 @@ public static class SteamHelper
         {
             if (File.Exists(SteamHelper.SteamLoginUsersPath))
             {
-                if (KVSerializer.Create(KVSerializationFormat.KeyValues1Text).Deserialize(new MemoryStream(System.Text.Encoding.UTF8.GetBytes(File.ReadAllText(SteamHelper.SteamLoginUsersPath)))).Children.Count() > 0)
+                if (KVSerializer.Create(KVSerializationFormat.KeyValues1Text).Deserialize(new MemoryStream(System.Text.Encoding.UTF8.GetBytes(File.ReadAllText(SteamHelper.SteamLoginUsersPath)))).Root.Children.Any())
                 {
                     // close steam
                     SteamHelper.CloseSteam();
@@ -96,7 +96,7 @@ public static class SteamHelper
                     var kv = KVSerializer.Create(KVSerializationFormat.KeyValues1Text)
                                          .Deserialize(new MemoryStream(Encoding.UTF8.GetBytes(File.ReadAllText(SteamHelper.SteamLoginUsersPath))));
 
-                    InstallPage.Info.Title = $"Successfully logged in as {kv.Children.Select(c => c.Value["AccountName"]?.ToString()).FirstOrDefault(name => !string.IsNullOrEmpty(name))}...";
+                    InstallPage.Info.Title = $"Successfully logged in as {kv.Root.Children.Select(c => c.Value["AccountName"]?.ToString()).FirstOrDefault(name => !string.IsNullOrEmpty(name))}...";
                     break;
                 }
 
@@ -158,7 +158,7 @@ public static class SteamHelper
             .Select(d => d.Name.TrimEnd('\\'))
             .ToList();
 
-        List<KVObject> newFolders = [.. libraryFolderData.Children.Select(folder =>
+        List<KVObject> newFolders = [.. libraryFolderData.Root.Children.Select(folder =>
         {
             var children = folder.Value.Children.ToList();
 
@@ -193,12 +193,12 @@ public static class SteamHelper
         using var msOut = new MemoryStream();
         var rootObj = new KVObject();
         int folderIndex = 0;
-        foreach (var folder in libraryFolderData.Children)
+        foreach (var folder in libraryFolderData.Root.Children)
         {
             rootObj[folder.Key] = newFolders[folderIndex];
             folderIndex++;
         }
-        KVSerializer.Create(KVSerializationFormat.KeyValues1Text).Serialize(msOut, rootObj);
+        KVSerializer.Create(KVSerializationFormat.KeyValues1Text).Serialize(msOut, new KVDocument(null, libraryFolderData.Name, rootObj));
         msOut.Position = 0;
         File.WriteAllText(SteamHelper.SteamLibraryPath, new StreamReader(msOut).ReadToEnd());
 
@@ -272,7 +272,7 @@ public static class SteamHelper
         var libraryFolderData = KVSerializer.Create(KVSerializationFormat.KeyValues1Text).Deserialize(File.OpenRead(SteamLibraryPath));
 
         // for each steam install path
-        await Parallel.ForEachAsync(libraryFolderData.Children, new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount * 2 }, async (folder, _) =>
+        await Parallel.ForEachAsync(libraryFolderData.Root.Children, new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount * 2 }, async (folder, _) =>
         {
             string steamAppsDir = Path.Combine(folder.Value["path"]?.ToString().Replace(@"\\", @"\"), "steamapps");
 

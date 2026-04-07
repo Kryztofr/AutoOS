@@ -52,12 +52,19 @@ public static class NetworkHelper
     public static List<NetworkAdvancedSetting> GetAdvancedSettings(DeviceInfo device)
     {
         var settings = new List<NetworkAdvancedSetting>();
+        if (string.IsNullOrEmpty(device.RegistryPath)) return settings;
+        
         using var deviceKey = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(device.RegistryPath);
+        if (deviceKey == null) return settings;
+        
         using var paramsKey = deviceKey.OpenSubKey(@"Ndi\Params");
+        if (paramsKey == null) return settings;
 
         foreach (var paramKeyName in paramsKey.GetSubKeyNames())
         {
             using var paramKey = paramsKey.OpenSubKey(paramKeyName);
+            if (paramKey == null) continue;
+            
             var typeValue = paramKey.GetValue("type")?.ToString()?.ToLowerInvariant();
             var type = typeValue switch
             {
@@ -85,13 +92,16 @@ public static class NetworkHelper
                 case NetworkSettingType.Enum:
                     using (var enumKey = paramKey.OpenSubKey("Enum"))
                     {
-                        foreach (var valueName in enumKey.GetValueNames())
+                        if (enumKey != null)
                         {
-                            setting.Options.Add(new NetworkSettingOption
+                            foreach (var valueName in enumKey.GetValueNames())
                             {
-                                Value = valueName,
-                                Name = enumKey.GetValue(valueName)?.ToString() ?? valueName
-                            });
+                                setting.Options.Add(new NetworkSettingOption
+                                {
+                                    Value = valueName,
+                                    Name = enumKey.GetValue(valueName)?.ToString() ?? valueName
+                                });
+                            }
                         }
                     }
                     break;

@@ -362,7 +362,14 @@ public partial class HeaderCarousel : ItemsControl
 
         CheckAndInject(buttons, GamepadButtons.DPadLeft, VirtualKey.GamepadDPadLeft, suppressHorizontal);
         CheckAndInject(buttons, GamepadButtons.DPadRight, VirtualKey.GamepadDPadRight, suppressHorizontal);
-        CheckAndInject(buttons, GamepadButtons.DPadUp, VirtualKey.GamepadDPadUp, _scrollingButtons.HasFlag(GamepadButtons.DPadUp));
+
+        bool suppressUp = _scrollingButtons.HasFlag(GamepadButtons.DPadUp) || (buttons.HasFlag(GamepadButtons.DPadUp) && (
+            IsElementDescendantOf(currentFocused, activeInstance.SearchBox) ||
+            currentFocused == activeInstance.Sort ||
+            currentFocused == activeInstance.EpicGamesButton ||
+            currentFocused == activeInstance.SteamButton));
+        CheckAndInject(buttons, GamepadButtons.DPadUp, VirtualKey.GamepadDPadUp, suppressUp);
+
         CheckAndInject(buttons, GamepadButtons.DPadDown, VirtualKey.GamepadDPadDown, _scrollingButtons.HasFlag(GamepadButtons.DPadDown));
 
         if (currentFocused is HeaderCarouselItem)
@@ -375,7 +382,20 @@ public partial class HeaderCarousel : ItemsControl
             CheckAndInject(buttons, GamepadButtons.A, VirtualKey.GamepadA);
         }
 
-        CheckAndInject(buttons, GamepadButtons.B, VirtualKey.GamepadB);
+        if (isBottomButtonFocused && buttons.HasFlag(GamepadButtons.B) && !_lastButtons.HasFlag(GamepadButtons.B))
+        {
+            if (activeInstance.selectedTile != null)
+            {
+                int idx = activeInstance.Items.IndexOf(activeInstance.selectedTile);
+                if (idx >= 0)
+                    (activeInstance.ContainerFromIndex(idx) as Control)?.Focus(FocusState.Programmatic);
+            }
+        }
+        else
+        {
+            CheckAndInject(buttons, GamepadButtons.B, VirtualKey.GamepadB);
+        }
+
         CheckAndInject(buttons, GamepadButtons.X, VirtualKey.GamepadX);
         CheckAndInject(buttons, GamepadButtons.Y, VirtualKey.GamepadY);
 
@@ -537,7 +557,14 @@ public partial class HeaderCarousel : ItemsControl
         {
             selectedTile = tile;
             SelectTile(true);
+            (ContainerFromIndex(0) as Control)?.Focus(FocusState.Programmatic);
             PageTitle.RequestedTheme = ElementTheme.Dark;
+
+            if (localSettings.Values["GamepadControlsShown"] is not true)
+            {
+                localSettings.Values["GamepadControlsShown"] = true;
+                _ = ShowGamepadControlsDialog(this);
+            }
         }
 
         if (Items.Count > 1)
@@ -576,7 +603,7 @@ public partial class HeaderCarousel : ItemsControl
         }
     }
 
-    private void HeaderCarousel_Loaded(object sender, RoutedEventArgs e)
+    private async void HeaderCarousel_Loaded(object sender, RoutedEventArgs e)
     {
         if (!_activeInstances.Contains(this)) _activeInstances.Add(this);
 
@@ -584,6 +611,64 @@ public partial class HeaderCarousel : ItemsControl
             selectionTimer.Tick += SelectionTimer_Tick;
 
         ElementSoundPlayer.State = ElementSoundPlayerState.On;
+    }
+
+    private async Task ShowGamepadControlsDialog(HeaderCarousel activeInstance)
+    {
+        static StackPanel CreateRow(string[] glyphs, string description)
+        {
+            var row = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 12 };
+            var iconContainer = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 4 };
+
+            for (int i = 0; i < glyphs.Length; i++)
+            {
+                iconContainer.Children.Add(new FontIcon
+                {
+                    Glyph = glyphs[i],
+                });
+
+                if (i < glyphs.Length - 1)
+                {
+                    iconContainer.Children.Add(new TextBlock
+                    {
+                        Text = "/",
+                        VerticalAlignment = VerticalAlignment.Center
+                    });
+                }
+            }
+
+            row.Children.Add(iconContainer);
+
+            row.Children.Add(new TextBlock
+            {
+                Text = description,
+                VerticalAlignment = VerticalAlignment.Center
+            });
+            return row;
+        }
+
+        var content = new StackPanel { Spacing = 14 };
+        content.Children.Add(CreateRow(["\uF10E", "\uF108"], "Navigate"));
+        content.Children.Add(CreateRow(["\uF093"], "Select"));
+        content.Children.Add(CreateRow(["\uF094"], "Go back"));
+        content.Children.Add(CreateRow(["\uF10C"], "Jump to first game"));
+        content.Children.Add(CreateRow(["\uF10D"], "Jump to last game"));
+
+        var dialog = new ContentDialog
+        {
+            Title = "Gamepad Controls",
+            Content = content,
+            CloseButtonText = "Got it",
+            DefaultButton = ContentDialogButton.Close,
+            XamlRoot = XamlRoot
+        };
+
+        await dialog.ShowAsync();
+
+        if (activeInstance.Items.Count > 0)
+        {
+            (activeInstance.ContainerFromIndex(0) as Control)?.Focus(FocusState.Programmatic);
+        }
     }
 
     protected override void OnItemsChanged(object e)
@@ -1462,7 +1547,7 @@ public partial class HeaderCarousel : ItemsControl
         var kv = KVSerializer.Create(KVSerializationFormat.KeyValues1Text).Deserialize(new MemoryStream(System.Text.Encoding.UTF8.GetBytes(File.ReadAllText(SteamHelper.SteamLoginUsersPath))));
 
         // make all accounts inactive
-        foreach (var user in kv.Children)
+        foreach (var user in kv.Root.Children)
         {
             if (user.Value["AccountName"]?.ToString() == SteamAccounts.SelectedItem.ToString())
             {
@@ -1544,7 +1629,7 @@ public partial class HeaderCarousel : ItemsControl
                 var kv = KVSerializer.Create(KVSerializationFormat.KeyValues1Text).Deserialize(new MemoryStream(Encoding.UTF8.GetBytes(File.ReadAllText(SteamHelper.SteamLoginUsersPath))));
 
                 // make all accounts inactive
-                foreach (var user in kv.Children)
+                foreach (var user in kv.Root.Children)
                 {
                     user.Value["MostRecent"] = "0";
                     user.Value["AllowAutoLogin"] = "0";
@@ -1561,7 +1646,7 @@ public partial class HeaderCarousel : ItemsControl
             await Task.Delay(500);
 
             // get initial user count
-            int initialUserCount = File.Exists(SteamHelper.SteamLoginUsersPath) ? KVSerializer.Create(KVSerializationFormat.KeyValues1Text).Deserialize(new MemoryStream(Encoding.UTF8.GetBytes(File.ReadAllText(SteamHelper.SteamLoginUsersPath)))).Children.Count() : 0;
+            int initialUserCount = File.Exists(SteamHelper.SteamLoginUsersPath) ? KVSerializer.Create(KVSerializationFormat.KeyValues1Text).Deserialize(new MemoryStream(Encoding.UTF8.GetBytes(File.ReadAllText(SteamHelper.SteamLoginUsersPath)))).Root.Children.Count() : 0;
 
             // launch steam
             Process.Start(SteamHelper.SteamPath);
@@ -1571,7 +1656,7 @@ public partial class HeaderCarousel : ItemsControl
             {
                 if (File.Exists(SteamHelper.SteamLoginUsersPath))
                 {
-                    if (KVSerializer.Create(KVSerializationFormat.KeyValues1Text).Deserialize(new MemoryStream(Encoding.UTF8.GetBytes(File.ReadAllText(SteamHelper.SteamLoginUsersPath)))).Children.Count() > initialUserCount)
+                    if (KVSerializer.Create(KVSerializationFormat.KeyValues1Text).Deserialize(new MemoryStream(Encoding.UTF8.GetBytes(File.ReadAllText(SteamHelper.SteamLoginUsersPath)))).Root.Children.Count() > initialUserCount)
                         break;
                 }
 
@@ -1628,7 +1713,7 @@ public partial class HeaderCarousel : ItemsControl
             var kv = KVSerializer.Create(KVSerializationFormat.KeyValues1Text).Deserialize(new MemoryStream(Encoding.UTF8.GetBytes(File.ReadAllText(SteamHelper.SteamLoginUsersPath))));
 
             // remove selected account
-            var newChildren = kv.Children.Where(c => c.Key != kv.Children.First(child => child.Value["AccountName"]?.ToString() == SteamAccounts.SelectedItem.ToString()).Key).ToList();
+            var newChildren = kv.Root.Children.Where(c => c.Key != kv.Root.Children.First(child => child.Value["AccountName"]?.ToString() == SteamAccounts.SelectedItem.ToString()).Key).ToList();
             var newRoot = new KVObject();
             foreach (var child in newChildren)
             {
@@ -1637,7 +1722,7 @@ public partial class HeaderCarousel : ItemsControl
 
             // write changes
             using var msOut = new MemoryStream();
-            KVSerializer.Create(KVSerializationFormat.KeyValues1Text).Serialize(msOut, newRoot);
+            KVSerializer.Create(KVSerializationFormat.KeyValues1Text).Serialize(msOut, new KVDocument(null, kv.Name, newRoot));
             msOut.Position = 0;
             File.WriteAllText(SteamHelper.SteamLoginUsersPath, new StreamReader(msOut).ReadToEnd());
 

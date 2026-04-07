@@ -313,7 +313,7 @@ public static class PreparingStage
                 {
                     using var stream = File.OpenRead(file.FullName);
                     var kv = KVSerializer.Create(KVSerializationFormat.KeyValues1Text).Deserialize(stream);
-                    return kv?.Children?.Any() == true;
+                    return kv?.Root.Children.Any() == true;
                 })
                 .FirstOrDefault(false);
 
