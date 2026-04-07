@@ -12,7 +12,7 @@
 [![PayPal](https://img.shields.io/badge/Donate-PayPal-003087?logo=paypal&logoColor=fff)](https://www.paypal.com/donate/?hosted_button_id=GVEVUSHUWXEAG)
 
 <p align="center">
-  <a href="#-features">Features</a> •
+  <a href="#-introduction">Introduction</a> •
   <a href="#-installation-guide">Installation Guide</a> •
   <a href="#-screenshots">Screenshots</a> •
   <a href="#️-build-instructions">Build Instructions</a> •
@@ -23,76 +23,113 @@
 
 AutoOS is a Native AOT WinUI 3 application that automates Windows setup and optimization with a focus on gaming performance, privacy, system compatibility and quality of life improvements.
 
-## ✨ Features
-**AutoOS Installer**:
+## ✨ Introduction
+There are plenty of "Windows Debloat" scripts and apps out there, but most of them rely on basic CMD / PowerShell scripts / commands, apply non-researched tweaks, and end up breaking core Windows functionality or security.
+
+There is also a lot of Discord Servers selling services to apply custom ISOs / playbooks or install poorly coded AI utilities that rely on poor research and public knowledge.
+
+With AutoOS I have completely reimagined the way Windows is installed and used. AutoOS is written in **C#** and **WinUI3** while being fully **NativeAOT** compatible and utilizing **Win32 APIs**. It is tailored towards **competitive gamers** and **power users** while being **fully open source** and receiving **regular updates** that don't require you to reinstall Windows every time.
+
+### The Installation Process
+For the installation, users are provided with the latest `25H2 Professional ISO` which is built and updated by GitHub Actions using the `uupdump API`. Check out my [uup-dump-get-windows-iso](https://github.com/tinodin/uup-dump-get-windows-iso) repository.
+
+The installation bypasses the need for unreliable and slow USB drives and instead relies on a PowerShell Script to create a new partition, apply the `install.wim`, add the custom `unattend.xml` file and create the boot entry.
+
+The **unattend.xml** file does the following:
 - Removes and disables 8.3 file names before installing Windows
 - Creates a local user account
 - Cleans up visual clutter
 - Disables automatic driver/app installation via Windows Update
 - Removes web results from Windows start menu
-- Precompiles .NET assemblies to improve PowerShell loading time
+- Precompiles .NET assemblies to improve PowerShell loading times
 - Pauses Windows Updates for 100 years
 - Adds Recycle Bin to Quick Access
 - Sets the correct Timezone, Regional format, Keyboard Layout and secondary language for your country
+- Downloads and installs the latest version of AutoOS
+
+After Windows is installed you are greeted with the **AutoOS Installer**.
+
+### AutoOS Installer
+In **AutoOS Installer** you can:
+- Personalize your Windows Theme preferences which are integrated using my [Auto Theme Switcher Windhawk Mod](https://windhawk.net/mods/auto-theme-switcher).
+- Select your Browsers and Browser Extensions.
+- Select your Applications.
+- Import a pre-configured Custom Resolution Utility (CRU) profile.
+- Select which Graphics Card drivers are installed. The Graphic Cards are detected using SetupAPI and [pciids](https://github.com/pciutils/pciids) and the drivers are queried using official API endpoints to ensure compability with all NVIDIA, AMD and recent Intel GPUs.
+- Import a pre-configured MSI Afterburner profile.
+- Select your Windows Security preferences.
+
+Pressing **Install AutoOS** in the **AutoOS Installer** does the following:
 - Creates an optimized Power plan
-- Adjusts Registry and Group Policies for Privacy, Work and Performance
+- Adjusts Registry and Group Policies for Privacy, Performance and QoL
 - Disables selected Security features
 - Adjusts Memory Management and Prefetching depending on disk type
-- Automatically detects your GPUs and strips, installs and optimizes settings
-- Allows for importing a preconfigured Custom Resolution Utility (CRU) profile
+- Downloads strips, installs and optimizes your selected Graphic Card drivers
+- Imports the selected Custom Resolution Utility (CRU) profile
 - Automatically sets your Monitors to their highest supported refresh rates
-- Allows for importing a preconfigured MSI Afterburner overclock profile
-- Installs OBS Studio with optimal settings depending on your GPU
+- Imports the selected MSI Afterburner overclock profile
+- Installs OBS Studio with optimal settings depending on your GPUs
 - Adjusts your Ethernet and Wi-Fi adapters advanced settings
 - Sets the lowest possible sound buffer size for your input and output device
 - Disables Audio Enhancements and optimizes MMCSS settings depending on your NIC driver
 - Restores the Dolby AC-3 Feature on Demand to support Dolby Atmos on newer Windows Versions
 - Automatically optimizes your GPU, XHCI and NIC Affinities depending on your CPU configuration
-- Enables MSI mode for supported devices, disables XHCI Interrupt Moderation (IMOD) for all controllers
+- Enables MSI mode for supported devices, disables XHCI Interrupt Moderation (IMOD) for all USB controllers
 - Disables some unneeded Scheduled Tasks
 - Disables some unneeded Optional Features
 - Removes some unneeded Capabilities
 - Uninstalls and deprovisions unneeded AppX packages and updates all installed AppX to their latest version
 - Installs Visual C++ Redistributable, Microsoft Edge WebView2, Microsoft Windows App Runtime and DirectX
-- Installs selected Browsers with selected Browser Extensions and preconfigured settings
+- Installs selected Browsers with selected Browser Extensions
 - Installs additional Image / Video Extensions
 - Installs NanaZip, Everything, StartAllBack and Windhawk with Mods for Start Menu, Taskbar, File Explorer etc.
 - Installs selected Apps for Office, Development, Music, Messaging, Launchers and disables their startup entries
-- Imports the Epic Games Account from old Windows Install to the new one
-- Imports / Links Epic Games and Steam titles from old Windows Install to the new one
+- Imports the Epic Games Account from the old Windows installation
+- Imports / Links Epic Games and Steam titles from the old Windows installation
 - Sets Fortnite frame rate depending on your main monitors refresh rate
-- Groups Services and disables failure actions
+- Groups services and disables failure actions for some
 - Cleans up temporary files
 
-**AutoOS Settings**:
-- Adjust Volume, Format and Buffer Size of your current input and output device
-- Manually adjust or import a Custom Resolution Utility (CRU) profile 
-- Check for GPU Driver Updates and install them without losing settings
-- Toggle Dynamic P-States, HDCP and HDMI/DP Audio for your GPUs
-- Manually adjust or import an MSI Afterburner overclock profile
-- Toggle OBS Studio Replay Buffer
-- Manually adjust or automatically optimize GPU, XHCI and NIC Affinities
-- Toggle Bluetooth Services and Drivers, XHCI Interrupt Moderation (IMOD) per controller
-- Manually adjust or automatically optimize advanced network adapter settings 
-- Adjust, Edit, Delete, Export, Import Power plans and compare them
-- Toggle Services & Drivers States with configured functionality (Disable for Gaming / Enable for Work)
-- Manually adjust or merge over 600 recommended BIOS Settings
-- Clean up your drives
-- Toggle Windows Security Options
-- Toggle Windows Updates and set target version
-- Custom Game Launcher supporting Epic Games, Steam, Riot Games, Eden, Citron and Ryujinx
-- Check for Epic Games title updates
-- Launch Games, Stop Processes and Restart Processes when done  
-- Switch between Epic Games and Steam Accounts
+[YouTube (AutoOS Installer Showcase)](https://youtu.be/k_xp1WXjMvw)
 
-**AutoOS Startup**:
+After the **AutoOS Installer** is done you have a **fully optimized Windows installation** and the **AutoOS Settings** app.
+
+### AutoOS Settings
+In **AutoOS Settings** you can:
+- Adjust Volume, Format and Buffer Size of your current input and output device
+- Manually adjust or import a Custom Resolution Utility (CRU) profile.
+- Check for GPU Driver updates and install them while keeping the current settings.
+- Toggle Dynamic P-States, HDCP and HDMI/DP Audio for your GPUs.
+- Manually adjust or import an MSI Afterburner profile.
+- Toggle OBS Studio Replay Buffer.
+- Manually adjust or automatically optimize GPU, XHCI and NIC Affinities.
+- Toggle Bluetooth Services and Drivers.
+- Toggle XHCI Interrupt Moderation (IMOD) per USB controller.
+- Manually adjust or automatically optimize advanced network adapter settings.
+- Adjust, Edit, Delete, Restore, Export, Import Power plans and compare them.
+- Toggle Services & Drivers states with configured functionality.
+- Manually adjust or merge over 600 recommended BIOS Settings.
+- Clean up your drives.
+- Toggle Windows Security Options.
+- Toggle Windows Updates and set target version.
+- View your Game Library (Supports Epic Games, Steam, Riot Games, Eden, Citron and Ryujinx).
+- Launch Games, Stop Processes and Restart Processes when done.
+- Check for Epic Games title updates.
+- Switch between Epic Games and Steam Accounts.
+
+[YouTube (AutoOS Settings Showcase)](https://youtu.be/SVfBKoSJDCQ)
+
+On startup **AutoOS Startup** does the following:
+
+### AutoOS Startup
 - Syncs the time
 - Applies the MSI Afterburner profile
 - Applies sound buffer sizes for selected input and output devices
 - Disables XHCI Interrupt Moderation (IMOD) for selected XHCI Controllers
-- Launches OBS Studio
-- Debloats Discord
+- Launches OBS Studio if selected
 - Cleans up temporary files
+
+Up until this point all the work has been done by me and me alone. I have spent countless hours every day. There is still some work to do and I am looking for contributors or suggestions to make this a big community project.
 
 ## ⚠️ Current Issues
 - **Blank screen after installing the Graphics Driver:** You may experience a blank screen in the App after installing the Graphics Driver. To fix this, resize the window, click the navigation pane button a few times or just wait until it rerenders the UI.
@@ -104,19 +141,19 @@ AutoOS is a Native AOT WinUI 3 application that automates Windows setup and opti
 
 **Step 1:** Before installing, please join my [Discord Server](https://discord.gg/bZU4dMMWpg) to receive installation support and stay informed about future updates or changes.
 
-**Step 2:** Download the latest Windows 25H2 ISO file from [here](https://drive.google.com/drive/folders/1BlAYofjlW1bU-WPG3jXygO1ezoJ4gPs7?usp=sharing) (Log into your Google Account if you get an error). Other ISOs are not supported to guarantee consistency. 
+**Step 2:** Download the latest Windows 25H2 ISO file from [here](https://drive.google.com/drive/folders/1BlAYofjlW1bU-WPG3jXygO1ezoJ4gPs7?usp=sharing) (Log into your Google Account if you get an error). Other ISOs are not supported to guarantee consistency and the latest features. 
 
 **Step 3:** Download your Ethernet, Wi-Fi and Bluetooth driver (No Audio, Chipset, etc). 
 
-**Intel:** [Ethernet](https://www.intel.com/content/www/us/en/download/727998/intel-network-adapter-driver-for-microsoft-windows-11.html) · [Wi-Fi](https://www.dl.dropboxusercontent.com/scl/fi/9qjxlr4x59dv9ncusmu3h/INTEL-WiFi.zip?rlkey=v1mzzc37onjmcpundt48u8i83&st=pnj3c3ax&dl=0) · [Bluetooth](https://www.dl.dropboxusercontent.com/scl/fi/qoylgflunti1fhzpcjnip/INTEL-Bluetooth.zip?rlkey=j23dopqk2ek1r5ju00zemwsf2&st=wopu40cj&dl=0)
+**INTEL:** [Ethernet](https://www.intel.com/content/www/us/en/download/727998/intel-network-adapter-driver-for-microsoft-windows-11.html) · [Wi-Fi](https://www.dl.dropboxusercontent.com/scl/fi/9qjxlr4x59dv9ncusmu3h/INTEL-WiFi.zip?rlkey=v1mzzc37onjmcpundt48u8i83&st=pnj3c3ax&dl=0) · [Bluetooth](https://www.dl.dropboxusercontent.com/scl/fi/qoylgflunti1fhzpcjnip/INTEL-Bluetooth.zip?rlkey=j23dopqk2ek1r5ju00zemwsf2&st=wopu40cj&dl=0)
 
 **Realtek:** [Ethernet (Win10/Win11 Auto Installation Program (NDIS) - Not Support Power Saving)](https://www.dl.dropboxusercontent.com/scl/fi/gr47u24zve7ll7lmel9ke/Install_Win11_Win10_10079_20_DMAROFF_01262026.zip?rlkey=pp7modxp8ht1zxcwlu5foam8l&st=vsxyeok0&dl=0)
 
-If your device is older and not supported by these drivers go to the Drivers / Support page or your Mainboard / PC and download them from there.
-
-On Prebuilts and Laptops you may need to disable `VMD Controller` in your BIOS or download the disk driver (Intel Rapid Storage Technology Driver) otherwise you may get a BSOD. 
+If your Ethernet / Wi-Fi / Bluetooth adapter is not listed above, go to the Drivers / Support page or your Mainboard / PC and download them from there.
 
 Extract all `.zip` files (for `.exe` files, there may be an `extract option` in the setup, otherwise use `7-Zip, NanaZip, or WinRAR` to extract them) and move all extracted folders into one folder.
+
+On Prebuilts and Laptops you may need to disable `VMD Controller` in your BIOS or download the disk driver (Intel Rapid Storage Technology Driver) otherwise you may get a BSOD. 
 
 **Step 4:** Open PowerShell **as Administrator**.
 
@@ -128,15 +165,13 @@ Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
 irm https://raw.githubusercontent.com/tinodin/AutoOS/master/deploy.ps1 | iex
 ```
 
-If you get any errors during the script, it’s most likely because your current operating system has disabled services that are required. Make sure to use a default installation of Windows to run the script.
+If you get any errors during the script, it’s most likely because your current operating system has disabled services that are required. Make sure to use a default installation of Windows to run the script. If you can't figure it out leave a message in my discord server.
 
 **Step 6:** Once the script finished, `restart` and boot into the `default option`. Make sure to `keep your ethernet cable connected` or `connect to your WiFi in the setup`. **DO NOT BYPASS THE NETWORK REQUIREMENT!** Then wait for Windows to finish installing.
 
 **Step 7:** Once finished, wait for AutoOS to open up.
 
-**Step 8:** Carefully look through every tab and select your preferences and apps. Then click "Install AutoOS". This process will take around 20-30 minutes.
-
-If you want to delete your old Windows partition and merge the unallocated space with the AutoOS partition, use [Minitool Partition Wizard Free](https://cdn2.minitool.com/?p=pw&e=pw-free) (decline each offer in the installer). Then use the `Delete` function on the old Windows partition and the `Extend` function on the AutoOS partition and max out the slider. Click apply and restart. Make sure to delete `Minitool Partition Wizard Free` again after you are done.
+**Step 8:** Carefully look through every tab and select your preferences and apps. Then click "Install AutoOS". This process will take around 15-30 minutes.
 
 ### What to do after the installation is finished?
 - `Disable` the toggle in `Services & Drivers` tab and restart whenever you are `Gaming`.
@@ -153,9 +188,12 @@ If you want to delete your old Windows partition and merge the unallocated space
 ### What **NOT** to do after the installation is finished?
 - Run other `tweaks` or `optimizers` like `CTT` etc.
 - Apply `timer resolution` because it does more harm than good.
+- Set `visual effects` to `Best Performance`, `disable animations / transparency / paging file`. 
 - `Uninstall` `MSI Afterburner, OBS, Everything, Windhawk, StartAllBack` or any of the `runtimes`.
 - `Install` `7-Zip`, because `NanaZip` is already installed.
 - `Uninstall` more AppX Packages like `Xbox Game Bar` or `Microsoft Edge` because it **breaks functionality**.
+
+If you want to delete your old Windows partition and merge the unallocated space with the AutoOS partition, use [Minitool Partition Wizard Free](https://cdn2.minitool.com/?p=pw&e=pw-free) (decline each offer in the installer). Then use the `Delete` function on the old Windows partition and the `Extend` function on the AutoOS partition and max out the slider. Click apply and restart. Make sure to delete `Minitool Partition Wizard Free` again after you are done.
 
 ## 📷 Screenshots
 ### AutoOS Installer
