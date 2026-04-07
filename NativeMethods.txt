@@ -145,7 +145,7 @@ STARTUPINFOW
 PROCESS_INFORMATION
 PROCESS_CREATION_FLAGS
 WaitForSingleObject
-CreateProcessWithTokenW
+CreateProcessWithToken
 
 IMMDeviceEnumerator
 MMDeviceEnumerator

@@ -1,5 +1,6 @@
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.Marshalling;
+using Windows.Win32;
 
 namespace AutoOS.Helpers.TaskScheduler;
 
@@ -96,17 +97,14 @@ internal partial interface IRegisteredTask
 
 public static partial class TaskSchedulerHelper
 {
-    [LibraryImport("ole32.dll")]
-    private static partial int CoCreateInstance(in Guid rclsid, nint pUnkOuter, uint dwClsContext, in Guid riid, out nint ppv);
-
     private static readonly Guid CLSID_TaskScheduler = new("0F87369F-A4E5-4CFC-BD3E-73E6154572DD");
 
-    private static ITaskService CreateTaskService()
+    private static unsafe ITaskService CreateTaskService()
     {
         Guid iid = typeof(ITaskService).GUID;
-        Marshal.ThrowExceptionForHR(CoCreateInstance(in CLSID_TaskScheduler, 0, 1, in iid, out nint ppv));
+        Marshal.ThrowExceptionForHR((int)PInvoke.CoCreateInstance(in CLSID_TaskScheduler, null, Windows.Win32.System.Com.CLSCTX.CLSCTX_INPROC_SERVER, in iid, out void* ppv));
         var cw = new StrategyBasedComWrappers();
-        return (ITaskService)cw.GetOrCreateObjectForComInstance(ppv, CreateObjectFlags.UniqueInstance);
+        return (ITaskService)cw.GetOrCreateObjectForComInstance((nint)ppv, CreateObjectFlags.UniqueInstance);
     }
 
     public static void Toggle(string wildcard, bool enable)

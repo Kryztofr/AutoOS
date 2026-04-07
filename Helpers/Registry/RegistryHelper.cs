@@ -32,18 +32,6 @@ public static partial class RegistryHelper
         await WindowsIdentity.RunImpersonatedAsync(impersonation, action);
     }
 
-    [DllImport("advapi32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
-    private static extern bool CreateProcessWithTokenW(
-        IntPtr hToken,
-        uint dwLogonFlags,
-        string lpApplicationName,
-        IntPtr lpCommandLine,
-        uint dwCreationFlags,
-        IntPtr lpEnvironment,
-        string lpCurrentDirectory,
-        ref STARTUPINFOW lpStartupInfo,
-        out PROCESS_INFORMATION lpProcessInformation);
-
     public static async Task RunAs(Identity identity, ProcessStartInfo psi)
     {
         var hToken = GetToken(identity);
@@ -65,28 +53,24 @@ public static partial class RegistryHelper
 
             var pi = new PROCESS_INFORMATION();
             string commandLine = string.IsNullOrEmpty(psi.Arguments) ? $"\"{psi.FileName}\"" : $"\"{psi.FileName}\" {psi.Arguments}";
-            uint creationFlags = 0;
-            if (psi.CreateNoWindow) creationFlags |= (uint)PROCESS_CREATION_FLAGS.CREATE_NO_WINDOW;
+            PROCESS_CREATION_FLAGS creationFlags = 0;
+            if (psi.CreateNoWindow) creationFlags |= PROCESS_CREATION_FLAGS.CREATE_NO_WINDOW;
 
-            IntPtr pCommandLine = Marshal.StringToHGlobalUni(commandLine);
+            Span<char> pCommandLine = commandLine.ToCharArray();
+            unsafe
+            {
+                if (!PInvoke.CreateProcessWithToken(hToken, (CREATE_PROCESS_LOGON_FLAGS)1, null, ref pCommandLine, creationFlags, null, string.IsNullOrEmpty(psi.WorkingDirectory) ? null : psi.WorkingDirectory, in si, out pi))
+                    throw new System.ComponentModel.Win32Exception(Marshal.GetLastWin32Error());
+            }
+
             try
             {
-                if (!CreateProcessWithTokenW(hToken.DangerousGetHandle(), 1 , null, pCommandLine, creationFlags, IntPtr.Zero, string.IsNullOrEmpty(psi.WorkingDirectory) ? null : psi.WorkingDirectory, ref si, out pi))
-                    throw new System.ComponentModel.Win32Exception(Marshal.GetLastWin32Error());
-
-                try
-                {
-                    PInvoke.WaitForSingleObject(pi.hProcess, 0xFFFFFFFF);
-                }
-                finally
-                {
-                    PInvoke.CloseHandle(pi.hProcess);
-                    PInvoke.CloseHandle(pi.hThread);
-                }
+                PInvoke.WaitForSingleObject(pi.hProcess, 0xFFFFFFFF);
             }
             finally
             {
-                Marshal.FreeHGlobal(pCommandLine);
+                PInvoke.CloseHandle(pi.hProcess);
+                PInvoke.CloseHandle(pi.hThread);
             }
         });
     }
