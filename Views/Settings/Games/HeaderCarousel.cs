@@ -1638,17 +1638,7 @@ public partial class HeaderCarousel : ItemsControl
         File.WriteAllText(SteamHelper.SteamLoginUsersPath, new StreamReader(msOut).ReadToEnd());
 
         // update registry key
-        var process = new Process
-        {
-            StartInfo = new ProcessStartInfo
-            {
-                FileName = "reg.exe",
-                Arguments = @$"add ""HKEY_CURRENT_USER\Software\Valve\Steam"" /v AutoLoginUser /t REG_SZ /d {SteamAccounts.SelectedItem} /f",
-                CreateNoWindow = true,
-                UseShellExecute = false
-            }
-        };
-        process.Start();
+        Registry.SetValue(@"HKEY_CURRENT_USER\Software\Valve\Steam", "AutoLoginUser", SteamAccounts.SelectedItem.ToString(), RegistryValueKind.String);
 
         // refresh combobox
         isInitializingSteamAccounts = true;

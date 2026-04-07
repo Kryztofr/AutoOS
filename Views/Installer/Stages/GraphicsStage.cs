@@ -79,7 +79,7 @@ public static class GraphicsStage
             ("Installing OBS Studio", async () => Directory.Delete(@"C:\Program Files\obs-studio\$APPDATA", true), null),
             ("Installing OBS Studio", async () => obsVersion = FileVersionInfo.GetVersionInfo(@"C:\Program Files\obs-studio\bin\64bit\obs64.exe").ProductVersion, null),
             ("Installing OBS Studio", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\OBS Studio", "DisplayVersion", obsVersion, RegistryValueKind.String), null),
-            ("Installing OBS Studio", async () => await Process.Start(new ProcessStartInfo { FileName = "reg.exe", Arguments = $"import \"{Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Scripts", "obs.reg")}\"", CreateNoWindow = true })!.WaitForExitAsync(), null),
+            ("Installing OBS Studio", async () => await Process.Start(new ProcessStartInfo { FileName = "reg.exe", Arguments = @$"import ""{Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Scripts", "obs.reg")}""", CreateNoWindow = true })!.WaitForExitAsync(), null),
             ("Installing OBS Studio", async () => await ProcessActions.RunPowerShell(@"$s=New-Object -ComObject WScript.Shell;$sc=$s.CreateShortcut([System.IO.Path]::Combine($env:ProgramData,'Microsoft\Windows\Start Menu\Programs\OBS Studio.lnk'));$sc.TargetPath='C:\Program Files\obs-studio\bin\64bit\obs64.exe';$sc.WorkingDirectory='C:\Program Files\obs-studio\bin\64bit';$sc.Save()"), null)
         };
 

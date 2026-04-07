@@ -52,7 +52,7 @@ public static partial class RegistryHelper
             });
 
             var pi = new PROCESS_INFORMATION();
-            string commandLine = string.IsNullOrEmpty(psi.Arguments) ? $"\"{psi.FileName}\"" : $"\"{psi.FileName}\" {psi.Arguments}";
+            string commandLine = (string.IsNullOrEmpty(psi.Arguments) ? $"\"{psi.FileName}\"" : $"\"{psi.FileName}\" {psi.Arguments}") + "\0";
             PROCESS_CREATION_FLAGS creationFlags = 0;
             if (psi.CreateNoWindow) creationFlags |= PROCESS_CREATION_FLAGS.CREATE_NO_WINDOW;
 
