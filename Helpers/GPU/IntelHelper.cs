@@ -66,7 +66,12 @@ namespace AutoOS.Helpers.GPU
             await process.WaitForExitAsync();
 
             var versionMatch = VersionRegex().Match(domHtml);
-            if (versionMatch.Success) newestVersion = versionMatch.Groups[1].Value;
+            if (versionMatch.Success)
+            {
+                newestVersion = versionMatch.Groups[1].Value;
+                var versionParts = newestVersion?.Split('.');
+                newestVersion = versionParts?.Length >= 4 ? versionParts[2] + "." + versionParts[3] : newestVersion;
+            }
 
             var fileMatch = is6thGen ? ZipFileRegex().Match(domHtml) : ExeFileRegex().Match(domHtml);
             string fileName = fileMatch.Success ? fileMatch.Groups[1].Value : string.Empty;
