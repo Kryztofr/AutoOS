@@ -142,7 +142,7 @@ namespace AutoOS.Helpers.GPU
             var actions = new List<(string Title, Func<Task> Action, Func<bool> Condition)>
             {
                 // download intel® graphics command center (beta)
-                ("Downloading Intel® Graphics Command Center (Beta)", async () => await StoreHelper.Download("AppUp.IntelGraphicsCommandCenterBeta_8wekyb3d8bbwe"), () => Intel_6th == true || Intel_7th_10th == true || Intel_11th_14th == true || Intel_11th_14th == true),
+                ("Downloading Intel® Graphics Command Center (Beta)", async () => await StoreHelper.Download("AppUp.IntelGraphicsCommandCenterBeta_8wekyb3d8bbwe"), () => Intel_6th == true || Intel_7th_10th == true || Intel_11th_14th == true),
 
                 // install intel® graphics command center (beta)
                 ("Installing Intel® Graphics Command Center (Beta)", async () => await StoreHelper.Install("AppUp.IntelGraphicsCommandCenterBeta_8wekyb3d8bbwe"), () => Intel_6th == true || Intel_7th_10th == true || Intel_11th_14th == true),

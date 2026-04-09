@@ -179,8 +179,14 @@ public static class GpuHelper
                     }
                     else if (vendorId == "8086")
                     {
-                        var versionParts = currentVersion?.Split('.');
-                        currentVersion = versionParts?.Length >= 4 ? versionParts[2] + "." + versionParts[3] : currentVersion;
+                        pciDb ??= LoadPciDatabase();
+
+                        if (pciDb.TryGetValue(vendorId, out var vendor) && vendor.Devices.TryGetValue(deviceId, out var name))
+                        {
+                            var versionParts = currentVersion?.Split('.');
+                            currentVersion = versionParts?.Length >= 4 ? versionParts[2] + "." + versionParts[3] : currentVersion;
+                            codename = name.Split('[')[0].Trim();
+                        }
                     }
 
                     Guid audioGuid = new("4d36e97d-e325-11ce-bfc1-08002be10318");
