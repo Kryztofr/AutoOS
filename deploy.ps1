@@ -214,6 +214,11 @@ if (-not $admin.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
     return
 }
 
+if (-not [Environment]::Is64BitProcess) {
+    Write-Host "This script must be run in 64-bit PowerShell."
+    exit 1
+}
+
 Write-Host "Please select the Windows ISO..."
 $IsoPicker = New-Object System.Windows.Forms.OpenFileDialog
 $IsoPicker.Filter = "ISO Files (*.iso)|*.iso"

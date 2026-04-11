@@ -68,106 +68,125 @@ public static class ProcessActions
 
     public static async Task RunDownload(string url, string path, string file = null, ProgressButton progressButton = null)
     {
-        var uiContext = SynchronizationContext.Current;
+        string dest = string.IsNullOrWhiteSpace(file) ? path : Path.Combine(path, file);
 
-        string title = progressButton == null ? InstallPage.Info?.Title ?? string.Empty : string.Empty;
-
-        DownloadBuilder downloadBuilder;
-        DownloadConfiguration config;
-
-        if (url.Contains("raw.githubusercontent.com", StringComparison.OrdinalIgnoreCase))
+        for (int i = 0; i < 5; i++)
         {
-            using var client = new HttpClient();
-            string dest = string.IsNullOrWhiteSpace(file) ? path : Path.Combine(path, file);
-            await File.WriteAllTextAsync(dest, await client.GetStringAsync(url), Encoding.UTF8);
-            return;
-        }
+            if (File.Exists(dest)) return;
 
-        if (url.Contains("www2.ati.com", StringComparison.OrdinalIgnoreCase))
-        {
-            config = new DownloadConfiguration
+            var uiContext = SynchronizationContext.Current;
+            string title = progressButton == null ? InstallPage.Info?.Title ?? string.Empty : string.Empty;
+
+            if (url.Contains("raw.githubusercontent.com", StringComparison.OrdinalIgnoreCase))
             {
-                RequestConfiguration = new RequestConfiguration
+                try
                 {
-                    Headers = new WebHeaderCollection
-                {
-                    { "Referer", "http://support.amd.com" },
-                    { "Accept", "*/*" },
-                    { "User-Agent", "AMD Catalyst Install Manager/0.0" },
-                    { "Cache-Control", "no-cache" },
-                    { "Connection", "Keep-Alive" }
+                    using var client = new HttpClient();
+                    await File.WriteAllTextAsync(dest, await client.GetStringAsync(url), Encoding.UTF8);
+                    if (File.Exists(dest)) return;
                 }
-                }
-            };
-
-            downloadBuilder = DownloadBuilder.New()
-                .WithUrl(url)
-                .WithDirectory(path)
-                .WithFileName(file)
-                .WithConfiguration(config);
-        }
-        else
-        {
-            downloadBuilder = DownloadBuilder.New()
-                .WithUrl(url)
-                .WithDirectory(path)
-                .WithFileName(file)
-                .WithConfiguration(new DownloadConfiguration());
-        }
-
-        var download = downloadBuilder.Build();
-
-        double speedMB = 0.0;
-        double receivedMB = 0.0;
-        double totalMB = 0.0;
-        double percentage = 0.0;
-        DateTime lastLoggedTime = DateTime.MinValue;
-
-        download.DownloadProgressChanged += (sender, e) =>
-        {
-            if ((DateTime.Now - lastLoggedTime).TotalMilliseconds < 50) return;
-            lastLoggedTime = DateTime.Now;
-
-            speedMB = e.BytesPerSecondSpeed / (1024.0 * 1024.0);
-            receivedMB = e.ReceivedBytesSize / (1024.0 * 1024.0);
-            totalMB = e.TotalBytesToReceive / (1024.0 * 1024.0);
-            percentage = e.ProgressPercentage;
-
-            uiContext?.Post(_ =>
+                catch { }
+            }
+            else
             {
-                if (progressButton != null)
-                {
-                    progressButton.IsIndeterminate = false;
-                    progressButton.Progress = percentage;
-                }
-                else if (!string.IsNullOrEmpty(title))
-                {
-                    InstallPage.Info.Title = $"{title} ({speedMB:F1} MB/s - {receivedMB:F2} MB of {totalMB:F2} MB)";
-                    InstallPage.ProgressRingControl.IsIndeterminate = false;
-                    InstallPage.ProgressRingControl.Value = percentage;
-                }
-            }, null);
-        };
+                DownloadBuilder downloadBuilder;
+                DownloadConfiguration config;
 
-        download.DownloadFileCompleted += (sender, e) =>
-        {
-            uiContext?.Post(_ =>
-            {
-                if (progressButton != null)
+                if (url.Contains("www2.ati.com", StringComparison.OrdinalIgnoreCase))
                 {
-                    progressButton.Progress = 100;
-                    progressButton.IsIndeterminate = true;
-                }
-                else if (!string.IsNullOrEmpty(title))
-                {
-                    InstallPage.Info.Title = $"{title} ({speedMB:F1} MB/s - {totalMB:F2} MB of {totalMB:F2} MB)";
-                    InstallPage.ProgressRingControl.Value = 100;
-                    InstallPage.ProgressRingControl.IsIndeterminate = true;
-                }
-            }, null);
-        };
+                    config = new DownloadConfiguration
+                    {
+                        RequestConfiguration = new RequestConfiguration
+                        {
+                            Headers = new WebHeaderCollection
+                            {
+                                { "Referer", "http://support.amd.com" },
+                                { "Accept", "*/*" },
+                                { "User-Agent", "AMD Catalyst Install Manager/0.0" },
+                                { "Cache-Control", "no-cache" },
+                                { "Connection", "Keep-Alive" }
+                            }
+                        }
+                    };
 
-        await download.StartAsync();
+                    downloadBuilder = DownloadBuilder.New()
+                        .WithUrl(url)
+                        .WithDirectory(path)
+                        .WithFileName(file)
+                        .WithConfiguration(config);
+                }
+                else
+                {
+                    downloadBuilder = DownloadBuilder.New()
+                        .WithUrl(url)
+                        .WithDirectory(path)
+                        .WithFileName(file)
+                        .WithConfiguration(new DownloadConfiguration());
+                }
+
+                var download = downloadBuilder.Build();
+
+                double speedMB = 0.0;
+                double receivedMB = 0.0;
+                double totalMB = 0.0;
+                double percentage = 0.0;
+                DateTime lastLoggedTime = DateTime.MinValue;
+
+                download.DownloadProgressChanged += (sender, e) =>
+                {
+                    if ((DateTime.Now - lastLoggedTime).TotalMilliseconds < 50) return;
+                    lastLoggedTime = DateTime.Now;
+
+                    speedMB = e.BytesPerSecondSpeed / (1024.0 * 1024.0);
+                    receivedMB = e.ReceivedBytesSize / (1024.0 * 1024.0);
+                    totalMB = e.TotalBytesToReceive / (1024.0 * 1024.0);
+                    percentage = e.ProgressPercentage;
+
+                    uiContext?.Post(_ =>
+                    {
+                        if (progressButton != null)
+                        {
+                            progressButton.IsIndeterminate = false;
+                            progressButton.Progress = percentage;
+                        }
+                        else if (!string.IsNullOrEmpty(title))
+                        {
+                            InstallPage.Info.Title = $"{title} ({speedMB:F1} MB/s - {receivedMB:F2} MB of {totalMB:F2} MB)";
+                            InstallPage.ProgressRingControl.IsIndeterminate = false;
+                            InstallPage.ProgressRingControl.Value = percentage;
+                        }
+                    }, null);
+                };
+
+                download.DownloadFileCompleted += (sender, e) =>
+                {
+                    uiContext?.Post(_ =>
+                    {
+                        if (progressButton != null)
+                        {
+                            progressButton.Progress = 100;
+                            progressButton.IsIndeterminate = true;
+                        }
+                        else if (!string.IsNullOrEmpty(title))
+                        {
+                            InstallPage.Info.Title = $"{title} ({speedMB:F1} MB/s - {totalMB:F2} MB of {totalMB:F2} MB)";
+                            InstallPage.ProgressRingControl.Value = 100;
+                            InstallPage.ProgressRingControl.IsIndeterminate = true;
+                        }
+                    }, null);
+                };
+
+                try
+                {
+                    await download.StartAsync();
+                }
+                catch { }
+
+                if (File.Exists(dest)) return;
+            }
+
+            await Task.Delay(1000);
+        }
     }
 
     public static async Task RunExtract(string inputPath, string outputPath)
