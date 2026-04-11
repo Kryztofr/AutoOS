@@ -8,11 +8,12 @@ using Microsoft.UI.Xaml.Media;
 using Microsoft.Win32;
 using System.Diagnostics;
 using System.Net;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
-using WinRT.Interop;
-using System.Net.Http.Headers;
 using Windows.Storage;
+using Windows.System.Profile;
+using WinRT.Interop;
 
 namespace AutoOS.Views.Installer.Actions;
 
@@ -21,6 +22,19 @@ public static class ProcessActions
     private static readonly ApplicationDataContainer localSettings = ApplicationData.Current.LocalSettings;
     public static IntPtr WindowHandle { get; private set; }
     public static readonly HttpClient httpClient = new() { DefaultRequestHeaders = { UserAgent = { ProductInfoHeaderValue.Parse("AutoOS") } } };
+
+    public static (ushort major, ushort minor, ushort build, ushort ubr) GetWindowsVersion()
+    {
+        string deviceFamilyVersion = AnalyticsInfo.VersionInfo.DeviceFamilyVersion;
+        ulong version = ulong.Parse(deviceFamilyVersion);
+        ushort major = (ushort)((version & 0xFFFF000000000000L) >> 48);
+        ushort minor = (ushort)((version & 0x0000FFFF00000000L) >> 32);
+        ushort build = (ushort)((version & 0x00000000FFFF0000L) >> 16);
+        ushort ubr = (ushort)(version & 0x000000000000FFFFL);
+
+        return (major, minor, build, ubr);
+    }
+
     public static async Task RunPowerShell(string command)
     {
         await Process.Start(new ProcessStartInfo("powershell.exe", @$"-Command ""{command}""") { CreateNoWindow = true, UseShellExecute = false }).WaitForExitAsync();
@@ -315,10 +329,7 @@ public static class ProcessActions
         var nicsList = DeviceHelper.GetDevices(DeviceType.NIC);
         string nics = nicsList.Count > 0 ? string.Join("\n", nicsList.Select(n => $"{n.FriendlyName} (DeviceId: {n.DeviceId}, Current Version: {n.DriverType} {n.CurrentVersion}, Connected: {n.IsActive})")) : "N/A";
 
-        using var key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion");
-        string build = key.GetValue("CurrentBuild")?.ToString() ?? "";
-        string ubr = key.GetValue("UBR")?.ToString() ?? "";
-        string osVersion = $"{build}.{ubr}";
+        var (major, minor, build, ubr) = GetWindowsVersion();
 
         string discordId = "Failed to get Discord account id";
         string discordUsername = "Failed to get Discord username";
@@ -355,7 +366,7 @@ public static class ProcessActions
                 $"{gpus}\n" +
                 $"{monitors}\n" +
                 $"{nics}\n" +
-                $"{osVersion}\n" +
+                $"{build}.{ubr}\n" +
                 $"Install start: {installStart}\n" +
                 $"Install end: {installEnd}\n" +
                 $"{ProcessInfoHelper.Version}"
@@ -395,10 +406,7 @@ public static class ProcessActions
         var nicsList = DeviceHelper.GetDevices(DeviceType.NIC);
         string nics = nicsList.Count > 0 ? string.Join("\n", nicsList.Select(n => $"{n.FriendlyName} (DeviceId: {n.DeviceId}, VendorId: {n.VendorId}, Current Version: {n.DriverType} {n.CurrentVersion}, Connected: {n.IsActive})")) : "N/A";
 
-        using var key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion");
-        string build = key.GetValue("CurrentBuild")?.ToString() ?? "";
-        string ubr = key.GetValue("UBR")?.ToString() ?? "";
-        string osVersion = $"{build}.{ubr}";
+        var (major, minor, build, ubr) = GetWindowsVersion();
 
         string discordId = "Failed to get Discord account id";
         string discordUsername = "Failed to get Discord username";
@@ -435,7 +443,7 @@ public static class ProcessActions
                 $"{gpus}\n" +
                 $"{monitors}\n" +
                 $"{nics}\n" +
-                $"{osVersion}\n" +
+                $"{build}.{ubr}\n" +
                 $"Install start: {installStart}\n" +
                 $"Install end: {installEnd}\n" +
                 $"{ex.GetType().FullName}\n" +

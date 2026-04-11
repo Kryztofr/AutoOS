@@ -33,6 +33,21 @@ namespace AutoOS.Views.Settings
 
         private async void CheckForUpdates(object sender, RoutedEventArgs e)
         {
+            var (major, minor, build, ubr) = ProcessActions.GetWindowsVersion();
+            if (build < 26200)
+            {
+                var dialog = new ContentDialog
+                {
+                    Title = "Unsupported Windows Version",
+                    Content = $"AutoOS is only supported on Windows 11 25H2. \nPlease follow the installation guide on GitHub.",
+                    CloseButtonText = "OK",
+                    DefaultButton = ContentDialogButton.Close,
+                    XamlRoot = XamlRoot
+                };
+                await dialog.ShowAsync();
+                Application.Current.Exit();
+            }
+
             Version currentVersion = new(ProcessInfoHelper.Version);
 
             localSettings.Values.TryGetValue("Version", out var storedVersionObj);

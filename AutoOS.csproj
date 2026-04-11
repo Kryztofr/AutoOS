@@ -103,13 +103,13 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.28000.1721" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.28000.1761-preview" />
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="2.0.250930001-experimental1" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.5-beta1" />
     <PackageReference Include="nucs.JsonSettings" Version="2.0.2" />
     <PackageReference Include="nucs.JsonSettings.AutoSaveGenerator" Version="2.0.4" />
     <PackageReference Include="System.ServiceProcess.ServiceController" Version="11.0.0-preview.2.26159.112" />
-    <PackageReference Include="ValveKeyValue" Version="0.60.0.494" />
+    <PackageReference Include="ValveKeyValue" Version="0.70.0.499" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="Helpers\Sound\SoundHelper.vcxproj" ReferenceOutputAssembly="false" Condition="'$(CppBuiltSeparately)' != 'true'" />
