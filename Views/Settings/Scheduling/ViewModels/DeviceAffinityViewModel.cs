@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using AutoOS.Helpers.Device;
@@ -144,12 +144,11 @@ public partial class DeviceAffinityViewModel : INotifyPropertyChanged
 
     private void LoadCpuInformation(CpuSetsInfo cpuSetsInfo)
     {
-        HasEfficiencyClass = cpuSetsInfo.EfficiencyClass;
-
         var (pCores, eCores) = CpuHelper.GroupCpuSetsByEfficiencyClass(cpuSetsInfo);
 
         PCores = new ObservableCollection<CpuCore>(pCores);
         ECores = new ObservableCollection<CpuCore>(eCores);
+        HasEfficiencyClass = cpuSetsInfo.EfficiencyClass && ECores.Count > 0;
 
         SetCpuSelectionFromMask(ProcessMask);
 

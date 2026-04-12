@@ -70,10 +70,9 @@ Pressing **Install AutoOS** in the **AutoOS Installer** does the following:
 - Imports the selected MSI Afterburner overclock profile
 - Installs OBS Studio with optimal settings depending on your GPUs
 - Adjusts your Ethernet and Wi-Fi adapters advanced settings
-- Sets the lowest possible sound buffer size for your input and output device
 - Disables Audio Enhancements and optimizes MMCSS settings depending on your NIC driver
 - Restores the Dolby AC-3 Feature on Demand to support Dolby Atmos on newer Windows Versions
-- Automatically optimizes your GPU, XHCI and NIC Affinities depending on your CPU configuration
+- Automatically optimizes your Audio, GPU, XHCI and NIC Affinities depending on your CPU configuration
 - Enables MSI mode for supported devices, disables XHCI Interrupt Moderation (IMOD) for all USB controllers
 - Disables some unneeded Scheduled Tasks
 - Disables some unneeded Optional Features
@@ -178,6 +177,7 @@ If you get any errors during the script, it’s most likely because your current
 - Once you are in the `Game`, press the `Stop Processes` button. 
 - Press the `Restart Processes` button to restore the taskbar etc.
 - Check the `BIOS Settings` tab for recommendations.
+- If your output device supports a lower buffer size than 10ms in the `Sound tab`, you can lower it at the expense of higher CPU usage.
 - Leave a `review`, share `suggestions`, or report `issues` on the `Discord Server`.
 - [Donate](https://www.paypal.com/donate/?hosted_button_id=GVEVUSHUWXEAG) if you appreciate the immense time and effort I have put into creating and providing this project for free.
 - If you have experience with `C# and WinUI3` and want to become a part of the project, let me know.

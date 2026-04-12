@@ -200,7 +200,7 @@ public static class SteamHelper
         }
         KVSerializer.Create(KVSerializationFormat.KeyValues1Text).Serialize(msOut, new KVDocument(null, libraryFolderData.Name, rootObj));
         msOut.Position = 0;
-        File.WriteAllText(SteamHelper.SteamLibraryPath, new StreamReader(msOut).ReadToEnd());
+        File.WriteAllText(SteamLibraryPath, new StreamReader(msOut).ReadToEnd());
 
         await Task.Delay(1000);
     }

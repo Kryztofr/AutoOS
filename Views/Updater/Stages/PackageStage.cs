@@ -12,50 +12,25 @@ public static class PackageStage
         StorageFolder tempFolder = await ApplicationData.Current.TemporaryFolder.CreateFolderAsync("AutoOS Updater", CreationCollisionOption.OpenIfExists);
         StorageFile tempFile = await tempFolder.CreateFileAsync("AutoOS.msix", CreationCollisionOption.ReplaceExisting);
 
-        bool isCertValid = false;
+        StorageFile cerFile = await tempFolder.CreateFileAsync("AutoOS.cer", CreationCollisionOption.ReplaceExisting);
+        await dialog.Download(downloadUrl.Replace("AutoOS.msix", "AutoOS.cer"), tempFolder.Path, "AutoOS.cer", "Downloading Certificate...", 0, 25);
+        dialog.SetStatus("Installing Certificate...");
         using (X509Store store = new(StoreName.Root, StoreLocation.LocalMachine))
         {
-            store.Open(OpenFlags.ReadOnly);
-            foreach (var cert in store.Certificates.Find(X509FindType.FindBySubjectDistinguishedName, "CN=tinodin", false))
+            store.Open(OpenFlags.ReadWrite);
+            var cert = X509CertificateLoader.LoadCertificateFromFile(cerFile.Path);
+            foreach (var oldCert in store.Certificates.Find(X509FindType.FindBySubjectDistinguishedName, cert.Subject, false))
             {
-                if (DateTime.Now < cert.NotAfter && DateTime.Now > cert.NotBefore)
-                {
-                    isCertValid = true;
-                    break;
-                }
+                if (oldCert.Thumbprint != cert.Thumbprint)
+                    store.Remove(oldCert);
             }
+            store.Add(cert);
         }
 
-        double startValue;
-        double weight;
-
-        if (!isCertValid)
-        {
-            StorageFile cerFile = await tempFolder.CreateFileAsync("AutoOS.cer", CreationCollisionOption.ReplaceExisting);
-            await dialog.Download(downloadUrl.Replace("AutoOS.msix", "AutoOS.cer"), tempFolder.Path, "AutoOS.cer", "Downloading Certificate...", 0, 25);
-            dialog.SetStatus("Installing Certificate...");
-            using (X509Store store = new(StoreName.Root, StoreLocation.LocalMachine))
-            {
-                store.Open(OpenFlags.ReadWrite);
-                var cert = X509CertificateLoader.LoadCertificateFromFile(cerFile.Path);
-                foreach (var oldCert in store.Certificates.Find(X509FindType.FindBySubjectDistinguishedName, cert.Subject, false))
-                {
-                    if (oldCert.Thumbprint != cert.Thumbprint)
-                        store.Remove(oldCert);
-                }
-                store.Add(cert);
-            }
-            dialog.SetProgress(50);
-            await dialog.Download(downloadUrl, tempFolder.Path, "AutoOS.msix", "Downloading Update...", 50, 75);
-            startValue = 75;
-            weight = 25;
-        }
-        else
-        {
-            await dialog.Download(downloadUrl, tempFolder.Path, "AutoOS.msix", "Downloading Update...", 0, 50);
-            startValue = 50;
-            weight = 50;
-        }
+        dialog.SetProgress(50);
+        await dialog.Download(downloadUrl, tempFolder.Path, "AutoOS.msix", "Downloading Update...", 50, 75);
+        double startValue = 75;
+        double weight = 25;
 
         dialog.SetStatus("Installing Update...");
         PInvoke.RegisterApplicationRestart(null, 0);

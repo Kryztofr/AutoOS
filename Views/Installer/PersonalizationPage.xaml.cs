@@ -1,4 +1,4 @@
-﻿using Microsoft.Win32;
+using Microsoft.Win32;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Windows.Storage;
@@ -145,47 +145,60 @@ public sealed partial class PersonalizationPage : Page
 
     private async Task GetSchedule()
     {
-        string scheduleMode = localSettings.Values["ScheduleMode"] as string ?? "Sunset to sunrise";
-        localSettings.Values["ScheduleMode"] = scheduleMode;
-
-        ScheduleMode.SelectedIndex = scheduleMode switch
+        try
         {
-            "Always Light" => 0,
-            "Always Dark" => 1,
-            "Sunset to sunrise" => 2,
-            "Custom" => 3,
-            _ => 2
-        };
+            string scheduleMode = localSettings.Values["ScheduleMode"] as string ?? "Sunset to sunrise";
+            localSettings.Values["ScheduleMode"] = scheduleMode;
 
-        // load custom
-        LightTime.Time = (localSettings.Values["LightTime"] is string lightTimeStr && TimeSpan.TryParse(lightTimeStr, out var lt)) ? lt : TimeSpan.Parse("07:00");
-        localSettings.Values["LightTime"] = LightTime.Time.ToString(@"hh\:mm");
+            ScheduleMode.SelectedIndex = scheduleMode switch
+            {
+                "Always Light" => 0,
+                "Always Dark" => 1,
+                "Sunset to sunrise" => 2,
+                "Custom" => 3,
+                _ => 2
+            };
 
-        DarkTime.Time = (localSettings.Values["DarkTime"] is string darkTimeStr && TimeSpan.TryParse(darkTimeStr, out var dt)) ? dt : TimeSpan.Parse("19:00");
-        localSettings.Values["DarkTime"] = DarkTime.Time.ToString(@"hh\:mm");
+            // load custom
+            LightTime.Time = (localSettings.Values["LightTime"] is string lightTimeStr && TimeSpan.TryParse(lightTimeStr, out var lt)) ? lt : TimeSpan.Parse("07:00");
+            localSettings.Values["LightTime"] = LightTime.Time.ToString(@"hh\:mm");
 
-        // calculate sunrise sunset
-        var pos = await LocationHelper.GetGeoLocationAsync();
-        var sunTimes = SunTimesHelper.CalculateSunriseSunset(pos.Coordinate.Point.Position.Latitude, pos.Coordinate.Point.Position.Longitude, DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day);
+            DarkTime.Time = (localSettings.Values["DarkTime"] is string darkTimeStr && TimeSpan.TryParse(darkTimeStr, out var dt)) ? dt : TimeSpan.Parse("19:00");
+            localSettings.Values["DarkTime"] = DarkTime.Time.ToString(@"hh\:mm");
 
-        TimeLine.Sunrise = new TimeSpan(sunTimes.SunriseHour, sunTimes.SunriseMinute, 0);
-        TimeLine.Sunset = new TimeSpan(sunTimes.SunsetHour, sunTimes.SunsetMinute, 0);
+            // calculate sunrise sunset
+            var pos = await LocationHelper.GetGeoLocationAsync();
+            var sunTimes = SunTimesHelper.CalculateSunriseSunset(pos.Coordinate.Point.Position.Latitude, pos.Coordinate.Point.Position.Longitude, DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day);
 
-        // set timeline
-        if (scheduleMode == "Sunset to sunrise")
-        {
-            TimeLine.StartTime = new TimeSpan(sunTimes.SunriseHour, sunTimes.SunriseMinute, 0);
-            TimeLine.EndTime = new TimeSpan(sunTimes.SunsetHour, sunTimes.SunsetMinute, 0);
+            TimeLine.Sunrise = new TimeSpan(sunTimes.SunriseHour, sunTimes.SunriseMinute, 0);
+            TimeLine.Sunset = new TimeSpan(sunTimes.SunsetHour, sunTimes.SunsetMinute, 0);
+
+            // set timeline
+            if (scheduleMode == "Sunset to sunrise")
+            {
+                TimeLine.StartTime = new TimeSpan(sunTimes.SunriseHour, sunTimes.SunriseMinute, 0);
+                TimeLine.EndTime = new TimeSpan(sunTimes.SunsetHour, sunTimes.SunsetMinute, 0);
+            }
+            else if (scheduleMode == "Custom")
+            {
+                TimeLine.StartTime = LightTime.Time;
+                TimeLine.EndTime = DarkTime.Time;
+            }
+
+            UpdateTimeCardsVisibility();
+            await UpdateTheme();
+            isInitializingSchedule = false;
         }
-        else if (scheduleMode == "Custom")
+        catch
         {
+            localSettings.Values["ScheduleMode"] = "Custom";
+            ScheduleMode.SelectedIndex = 3;
             TimeLine.StartTime = LightTime.Time;
             TimeLine.EndTime = DarkTime.Time;
+            UpdateTimeCardsVisibility();
+            await UpdateTheme();
+            isInitializingSchedule = false;
         }
-
-        UpdateTimeCardsVisibility();
-        await UpdateTheme();
-        isInitializingSchedule = false;
     }
 
     private async void ScheduleMode_SelectionChanged(object sender, SelectionChangedEventArgs e)

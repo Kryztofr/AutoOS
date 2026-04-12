@@ -23,6 +23,8 @@ public partial class AudioFormatOption
     public ushort Channels { get; set; }
     public string DisplayName { get; set; } = string.Empty;
     public bool IsCurrent { get; set; }
+    public ushort ActualBitsPerSample { get; set; }
+    public Guid SubFormat { get; set; }
     public override string ToString() => DisplayName;
 }
 
@@ -81,7 +83,7 @@ public static partial class SoundHelper
         var details = new AudioDetails();
 
         HRESULT hrEnum = PInvoke.CoCreateInstance(typeof(MMDeviceEnumerator).GUID, null, (CLSCTX)7, typeof(IMMDeviceEnumerator).GUID, out void* pEnumerator);
-        if (hrEnum.Value >= 0)
+        if (hrEnum.Succeeded)
         {
             IMMDeviceEnumerator* enumerator = (IMMDeviceEnumerator*)pEnumerator;
             IMMDevice* endpoint = null;
@@ -168,9 +170,52 @@ public static partial class SoundHelper
                         {
                             foreach (var bit in testBits)
                             {
-                                WAVEFORMATEXTENSIBLE fmt = CreateWaveFormat(rate, bit, ch);
-                                HRESULT supportHr = (HRESULT)audioClient->IsFormatSupported(AUDCLNT_SHAREMODE.AUDCLNT_SHAREMODE_EXCLUSIVE, (WAVEFORMATEX*)&fmt, null);
-                                if (supportHr.Value == 0)
+                                bool isSupported = false;
+                                ushort actualBits = bit;
+                                Guid subFmt = KSDATAFORMAT_SUBTYPE_PCM;
+
+                                if (bit == 16)
+                                {
+                                    WAVEFORMATEXTENSIBLE fmt = CreateWaveFormat(rate, 16, ch, 16, KSDATAFORMAT_SUBTYPE_PCM);
+                                    if (((HRESULT)audioClient->IsFormatSupported(AUDCLNT_SHAREMODE.AUDCLNT_SHAREMODE_EXCLUSIVE, (WAVEFORMATEX*)&fmt, null)).Value == 0)
+                                        isSupported = true;
+                                }
+                                else if (bit == 24)
+                                {
+                                    WAVEFORMATEXTENSIBLE fmt24 = CreateWaveFormat(rate, 24, ch, 24, KSDATAFORMAT_SUBTYPE_PCM);
+                                    if (((HRESULT)audioClient->IsFormatSupported(AUDCLNT_SHAREMODE.AUDCLNT_SHAREMODE_EXCLUSIVE, (WAVEFORMATEX*)&fmt24, null)).Value == 0)
+                                    {
+                                        isSupported = true;
+                                    }
+                                    else
+                                    {
+                                        WAVEFORMATEXTENSIBLE fmt24_32 = CreateWaveFormat(rate, 32, ch, 24, KSDATAFORMAT_SUBTYPE_PCM);
+                                        if (((HRESULT)audioClient->IsFormatSupported(AUDCLNT_SHAREMODE.AUDCLNT_SHAREMODE_EXCLUSIVE, (WAVEFORMATEX*)&fmt24_32, null)).Value == 0)
+                                        {
+                                            isSupported = true;
+                                            actualBits = 32;
+                                        }
+                                    }
+                                }
+                                else if (bit == 32)
+                                {
+                                    WAVEFORMATEXTENSIBLE fmt32 = CreateWaveFormat(rate, 32, ch, 32, KSDATAFORMAT_SUBTYPE_PCM);
+                                    if (((HRESULT)audioClient->IsFormatSupported(AUDCLNT_SHAREMODE.AUDCLNT_SHAREMODE_EXCLUSIVE, (WAVEFORMATEX*)&fmt32, null)).Value == 0)
+                                    {
+                                        isSupported = true;
+                                    }
+                                    else
+                                    {
+                                        WAVEFORMATEXTENSIBLE fmt32f = CreateWaveFormat(rate, 32, ch, 32, KSDATAFORMAT_SUBTYPE_IEEE_FLOAT);
+                                        if (((HRESULT)audioClient->IsFormatSupported(AUDCLNT_SHAREMODE.AUDCLNT_SHAREMODE_EXCLUSIVE, (WAVEFORMATEX*)&fmt32f, null)).Value == 0)
+                                        {
+                                            isSupported = true;
+                                            subFmt = KSDATAFORMAT_SUBTYPE_IEEE_FLOAT;
+                                        }
+                                    }
+                                }
+
+                                if (isSupported)
                                 {
                                     string quality = (bit, rate) switch
                                     {
@@ -188,6 +233,8 @@ public static partial class SoundHelper
                                         SampleRate = rate,
                                         Bits = bit,
                                         Channels = ch,
+                                        ActualBitsPerSample = actualBits,
+                                        SubFormat = subFmt,
                                         DisplayName = $"{ch} channels, {bit} bit, {rate} Hz{quality}",
                                         IsCurrent = (rate == details.CurrentSampleRate && bit == details.CurrentBitDepth && ch == details.CurrentChannels)
                                     });
@@ -195,6 +242,21 @@ public static partial class SoundHelper
                             }
                         }
                     }
+
+                    if (formats.Count == 0 && details.CurrentSampleRate > 0)
+                    {
+                        formats.Add(new AudioFormatOption
+                        {
+                            SampleRate = details.CurrentSampleRate,
+                            Bits = details.CurrentBitDepth,
+                            Channels = details.CurrentChannels,
+                            ActualBitsPerSample = details.CurrentBitDepth,
+                            SubFormat = KSDATAFORMAT_SUBTYPE_PCM,
+                            DisplayName = $"{details.CurrentChannels} channels, {details.CurrentBitDepth} bit, {details.CurrentSampleRate} Hz",
+                            IsCurrent = true
+                        });
+                    }
+
                     details.Formats = [.. formats
                         .OrderBy(f => f.Channels)
                         .ThenBy(f => f.Bits)
@@ -214,7 +276,7 @@ public static partial class SoundHelper
         var bufferSizes = new List<BufferSizeOption>();
 
         HRESULT hrEnum = PInvoke.CoCreateInstance(typeof(MMDeviceEnumerator).GUID, null, (CLSCTX)7, typeof(IMMDeviceEnumerator).GUID, out void* pEnumerator);
-        if (hrEnum.Value >= 0)
+        if (hrEnum.Succeeded)
         {
             IMMDeviceEnumerator* enumerator = (IMMDeviceEnumerator*)pEnumerator;
             IMMDevice* endpoint = null;
@@ -282,7 +344,7 @@ public static partial class SoundHelper
         uint rate = 0;
         PInvoke.CoInitializeEx(null, COINIT.COINIT_MULTITHREADED);
         HRESULT hrEnum = PInvoke.CoCreateInstance(typeof(MMDeviceEnumerator).GUID, null, (CLSCTX)7, typeof(IMMDeviceEnumerator).GUID, out void* pEnumerator);
-        if (hrEnum.Value >= 0)
+        if (hrEnum.Succeeded)
         {
             IMMDeviceEnumerator* enumerator = (IMMDeviceEnumerator*)pEnumerator;
             IMMDevice* endpoint = null;
@@ -345,7 +407,7 @@ public static partial class SoundHelper
     {
         PInvoke.CoInitializeEx(null, COINIT.COINIT_MULTITHREADED);
         HRESULT hrEnum = PInvoke.CoCreateInstance(typeof(MMDeviceEnumerator).GUID, null, (CLSCTX)7, typeof(IMMDeviceEnumerator).GUID, out void* pEnumerator);
-        if (hrEnum.Value >= 0)
+        if (hrEnum.Succeeded)
         {
             IMMDeviceEnumerator* enumerator = (IMMDeviceEnumerator*)pEnumerator;
             IMMDevice* endpoint = null;
@@ -401,8 +463,14 @@ public static partial class SoundHelper
         }
     }
 
-    public static unsafe void SetAudioFormat(DeviceInfo device, uint sampleRate, ushort bits, ushort channels)
+    public static unsafe void SetAudioFormat(DeviceInfo device, AudioFormatOption formatOption)
     {
+        uint sampleRate = formatOption.SampleRate;
+        ushort bits = formatOption.ActualBitsPerSample > 0 ? formatOption.ActualBitsPerSample : formatOption.Bits;
+        ushort validBits = formatOption.Bits;
+        ushort channels = formatOption.Channels;
+        Guid subFormat = formatOption.SubFormat != Guid.Empty ? formatOption.SubFormat : KSDATAFORMAT_SUBTYPE_PCM;
+
         PInvoke.CoInitializeEx(null, COINIT.COINIT_MULTITHREADED);
         Guid clsidEnum = typeof(MMDeviceEnumerator).GUID;
         Guid iidEnum = typeof(IMMDeviceEnumerator).GUID;
@@ -418,7 +486,7 @@ public static partial class SoundHelper
                 endpoint->OpenPropertyStore((STGM)2, &store);
                 if (store != null)
                 {
-                    WAVEFORMATEXTENSIBLE endpointFormat = CreateWaveFormat(sampleRate, bits, channels);
+                    WAVEFORMATEXTENSIBLE endpointFormat = CreateWaveFormat(sampleRate, bits, channels, validBits, subFormat);
                     WAVEFORMATEXTENSIBLE mixFormat = default;
                     mixFormat.Format.wFormatTag = 0xFFFE;
                     mixFormat.Format.nChannels = channels;
@@ -476,7 +544,7 @@ public static partial class SoundHelper
         }
     }
 
-    private static WAVEFORMATEXTENSIBLE CreateWaveFormat(uint rate, ushort bits, ushort channels)
+    private static WAVEFORMATEXTENSIBLE CreateWaveFormat(uint rate, ushort bits, ushort channels, ushort validBits, Guid subFormat)
     {
         WAVEFORMATEXTENSIBLE format = default;
         format.Format.wFormatTag = 0xFFFE;
@@ -485,8 +553,8 @@ public static partial class SoundHelper
         format.Format.cbSize = 22;
         format.dwChannelMask = channels == 1 ? 4u : (channels == 2 ? 3u : 0u);
         format.Format.wBitsPerSample = bits;
-        format.Samples.wValidBitsPerSample = bits;
-        format.SubFormat = KSDATAFORMAT_SUBTYPE_PCM;
+        format.Samples.wValidBitsPerSample = validBits;
+        format.SubFormat = subFormat;
         format.Format.nBlockAlign = (ushort)(format.Format.nChannels * (format.Format.wBitsPerSample / 8));
         format.Format.nAvgBytesPerSec = format.Format.nSamplesPerSec * format.Format.nBlockAlign;
         return format;
@@ -499,7 +567,7 @@ public static partial class SoundHelper
         if (old is IDisposable disp) disp.Dispose();
 
         HRESULT hrEnum = PInvoke.CoCreateInstance(typeof(MMDeviceEnumerator).GUID, null, (CLSCTX)7, typeof(IMMDeviceEnumerator).GUID, out void* pEnumerator);
-        if (hrEnum.Value >= 0)
+        if (hrEnum.Succeeded)
         {
             IMMDeviceEnumerator* enumerator = (IMMDeviceEnumerator*)pEnumerator;
             IMMDevice* endpoint = null;
@@ -527,13 +595,37 @@ public static partial class SoundHelper
         if (old is IDisposable disp) disp.Dispose();
 
         HRESULT hrEnum = PInvoke.CoCreateInstance(typeof(MMDeviceEnumerator).GUID, null, (CLSCTX)7, typeof(IMMDeviceEnumerator).GUID, out void* pEnumerator);
-        if (hrEnum.Value >= 0)
+        if (hrEnum.Succeeded)
         {
             IMMDeviceEnumerator* enumerator = (IMMDeviceEnumerator*)pEnumerator;
             var client = new DeviceNotificationClient(onNotify, enumerator);
             enumerator->RegisterEndpointNotificationCallback((IMMNotificationClient*)client.GetComPointer());
             Observers["DeviceChange"] = client;
         }
+    }
+
+    internal static unsafe string GetDefaultAudioEndpointId(EDataFlow flow)
+    {
+        PInvoke.CoInitializeEx(null, COINIT.COINIT_MULTITHREADED);
+        HRESULT hrEnum = PInvoke.CoCreateInstance(typeof(MMDeviceEnumerator).GUID, null, CLSCTX.CLSCTX_ALL, typeof(IMMDeviceEnumerator).GUID, out void* pEnumerator);
+        if (hrEnum.Succeeded)
+        {
+            IMMDeviceEnumerator* enumerator = (IMMDeviceEnumerator*)pEnumerator;
+            IMMDevice* pEndpoint = null;
+            enumerator->GetDefaultAudioEndpoint(flow, ERole.eConsole, &pEndpoint);
+            if (pEndpoint != null)
+            {
+                PWSTR pId;
+                pEndpoint->GetId(&pId);
+                string id = pId.ToString();
+                PInvoke.CoTaskMemFree(pId);
+                pEndpoint->Release();
+                enumerator->Release();
+                return @"SWD\MMDEVAPI\" + id;
+            }
+            enumerator->Release();
+        }
+        return null;
     }
 
     public static void ApplyAudioSettings(DeviceInfo device, BufferSizeOption option)

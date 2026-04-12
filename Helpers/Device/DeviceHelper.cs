@@ -24,7 +24,7 @@ public enum DeviceType
     NIC,
     HDAUD,
     AudioEndpoint,
-    Other
+    AudioController
 }
 
 public enum DeviceState
@@ -71,6 +71,7 @@ public partial class DeviceInfo : INotifyPropertyChanged
     public uint DevicePolicy { get; set; }
     public uint DevicePriority { get; set; }
     public ulong AssignmentSetOverride { get; set; }
+    public bool SupportsIrq { get; set; }
     public NicDriverType DriverType { get; set; }
     public NicDeviceType NicType { get; set; }
 
@@ -172,6 +173,7 @@ internal static class DeviceHelper
     private static readonly Guid GUID_DEVCLASS_NET = new("4d36e972-e325-11ce-bfc1-08002be10318");
     private static readonly Guid GUID_DEVCLASS_HDAUD = new("4d36e96c-e325-11ce-bfc1-08002be10318");
     private static readonly Guid GUID_DEVCLASS_AUDIOENDPOINT = new("c166523c-fe0c-4a94-a586-f1a80cfbbf3e");
+    private static readonly Guid GUID_DEVCLASS_SYSTEM = new("4d36e97d-e325-11ce-bfc1-08002be10318");
 
     public class ApplyResult
     {
@@ -198,14 +200,12 @@ internal static class DeviceHelper
             DeviceType.NIC => GUID_DEVCLASS_NET,
             DeviceType.HDAUD => GUID_DEVCLASS_HDAUD,
             DeviceType.AudioEndpoint => GUID_DEVCLASS_AUDIOENDPOINT,
-            DeviceType.Other => default,
+            DeviceType.AudioController => GUID_DEVCLASS_SYSTEM,
             _ => throw new ArgumentException("Unknown device type")
         };
 
         var flags = DIGCF_PRESENT;
-        if (type == DeviceType.Other) flags |= DIGCF_ALLCLASSES;
-
-        HDEVINFO deviceInfoSetHandle = PInvoke.SetupDiGetClassDevs(type == DeviceType.Other ? null : &classGuid, null, HWND.Null, flags);
+        HDEVINFO deviceInfoSetHandle = PInvoke.SetupDiGetClassDevs(&classGuid, null, HWND.Null, flags);
         if ((IntPtr)deviceInfoSetHandle == (IntPtr)(-1)) return devices;
 
         const int MAX_DEVICE_ID_LEN = 256;
@@ -231,20 +231,15 @@ internal static class DeviceHelper
             {
                 if (!string.Equals(service, "USBXHCI", StringComparison.OrdinalIgnoreCase)) continue;
             }
-            else if (type == DeviceType.NIC || type == DeviceType.Other)
+            else if (type == DeviceType.AudioController)
+            {
+                string desc = GetDeviceRegistryPropertyString(deviceInfoSetHandle, &deviceInfoData, SPDRP_DEVICEDESC);
+                if (!desc.Contains("High Definition Audio Controller", StringComparison.OrdinalIgnoreCase)) continue;
+            }
+            else if (type == DeviceType.NIC)
             {
                 if (!string.Equals(enumerator, "PCI", StringComparison.OrdinalIgnoreCase) &&
                     !string.Equals(enumerator, "USB", StringComparison.OrdinalIgnoreCase)) continue;
-
-                if (type == DeviceType.Other)
-                {
-                    string classGuidStr = GetDeviceRegistryPropertyString(deviceInfoSetHandle, &deviceInfoData, SPDRP_CLASSGUID);
-                    if (Guid.TryParse(classGuidStr, out Guid devGuid))
-                    {
-                        if (devGuid == GUID_DEVCLASS_DISPLAY || devGuid == GUID_DEVCLASS_NET || string.Equals(service, "USBXHCI", StringComparison.OrdinalIgnoreCase))
-                            continue;
-                    }
-                }
             }
 
             string pnpDeviceId = string.Empty;
@@ -263,6 +258,32 @@ internal static class DeviceHelper
                     fixed (char* pHeap = heapBuffer)
                         if (PInvoke.SetupDiGetDeviceInstanceId(deviceInfoSetHandle, &deviceInfoData, pHeap, requiredSize, null))
                             pnpDeviceId = new string(pHeap).TrimEnd('\0');
+                }
+            }
+
+            bool supportsIrq = false;
+            fixed (char* pId = pnpDeviceId)
+            {
+                if (PInvoke.CM_Locate_DevNode(out uint devInst, pId, CM_LOCATE_DEVNODE_FLAGS.CM_LOCATE_DEVNODE_NORMAL) == CONFIGRET.CR_SUCCESS)
+                {
+                    foreach (CM_LOG_CONF confType in new[] { CM_LOG_CONF.ALLOC_LOG_CONF, CM_LOG_CONF.FILTERED_LOG_CONF, CM_LOG_CONF.BASIC_LOG_CONF })
+                    {
+                        if (PInvoke.CM_Get_First_Log_Conf(out nuint logConf, devInst, confType) == CONFIGRET.CR_SUCCESS)
+                        {
+                            try
+                            {
+                                if (PInvoke.CM_Get_Next_Res_Des(out nuint resDes, logConf, (CM_RESTYPE)4, out _, 0) == CONFIGRET.CR_SUCCESS)
+                                {
+                                    PInvoke.CM_Free_Res_Des_Handle(resDes);
+                                    supportsIrq = true;
+                                }
+                            }
+                            finally
+                            {
+                                PInvoke.CM_Free_Log_Conf_Handle(logConf);
+                            }
+                        }
+                    }
                 }
             }
 
@@ -365,6 +386,7 @@ internal static class DeviceHelper
                 DevicePolicy = devicePolicy,
                 DevicePriority = devicePriority,
                 AssignmentSetOverride = assignmentSetOverride,
+                SupportsIrq = supportsIrq,
                 DriverType = nicDriverType,
                 NicType = nicDeviceType,
                 IsActive = isActive,
@@ -638,35 +660,25 @@ internal static class DeviceHelper
         return result;
     }
 
-    public unsafe static bool SetDeviceState(DeviceInfo device, bool enable)
+    public unsafe static string GetParentPnpId(string pnpDeviceId)
     {
-        using var hDevInfo = PInvoke.SetupDiCreateDeviceInfoList(null, default);
-        if (hDevInfo.IsInvalid) return false;
-
-        SP_DEVINFO_DATA devData = new() { cbSize = (uint)sizeof(SP_DEVINFO_DATA) };
-
-        if (!PInvoke.SetupDiOpenDeviceInfo(hDevInfo, device.PnpDeviceId, HWND.Null, 0, ref devData))
-            return false;
-
-        var params_ = new SP_PROPCHANGE_PARAMS
+        fixed (char* pId = pnpDeviceId)
         {
-            ClassInstallHeader = new()
+            if (PInvoke.CM_Locate_DevNode(out uint devInst, pId, 0) == CONFIGRET.CR_SUCCESS)
             {
-                cbSize = (uint)sizeof(SP_CLASSINSTALL_HEADER),
-                InstallFunction = DI_FUNCTION.DIF_PROPERTYCHANGE
-            },
-            StateChange = enable ? SETUP_DI_STATE_CHANGE.DICS_ENABLE : SETUP_DI_STATE_CHANGE.DICS_DISABLE,
-            Scope = SETUP_DI_PROPERTY_CHANGE_SCOPE.DICS_FLAG_GLOBAL
-        };
+                if (PInvoke.CM_Get_Parent(out uint parentHandle, devInst, 0) == CONFIGRET.CR_SUCCESS)
+                {
+                    const int MAX_DEVICE_ID_LEN = 256;
+                    char* pBuffer = stackalloc char[MAX_DEVICE_ID_LEN];
 
-        HDEVINFO hDev = (HDEVINFO)hDevInfo.DangerousGetHandle();
-
-        if (PInvoke.SetupDiSetClassInstallParams(hDev, &devData, (SP_CLASSINSTALL_HEADER*)&params_, (uint)sizeof(SP_PROPCHANGE_PARAMS)))
-        {
-            return PInvoke.SetupDiCallClassInstaller(DI_FUNCTION.DIF_PROPERTYCHANGE, hDev, &devData);
+                    if (PInvoke.CM_Get_Device_IDW(parentHandle, pBuffer, MAX_DEVICE_ID_LEN, 0) == CONFIGRET.CR_SUCCESS)
+                    {
+                        return new string(pBuffer);
+                    }
+                }
+            }
         }
-
-        return false;
+        return null;
     }
 
     private unsafe static ulong? GetDeviceBaseAddress(string pnpDeviceId)

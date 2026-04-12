@@ -274,7 +274,7 @@ namespace AutoOS.Views.Settings
             if (isInitializingAudioState) return;
             if (sender is ComboBox comboBox && comboBox.DataContext is DeviceInfo device && comboBox.SelectedItem is AudioFormatOption format)
             {
-                SoundHelper.SetAudioFormat(device, format.SampleRate, format.Bits, format.Channels);
+                SoundHelper.SetAudioFormat(device, format);
 
                 var bufferSizes = SoundHelper.GetBufferSizes(device);
                 device.BufferSizes = bufferSizes;

@@ -16,9 +16,6 @@ public static class AudioStage
 
         return new List<(string Title, Func<Task> Action, Func<bool> Condition)>
         {
-            // apply sound buffer sizes
-            ("Applying sound buffer sizes", async () => SoundHelper.SetBufferSizes(), () => PreparingStage.SOUND == true),
-
             // disable system beeps
             ("Disabling system beeps", async () => RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_CURRENT_USER\Control Panel\Sound", "Beep", "no", RegistryValueKind.String), null),
 

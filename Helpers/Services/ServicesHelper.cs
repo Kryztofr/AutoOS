@@ -72,6 +72,58 @@ public static class ServicesHelper
         }
     }
 
+    public unsafe static int GetServicePid(string serviceName)
+    {
+        using var scmHandle = PInvoke.OpenSCManager(null, null, (uint)PInvoke.SC_MANAGER_ENUMERATE_SERVICE);
+        if (scmHandle.IsInvalid) return 0;
+
+        SC_HANDLE rawScmHandle = (SC_HANDLE)scmHandle.DangerousGetHandle();
+        uint bytesNeeded = 0;
+        uint servicesReturned = 0;
+        uint resumeHandle = 0;
+
+        PInvoke.EnumServicesStatusEx(
+            rawScmHandle,
+            SC_ENUM_TYPE.SC_ENUM_PROCESS_INFO,
+            ENUM_SERVICE_TYPE.SERVICE_WIN32,
+            ENUM_SERVICE_STATE.SERVICE_STATE_ALL,
+            null,
+            0,
+            &bytesNeeded,
+            &servicesReturned,
+            &resumeHandle,
+            null);
+
+        if (bytesNeeded == 0) return 0;
+
+        byte[] buffer = new byte[bytesNeeded];
+        fixed (byte* pBuffer = buffer)
+        {
+            if (PInvoke.EnumServicesStatusEx(
+                rawScmHandle,
+                SC_ENUM_TYPE.SC_ENUM_PROCESS_INFO,
+                ENUM_SERVICE_TYPE.SERVICE_WIN32,
+                ENUM_SERVICE_STATE.SERVICE_STATE_ALL,
+                pBuffer,
+                (uint)buffer.Length,
+                &bytesNeeded,
+                &servicesReturned,
+                &resumeHandle,
+                null))
+            {
+                var services = (ENUM_SERVICE_STATUS_PROCESSW*)pBuffer;
+                for (int i = 0; i < servicesReturned; i++)
+                {
+                    if (services[i].lpServiceName.ToString().Equals(serviceName, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return (int)services[i].ServiceStatusProcess.dwProcessId;
+                    }
+                }
+            }
+        }
+        return 0;
+    }
+
     public static void StartService(string serviceName)
     {
         using var scmHandle = PInvoke.OpenSCManager(null, null, (uint)PInvoke.SC_MANAGER_CONNECT);
@@ -218,16 +270,57 @@ public static class ServicesHelper
     {
         string[] services =
         [
-            "AppXSvc", "AudioEndpointBuilder", "BITS", "BrokerInfrastructure", "CDPSvc",
-            "ClipSVC", "CoreMessagingRegistrar", "DcomLaunch", "DeviceAssociationService",
-            "Dhcp", "DispBrokerDesktopSvc", "DisplayEnhancementService", "Dnscache",
-            "DPS", "EventLog", "EventSystem", "FDResPub", "FontCache", "hidserv",
-            "iphlpsvc", "KeyIso", "LanmanServer", "LanmanWorkstation", "LicenseManager",
-            "lmhosts", "LSM", "NcbService", "NcdAutoSetup", "NlaSvc", "nsi", "PcaSvc",
-            "Power", "SamSs", "Schedule", "SENS", "ShellHWDetection", "SSDPSRV",
-            "SstpSvc", "StorSvc", "SysMain", "SystemEventsBroker", "Themes",
-            "TimeBrokerSvc", "TokenBroker", "TrkWks", "UsoSvc", "VaultSvc",
-            "WdiSystemHost", "WinHttpAutoProxySvc", "WpnService", "wuauserv"
+            "AppXSvc", 
+            "AudioEndpointBuilder", 
+            "BITS", 
+            "BrokerInfrastructure", 
+            "CDPSvc",
+            "ClipSVC", 
+            "CoreMessagingRegistrar", 
+            "DcomLaunch", 
+            "DeviceAssociationService",
+            "Dhcp", 
+            "DispBrokerDesktopSvc", 
+            "DisplayEnhancementService", 
+            "Dnscache",
+            "DPS", 
+            "EventLog", 
+            "EventSystem", 
+            "FDResPub", 
+            "FontCache", 
+            "hidserv",
+            "iphlpsvc", 
+            "KeyIso", 
+            "LanmanServer", 
+            "LanmanWorkstation", 
+            "LicenseManager",
+            "lmhosts", 
+            "LSM", 
+            "NcbService", 
+            "NcdAutoSetup", 
+            "NlaSvc", 
+            "nsi", 
+            "PcaSvc",
+            "Power", 
+            "SamSs", 
+            "Schedule", 
+            "SENS", 
+            "ShellHWDetection", 
+            "SSDPSRV",
+            "SstpSvc", 
+            "StorSvc", 
+            "SysMain", 
+            "SystemEventsBroker", 
+            "Themes",
+            "TimeBrokerSvc", 
+            "TokenBroker", 
+            "TrkWks", 
+            "UsoSvc", 
+            "VaultSvc",
+            "WdiSystemHost", 
+            "WinHttpAutoProxySvc", 
+            "WpnService", 
+            "wuauserv"
         ];
 
         string[] userServices = ["CDPUserSvc_", "OneSyncSvc_", "WpnUserService_"];

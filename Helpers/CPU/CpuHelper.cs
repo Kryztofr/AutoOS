@@ -7,6 +7,25 @@ using WinRT;
 
 namespace AutoOS.Helpers.CPU;
 
+public enum CpuVendor
+{
+    Unknown,
+    Intel,
+    AMD
+}
+
+public sealed class CpuArchitecture
+{
+    public CpuVendor Vendor { get; set; }
+    public uint Family { get; set; }
+    public uint Model { get; set; }
+    public uint Stepping { get; set; }
+    public uint DisplayFamily { get; set; }
+    public uint DisplayModel { get; set; }
+    public string DisplayName { get; set; } = string.Empty;
+    public string ArchitectureName { get; set; } = string.Empty;
+}
+
 public sealed class CpuSet
 {
     public uint Id { get; set; }
@@ -64,6 +83,119 @@ public sealed class CpuSetsInfo
 
 public partial class CpuHelper
 {
+    public static CpuArchitecture GetCpuArchitecture()
+    {
+        using var key = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(@"HARDWARE\DESCRIPTION\System\CentralProcessor\0");
+        
+        var vendorId = key?.GetValue("VendorIdentifier")?.ToString() ?? "";
+        var processorName = key?.GetValue("ProcessorNameString")?.ToString() ?? "";
+        var identifier = key?.GetValue("Identifier")?.ToString() ?? "";
+
+        var vendor = CpuVendor.Unknown;
+        if (vendorId.Contains("GenuineIntel", StringComparison.OrdinalIgnoreCase))
+            vendor = CpuVendor.Intel;
+        else if (vendorId.Contains("AuthenticAMD", StringComparison.OrdinalIgnoreCase))
+            vendor = CpuVendor.AMD;
+
+        uint family = 0, model = 0, stepping = 0;
+        
+        var parts = identifier.Split(' ');
+        for (int i = 0; i < parts.Length; i++)
+        {
+            if (parts[i] == "Family" && i + 1 < parts.Length && uint.TryParse(parts[i + 1], out uint f))
+                family = f;
+            else if (parts[i] == "Model" && i + 1 < parts.Length && uint.TryParse(parts[i + 1], out uint m))
+                model = m;
+            else if (parts[i] == "Stepping" && i + 1 < parts.Length && uint.TryParse(parts[i + 1], out uint s))
+                stepping = s;
+        }
+
+        uint displayFamily = family;
+        uint displayModel = model;
+        
+        var arch = new CpuArchitecture
+        {
+            Vendor = vendor,
+            Family = family,
+            Model = model,
+            Stepping = stepping,
+            DisplayFamily = displayFamily,
+            DisplayModel = displayModel
+        };
+
+        if (vendor == CpuVendor.Intel)
+        {
+            arch.DisplayName = processorName;
+            arch.ArchitectureName = GetIntelArchName(displayFamily, displayModel);
+            arch.DisplayFamily = 0x06;
+        }
+        else if (vendor == CpuVendor.AMD)
+        {
+            arch.DisplayName = processorName;
+            arch.ArchitectureName = GetAmdArchName(displayFamily, displayModel);
+        }
+
+        return arch;
+    }
+
+    private static string GetIntelArchName(uint family, uint model)
+    {
+        if (family != 0x06) return "Unknown Intel";
+
+        return model switch
+        {
+            0x97 or 0x9A => "Alder Lake",
+            0xBA or 0xB7 or 0xBF => "Raptor Lake",
+            0xAA => "Meteor Lake",
+            0xBD => "Lunar Lake",
+            0xAC or 0xAE => "Granite Rapids",
+            0xAF => "Sierra Forest",
+            0xCF => "Emerald Rapids",
+            0x8F => "Sapphire Rapids",
+            0x8C or 0x8D => "Tiger Lake",
+            0xA7 => "Rocket Lake",
+            0x7E => "Ice Lake",
+            0xA5 or 0xA6 => "Comet Lake",
+            0x66 => "Cannon Lake",
+            0x8E or 0x9E => "Kaby Lake / Coffee Lake",
+            0x55 => "Skylake-X / Cascade Lake",
+            0x4E or 0x5E => "Skylake",
+            0x3D or 0x47 or 0x4F or 0x56 => "Broadwell",
+            0x3C or 0x45 or 0x46 or 0x3F => "Haswell",
+            0x3A or 0x3E => "Ivy Bridge",
+            0x2A or 0x2D => "Sandy Bridge",
+            0xBE => "Gracemont (N-series)",
+            _ => $"Intel Model {model:X2}H"
+        };
+    }
+
+    private static string GetAmdArchName(uint family, uint model)
+    {
+        if (family == 0x17)
+        {
+            if (model <= 0x0F || (model >= 0x10 && model <= 0x1F) || model == 0x20)
+            {
+                if (model == 0x08 || model == 0x18) return "Zen+";
+                return "Zen 1";
+            }
+            if ((model >= 0x30 && model <= 0x3F) || (model >= 0x60 && model <= 0x6F) || (model >= 0x70 && model <= 0x7F) || (model >= 0x90 && model <= 0x9F))
+                return "Zen 2";
+        }
+        else if (family == 0x19)
+        {
+            if ((model >= 0x00 && model <= 0x0F) || (model >= 0x20 && model <= 0x2F) || (model >= 0x50 && model <= 0x5F))
+                return "Zen 3";
+            if ((model >= 0x10 && model <= 0x1F) || (model >= 0x60 && model <= 0x6F) || (model >= 0x70 && model <= 0x7F))
+                return "Zen 4";
+        }
+        else if (family == 0x1A)
+        {
+            return "Zen 5";
+        }
+
+        return $"AMD Family {family:X2}H Model {model:X2}H";
+    }
+
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     private struct SYSTEM_CPU_SET_INFORMATION
     {
@@ -93,13 +225,6 @@ public partial class CpuHelper
         public byte SchedulingClass;
         public byte Reserved;
         public ulong AllocationTag;
-    }
-
-    public static bool IsIntel()
-    {
-        using var key = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(@"HARDWARE\DESCRIPTION\System\CentralProcessor\0");
-        var vendor = key?.GetValue("VendorIdentifier")?.ToString() ?? "";
-        return vendor.Contains("GenuineIntel", StringComparison.OrdinalIgnoreCase);
     }
 
     public unsafe static CpuSetsInfo GetCpuSets()
@@ -144,9 +269,8 @@ public partial class CpuHelper
                 }
             }
 
-            info.CoreCount = cpuSets.Count;
-            info.CpuSets = cpuSets;
-            ProcessCpuSets(cpuSets, info);
+            info.CpuSets = [.. cpuSets.OrderBy(c => c.EfficiencyClass).ThenBy(c => c.CoreIndex).ThenBy(c => c.LogicalProcessorIndex)];
+            ProcessCpuSets(info.CpuSets, info);
         }
         finally
         {
@@ -160,7 +284,8 @@ public partial class CpuHelper
     {
         if (cpuSets.Count == 0) return;
 
-        byte lastEfficiencyClass = cpuSets[0].EfficiencyClass;
+        info.CoreCount = cpuSets.Count;
+        byte lastEfficiencyClass = 0;
         byte lastLevelCache = cpuSets[0].LastLevelCacheIndex;
         byte lastNumaNodeIndex = cpuSets[0].NumaNodeIndex;
 
@@ -173,7 +298,7 @@ public partial class CpuHelper
                 info.HyperThreading = true;
                 int threadsDiff = Math.Abs(cpuSet.LogicalProcessorIndex - cpuSet.CoreIndex);
                 if (info.MaxThreadsPerCore < threadsDiff)
-                    info.MaxThreadsPerCore = threadsDiff;
+                    info.MaxThreadsPerCore = threadsDiff + 1;
             }
 
             if (!info.EfficiencyClass && lastEfficiencyClass != cpuSet.EfficiencyClass)
@@ -184,10 +309,6 @@ public partial class CpuHelper
 
             if (!info.NumaNode && lastNumaNodeIndex != cpuSet.NumaNodeIndex)
                 info.NumaNode = true;
-
-            lastEfficiencyClass = cpuSet.EfficiencyClass;
-            lastLevelCache = cpuSet.LastLevelCacheIndex;
-            lastNumaNodeIndex = cpuSet.NumaNodeIndex;
         }
     }
 
@@ -207,12 +328,10 @@ public partial class CpuHelper
             .OrderBy(g => g.Key)
             .ToList();
 
-        bool isIntel = IsIntel();
-
         foreach (var group in groupedByEfficiency)
         {
             var cores = GroupCpuSetsByCore(group.ToList());
-            if (isIntel)
+            if (GetCpuArchitecture().Vendor == CpuVendor.Intel)
             {
                 if (group.Key == 0) eCores.AddRange(cores);
                 else pCores.AddRange(cores);

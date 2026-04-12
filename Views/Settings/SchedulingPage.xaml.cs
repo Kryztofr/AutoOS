@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using AutoOS.Helpers.CPU;
 using AutoOS.Helpers.Device;
 using AutoOS.Helpers.Scheduling;
@@ -16,11 +16,15 @@ public sealed partial class SchedulingPage : Page
         InitializeComponent();
         Loaded += SchedulingPage_Loaded;
     }
-
     private void SchedulingPage_Loaded(object sender, RoutedEventArgs e)
     {
         _cpuSetsInfo = CpuHelper.GetCpuSets();
         Nodes.Clear();
+
+        var audioGroup = new SchedulingGroup { Name = "Audio Controllers", IsExpanded = true };
+        LoadDeviceGroup(DeviceType.AudioController, audioGroup);
+        if (audioGroup.SubItems.Count > 0) Nodes.Add(audioGroup);
+
         var gpuGroup = new SchedulingGroup { Name = "Graphics Cards", IsExpanded = true };
         LoadDeviceGroup(DeviceType.GPU, gpuGroup);
         if (gpuGroup.SubItems.Count > 0) Nodes.Add(gpuGroup);
@@ -32,17 +36,13 @@ public sealed partial class SchedulingPage : Page
         var nicGroup = new SchedulingGroup { Name = "Network Interface Controllers", IsExpanded = true };
         LoadDeviceGroup(DeviceType.NIC, nicGroup);
         if (nicGroup.SubItems.Count > 0) Nodes.Add(nicGroup);
-
-        var otherGroup = new SchedulingGroup { Name = "Other", IsExpanded = false };
-        LoadDeviceGroup(DeviceType.Other, otherGroup);
-        if (otherGroup.SubItems.Count > 0) Nodes.Add(otherGroup);
     }
-
     private static void LoadDeviceGroup(DeviceType type, SchedulingGroup group)
     {
         var devices = DeviceHelper.GetDevices(type);
 
         var items = devices
+            .Where(device => device.SupportsIrq)
             .Select(device => new SchedulingItem
             {
                 DeviceType = type,

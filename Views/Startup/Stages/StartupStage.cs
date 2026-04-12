@@ -9,10 +9,8 @@ using AutoOS.Views.Installer.Actions;
 using Windows.Win32.System.Services;
 using AutoOS.Helpers.Sound;
 using Windows.Win32;
-using Windows.Win32.System.Com;
 using Windows.Win32.Media.Audio;
 using Windows.Win32.Foundation;
-using System.Runtime.InteropServices;
 
 namespace AutoOS.Views.Startup.Stages;
 
@@ -29,74 +27,17 @@ public static class StartupStage
             localSettings.Values["XHCIs"] = json.ToJsonString();
         }
 
-        unsafe
-        {
-            if (localSettings.Values["Sound"] == null)
-            {
-                var array = new JsonArray();
-                PInvoke.CoInitializeEx(null, COINIT.COINIT_MULTITHREADED);
-                HRESULT hrEnum = PInvoke.CoCreateInstance(typeof(MMDeviceEnumerator).GUID, null, CLSCTX.CLSCTX_ALL, typeof(IMMDeviceEnumerator).GUID, out void* pEnumerator);
-                if (hrEnum.Value >= 0)
-                {
-                    IMMDeviceEnumerator* enumerator = (IMMDeviceEnumerator*)pEnumerator;
-                    IMMDevice** pEndpoint = stackalloc IMMDevice*[1];
-                    PWSTR* pId = stackalloc PWSTR[1];
-                    WAVEFORMATEX** pFormat = stackalloc WAVEFORMATEX*[1];
-                    uint* pParams = stackalloc uint[4];
-
-                    foreach (var flow in new[] { EDataFlow.eRender, EDataFlow.eCapture })
-                    {
-                        try
-                        {
-                            enumerator->GetDefaultAudioEndpoint(flow, ERole.eConsole, pEndpoint);
-                        }
-                        catch (COMException ex) when (ex.HResult == unchecked((int)0x80070490))
-                        {
-                            continue;
-                        }
-
-                        if (*pEndpoint != null)
-                        {
-                            IMMDevice* endpoint = *pEndpoint;
-                            endpoint->Activate(typeof(IAudioClient3).GUID, CLSCTX.CLSCTX_ALL, null, out void* pAudioClient);
-                            if (pAudioClient != null)
-                            {
-                                IAudioClient3* audioClient = (IAudioClient3*)pAudioClient;
-                                audioClient->GetMixFormat(pFormat);
-                                WAVEFORMATEX* format = *pFormat;
-                                if (format != null)
-                                {
-                                    audioClient->GetSharedModeEnginePeriod(format, pParams, pParams + 1, pParams + 2, pParams + 3);
-                                    if (pParams[2] > 0 && pParams[2] < pParams[0])
-                                    {
-                                        endpoint->GetId(pId);
-                                        PWSTR id = *pId;
-                                        float ms = (float)Math.Round((double)pParams[2] * 1000.0 / format->nSamplesPerSec, 1);
-                                        array.Add((JsonNode)new JsonObject
-                                        {
-                                            ["PnpDeviceId"] = id.ToString(),
-                                            ["BufferSize"] = ms,
-                                            ["IsInput"] = (flow == EDataFlow.eCapture)
-                                        });
-                                        PInvoke.CoTaskMemFree(id);
-                                    }
-                                    PInvoke.CoTaskMemFree(format);
-                                }
-                                audioClient->Release();
-                            }
-                            endpoint->Release();
-                        }
-                    }
-                    enumerator->Release();
-                }
-                localSettings.Values["Sound"] = array.ToJsonString();
-            }
-        }
-
         bool MSI = Directory.Exists(@"C:\Program Files (x86)\MSI Afterburner\Profiles\") && Directory.GetFiles(@"C:\Program Files (x86)\MSI Afterburner\Profiles\").Any(f => !f.EndsWith("MSIAfterburner.cfg", StringComparison.OrdinalIgnoreCase));
         bool SOUND = JsonNode.Parse(localSettings.Values["Sound"]?.ToString() ?? "[]")?.AsArray()?.Any(x => x?["BufferSize"]?.GetValue<float>() < 10f) == true;
         bool IMOD = JsonNode.Parse(localSettings.Values["XHCIs"]?.ToString() ?? "[]")?.AsArray()?.Any(x => x?["IsActive"]?.GetValue<bool>() == false) == true;
         bool OBS = localSettings.Values["OBS"]?.ToString() == "1" && File.Exists(@"C:\Program Files\obs-studio\bin\64bit\obs64.exe");
+
+        string defaultEndpoint = SoundHelper.GetDefaultAudioEndpointId(EDataFlow.eRender);
+        string hdaud = defaultEndpoint != null ? DeviceHelper.GetParentPnpId(defaultEndpoint) : null;
+        string controller = hdaud != null ? DeviceHelper.GetParentPnpId(hdaud) : null;
+        var audioControllers = DeviceHelper.GetDevices(DeviceType.AudioController);
+        var audioController = audioControllers.FirstOrDefault(device => device.PnpDeviceId == controller) ?? audioControllers.FirstOrDefault();
+        bool AUDIO_AFFINITY = audioController != null && audioController.DevicePolicy == 4 && audioController.AssignmentSetOverride != 0;
 
         string previousTitle = string.Empty;
 
@@ -111,6 +52,9 @@ public static class StartupStage
             // apply msi afterburner profile
             ("Applying MSI Afterburner profile", async () => await Process.Start(new ProcessStartInfo { FileName = @"C:\Program Files (x86)\MSI Afterburner\MSIAfterburner.exe", Arguments = "/Profile1 /q" })!.WaitForExitAsync(), () => MSI == true),
 
+            // apply audio service affinity
+            ("Applying Audio Service Affinity", async () => { foreach (var process in Process.GetProcessesByName("audiodg").Concat([Process.GetProcessById(ServicesHelper.GetServicePid("Audiosrv"))])) using (process) PInvoke.SetProcessAffinityMask((HANDLE)process.Handle, (nuint)audioController.AssignmentSetOverride); }, () => AUDIO_AFFINITY),
+            
             // apply sound buffer sizes
             ("Applying sound buffer sizes", async () => SoundHelper.SetBufferSizes(), () => SOUND == true),
 

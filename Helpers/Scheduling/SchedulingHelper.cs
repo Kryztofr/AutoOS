@@ -10,39 +10,55 @@ internal static class SchedulingHelper
         var cpuSetsInfo = CpuHelper.GetCpuSets();
         var (pCores, eCores) = CpuHelper.GroupCpuSetsByEfficiencyClass(cpuSetsInfo);
 
-        if (pCores.Count <= 2)
+        if (pCores.Count < 4)
             return;
 
-        bool hasHyperThreading = cpuSetsInfo.HyperThreading;
-        int threadsPerCore = hasHyperThreading ? 2 : 1;
+        int cores = pCores.Count;
+        ulong nicMask, xhciMask, gpuMask, audioMask;
+
+        if (cores == 4)
+        {
+            audioMask = GetCoreMask(pCores[0]);
+            gpuMask = GetCoreMask(pCores[1]) | GetCoreMask(pCores[2]);
+            xhciMask = pCores[3].Threads.First().BitMask;
+            nicMask = pCores[3].Threads.Last().BitMask;
+        }
+        else
+        {
+            nicMask = GetCoreMask(pCores[cores - 1]);
+            xhciMask = GetCoreMask(pCores[cores - 2]);
+            gpuMask = GetCoreMask(pCores[cores - 3]) | GetCoreMask(pCores[cores - 4]);
+            audioMask = GetCoreMask(pCores[cores - 5]);
+        }
+
+        var audioDevices = DeviceHelper.GetDevices(DeviceType.AudioController).Where(d => d.SupportsIrq).ToList();
+        var gpuDevices = DeviceHelper.GetDevices(DeviceType.GPU).Where(d => d.SupportsIrq).ToList();
+        var xhciDevices = DeviceHelper.GetDevices(DeviceType.XHCI).Where(d => d.SupportsIrq).ToList();
+        var nicDevices = DeviceHelper.GetDevices(DeviceType.NIC).Where(d => d.SupportsIrq).ToList();
 
         var allChangedDevices = new List<(DeviceInfo device, DeviceType deviceType)>();
 
-        if (pCores.Count >= 4)
+        if (audioDevices.Count > 0)
         {
-            var gpuDevices = DeviceHelper.GetDevices(DeviceType.GPU);
-            if (gpuDevices.Count > 0)
-            {
-                var gpuMask = BuildAffinityMask(pCores, pCores.Count - 4, 2, threadsPerCore);
-                var gpuResult = ApplyAffinityOnly(gpuDevices, gpuMask, DeviceType.GPU);
-                allChangedDevices.AddRange(gpuResult.ChangedDevices.Select(d => (d, DeviceType.GPU)));
-            }
-            var xhciDevices = DeviceHelper.GetDevices(DeviceType.XHCI);
-            if (xhciDevices.Count > 0)
-            {
-                var xhciMask = BuildAffinityMask(pCores, pCores.Count - 2, 1, threadsPerCore);
-                var xhciResult = ApplyAffinityOnly(xhciDevices, xhciMask, DeviceType.XHCI);
-                allChangedDevices.AddRange(xhciResult.ChangedDevices.Select(d => (d, DeviceType.XHCI)));
-            }
-            var nicDevices = DeviceHelper.GetDevices(DeviceType.NIC);
-            if (nicDevices.Count > 0)
-            {
-                var nicMask = BuildAffinityMask(pCores, pCores.Count - 1, 1, threadsPerCore);
-                var nicResult = ApplyAffinityOnly(nicDevices, nicMask, DeviceType.NIC);
-                allChangedDevices.AddRange(nicResult.ChangedDevices.Select(d => (d, DeviceType.NIC)));
-            }
+            var result = ApplyAffinityOnly(audioDevices, audioMask, DeviceType.AudioController);
+            allChangedDevices.AddRange(result.ChangedDevices.Select(d => (d, DeviceType.AudioController)));
         }
-
+        if (gpuDevices.Count > 0)
+        {
+            var result = ApplyAffinityOnly(gpuDevices, gpuMask, DeviceType.GPU);
+            allChangedDevices.AddRange(result.ChangedDevices.Select(d => (d, DeviceType.GPU)));
+        }
+        if (xhciDevices.Count > 0)
+        {
+            var result = ApplyAffinityOnly(xhciDevices, xhciMask, DeviceType.XHCI);
+            allChangedDevices.AddRange(result.ChangedDevices.Select(d => (d, DeviceType.XHCI)));
+        }
+        if (nicDevices.Count > 0)
+        {
+            var result = ApplyAffinityOnly(nicDevices, nicMask, DeviceType.NIC);
+            allChangedDevices.AddRange(result.ChangedDevices.Select(d => (d, DeviceType.NIC)));
+        }
+        
         if (allChangedDevices.Count > 0)
         {
             if (page != null)
@@ -60,27 +76,7 @@ internal static class SchedulingHelper
         }
     }
 
-    private static ulong BuildAffinityMask(List<CpuCore> pCores, int startCoreIndex, int coreCount, int threadsPerCore)
-    {
-        ulong mask = 0;
-
-        for (int i = 0; i < coreCount && (startCoreIndex + i) < pCores.Count; i++)
-        {
-            int coreIndex = startCoreIndex + i;
-            var core = pCores[coreIndex];
-
-            int threads = threadsPerCore;
-            if (threads > core.Threads.Count)
-                threads = core.Threads.Count;
-
-            for (int j = 0; j < threads; j++)
-            {
-                mask |= core.Threads[j].BitMask;
-            }
-        }
-
-        return mask;
-    }
+    private static ulong GetCoreMask(CpuCore core) => core.Threads.Aggregate(0UL, (mask, t) => mask | t.BitMask);
 
     private static DeviceHelper.ApplyResult ApplyAffinityOnly(List<DeviceInfo> devices, ulong assignmentSetOverride, DeviceType deviceType)
     {
