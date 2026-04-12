@@ -85,7 +85,7 @@ public sealed partial class UpdateDialog : UserControl
                 }
 
                 ProgressBar.Value = CurrentGroupTarget;
-                await Task.Delay(250);
+                await Task.Delay(500);
                 currentGroup.Clear();
             }
 

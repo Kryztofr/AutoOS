@@ -21,12 +21,18 @@ public static class UpdateStage
         var (pCores, _) = CpuHelper.GroupCpuSetsByEfficiencyClass(cpuSetsInfo);
         var PCores = pCores.Count;
 
+        ulong audioMask = 0;
+        if (PCores >= 4)
+        {
+            var targetCore = PCores == 4 ? pCores[0] : pCores[PCores - 5];
+            audioMask = targetCore.Threads.Aggregate(0UL, (mask, t) => mask | t.BitMask);
+        }
+
         string defaultEndpoint = SoundHelper.GetDefaultAudioEndpointId(EDataFlow.eRender);
         string hdaud = defaultEndpoint != null ? DeviceHelper.GetParentPnpId(defaultEndpoint) : null;
         string controller = hdaud != null ? DeviceHelper.GetParentPnpId(hdaud) : null;
         var audioControllers = DeviceHelper.GetDevices(DeviceType.AudioController);
-        var audioController = audioControllers.FirstOrDefault(device => device.PnpDeviceId == controller) ?? audioControllers.FirstOrDefault();
-        bool AUDIO_AFFINITY = audioController != null && audioController.DevicePolicy == 4 && audioController.AssignmentSetOverride != 0;
+        var initialAudioController = audioControllers.FirstOrDefault(device => device.PnpDeviceId == controller) ?? audioControllers.FirstOrDefault();
 
         var actions = new List<(string Title, Func<Task> Action, Func<bool> Condition)>
         {
@@ -37,10 +43,13 @@ public static class UpdateStage
 
             // revert low buffer size
             ("Reverting Low Buffer Sizes", async () => localSettings.Values.Remove("Sound"), null),
-
-            // apply audio service affinity
-            ("Applying Audio Service Affinity", async () => { foreach (var process in Process.GetProcessesByName("audiodg").Concat([Process.GetProcessById(ServicesHelper.GetServicePid("Audiosrv"))])) using (process) PInvoke.SetProcessAffinityMask((HANDLE)process.Handle, (nuint)audioController.AssignmentSetOverride); }, () => AUDIO_AFFINITY),
+            ("Reverting Low Buffer Sizes", async () => { foreach (var process in Process.GetProcessesByName("SoundHelper")) { process.Kill(); } }, null),
         };
+
+        if (PCores >= 4 && initialAudioController != null && audioMask != 0)
+        {
+            actions.Add(("Applying Audio Service Affinity", async () => { foreach (var process in Process.GetProcessesByName("audiodg").Concat([Process.GetProcessById(ServicesHelper.GetServicePid("Audiosrv"))])) using (process) PInvoke.SetProcessAffinityMask((HANDLE)process.Handle, (nuint)audioMask); }, null));
+        }
 
         return actions;
     }

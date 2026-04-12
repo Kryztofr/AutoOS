@@ -139,8 +139,13 @@
                                                 </Grid.RowDefinitions>
                                                 <StackPanel VerticalAlignment="Center">
                                                     <Image Height="36"
-                                                           Margin="0,0,0,8"
-                                                           Source="{x:Bind ImageSource}" />
+                                                           Margin="0,0,0,8">
+                                                        <Image.Source>
+                                                            <BitmapImage DecodePixelHeight="36"
+                                                                         DecodePixelType="Logical"
+                                                                         UriSource="{x:Bind ImageSource, Mode=OneTime}" />
+                                                        </Image.Source>
+                                                    </Image>
                                                     <TextBlock HorizontalAlignment="Center"
                                                                FontSize="14"
                                                                Text="{x:Bind Text}"
