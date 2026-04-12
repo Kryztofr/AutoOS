@@ -255,6 +255,7 @@ public static class NetworkHelper
             anyChanged |= ApplySetting(device, settings, "Log Link State Event", "Disabled");
             //anyChanged |= ApplySetting(device, settings, "Maximum Number of RSS Queues", "4 Queues");
             anyChanged |= ApplySetting(device, settings, "Multi-Channel Concurrent", "Disabled");
+            anyChanged |= ApplySetting(device, settings, "NDIS QoS", "QoS Enabled");
             anyChanged |= ApplySetting(device, settings, "NS Offload", "Enabled");
             anyChanged |= ApplySetting(device, settings, "Packet Priority & VLAN", "Packet Priority & VLAN Enabled");
             anyChanged |= ApplySetting(device, settings, "PCI Express Link Power Saving", "Disabled");

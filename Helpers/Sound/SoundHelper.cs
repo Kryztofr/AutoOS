@@ -612,7 +612,12 @@ public static partial class SoundHelper
         {
             IMMDeviceEnumerator* enumerator = (IMMDeviceEnumerator*)pEnumerator;
             IMMDevice* pEndpoint = null;
-            enumerator->GetDefaultAudioEndpoint(flow, ERole.eConsole, &pEndpoint);
+            try
+            {
+                enumerator->GetDefaultAudioEndpoint(flow, ERole.eConsole, &pEndpoint);
+            }
+            catch { }
+
             if (pEndpoint != null)
             {
                 PWSTR pId;
