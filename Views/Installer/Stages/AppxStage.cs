@@ -42,7 +42,6 @@ public static class AppxStage
             "Microsoft.Windows.DevHome_8wekyb3d8bbwe",
             "Microsoft.WindowsAlarms_8wekyb3d8bbwe",
             "Microsoft.WindowsCalculator_8wekyb3d8bbwe",
-            "Microsoft.WindowsCamera_8wekyb3d8bbwe",
             "Microsoft.WindowsFeedbackHub_8wekyb3d8bbwe",
             "Microsoft.WindowsSoundRecorder_8wekyb3d8bbwe",
             "Microsoft.WindowsTerminal_8wekyb3d8bbwe",
