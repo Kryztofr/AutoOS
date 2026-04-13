@@ -149,7 +149,9 @@ If your Ethernet / Wi-Fi / Bluetooth adapter is not listed above, go to the Driv
 
 Extract all `.zip` files (for `.exe` files, there may be an `extract option` in the setup, otherwise use `7-Zip, NanaZip, or WinRAR` to extract them) and move all extracted folders `into one folder`. The folder should contain each driver and their `.inf` files.
 
-On Prebuilts and Laptops you may need to disable `VMD Controller` in your BIOS or download the disk driver (Intel Rapid Storage Technology Driver) otherwise you may get a BSOD. 
+On Prebuilts and Laptops you may need to disable `VMD Controller` in your BIOS, otherwise you may get `Inaccessible boot device` BSOD. It might be called differently in your BIOS. For Alienware go to `Storage -> SATA/NVMe Operation` and change it from `Disabled` to `AHCI/NVMe`. 
+
+Alternatively download the [Intel Rapid Storage Technology Driver](https://www.dl.dropboxusercontent.com/scl/fi/itfp030swc9a6am4gug2y/SetupRST.zip?rlkey=a5fz4afsfog5pkndbnovgl84s&st=lp8664cf&dl=0).
 
 **Step 4:** Open PowerShell **as Administrator**.
 
