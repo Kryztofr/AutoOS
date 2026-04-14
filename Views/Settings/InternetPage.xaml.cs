@@ -44,7 +44,7 @@ public sealed partial class InternetPage : Page
         var settings = device.AdvancedSettings;
         settingsGroup.Description = $"Current version: {device.DriverType} {device.CurrentVersion}";
 
-        foreach (var setting in settings.OrderBy(s => !char.IsDigit(s.Name[0])).ThenBy(s => s.Name, Comparer<string>.Create(NaturalSort)))
+        foreach (var setting in settings.OrderBy(s => string.IsNullOrEmpty(s.Name) || !char.IsDigit(s.Name[0])).ThenBy(s => s.Name, Comparer<string>.Create(NaturalSort)))
         {
             FrameworkElement control = setting.Type switch
             {

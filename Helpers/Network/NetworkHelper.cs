@@ -75,10 +75,11 @@ public static class NetworkHelper
                 _ => NetworkSettingType.Enum
             };
 
+            string desc = paramKey.GetValue("ParamDesc")?.ToString();
             var setting = new NetworkAdvancedSetting
             {
                 Key = paramKeyName,
-                Name = paramKey.GetValue("ParamDesc")?.ToString(),
+                Name = string.IsNullOrWhiteSpace(desc) ? paramKeyName : desc,
                 CurrentValue = deviceKey.GetValue(paramKeyName)?.ToString() ?? string.Empty,
                 DefaultValue = paramKey.GetValue("default")?.ToString() ?? string.Empty,
                 Type = type
@@ -164,6 +165,7 @@ public static class NetworkHelper
             anyChanged |= ApplySetting(device, settings, "2.4G Wireless Mode", "IEEE 802.11b/g/n/ax");
             anyChanged |= ApplySetting(device, settings, "5G Wireless Mode", "IEEE 802.11a/n/ac/ax");
             anyChanged |= ApplySetting(device, settings, "802.11ax/ac/n/abg", "1. 802.11ax");
+            anyChanged |= ApplySetting(device, settings, "802.11n/ac/ax/be Wireless Mode", "5. 802.11be");
             anyChanged |= ApplySetting(device, settings, "802.11a/b/g Wireless Mode", "6. Dual Band 802.11a/b/g");
             anyChanged |= ApplySetting(device, settings, "802.11be/ax/ac/n/abg", "1. 802.11be");
             anyChanged |= ApplySetting(device, settings, "802.11d", "Disabled");
@@ -201,6 +203,8 @@ public static class NetworkHelper
             anyChanged |= ApplySetting(device, settings, "Roaming Aggressiveness", "1. Disabled");
             anyChanged |= ApplySetting(device, settings, "Roaming aggressiveness", "1.Lowest");
             anyChanged |= ApplySetting(device, settings, "Roaming Sensitivity Level", "Disable");
+            anyChanged |= ApplySetting(device, settings, "RscIPv4", "Enabled");
+            anyChanged |= ApplySetting(device, settings, "RscIPv6", "Enabled");
             anyChanged |= ApplySetting(device, settings, "Sleep on WoWLAN Disconnect", "Disabled");
             anyChanged |= ApplySetting(device, settings, "Throughput Booster", "Disabled");
             anyChanged |= ApplySetting(device, settings, "Transmit Power", "5. Highest");

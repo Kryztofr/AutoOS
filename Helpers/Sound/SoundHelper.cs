@@ -243,18 +243,64 @@ public static partial class SoundHelper
                         }
                     }
 
-                    if (formats.Count == 0 && details.CurrentSampleRate > 0)
+                    if (formats.Count == 0)
                     {
-                        formats.Add(new AudioFormatOption
+                        foreach (var ch in testChannels.Distinct())
                         {
-                            SampleRate = details.CurrentSampleRate,
-                            Bits = details.CurrentBitDepth,
-                            Channels = details.CurrentChannels,
-                            ActualBitsPerSample = details.CurrentBitDepth,
-                            SubFormat = KSDATAFORMAT_SUBTYPE_PCM,
-                            DisplayName = $"{details.CurrentChannels} channels, {details.CurrentBitDepth} bit, {details.CurrentSampleRate} Hz",
-                            IsCurrent = true
-                        });
+                            foreach (var rate in testRates)
+                            {
+                                foreach (var bit in testBits)
+                                {
+                                    string quality = (bit, rate) switch
+                                    {
+                                        (16, 8000) when ch == 1 => " (Telephone Quality)",
+                                        (16, 16000) when ch == 1 => " (Tape Recorder Quality)",
+                                        (16, 32000) when ch == 1 => " (FM Radio Quality)",
+                                        (16, 44100) => " (CD Quality)",
+                                        (16, 48000) => " (DVD Quality)",
+                                        (24 or 32, >= 44100) => " (Studio Quality)",
+                                        (16, >= 88200) => " (Studio Quality)",
+                                        _ => ""
+                                    };
+
+                                    formats.Add(new AudioFormatOption
+                                    {
+                                        SampleRate = rate,
+                                        Bits = bit,
+                                        Channels = ch,
+                                        ActualBitsPerSample = bit,
+                                        SubFormat = KSDATAFORMAT_SUBTYPE_PCM,
+                                        DisplayName = $"{ch} channels, {bit} bit, {rate} Hz{quality}",
+                                        IsCurrent = (rate == details.CurrentSampleRate && bit == details.CurrentBitDepth && ch == details.CurrentChannels)
+                                    });
+                                }
+                            }
+                        }
+
+                        if (details.CurrentSampleRate > 0 && !formats.Any(f => f.IsCurrent))
+                        {
+                            string quality = (details.CurrentBitDepth, details.CurrentSampleRate) switch
+                            {
+                                (16, 8000) when details.CurrentChannels == 1 => " (Telephone Quality)",
+                                (16, 16000) when details.CurrentChannels == 1 => " (Tape Recorder Quality)",
+                                (16, 32000) when details.CurrentChannels == 1 => " (FM Radio Quality)",
+                                (16, 44100) => " (CD Quality)",
+                                (16, 48000) => " (DVD Quality)",
+                                (24 or 32, >= 44100) => " (Studio Quality)",
+                                (16, >= 88200) => " (Studio Quality)",
+                                _ => ""
+                            };
+                            formats.Add(new AudioFormatOption
+                            {
+                                SampleRate = details.CurrentSampleRate,
+                                Bits = details.CurrentBitDepth,
+                                Channels = details.CurrentChannels,
+                                ActualBitsPerSample = details.CurrentBitDepth,
+                                SubFormat = KSDATAFORMAT_SUBTYPE_PCM,
+                                DisplayName = $"{details.CurrentChannels} channels, {details.CurrentBitDepth} bit, {details.CurrentSampleRate} Hz{quality}",
+                                IsCurrent = true
+                            });
+                        }
                     }
 
                     details.Formats = [.. formats
@@ -607,27 +653,25 @@ public static partial class SoundHelper
     internal static unsafe string GetDefaultAudioEndpointId(EDataFlow flow)
     {
         PInvoke.CoInitializeEx(null, COINIT.COINIT_MULTITHREADED);
-        HRESULT hrEnum = PInvoke.CoCreateInstance(typeof(MMDeviceEnumerator).GUID, null, CLSCTX.CLSCTX_ALL, typeof(IMMDeviceEnumerator).GUID, out void* pEnumerator);
-        if (hrEnum.Succeeded)
+        if (PInvoke.CoCreateInstance(typeof(MMDeviceEnumerator).GUID, null, CLSCTX.CLSCTX_ALL, typeof(IMMDeviceEnumerator).GUID, out void* pEnumerator).Value >= 0)
         {
             IMMDeviceEnumerator* enumerator = (IMMDeviceEnumerator*)pEnumerator;
-            IMMDevice* pEndpoint = null;
+            IMMDevice* endpoint = null;
             try
             {
-                enumerator->GetDefaultAudioEndpoint(flow, ERole.eConsole, &pEndpoint);
+                enumerator->GetDefaultAudioEndpoint(flow, ERole.eConsole, &endpoint);
+                if (endpoint != null)
+                {
+                    PWSTR id = default;
+                    endpoint->GetId(&id);
+                    string result = @"SWD\MMDEVAPI\" + id.ToString();
+                    PInvoke.CoTaskMemFree(id);
+                    endpoint->Release();
+                    enumerator->Release();
+                    return result;
+                }
             }
             catch { }
-
-            if (pEndpoint != null)
-            {
-                PWSTR pId;
-                pEndpoint->GetId(&pId);
-                string id = pId.ToString();
-                PInvoke.CoTaskMemFree(pId);
-                pEndpoint->Release();
-                enumerator->Release();
-                return @"SWD\MMDEVAPI\" + id;
-            }
             enumerator->Release();
         }
         return null;
@@ -678,35 +722,8 @@ public static partial class SoundHelper
         if (array == null || array.Count == 0) return;
 
         PInvoke.CoInitializeEx(null, COINIT.COINIT_MULTITHREADED);
-        string currentOutputId = null;
-        string currentInputId = null;
-
-        if (PInvoke.CoCreateInstance(typeof(MMDeviceEnumerator).GUID, null, CLSCTX.CLSCTX_ALL, typeof(IMMDeviceEnumerator).GUID, out void* pEnumerator).Value >= 0)
-        {
-            IMMDeviceEnumerator* enumerator = (IMMDeviceEnumerator*)pEnumerator;
-            foreach (var flow in new[] { EDataFlow.eRender, EDataFlow.eCapture })
-            {
-                IMMDevice* endpoint = null;
-                try
-                {
-                    enumerator->GetDefaultAudioEndpoint(flow, ERole.eConsole, &endpoint);
-                    if (endpoint != null)
-                    {
-                        PWSTR id = default;
-                        endpoint->GetId(&id);
-                        if (flow == EDataFlow.eRender)
-                            currentOutputId = id.ToString();
-                        else
-                            currentInputId = id.ToString();
-                        PInvoke.CoTaskMemFree(id);
-                        endpoint->Release();
-                    }
-                }
-                catch
-                {   }
-            }
-            enumerator->Release();
-        }
+        string currentOutputId = GetDefaultAudioEndpointId(EDataFlow.eRender);
+        string currentInputId = GetDefaultAudioEndpointId(EDataFlow.eCapture);
 
         float outputMs = 0;
         float inputMs = 0;
