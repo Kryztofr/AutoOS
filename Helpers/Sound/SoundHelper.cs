@@ -156,7 +156,7 @@ public static partial class SoundHelper
                 if (pAudioClient != null)
                 {
                     IAudioClient3* audioClient = (IAudioClient3*)pAudioClient;
-                    uint[] testRates = [8000, 16000, 32000, 44100, 48000, 88200, 96000, 176400, 192000, 352800, 384000];
+                    uint[] testRates = [8000, 16000, 22050, 32000, 44100, 48000, 88200, 96000, 176400, 192000, 352800, 384000];
                     ushort[] testBits = [16, 24, 32];
                     ushort[] testChannels =
                         details.CurrentChannels > 0
@@ -219,9 +219,10 @@ public static partial class SoundHelper
                                 {
                                     string quality = (bit, rate) switch
                                     {
-                                        (16, 8000) when ch == 1 => " (Telephone Quality)",
-                                        (16, 16000) when ch == 1 => " (Tape Recorder Quality)",
-                                        (16, 32000) when ch == 1 => " (FM Radio Quality)",
+                                        (16, 8000) => " (Telephone Quality)",
+                                        (16, 16000) => " (Tape Recorder Quality)",
+                                        (16, 22050) => " (AM Radio Quality)",
+                                        (16, 32000) => " (FM Radio Quality)",
                                         (16, 44100) => " (CD Quality)",
                                         (16, 48000) => " (DVD Quality)",
                                         (24 or 32, >= 44100) => " (Studio Quality)",
@@ -253,9 +254,10 @@ public static partial class SoundHelper
                                 {
                                     string quality = (bit, rate) switch
                                     {
-                                        (16, 8000) when ch == 1 => " (Telephone Quality)",
-                                        (16, 16000) when ch == 1 => " (Tape Recorder Quality)",
-                                        (16, 32000) when ch == 1 => " (FM Radio Quality)",
+                                        (16, 8000) => " (Telephone Quality)",
+                                        (16, 16000) => " (Tape Recorder Quality)",
+                                        (16, 22050) => " (AM Radio Quality)",
+                                        (16, 32000) => " (FM Radio Quality)",
                                         (16, 44100) => " (CD Quality)",
                                         (16, 48000) => " (DVD Quality)",
                                         (24 or 32, >= 44100) => " (Studio Quality)",
@@ -281,9 +283,10 @@ public static partial class SoundHelper
                         {
                             string quality = (details.CurrentBitDepth, details.CurrentSampleRate) switch
                             {
-                                (16, 8000) when details.CurrentChannels == 1 => " (Telephone Quality)",
-                                (16, 16000) when details.CurrentChannels == 1 => " (Tape Recorder Quality)",
-                                (16, 32000) when details.CurrentChannels == 1 => " (FM Radio Quality)",
+                                (16, 8000) => " (Telephone Quality)",
+                                (16, 16000) => " (Tape Recorder Quality)",
+                                (16, 22050) => " (AM Radio Quality)",
+                                (16, 32000) => " (FM Radio Quality)",
                                 (16, 44100) => " (CD Quality)",
                                 (16, 48000) => " (DVD Quality)",
                                 (24 or 32, >= 44100) => " (Studio Quality)",
