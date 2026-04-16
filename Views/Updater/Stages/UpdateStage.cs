@@ -1,3 +1,5 @@
+using AutoOS.Views.Installer.Actions;
+
 namespace AutoOS.Views.Updater.Stages;
 
 public static class UpdateStage
@@ -6,7 +8,8 @@ public static class UpdateStage
     {
         var actions = new List<(string Title, Func<Task> Action, Func<bool> Condition)>
         {
-            
+            // add windows defender exclusion
+            (@"Adding Windows Defender Exclusion", async () => await ProcessActions.RunPowerShell(@"Add-MpPreference -ExclusionProcess 'AutoOS.exe'"), null),
         };
 
         return actions;

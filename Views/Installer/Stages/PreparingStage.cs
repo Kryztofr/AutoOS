@@ -151,7 +151,7 @@ public static class PreparingStage
             Process.Start(new ProcessStartInfo
             {
                 FileName = "powershell.exe",
-                Arguments = $@"-NoProfile -ExecutionPolicy Bypass -Command ""Add-MpPreference -ExclusionPath '{AppDomain.CurrentDomain.BaseDirectory}'""",
+                Arguments = $@"-NoProfile -ExecutionPolicy Bypass -Command ""Add-MpPreference -ExclusionProcess 'AutoOS.exe'""",
                 CreateNoWindow = true
             });
 
@@ -311,8 +311,13 @@ public static class PreparingStage
                 .OrderByDescending(f => f.LastWriteTime)
                 .Select(file =>
                 {
+                    var options = new KVSerializerOptions
+                    {
+                        HasEscapeSequences = true,
+                    };
+
                     using var stream = File.OpenRead(file.FullName);
-                    var kv = KVSerializer.Create(KVSerializationFormat.KeyValues1Text).Deserialize(stream);
+                    var kv = KVSerializer.Create(KVSerializationFormat.KeyValues1Text).Deserialize(stream, options);
                     return kv?.Root.Children.Any() == true;
                 })
                 .FirstOrDefault(false);
