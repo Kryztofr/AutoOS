@@ -623,10 +623,12 @@ if ($timezone) {
 Copy-UserInternationalSettingsToSystem -WelcomeScreen $true -NewUser $true | Out-Null
 
 # Set as default input method
-$list = (Get-WinUserLanguageList).InputMethodTips
-Set-ItemProperty -Path "HKCU:\Control Panel\International\User Profile" -Name "InputMethodOverride" -Value $list[1]
-Set-ItemProperty -Path "HKCU:\Keyboard Layout\Preload" -Name "1" -Value ($list[1].Split(':')[1])
-Set-ItemProperty -Path "HKCU:\Keyboard Layout\Preload" -Name "2" -Value ($list[0].Split(':')[1])
+$list = @((Get-WinUserLanguageList).InputMethodTips)
+if ($list.Count -gt 1) {
+    Set-ItemProperty -Path "HKCU:\Control Panel\International\User Profile" -Name "InputMethodOverride" -Value $list[1]
+    Set-ItemProperty -Path "HKCU:\Keyboard Layout\Preload" -Name "1" -Value ($list[1].Split(':')[1])
+    Set-ItemProperty -Path "HKCU:\Keyboard Layout\Preload" -Name "2" -Value ($list[0].Split(':')[1])
+}
 
 # Sync time
 net start w32time
@@ -674,18 +676,22 @@ $hwndBroadcast = [IntPtr]0xffff
 
 while ($true) {
     if (-not (Get-Process -Name "FirstLogonAnim" -ErrorAction SilentlyContinue)) {
-        $currentHKL = [Win32Input]::GetKeyboardLayout(0)
-        $targetHKL = [Win32Input]::LoadKeyboardLayout($list[1].Split(':')[1], 0x00000001)
+        if ($list.Count -gt 1) {
+            $currentHKL = [Win32Input]::GetKeyboardLayout(0)
+            $targetHKL = [Win32Input]::LoadKeyboardLayout($list[1].Split(':')[1], 0x00000001)
 
-        if ($currentHKL -eq $targetHKL) {
-            New-Item -Path "C:\test.txt" -ItemType "File"
+            if ($currentHKL -eq $targetHKL) {
+                New-Item -Path "C:\test.txt" -ItemType "File"
+                break
+            }
+
+            [Win32Input]::ActivateKeyboardLayout($targetHKL, 0)
+            $foregroundHWnd = [Win32Input]::GetForegroundWindow()
+            [Win32Input]::PostMessage($hwndBroadcast, $WM_INPUTLANGCHANGEREQUEST, [IntPtr]0, $targetHKL)
+            [Win32Input]::PostMessage($foregroundHWnd, $WM_INPUTLANGCHANGEREQUEST, [IntPtr]0, $targetHKL)
+        } else {
             break
         }
-
-        [Win32Input]::ActivateKeyboardLayout($targetHKL, 0)
-        $foregroundHWnd = [Win32Input]::GetForegroundWindow()
-        [Win32Input]::PostMessage($hwndBroadcast, $WM_INPUTLANGCHANGEREQUEST, [IntPtr]0, $targetHKL)
-        [Win32Input]::PostMessage($foregroundHWnd, $WM_INPUTLANGCHANGEREQUEST, [IntPtr]0, $targetHKL)
     }
     Start-Sleep -Milliseconds 500
 }

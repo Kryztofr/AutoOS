@@ -752,9 +752,6 @@ public partial class HeaderCarousel : ItemsControl
 
             tile.GotFocus -= Tile_GotFocus;
             tile.GotFocus += Tile_GotFocus;
-
-            //tile.Click -= Tile_Click;
-            //tile.Click += Tile_Click;
         }
     }
 
@@ -768,18 +765,8 @@ public partial class HeaderCarousel : ItemsControl
         {
             tile.PointerEntered -= Tile_PointerEntered;
             tile.GotFocus -= Tile_GotFocus;
-            //tile.Click -= Tile_Click;
         }
     }
-
-    //private void Tile_Click(object sender, RoutedEventArgs e)
-    //{
-    //    if (sender is HeaderCarouselItem tile)
-    //    {
-    //        tile.PointerExited -= Tile_PointerExited;
-    //        ItemClick?.Invoke(sender, new HeaderCarouselEventArgs { HeaderCarouselItem = tile });
-    //    }
-    //}
 
     private void SelectionTimer_Tick(object sender, object e)
     {
@@ -862,7 +849,6 @@ public partial class HeaderCarousel : ItemsControl
         {
             selectedTile.IsSelected = true;
             if (playSound) ElementSoundPlayer.Play(ElementSoundKind.Focus);
-
 
             if (selectedTile.BackgroundImageUrl != null && backDropImage.ImageUrl?.ToString() != selectedTile.BackgroundImageUrl)
                 backDropImage.ImageUrl = new Uri(selectedTile.BackgroundImageUrl);
@@ -979,8 +965,6 @@ public partial class HeaderCarousel : ItemsControl
             DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, async () =>
             {
                 CheckGameRunning();
-
-                await Task.Delay(100);
                 Screenshots = selectedTile?.Screenshots;
                 Screenshots_Card.Visibility = (Screenshots?.Count > 0) ? Visibility.Visible : Visibility.Collapsed;
                 //Screenshots_Gallery.ResetScrollPosition();
