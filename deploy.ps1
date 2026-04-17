@@ -332,6 +332,11 @@ Write-Host "Formatting partition $TargetDrive..."
 Start-Process -FilePath "cmd.exe" -ArgumentList "/c ""format $TargetDrive /fs:ntfs /q /y /v:AutoOS > nul 2> nul""" -NoNewWindow -Wait
 
 Write-Host "`n===== Step 5: Apply Windows Image =====`n"
+$VirtualDriveEnum = Get-PnpDevice -FriendlyName 'Microsoft Virtual Drive Enumerator' -ErrorAction SilentlyContinue
+if ($VirtualDriveEnum -and $VirtualDriveEnum.Status -ne 'OK') {
+    $VirtualDriveEnum | Enable-PnpDevice -Confirm:$False | Out-Null
+}
+
 try {
     Write-Host "Mounting ISO..." 
     $MountedIso = (Mount-DiskImage -ImagePath $IsoPicker.FileName -PassThru | Get-Volume).DriveLetter + ":"

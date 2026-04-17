@@ -169,10 +169,7 @@ public sealed partial class SecurityPage : Page
 
                 var dialogInfoText = new TextBlock { };
 
-                var dialogHyperlink = new Hyperlink
-                {
-                    UnderlineStyle = UnderlineStyle.None
-                };
+                var dialogHyperlink = new Hyperlink { };
                 dialogHyperlink.Inlines.Add(new Run
                 {
                     Text = "Windows Security"
