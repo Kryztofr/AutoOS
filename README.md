@@ -111,7 +111,7 @@ In **AutoOS Settings** you can:
 - Clean up your drives.
 - Toggle Windows Security Options.
 - Toggle Windows Updates and set target version.
-- View your Game Library (Supports Epic Games, Steam, Riot Games, Eden, Citron and Ryujinx).
+- View your Game Library (Supports Epic Games, Riot Games, EA, Ubisoft Connect, Steam, Eden, Citron and Ryujinx).
 - Launch Games, Stop Processes and Restart Processes when done.
 - Check for Epic Games title updates.
 - Switch between Epic Games and Steam Accounts.
@@ -175,6 +175,7 @@ If you get any errors during the script, it’s most likely because your current
 - `Disable` the toggle in `Services & Drivers` tab and restart whenever you are `Gaming`.
 - `Enable` it again and restart if you need functionality back for `Work` etc.
 - For `Riot Games` titles to show up in the `Games` tab, install them through the `Epic Games Launcher` as well.
+- For `EA` or `Ubisoft Connect` titles to show up in the `Games` tab, add them to your `Epic Games Launcher` library.
 - Go to the `Games` tab while `Services & Drivers` are disabled and press the `Play` button.
 - Once you are in the `Game`, press the `Stop Processes` button. 
 - Press the `Restart Processes` button to restore the taskbar etc.

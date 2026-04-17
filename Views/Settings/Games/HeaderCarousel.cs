@@ -106,8 +106,7 @@ public partial class HeaderCarousel : ItemsControl
     private static DependencyObject _lastFocusedElement;
     private static DateTimeOffset _bottomFocusTime;
     private static GamepadButtons _scrollingButtons = GamepadButtons.None;
-
-    public ObservableCollection<InfoItem> InfoItems { get; } = new ObservableCollection<InfoItem>();
+    public ObservableCollection<InfoItem> InfoItems { get; } = [];
 
     public HeaderCarousel()
     {
@@ -604,8 +603,6 @@ public partial class HeaderCarousel : ItemsControl
                 break;
         }
 
-        //tasks.Add(UbisoftConnectHelper.LoadGames());
-
         await Task.WhenAll(tasks);
 
         // sort games
@@ -994,7 +991,7 @@ public partial class HeaderCarousel : ItemsControl
         }
     }
 
-    private void Tile_PointerEntered(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
+    private void Tile_PointerEntered(object sender, PointerRoutedEventArgs e)
     {
         var tile = (HeaderCarouselItem)sender;
         if (!tile.IsLoaded) return;
@@ -1876,23 +1873,34 @@ public partial class HeaderCarousel : ItemsControl
                 FileName = Path.Combine(installLocation, launchExecutable),
                 Arguments = string.Join(" ", new[]
                 {
-                launchCommand,
-                "-AUTH_LOGIN=unused",
-                $"-AUTH_PASSWORD={exchangeCode}",
-                "-AUTH_TYPE=exchangeCode",
-                $"-epicapp={appName}",
-                "-epicenv=Prod",
-                "-EpicPortal",
-                $"-epicusername={displayName}",
-                $"-epicuserid={accountId}",
-                "-epiclocale=en",
-                $"-epicsandboxid={catalogNamespace}"
-            }),
+                    launchCommand,
+                    "-AUTH_LOGIN=unused",
+                    $"-AUTH_PASSWORD={exchangeCode}",
+                    "-AUTH_TYPE=exchangeCode",
+                    $"-epicapp={appName}",
+                    "-epicenv=Prod",
+                    "-EpicPortal",
+                    $"-epicusername={displayName}",
+                    $"-epicuserid={accountId}",
+                    "-epiclocale=en",
+                    $"-epicsandboxid={catalogNamespace}"
+                }),
                 WorkingDirectory = Path.GetDirectoryName(Path.Combine(installLocation, launchExecutable)),
                 UseShellExecute = false
             };
 
             Process.Start(startInfo);
+        }
+        else if (launcher == "UbisoftConnect")
+        {
+            Process.Start(new ProcessStartInfo($"uplay://launch/{gameId}/0") { UseShellExecute = true });
+        }
+        else if (launcher == "The EA App" || launcher == "Origin")
+        {
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = Path.Combine(installLocation, launchExecutable)
+            });
         }
         else if (launcher == "Steam")
         {
@@ -1901,29 +1909,6 @@ public partial class HeaderCarousel : ItemsControl
                 FileName = @"C:\Program Files (x86)\Steam\steam.exe",
                 Arguments = $"-applaunch {gameId} -silent"
             });
-        }
-        else if (launcher == "Ubisoft Connect")
-        {
-            //Process.Start(new ProcessStartInfo($"uplay://launch/{gameId}") { UseShellExecute = true });
-
-            //var startInfo = new ProcessStartInfo
-            //{
-            //    FileName = launcherLocation,
-            //    Arguments = string.Join(" ", new[]
-            //    {
-            //        launchExecutable,
-            //        "gamelauncher_wait_handle 1012",
-            //        $"-upc_uplay_id {gameId}",
-            //        "-upc_game_version 1",
-            //        $"-upc_exe_path ",
-            //        $"-upc_working_directory",
-            //        $"-upc_arguments"
-            //    }),
-            //    WorkingDirectory = Path.GetDirectoryName(Path.Combine(installLocation, launchExecutable)),
-            //    UseShellExecute = false
-            //};
-
-            //Process.Start(startInfo);
         }
         else if (launcher == "Eden")
         {
@@ -2236,8 +2221,7 @@ public partial class HeaderCarousel : ItemsControl
 
             DispatcherQueue.TryEnqueue(() =>
             {
-                if (Play != null)
-                    Play.IsEnabled = !isRunning;
+                Play?.IsEnabled = !isRunning;
 
                 if (StopProcesses != null && !servicesState)
                     StopProcesses.Visibility = isRunning ? Visibility.Visible : Visibility.Collapsed;
@@ -2296,6 +2280,19 @@ public partial class HeaderCarousel : ItemsControl
                 (!string.IsNullOrEmpty(offlineExecutable) && Process.GetProcessesByName(Path.GetFileNameWithoutExtension(offlineExecutable)).Length > 0) ||
                 (!string.IsNullOrEmpty(onlineExecutable) && Process.GetProcessesByName(Path.GetFileNameWithoutExtension(onlineExecutable)).Length > 0) ||
                 (ProcessNames?.Any(process => !string.IsNullOrEmpty(process) && Process.GetProcessesByName(Path.GetFileNameWithoutExtension(process)).Length > 0) ?? false)
+            );
+        }
+        else if (Launcher == "UbisoftConnect")
+        {
+            StartGameWatcher(() =>
+                Process.GetProcessesByName("UbisoftGameLauncher").Any(process => ProcessesHelper.GetCommandLine(process).Contains($"-upc_uplay_id {GameID}", StringComparison.OrdinalIgnoreCase))
+            );
+        }
+        else if (Launcher == "The EA App" || Launcher == "Origin")
+        {
+            StartGameWatcher(() =>
+                Process.GetProcessesByName(Path.GetFileNameWithoutExtension(LaunchExecutable)).Length > 0 ||
+                Process.GetProcessesByName("EALaunchHelper").Any(process => ProcessesHelper.GetCommandLine(process).Contains(Path.GetFileNameWithoutExtension(LaunchExecutable), StringComparison.OrdinalIgnoreCase))
             );
         }
         else if (Launcher == "Steam")

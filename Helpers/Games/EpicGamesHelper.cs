@@ -23,6 +23,8 @@ public static class EpicGamesHelper
 
     public const string EpicGamesManifestDir = @"C:\ProgramData\Epic\EpicGamesLauncher\Data\Manifests";
 
+    public const string EpicGamesThirdPartyManifestDir = @"C:\ProgramData\Epic\EpicGamesLauncher\Data\ThirPartyManagedApps";
+
     private static readonly HttpClient httpClient = new();
     private static readonly HttpClient loginClient = new();
 
@@ -733,7 +735,7 @@ public static class EpicGamesHelper
         if (File.Exists(EpicGamesPath) && Directory.Exists(EpicGamesManifestDir))
         {
             // remove previous games
-            foreach (var item in GamesPage.Instance.Games.Items.OfType<Views.Settings.Games.HeaderCarouselItem>().Where(item => item.Launcher == "Epic Games").ToList())
+            foreach (var item in GamesPage.Instance.Games.Items.OfType<Views.Settings.Games.HeaderCarouselItem>().Where(item => item.Launcher == "Epic Games" || item.Launcher == "UbisoftConnect" || item.Launcher == "The EA App" || item.Launcher == "Origin").ToList())
                 GamesPage.Instance.Games.Items.Remove(item);
 
             // get access token
@@ -827,20 +829,65 @@ public static class EpicGamesHelper
                 }
             }
 
+            var allManifests = new List<JsonNode>();
+            foreach (var file in latestManifests.Values)
+            {
+                var node = JsonNode.Parse(File.ReadAllText(file.FullName));
+                allManifests.Add(node);
+            }
+
+            if (Directory.Exists(EpicGamesThirdPartyManifestDir))
+            {
+                foreach (var file in Directory.GetFiles(EpicGamesThirdPartyManifestDir, "*.json"))
+                {
+                    var json = JsonNode.Parse(File.ReadAllText(file));
+
+                    string installLocation = null;
+
+                    using (var key = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(json["RegistryPath"]?.GetValue<string>()))
+                    {
+                        if (key != null)
+                        {
+                            installLocation = key.GetValue(json["RegistryKey"]?.GetValue<string>())?.ToString()?.TrimEnd('\\', '/');
+                        }
+                    }
+
+                    if (Directory.Exists(installLocation))
+                    {
+                        string provider = json["Provider"]?.GetValue<string>();
+
+                        string gameId = null;
+                        if (provider == "UbisoftConnect")
+                            gameId = json["GameID"]?.GetValue<string>();
+
+                        allManifests.Add(new JsonObject
+                        {
+                            ["Provider"] = provider,
+                            ["bIsApplication"] = true,
+                            ["CatalogItemId"] = json["CatalogID"]?.GetValue<string>(),
+                            ["CatalogNamespace"] = json["Namespace"]?.GetValue<string>(),
+                            ["AppName"] = json["AppName"]?.GetValue<string>(),
+                            ["DisplayName"] = json["Title"]?.GetValue<string>(),
+                            ["InstallLocation"] = installLocation,
+                            ["GameID"] = gameId,
+                            ["LaunchExecutable"] = json["MainWindowProcessName"]?.GetValue<string>(),
+                            ["ProcessNames"] = json["ProcessNames"]?.AsArray().DeepClone()
+                        });
+                    }
+                }
+            }
+
             // for each manifest
-            await Parallel.ForEachAsync(latestManifests.Values, new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount * 2 }, async (file, _) =>
+            await Parallel.ForEachAsync(allManifests, new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount * 2 }, async (itemJson, _) =>
             {
                 try
                 {
                     using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
                     var token = cts.Token;
 
-                    // read manifest
-                    var itemJson = JsonNode.Parse(await File.ReadAllTextAsync(file.FullName).ConfigureAwait(false));
-
                     // return if not a game
                     if (itemJson?["bIsApplication"]?.GetValue<bool>() != true) return;
-                    string catalogItemId = itemJson["MainGameCatalogItemId"]?.GetValue<string>();
+                    string catalogItemId = itemJson["CatalogItemId"]?.GetValue<string>();
                     string catalogNamespace = itemJson["CatalogNamespace"]?.GetValue<string>();
 
                     // return if not in library
@@ -891,8 +938,8 @@ public static class EpicGamesHelper
                     var manifestTask = loginClient.GetStringAsync($"https://catalog-public-service-prod06.ol.epicgames.com/catalog/api/shared/namespace/{catalogNamespace}/bulk/items?id={catalogItemId}&includeDLCDetails=false&includeMainGameDetails=true&country=US&locale=en-US", token);
                     var offerTask = loginClient.GetStringAsync($"https://catalog-public-service-prod06.ol.epicgames.com/catalog/api/shared/bulk/offers?id={offerId}&returnItemDetails=true&country=US&locale=en-US", token);
                     var ratingTask = httpClient.GetStringAsync($"https://api.egdata.app/offers/{offerId}/polls", token);
-                    var genresTask = httpClient.GetStringAsync($"https://api.egdata.app/offers/{offerId}/genres", token);
-                    var featuresTask = httpClient.GetStringAsync($"https://api.egdata.app/offers/{offerId}/features", token);
+                    var genresTask = httpClient.GetStringAsync($"https://api.egdata.app/offers/{(offerId == "6e02cab6e82243858462ba7f93c82e9d" ? "d546d9a3e9fe4ba093d3a3fdae020760" : offerId)}/genres", token);
+                    var featuresTask = httpClient.GetStringAsync($"https://api.egdata.app/offers/{(offerId == "6e02cab6e82243858462ba7f93c82e9d" ? "d546d9a3e9fe4ba093d3a3fdae020760" : offerId)}/features", token);
                     var ageRatingTask = httpClient.GetStringAsync($"https://api.egdata.app/offers/{offerId}/age-rating", token);
                     var mediaTask = httpClient.GetStringAsync($"https://api.egdata.app/offers/{offerId}/media", token);
 
@@ -954,30 +1001,33 @@ public static class EpicGamesHelper
                     string currentVersion = itemJson["AppVersionString"]?.GetValue<string>();
                     string latestVersion = buildData?.FirstOrDefault(x => x?["appName"]?.ToString() == itemJson["AppName"]?.GetValue<string>())?["buildVersion"]?.ToString();
 
+                    if (string.IsNullOrEmpty(currentVersion))
+                        currentVersion = latestVersion;
+
                     DateTimeOffset releaseDate = DateTimeOffset.Parse(offerData[offerId]!["releaseDate"]!.GetValue<string>()!);
 
                     long? sizeBytes = itemJson["InstallSize"]?.GetValue<long>();
+
+                    if (!sizeBytes.HasValue)
+                        sizeBytes = new DirectoryInfo(installLocation).EnumerateFiles("*", SearchOption.AllDirectories).Sum(fi => fi.Length);
 
                     GamesPage.Instance.DispatcherQueue.TryEnqueue(() =>
                     {
                         GamesPage.Instance.Games.Items.Add(new Views.Settings.Games.HeaderCarouselItem
                         {
-                            Launcher = "Epic Games",
+                            Launcher = itemJson["Provider"]?.GetValue<string>() ?? "Epic Games",
                             CatalogNamespace = catalogNamespace,
                             CatalogItemId = catalogItemId,
-                            AppName = itemJson["MainGameAppName"]?.GetValue<string>(),
+                            AppName = itemJson["AppName"]?.GetValue<string>(),
                             InstallLocation = installLocation,
                             LaunchCommand = itemJson["LaunchCommand"]?.GetValue<string>(),
                             LaunchExecutable = itemJson["LaunchExecutable"]?.GetValue<string>()?.Replace("/", "\\"),
+                            GameID = itemJson["GameID"]?.GetValue<string>(),
                             ProcessNames = itemJson["ProcessNames"]?.AsArray().Select(p => p.GetValue<string>()).ToList(),
                             ArtifactId = artifactId,
                             UpdateIsAvailable = latestVersion != null && latestVersion != currentVersion,
-                            //ImageUrl = imageTallUrl,
-                            //BackgroundImageUrl = imageWideUrl,
                             ImageUrl = keyImages.FirstOrDefault(img => img?["type"]?.GetValue<string>() == "DieselGameBoxTall")?["url"]?.GetValue<string>(),
                             BackgroundImageUrl = keyImages.FirstOrDefault(img => img?["type"]?.GetValue<string>() == "DieselGameBox")?["url"]?.GetValue<string>(),
-                            //Title = offerData["title"]?.GetValue<string>(),
-                            //Developers = offerData["seller"]?["name"]?.GetValue<string>(),
                             Title = offerData[offerId]?["title"]?.GetValue<string>(),
                             Developers = offerData[offerId]?["seller"]?["name"]?.GetValue<string>(),
                             Genres = genresData?.AsArray()?.Select(g => g?["name"]?.GetValue<string>())
@@ -1016,7 +1066,7 @@ public static class EpicGamesHelper
                 }
                 catch (Exception ex)
                 {
-                    await App.ShowErrorMessage(new Exception($"Failed to load game: {JsonNode.Parse(await File.ReadAllTextAsync(file.FullName).ConfigureAwait(false))["DisplayName"]?.ToString()}", ex));
+                    await App.ShowErrorMessage(new Exception($"Failed to load game: {itemJson["DisplayName"]?.ToString()}", ex));
                 }
             });
         }
@@ -1024,12 +1074,12 @@ public static class EpicGamesHelper
 }
 
 internal record PlaytimePayload(
-    string machineId,
-    string artifactId,
-    string startTime,
-    string endTime,
-    bool startSegment,
-    bool endSegment
+    string MachineId,
+    string ArtifactId,
+    string StartTime,
+    string EndTime,
+    bool StartSegment,
+    bool EndSegment
 );
 
 [JsonSerializable(typeof(PlaytimePayload))]
