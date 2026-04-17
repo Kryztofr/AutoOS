@@ -85,12 +85,12 @@ public static class ProcessActions
         bool hasFileName = !string.IsNullOrWhiteSpace(file);
         string dest = hasFileName ? Path.Combine(path, file) : path;
 
+        var uiContext = SynchronizationContext.Current;
+        string title = progressButton == null ? InstallPage.Info?.Title ?? string.Empty : string.Empty;
+
         for (int i = 0; i < 5; i++)
         {
             if (hasFileName ? File.Exists(dest) : Directory.Exists(dest) && Directory.EnumerateFiles(dest).Any()) return;
-
-            var uiContext = SynchronizationContext.Current;
-            string title = progressButton == null ? InstallPage.Info?.Title ?? string.Empty : string.Empty;
 
             if (url.Contains("raw.githubusercontent.com", StringComparison.OrdinalIgnoreCase))
             {
