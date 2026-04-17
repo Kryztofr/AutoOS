@@ -180,7 +180,7 @@ If you get any errors during the script, it’s most likely because your current
 - Once you are in the `Game`, press the `Stop Processes` button. 
 - Press the `Restart Processes` button to restore the taskbar etc.
 - Check the `BIOS Settings` tab for recommendations.
-- If your output device supports a lower buffer size than 10ms in the `Sound` tab, lower it in exchange for higher CPU usage.
+- If your output supports a lower buffer size in the `Sound` tab, you may lower it in exchange for higher CPU usage.
 - Leave a `review`, share `suggestions`, or report `issues` on the `Discord Server`.
 - [Donate](https://www.paypal.com/donate/?hosted_button_id=GVEVUSHUWXEAG) if you appreciate the immense time and effort I have put into creating and providing this project for free.
 - If you have experience with `C# and WinUI3` and want to become a part of the project, let me know.
