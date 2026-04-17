@@ -154,13 +154,8 @@
                                     Style="{ThemeResource MicaButtonStyle}"
                                     XYFocusLeft="{Binding ElementName=Sort}"
                                     XYFocusRight="{Binding ElementName=SteamButton}">
-                                <StackPanel Orientation="Horizontal"
-                                            Spacing="8">
-                                    <dev:ImageEx Height="20"
-                                                 Source="Assets/Fluent/Epicgames.png" />
-                                    <TextBlock VerticalAlignment="Center"
-                                               Text="Epic Games" />
-                                </StackPanel>
+                                <dev:ImageEx Height="20"
+                                             Source="Assets/Fluent/Epicgames.png" />
                                 <Button.Flyout>
                                     <Flyout Placement="Bottom">
                                         <Flyout.FlyoutPresenterStyle>
@@ -239,13 +234,8 @@
                                     CornerRadius="18"
                                     Style="{ThemeResource MicaButtonStyle}"
                                     XYFocusLeft="{Binding ElementName=EpicGamesButton}">
-                                <StackPanel Orientation="Horizontal"
-                                            Spacing="8">
-                                    <dev:ImageEx Height="20"
-                                                 Source="Assets/Fluent/Steam.png" />
-                                    <TextBlock VerticalAlignment="Center"
-                                               Text="Steam" />
-                                </StackPanel>
+                                <dev:ImageEx Height="20"
+                                             Source="Assets/Fluent/Steam.png" />
                                 <Button.Flyout>
                                     <Flyout Placement="Bottom">
                                         <Flyout.FlyoutPresenterStyle>
