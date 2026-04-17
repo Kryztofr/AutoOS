@@ -137,7 +137,7 @@ public static class BrowsersStage
             ("Installing 1Password Extension", async () => await ProcessActions.RunPowerShell(@"$BaseKey = 'HKLM:\SOFTWARE\Policies\Google\Chrome\ExtensionInstallForcelist'; $Index = (Get-Item $BaseKey).Property | Sort-Object {[int]$_} | Select-Object -Last 1; $NewIndex = [int]$Index + 1; reg add 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Google\Chrome\ExtensionInstallForcelist' /v $NewIndex /t REG_SZ /d 'aeblfdkhhhdcdjpifhhbdiojplfjncoa' /f"), () => Chrome == true && OnePassword == true),
 
             // log in to google chrome
-            ("Please log in to your Google Chrome account", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(@"C:\Program Files\Google\Chrome\Application", "chrome.exe"), WindowStyle = ProcessWindowStyle.Maximized })!.WaitForExitAsync(), () => Chrome == true),
+            ("Please log in to your Google Chrome account (Close to continue)", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(@"C:\Program Files\Google\Chrome\Application", "chrome.exe"), WindowStyle = ProcessWindowStyle.Maximized })!.WaitForExitAsync(), () => Chrome == true),
 
             // remove google chrome shortcut from the desktop
             ("Removing Google Chrome shortcut from the desktop", async () => File.Delete(@"C:\Users\Public\Desktop\Google Chrome.lnk"), () => Chrome == true),
@@ -210,7 +210,7 @@ public static class BrowsersStage
             ("Installing 1Password Extension", async () => await ProcessActions.RunPowerShell(@"$BaseKey = 'HKLM:\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist'; $Index = (Get-Item $BaseKey).Property | Sort-Object {[int]$_} | Select-Object -Last 1; $NewIndex = [int]$Index + 1; reg add 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist' /v $NewIndex /t REG_SZ /d 'aeblfdkhhhdcdjpifhhbdiojplfjncoa' /f"), () => Thorium == true && OnePassword == true),
 
             // log in to thorium
-            ("Please log in to your Thorium account", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(@"C:\Program Files\Thorium\Application", "thorium.exe"), WindowStyle = ProcessWindowStyle.Maximized })!.WaitForExitAsync(), () => Thorium == true),
+            ("Please log in to your Thorium account (Close to continue)", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(@"C:\Program Files\Thorium\Application", "thorium.exe"), WindowStyle = ProcessWindowStyle.Maximized })!.WaitForExitAsync(), () => Thorium == true),
 
             // remove thorium shortcut from the desktop
             ("Removing Thorium shortcut from the desktop", async () => File.Delete(@"C:\Users\Public\Desktop\Thorium.lnk"), () => Thorium == true),
@@ -389,7 +389,7 @@ public static class BrowsersStage
             ("Installing 1Password Extension", async () => await ProcessActions.RunPowerShell(@"$BaseKey = 'HKLM:\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist'; $Index = (Get-Item $BaseKey).Property | Sort-Object {[int]$_} | Select-Object -Last 1; $NewIndex = [int]$Index + 1; reg add 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist' /v $NewIndex /t REG_SZ /d 'aeblfdkhhhdcdjpifhhbdiojplfjncoa' /f"), () => Arc == true && OnePassword == true),
 
             // log in to arc
-            ("Please log in to your Arc account", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(@"C:\Program Files\WindowsApps\TheBrowserCompany.Arc_" + arcVersion + @"_x64__ttt1ap7aakyb4", "Arc.exe"), WindowStyle = ProcessWindowStyle.Maximized })!.WaitForExitAsync(), () => Arc == true),
+            ("Please log in to your Arc account (Close to continue)", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(@"C:\Program Files\WindowsApps\TheBrowserCompany.Arc_" + arcVersion + @"_x64__ttt1ap7aakyb4", "Arc.exe"), WindowStyle = ProcessWindowStyle.Maximized })!.WaitForExitAsync(), () => Arc == true),
 
             // download comet
             ("Downloading Comet", async () => await ProcessActions.RunDownload("https://www.perplexity.ai/rest/browser/download?platform=win_x64&channel=stable", ApplicationData.Current.TemporaryFolder.Path, "Comet.exe"), () => Comet == true),
@@ -621,3 +621,4 @@ public static class BrowsersStage
         }
     }
 }
+

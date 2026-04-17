@@ -134,8 +134,8 @@ public static class ApplicationStage
             ("Installing iCloud", async () => icloudVersion = StoreHelper.GetVersion("AppleInc.iCloud_nzyj5cx40ttqa"), () => iCloud == true),
 
             // log in to icloud
-            ("Please log in to your iCloud account", async () => await Task.Delay(1000), () => iCloud == true),
-            ("Please log in to your iCloud account", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(@"C:\Program Files\WindowsApps\AppleInc.iCloud_" + icloudVersion + "_x64__nzyj5cx40ttqa", "iCloud", "iCloudHome.exe"), WindowStyle = ProcessWindowStyle.Maximized })!.WaitForExitAsync(), () => iCloud == true),
+            ("Please log in to your iCloud account (Close to continue)", async () => await Task.Delay(1000), () => iCloud == true),
+            ("Please log in to your iCloud account (Close to continue)", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(@"C:\Program Files\WindowsApps\AppleInc.iCloud_" + icloudVersion + "_x64__nzyj5cx40ttqa", "iCloud", "iCloudHome.exe"), WindowStyle = ProcessWindowStyle.Maximized })!.WaitForExitAsync(), () => iCloud == true),
 
             // disable icloud startup entries
             ("Disabling iCloud startup entries", async () => RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_CURRENT_USER\Software\Classes\Local Settings\Software\Microsoft\Windows\CurrentVersion\AppModel\SystemAppData\AppleInc.iCloud_nzyj5cx40ttqa\iCloudHomeStartupTask", "State", 1, RegistryValueKind.DWord), () => iCloud == true),
@@ -152,8 +152,8 @@ public static class ApplicationStage
             ("Installing Bitwarden", async () => bitwardenVersion = StoreHelper.GetVersion("8bitSolutionsLLC.bitwardendesktop_h4e712dmw3xyy"), () => Bitwarden == true),
 
             // log in to bitwarden
-            ("Please log in to your Bitwarden account", async () => await Task.Delay(1000), () => Bitwarden == true),
-            ("Please log in to your Bitwarden account", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(@"C:\Program Files\WindowsApps\8bitSolutionsLLC.bitwardendesktop_" + bitwardenVersion + "_x64__h4e712dmw3xyy", "app", "Bitwarden.exe"), WindowStyle = ProcessWindowStyle.Maximized })!.WaitForExitAsync(), () => Bitwarden == true),
+            ("Please log in to your Bitwarden account (Close to continue)", async () => await Task.Delay(1000), () => Bitwarden == true),
+            ("Please log in to your Bitwarden account (Close to continue)", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(@"C:\Program Files\WindowsApps\8bitSolutionsLLC.bitwardendesktop_" + bitwardenVersion + "_x64__h4e712dmw3xyy", "app", "Bitwarden.exe"), WindowStyle = ProcessWindowStyle.Maximized })!.WaitForExitAsync(), () => Bitwarden == true),
 
             // download 1password
             ("Downloading 1Password", async () => await StoreHelper.Download("DC5C6510.2032887045529_2v019pwa6amcg"), () => OnePassword == true),
@@ -163,9 +163,9 @@ public static class ApplicationStage
             ("Installing 1Password", async () => onePasswordVersion = StoreHelper.GetVersion("DC5C6510.2032887045529_2v019pwa6amcg"), () => OnePassword == true),
 
             // log in to 1password
-            ("Please log in to your 1Password account", async () => await Task.Delay(1000), () => OnePassword == true),
-            ("Please log in to your 1Password account", async () => { var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "1Password", "settings", "settings.json"); Directory.CreateDirectory(Path.GetDirectoryName(path) !); await File.WriteAllTextAsync(path, "{ \"version\": 1, \"updates.updateChannel\": \"PRODUCTION\", \"authTags\": {}, \"app.keepInTray\": false }"); }, () => OnePassword == true),
-            ("Please log in to your 1Password account", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(@"C:\Program Files\WindowsApps\DC5C6510.2032887045529_" + onePasswordVersion + "_x64__2v019pwa6amcg", "1Password.exe"), WindowStyle = ProcessWindowStyle.Maximized })!.WaitForExitAsync(), () => OnePassword == true),
+            ("Please log in to your 1Password account (Close to continue)", async () => await Task.Delay(1000), () => OnePassword == true),
+            ("Please log in to your 1Password account (Close to continue)", async () => { var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "1Password", "settings", "settings.json"); Directory.CreateDirectory(Path.GetDirectoryName(path) !); await File.WriteAllTextAsync(path, "{ \"version\": 1, \"updates.updateChannel\": \"PRODUCTION\", \"authTags\": {}, \"app.keepInTray\": false }"); }, () => OnePassword == true),
+            ("Please log in to your 1Password account (Close to continue)", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(@"C:\Program Files\WindowsApps\DC5C6510.2032887045529_" + onePasswordVersion + "_x64__2v019pwa6amcg", "1Password.exe"), WindowStyle = ProcessWindowStyle.Maximized })!.WaitForExitAsync(), () => OnePassword == true),
 
             // disable 1password startup entry
             ("Disabling 1Password startup entry", async () => RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_CURRENT_USER\Software\Classes\Local Settings\Software\Microsoft\Windows\CurrentVersion\AppModel\SystemAppData\DC5C6510.2032887045529_2v019pwa6amcg\1PasswordStartup", "State", 1, RegistryValueKind.DWord), () => OnePassword == true),
@@ -377,8 +377,8 @@ public static class ApplicationStage
             ("Pinning Trello to the taskbar", async () => await ProcessActions.RunPowerShellScript("taskbarpin.ps1", @"-Type UWA -Path 45273LiamForsyth.PawsforTrello_7pb5ddty8z1pa!trello"), () => Trello == true),
 
             // log in to trello
-            ("Please log in to your Trello account", async () => await Task.Delay(1000), () => Trello == true),
-            ("Please log in to your Trello account", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(@"C:\Program Files\WindowsApps\45273LiamForsyth.PawsforTrello_" + trelloVersion + @"_x64__7pb5ddty8z1pa\app", "Trello.exe"), WindowStyle = ProcessWindowStyle.Maximized }) !.WaitForExitAsync(), () => Trello == true),
+            ("Please log in to your Trello account (Close to continue)", async () => await Task.Delay(1000), () => Trello == true),
+            ("Please log in to your Trello account (Close to continue)", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(@"C:\Program Files\WindowsApps\45273LiamForsyth.PawsforTrello_" + trelloVersion + @"_x64__7pb5ddty8z1pa\app", "Trello.exe"), WindowStyle = ProcessWindowStyle.Maximized }) !.WaitForExitAsync(), () => Trello == true),
 
             // download dolby access
             ("Downloading Dolby Access", async () => await StoreHelper.Download("DolbyLaboratories.DolbyAccess_rz1tebttyb220", 1), () => AppleMusic == true),
@@ -388,8 +388,8 @@ public static class ApplicationStage
             ("Installing Dolby Access", async () => dolbyAccessVersion = StoreHelper.GetVersion("DolbyLaboratories.DolbyAccess_rz1tebttyb220"), () => AppleMusic == true),
 
             // log in to dolby access
-            ("Please log in to your Dolby Access account", async () => await Task.Delay(1000), () => AppleMusic == true),
-            ("Please log in to your Dolby Access account", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(@"C:\Program Files\WindowsApps\DolbyLaboratories.DolbyAccess_" + dolbyAccessVersion + "_x64__rz1tebttyb220", "DolbyAccess.exe"), WindowStyle = ProcessWindowStyle.Maximized }) !.WaitForExitAsync(), () => AppleMusic == true),
+            ("Please log in to your Dolby Access account (Close to continue)", async () => await Task.Delay(1000), () => AppleMusic == true),
+            ("Please log in to your Dolby Access account (Close to continue)", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(@"C:\Program Files\WindowsApps\DolbyLaboratories.DolbyAccess_" + dolbyAccessVersion + "_x64__rz1tebttyb220", "DolbyAccess.exe"), WindowStyle = ProcessWindowStyle.Maximized }) !.WaitForExitAsync(), () => AppleMusic == true),
 
             // download apple music
             ("Downloading Apple Music", async () => await StoreHelper.Download("AppleInc.AppleMusicWin_nzyj5cx40ttqa"), () => AppleMusic == true),
@@ -405,8 +405,8 @@ public static class ApplicationStage
             ("Pinning Apple Music to the taskbar", async () => await ProcessActions.RunPowerShellScript("taskbarpin.ps1", @"-Type UWA -Path AppleInc.AppleMusicWin_nzyj5cx40ttqa!App"), () => AppleMusic == true),
 
             // log in to apple music
-            ("Please log in to your Apple Music account", async () => await Task.Delay(1000), () => AppleMusic == true),
-            ("Please log in to your Apple Music account", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(@"C:\Program Files\WindowsApps\AppleInc.AppleMusicWin_" + appleMusicVersion + "_x64__nzyj5cx40ttqa", "AppleMusic.exe"), WindowStyle = ProcessWindowStyle.Maximized }) !.WaitForExitAsync(), () => AppleMusic == true),
+            ("Please log in to your Apple Music account (Close to continue)", async () => await Task.Delay(1000), () => AppleMusic == true),
+            ("Please log in to your Apple Music account (Close to continue)", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(@"C:\Program Files\WindowsApps\AppleInc.AppleMusicWin_" + appleMusicVersion + "_x64__nzyj5cx40ttqa", "AppleMusic.exe"), WindowStyle = ProcessWindowStyle.Maximized }) !.WaitForExitAsync(), () => AppleMusic == true),
 
             // download tidal
             ("Downloading TIDAL", async () => await StoreHelper.Download("WiMPMusic.27241E05630EA_kn85bz84x7te4"), () => Tidal == true),
@@ -419,7 +419,7 @@ public static class ApplicationStage
             ("Pinning TIDAL to the taskbar", async () => await ProcessActions.RunPowerShellScript("taskbarpin.ps1", @"-Type UWA -Path WiMPMusic.27241E05630EA_kn85bz84x7te4!TIDAL"), () => Tidal == true),
 
             // log in to tidal
-            ("Please log in to your TIDAL account", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(@"C:\Program Files\WindowsApps\WiMPMusic.27241E05630EA_" + tidalVersion + @"_x86__kn85bz84x7te4\app", "TIDAL.exe"), WindowStyle = ProcessWindowStyle.Maximized }) !.WaitForExitAsync(), () => Tidal == true),
+            ("Please log in to your TIDAL account (Close to continue)", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(@"C:\Program Files\WindowsApps\WiMPMusic.27241E05630EA_" + tidalVersion + @"_x86__kn85bz84x7te4\app", "TIDAL.exe"), WindowStyle = ProcessWindowStyle.Maximized }) !.WaitForExitAsync(), () => Tidal == true),
 
             // download qobuz
             ("Downloading Qobuz", async () => await ProcessActions.RunDownload("https://desktop.qobuz.com/releases/win32/x64/windows7_8_10/8.1.0-b019/Qobuz_Installer.exe", ApplicationData.Current.TemporaryFolder.Path, "Qobuz_Installer.exe"), () => Qobuz == true),
@@ -432,9 +432,9 @@ public static class ApplicationStage
             ("Pinning Qobuz to the taskbar", async () => await ProcessActions.RunPowerShellScript("taskbarpin.ps1", $@"-Type Link -Path ""{Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), @"Microsoft\Windows\Start Menu\Programs\Qobuz\Qobuz.lnk")}"""), () => Qobuz == true),
 
             // log in to qobuz
-            ("Please log in to your Qobuz account", async () => await Task.Delay(1000), () => Qobuz == true),
-            ("Please log in to your Qobuz account", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Qobuz", "Qobuz.exe"), WindowStyle = ProcessWindowStyle.Maximized })!.WaitForExitAsync(), () => Qobuz == true),
-            ("Please log in to your Qobuz account", async () => { while (Process.GetProcessesByName("Qobuz").Length != 0) await Task.Delay(500); }, () => Qobuz == true),
+            ("Please log in to your Qobuz account (Close to continue)", async () => await Task.Delay(1000), () => Qobuz == true),
+            ("Please log in to your Qobuz account (Close to continue)", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Qobuz", "Qobuz.exe"), WindowStyle = ProcessWindowStyle.Maximized })!.WaitForExitAsync(), () => Qobuz == true),
+            ("Please log in to your Qobuz account (Close to continue)", async () => { while (Process.GetProcessesByName("Qobuz").Length != 0) await Task.Delay(500); }, () => Qobuz == true),
 
             // download amazon music
             ("Downloading Amazon Music", async () => await StoreHelper.Download("AmazonMobileLLC.AmazonMusic_kc6t79cpj4tp0"), () => AmazonMusic == true),
@@ -447,7 +447,7 @@ public static class ApplicationStage
             ("Pinning Amazon Music to the taskbar", async () => await ProcessActions.RunPowerShellScript("taskbarpin.ps1", @"-Type UWA -Path AmazonMobileLLC.AmazonMusic_kc6t79cpj4tp0!AmazonMobileLLC.AmazonMusic"), () => AmazonMusic == true),
 
             // log in to amazon music
-            ("Please log in to your Amazon Music account", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(@"C:\Program Files\WindowsApps\AmazonMobileLLC.AmazonMusic_" + amazonMusicVersion + "_x86__kc6t79cpj4tp0", "Amazon Music.exe"), WindowStyle = ProcessWindowStyle.Maximized }) !.WaitForExitAsync(), () => AmazonMusic == true),
+            ("Please log in to your Amazon Music account (Close to continue)", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(@"C:\Program Files\WindowsApps\AmazonMobileLLC.AmazonMusic_" + amazonMusicVersion + "_x86__kc6t79cpj4tp0", "Amazon Music.exe"), WindowStyle = ProcessWindowStyle.Maximized }) !.WaitForExitAsync(), () => AmazonMusic == true),
 
             // download deezer music
             ("Downloading Deezer Music", async () => await StoreHelper.Download("Deezer.62021768415AF_q7m17pa7q8kj0"), () => DeezerMusic == true),
@@ -460,7 +460,7 @@ public static class ApplicationStage
             ("Pinning Deezer Music to the taskbar", async () => await ProcessActions.RunPowerShellScript("taskbarpin.ps1", @"-Type UWA -Path Deezer.62021768415AF_q7m17pa7q8kj0!Deezer.Music"), () => DeezerMusic == true),
 
             // log in to deezer music
-            ("Please log in to your Deezer Music account", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(@"C:\Program Files\WindowsApps\Deezer.62021768415AF_" + deezerMusicVersion + @"_x86__q7m17pa7q8kj0\app", "Deezer.exe"), WindowStyle = ProcessWindowStyle.Maximized }) !.WaitForExitAsync(), () => DeezerMusic == true),
+            ("Please log in to your Deezer Music account (Close to continue)", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(@"C:\Program Files\WindowsApps\Deezer.62021768415AF_" + deezerMusicVersion + @"_x86__q7m17pa7q8kj0\app", "Deezer.exe"), WindowStyle = ProcessWindowStyle.Maximized }) !.WaitForExitAsync(), () => DeezerMusic == true),
 
             // download spotify
             ("Downloading Spotify", async () => await ProcessActions.RunDownload("https://download.scdn.co/SpotifyFullSetupX64.exe", ApplicationData.Current.TemporaryFolder.Path, "SpotifyFullSetupX64.exe"), () => Spotify == true),
@@ -493,8 +493,8 @@ public static class ApplicationStage
             ("Installing SpotX", async () => await ProcessActions.RunPowerShell($@"& $env:TEMP\run.ps1 -new_theme -adsections_off -podcasts_off -block_update_off -version {spotifyVersion}-1234"), () => Spotify == true),
 
             // log in to spotify
-            ("Please log in to your Spotify account", async () => await Task.Delay(1000), () => Spotify == true),
-            ("Please log in to your Spotify account", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Spotify", "Spotify.exe"), WindowStyle = ProcessWindowStyle.Maximized }) !.WaitForExitAsync(), () => Spotify == true),
+            ("Please log in to your Spotify account (Close to continue)", async () => await Task.Delay(1000), () => Spotify == true),
+            ("Please log in to your Spotify account (Close to continue)", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Spotify", "Spotify.exe"), WindowStyle = ProcessWindowStyle.Maximized }) !.WaitForExitAsync(), () => Spotify == true),
             
             // remove spotify desktop shortcut
             ("Removing Spotify desktop shortcut", async () => File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "Spotify.lnk")), () => Spotify == true),
@@ -536,7 +536,7 @@ public static class ApplicationStage
             ("Importing Vencord settings", async () => await Task.Delay(500), () => Discord == true),
 
             // log in to discord
-            ("Please log in to your Discord account", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Discord", "app-" + discordVersion, "Discord.exe"), WindowStyle = ProcessWindowStyle.Maximized }) !.WaitForExitAsync(), () => Discord == true),
+            ("Please log in to your Discord account (Close to continue)", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Discord", "app-" + discordVersion, "Discord.exe"), WindowStyle = ProcessWindowStyle.Maximized }) !.WaitForExitAsync(), () => Discord == true),
 
             // remove discord desktop shortcut 
             ("Removing Discord desktop shortcut", async () => File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "Discord.lnk")), () => Discord == true),
@@ -555,8 +555,8 @@ public static class ApplicationStage
             ("Pinning WhatsApp to the taskbar", async () => await ProcessActions.RunPowerShellScript("taskbarpin.ps1", @"-Type UWA -Path 5319275A.WhatsAppDesktop_cv1g1gvanyjgm!App"), () => WhatsApp == true),
 
             // log in to whatsapp
-            ("Please log in to your WhatsApp account", async () => await Task.Delay(1000), () => WhatsApp == true),
-            ("Please log in to your WhatsApp account", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(@"C:\Program Files\WindowsApps\5319275A.WhatsAppDesktop_" + whatsAppVersion + "_x64__cv1g1gvanyjgm", "WhatsApp.Root.exe"), WindowStyle = ProcessWindowStyle.Maximized }) !.WaitForExitAsync(), () => WhatsApp == true),
+            ("Please log in to your WhatsApp account (Close to continue)", async () => await Task.Delay(1000), () => WhatsApp == true),
+            ("Please log in to your WhatsApp account (Close to continue)", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(@"C:\Program Files\WindowsApps\5319275A.WhatsAppDesktop_" + whatsAppVersion + "_x64__cv1g1gvanyjgm", "WhatsApp.Root.exe"), WindowStyle = ProcessWindowStyle.Maximized }) !.WaitForExitAsync(), () => WhatsApp == true),
 
             // disable whatsapp startup entry
             ("Disabling WhatsApp startup entry", async () => RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_CURRENT_USER\Software\Classes\Local Settings\Software\Microsoft\Windows\CurrentVersion\AppModel\SystemAppData\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\2defd21c-0b9e-4e4e-873a-2a68c47d7da5", "State", 1, RegistryValueKind.DWord), () => WhatsApp == true),
@@ -584,7 +584,7 @@ public static class ApplicationStage
             ("Importing Epic Games Launcher Games", async () => await Task.Delay(1000), () => EpicGames == true && EpicGamesGames == true),
 
             // log in to epic games launcher account
-            ("Please log in to your Epic Games Launcher account", async () => await EpicGamesHelper.EpicGamesLogin(), () => EpicGames == true && EpicGamesAccount == false),
+            ("Please log in to your Epic Games Launcher account (Close to continue)", async () => await EpicGamesHelper.EpicGamesLogin(), () => EpicGames == true && EpicGamesAccount == false),
 
             // disable epic games startup entries
             ("Disabling Epic Games startup entries", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\EpicOnlineServices", "Start", 4, RegistryValueKind.DWord), () => EpicGames == true),
@@ -605,7 +605,7 @@ public static class ApplicationStage
             ("Updating Steam", async () => { while (Process.GetProcessesByName("steamwebhelper").Length == 0) await Task.Delay(500); }, () => Steam == true),
 
             // log in to steam
-            ("Please log in to your Steam account", async () => await SteamHelper.SteamLogin(), () => Steam == true),
+            ("Please log in to your Steam account (Close to continue)", async () => await SteamHelper.SteamLogin(), () => Steam == true),
 
             // import steam games
             ("Importing Steam Games", async () => await SteamHelper.RunImportSteamGames(), () => Steam == true && SteamGames == true),
@@ -624,7 +624,7 @@ public static class ApplicationStage
             ("Installing Riot Client", async () => await (await ApplicationData.Current.TemporaryFolder.GetFileAsync("Riot Games.zip")).DeleteAsync(), () => RiotClient == true),
 
             // log in to riot client
-            ("Please log in to your Riot account", async () => { Process.Start(new ProcessStartInfo { FileName = @"C:\Riot Games\Riot Client\RiotClientServices.exe", WindowStyle = ProcessWindowStyle.Maximized }); while (Process.GetProcessesByName("RiotClientCrashHandler").Length == 0 || Process.GetProcessesByName("Riot Client").Length == 0) await Task.Delay(500); while (Process.GetProcessesByName("Riot Client").Length > 0) await Task.Delay(500); }, () => RiotClient == true),
+            ("Please log in to your Riot account (Close to continue)", async () => { Process.Start(new ProcessStartInfo { FileName = @"C:\Riot Games\Riot Client\RiotClientServices.exe", WindowStyle = ProcessWindowStyle.Maximized }); while (Process.GetProcessesByName("RiotClientCrashHandler").Length == 0 || Process.GetProcessesByName("Riot Client").Length == 0) await Task.Delay(500); while (Process.GetProcessesByName("Riot Client").Length > 0) await Task.Delay(500); }, () => RiotClient == true),
 
             // disable riot client startup entry
             ("Disabling Riot Client startup entry", async () => RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run", "RiotClient", new byte[] { 0x01 }, RegistryValueKind.Binary), () => RiotClient == true),
@@ -637,7 +637,7 @@ public static class ApplicationStage
             ("Installing EA", async () => await (await ApplicationData.Current.TemporaryFolder.GetFileAsync("EAappInstaller.exe")).DeleteAsync(), () => EA == true),
 
             // log in to ea
-            ("Please log in to your EA account", async () => { Process.Start(new ProcessStartInfo { FileName = @"C:\Program Files\Electronic Arts\EA Desktop\EA Desktop\EADesktop.exe", WindowStyle = ProcessWindowStyle.Maximized }); while (Process.GetProcessesByName("EADesktop").Length > 0) await Task.Delay(500); }, () => EA == true),
+            ("Please log in to your EA account (Close to continue)", async () => { Process.Start(new ProcessStartInfo { FileName = @"C:\Program Files\Electronic Arts\EA Desktop\EA Desktop\EADesktop.exe", WindowStyle = ProcessWindowStyle.Maximized }); while (Process.GetProcessesByName("EADesktop").Length > 0) await Task.Delay(500); }, () => EA == true),
 
             // remove ea desktop shortcut
             ("Removing EA desktop shortcut", async () => File.Delete(@"C:\Users\Public\Desktop\EA.lnk"), () => EA == true),
@@ -650,7 +650,7 @@ public static class ApplicationStage
             ("Installing Ubisoft Connect", async () => await (await ApplicationData.Current.TemporaryFolder.GetFileAsync("UbisoftConnectInstaller.exe")).DeleteAsync(), () => UbisoftConnect == true),
 
             // log in to ubisoft connect
-            ("Please log in to your Ubisoft Connect account", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(@"C:\Program Files (x86)\Ubisoft\Ubisoft Game Launcher\upc.exe") , WindowStyle = ProcessWindowStyle.Hidden }) !.WaitForExitAsync(), () => UbisoftConnect == true),
+            ("Please log in to your Ubisoft Connect account (Close to continue)", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(@"C:\Program Files (x86)\Ubisoft\Ubisoft Game Launcher\upc.exe") , WindowStyle = ProcessWindowStyle.Hidden }) !.WaitForExitAsync(), () => UbisoftConnect == true),
 
             // remove ubisoft connect desktop shortcut 
             ("Removing Ubisoft Connect desktop shortcut", async () => File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "Ubisoft Connect.lnk")), () => UbisoftConnect == true),
@@ -668,7 +668,7 @@ public static class ApplicationStage
             ("Installing Battle.Net", async () => await (await ApplicationData.Current.TemporaryFolder.GetFileAsync("Battle.net-Setup.exe")).DeleteAsync(), () => BattleNet == true),
 
             // log in to battle.net
-            ("Please log in to your Battle.Net account", async () => { while (Process.GetProcessesByName("Battle.net").Length >= 1) await Task.Delay(500); }, () => BattleNet == true),
+            ("Please log in to your Battle.Net account (Close to continue)", async () => { while (Process.GetProcessesByName("Battle.net").Length >= 1) await Task.Delay(500); }, () => BattleNet == true),
 
             // disable battle.net startup entries
             ("Disabling Battle.Net startup entries", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\battlenet_helpersvc", "Start", 4, RegistryValueKind.DWord), () => BattleNet == true),
@@ -689,7 +689,7 @@ public static class ApplicationStage
             ("Updating Minecraft Launcher", async () => { Process.Start(new ProcessStartInfo { FileName = @"C:\Program Files (x86)\Minecraft Launcher\MinecraftLauncher.exe" , WindowStyle = ProcessWindowStyle.Hidden }); while (Process.GetProcessesByName("MinecraftLauncher").Length == 1) await Task.Delay(500); while (Process.GetProcessesByName("MinecraftLauncher").Length == 0) await Task.Delay(500); while (Process.GetProcessesByName("MinecraftLauncher").Length == 1) await Task.Delay(100); }, () => MinecraftLauncher == true),
 
             // log in to minecraft launcher
-            ("Please log in to your Minecraft Launcher account", async () => { while (Process.GetProcessesByName("MinecraftLauncher").Length > 1) await Task.Delay(500); }, () => MinecraftLauncher == true),
+            ("Please log in to your Minecraft Launcher account (Close to continue)", async () => { while (Process.GetProcessesByName("MinecraftLauncher").Length > 1) await Task.Delay(500); }, () => MinecraftLauncher == true),
 
             // remove minecraft launcher desktop shortcut
             ("Removing Minecraft Launcher desktop shortcut", async () => File.Delete(@"C:\Users\Public\Desktop\Minecraft Launcher.lnk"), () => MinecraftLauncher == true),
@@ -798,7 +798,7 @@ public static class ApplicationStage
             ("Updating Rockstar Games Launcher", async () => { await Process.Start(new ProcessStartInfo { FileName = Path.Combine(@"C:\Program Files\Rockstar Games\Launcher\LauncherPatcher.exe") , WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(); while (Process.GetProcessesByName("dxdiag").Length > 1) await Task.Delay(500); while (Process.GetProcessesByName("SocialClubHelper").Length == 0) await Task.Delay(500); }, () => RockstarGamesLauncher == true),
 
             // log in to rockstar games launcher
-            ("Please log in to your Rockstar Games Launcher account", async () => { while (Process.GetProcessesByName("Launcher").Length == 1) await Task.Delay(500); }, () => RockstarGamesLauncher == true),
+            ("Please log in to your Rockstar Games Launcher account (Close to continue)", async () => { while (Process.GetProcessesByName("Launcher").Length == 1) await Task.Delay(500); }, () => RockstarGamesLauncher == true),
         
             // download fivem
             ("Downloading FiveM", async () => await ProcessActions.RunDownload("https://www.dl.dropboxusercontent.com/scl/fi/tn48g2m1qisdsir80ixu8/FiveM.zip?rlkey=c54qzh36fr3p8yb09q4zlt0gi&st=ca6wjcgx&dl=0", ApplicationData.Current.TemporaryFolder.Path, "FiveM.zip"), () => FiveM == true),
@@ -825,7 +825,7 @@ public static class ApplicationStage
             ("Installing FACEIT", async () => await (await ApplicationData.Current.TemporaryFolder.GetFileAsync("FACEIT-setup-latest.exe")).DeleteAsync(), () => FACEIT == true),
 
             // log in to faceit
-            ("Please log in to your FACEIT account", async () => { while (Process.GetProcessesByName("FACEIT").Length > 1) await Task.Delay(500); }, () => FACEIT == true),
+            ("Please log in to your FACEIT account (Close to continue)", async () => { while (Process.GetProcessesByName("FACEIT").Length > 1) await Task.Delay(500); }, () => FACEIT == true),
 
             // remove faceit desktop shortcut 
             ("Removing FACEIT desktop shortcut", async () => File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "FACEIT.lnk")), () => FACEIT == true),
