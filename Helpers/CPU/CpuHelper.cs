@@ -70,6 +70,51 @@ public sealed partial class CpuCore
     public List<CpuThread> Threads { get; set; } = [];
 }
 
+[GeneratedBindableCustomProperty]
+public sealed partial class CpuCoreGroup : INotifyPropertyChanged
+{
+    public event PropertyChangedEventHandler PropertyChanged;
+    private void OnPropertyChanged([CallerMemberName] string name = null) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+    public string Name { get; set; } = string.Empty;
+    public List<CpuCore> Cores { get; set; } = [];
+    
+    private int _maxColumns = 5;
+    public int MaxColumns 
+    { 
+        get => _maxColumns; 
+        set { if (_maxColumns != value) { _maxColumns = value; OnPropertyChanged(nameof(RecommendedColumns)); } }
+    }
+
+    private int? _fixedColumns;
+    public int? FixedColumns
+    {
+        get => _fixedColumns;
+        set { if (_fixedColumns != value) { _fixedColumns = value; OnPropertyChanged(nameof(RecommendedColumns)); } }
+    }
+
+    public int ColumnIndex { get; set; }
+
+    public int RecommendedColumns
+    {
+        get
+        {
+            if (FixedColumns.HasValue) return FixedColumns.Value;
+
+            int count = Cores.Count;
+            if (count == 0) return 1;
+
+            int cols;
+            if (count % 5 == 0) cols = 5;
+            else if (count % 4 == 0) cols = 4;
+            else if (count % 3 == 0) cols = 3;
+            else if (count % 2 == 0) cols = 2;
+            else cols = 3;
+
+            return Math.Min(cols, MaxColumns);
+        }
+    }
+}
+
 public sealed class CpuSetsInfo
 {
     public bool HyperThreading { get; set; }
@@ -230,6 +275,14 @@ public partial class CpuHelper
     public unsafe static CpuSetsInfo GetCpuSets()
     {
         var info = new CpuSetsInfo();
+
+        if (CpuSetInformationFake.FakeCpuSets != null && CpuSetInformationFake.FakeCpuSets.Count > 0)
+        {
+            info.CpuSets = [.. CpuSetInformationFake.FakeCpuSets.OrderBy(c => c.EfficiencyClass).ThenBy(c => c.CoreIndex).ThenBy(c => c.LogicalProcessorIndex)];
+            ProcessCpuSets(info.CpuSets, info);
+            return info;
+        }
+
         var cpuSets = new List<CpuSet>();
 
         uint bufferSize = 0;
@@ -285,14 +338,12 @@ public partial class CpuHelper
         if (cpuSets.Count == 0) return;
 
         info.CoreCount = cpuSets.Count;
-        byte lastEfficiencyClass = 0;
-        byte lastLevelCache = cpuSets[0].LastLevelCacheIndex;
-        byte lastNumaNodeIndex = cpuSets[0].NumaNodeIndex;
+        byte firstEfficiencyClass = cpuSets[0].EfficiencyClass;
+        byte firstLevelCache = cpuSets[0].LastLevelCacheIndex;
+        byte firstNumaNodeIndex = cpuSets[0].NumaNodeIndex;
 
-        for (int i = 0; i < cpuSets.Count; i++)
+        foreach (var cpuSet in cpuSets)
         {
-            var cpuSet = cpuSets[i];
-
             if (cpuSet.CoreIndex != cpuSet.LogicalProcessorIndex)
             {
                 info.HyperThreading = true;
@@ -301,13 +352,13 @@ public partial class CpuHelper
                     info.MaxThreadsPerCore = threadsDiff + 1;
             }
 
-            if (!info.EfficiencyClass && lastEfficiencyClass != cpuSet.EfficiencyClass)
+            if (cpuSet.EfficiencyClass != firstEfficiencyClass)
                 info.EfficiencyClass = true;
 
-            if (!info.LastLevelCache && lastLevelCache != cpuSet.LastLevelCacheIndex)
+            if (cpuSet.LastLevelCacheIndex != firstLevelCache)
                 info.LastLevelCache = true;
 
-            if (!info.NumaNode && lastNumaNodeIndex != cpuSet.NumaNodeIndex)
+            if (cpuSet.NumaNodeIndex != firstNumaNodeIndex)
                 info.NumaNode = true;
         }
     }
@@ -345,10 +396,63 @@ public partial class CpuHelper
         return (pCores, eCores);
     }
 
-    public static List<CpuCore> GroupCpuSetsByCore(List<CpuSet> cpuSets)
+    public static List<CpuCoreGroup> GroupCpuSetsSequentially(CpuSetsInfo cpuSetsInfo)
+    {
+        var groups = new List<CpuCoreGroup>();
+        var cpuSets = cpuSetsInfo.CpuSets.OrderBy(c => c.LogicalProcessorIndex).ToList();
+        if (cpuSets.Count == 0) return groups;
+
+        var currentSets = new List<CpuSet> { cpuSets[0] };
+        int groupIndex = 0;
+        int coreOffset = 0;
+
+        for (int i = 1; i < cpuSets.Count; i++)
+        {
+            var previous = cpuSets[i - 1];
+            var current = cpuSets[i];
+
+            if (previous.EfficiencyClass != current.EfficiencyClass || previous.LastLevelCacheIndex != current.LastLevelCacheIndex || previous.NumaNodeIndex != current.NumaNodeIndex)
+            {
+                var group = CreateGroup(currentSets, previous, cpuSetsInfo, groupIndex++, coreOffset);
+                groups.Add(group);
+                coreOffset += group.Cores.Count;
+                currentSets = new List<CpuSet>();
+            }
+            currentSets.Add(current);
+        }
+
+        if (currentSets.Count > 0)
+        {
+            groups.Add(CreateGroup(currentSets, currentSets[0], cpuSetsInfo, groupIndex, coreOffset));
+        }
+
+        return groups;
+    }
+
+    private static CpuCoreGroup CreateGroup(List<CpuSet> cpuSets, CpuSet sample, CpuSetsInfo info, int groupIndex, int coreOffset)
+    {
+        string name = "P-Cores";
+
+        if (info.EfficiencyClass)
+        {
+            name = (sample.EfficiencyClass == 0) ? "E-Cores" : "P-Cores";
+        }
+        else if (info.LastLevelCache || info.NumaNode)
+        {
+            name = $"CCD {groupIndex}";
+        }
+
+        return new CpuCoreGroup
+        {
+            Name = name,
+            Cores = GroupCpuSetsByCore(cpuSets, coreOffset)
+        };
+    }
+
+    public static List<CpuCore> GroupCpuSetsByCore(List<CpuSet> cpuSets, int offset = 0)
     {
         var cores = new Dictionary<byte, CpuCore>();
-        int sequentialNumber = 0;
+        int sequentialNumber = offset;
 
         foreach (var cpuSet in cpuSets.OrderBy(c => c.LogicalProcessorIndex))
         {
@@ -624,6 +728,95 @@ public partial class CpuHelper
                 cpuSets.Add(cpuSet);
             }
 
+            _fakeCpuSets = cpuSets;
+        }
+
+        // 10 cores (6 P-cores + 4 E-cores), 10 threads
+        public static void Fake225F()
+        {
+            var cpuSets = new List<CpuSet>();
+            int count = 10;
+            uint index = 0x100;
+
+            for (int i = 0; i < count; i++)
+            {
+                var cpuSet = new CpuSet
+                {
+                    Id = index + (uint)i,
+                    LogicalProcessorIndex = (byte)i,
+                    CoreIndex = (byte)i
+                };
+
+                if (i >= 2 && i <= 5)
+                {
+                    cpuSet.EfficiencyClass = 0;
+                }
+                else
+                {
+                    cpuSet.EfficiencyClass = 1;
+                }
+
+                cpuSets.Add(cpuSet);
+            }
+
+            _fakeCpuSets = cpuSets;
+        }
+
+        // 16 cores (8 cores per CCD), 32 threads
+        public static void Fake9950X3D()
+        {
+            var cpuSets = new List<CpuSet>();
+            byte lastCoreIndex = 0;
+            int count = 32;
+            uint index = 0x100;
+
+            for (int i = 0; i < count; i++)
+            {
+                var cpuSet = new CpuSet
+                {
+                    Id = index + (uint)i,
+                    LogicalProcessorIndex = (byte)i
+                };
+
+                if (i % 2 != 0)
+                {
+                    cpuSet.CoreIndex = lastCoreIndex;
+                }
+                else
+                {
+                    cpuSet.CoreIndex = (byte)(i / 2);
+                    lastCoreIndex = cpuSet.CoreIndex;
+                }
+
+                cpuSet.LastLevelCacheIndex = (byte)(i < 16 ? 1 : 16);
+
+                cpuSets.Add(cpuSet);
+            }
+
+            _fakeCpuSets = cpuSets;
+        }
+
+        // Intel i5 11400H (6 cores, 12 threads)
+        public static void Fake11400()
+        {
+            var cpuSets = new List<CpuSet>();
+            byte lastCoreIndex = 0;
+            int count = 12;
+            uint index = 0x100;
+
+            for (int i = 0; i < count; i++)
+            {
+                var cpuSet = new CpuSet
+                {
+                    Id = index + (uint)i,
+                    LogicalProcessorIndex = (byte)i
+                };
+
+                if (i % 2 != 0) cpuSet.CoreIndex = lastCoreIndex;
+                else { cpuSet.CoreIndex = (byte)i; lastCoreIndex = (byte)i; }
+
+                cpuSets.Add(cpuSet);
+            }
             _fakeCpuSets = cpuSets;
         }
     }

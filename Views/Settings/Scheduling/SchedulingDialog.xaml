@@ -15,11 +15,13 @@
                    Style="{StaticResource BodyTextBlockStyle}"
                    Text="{x:Bind Location, Mode=OneTime}" />
         <ScrollViewer Grid.Row="1"
-                      HorizontalAlignment="Stretch"
-                      VerticalScrollBarVisibility="Auto"
+                      HorizontalScrollBarVisibility="Disabled"
+                      HorizontalScrollMode="Disabled"
+                      VerticalScrollBarVisibility="Hidden"
                       VerticalScrollMode="Auto">
             <StackPanel Spacing="12">
-                <Grid ColumnSpacing="12">
+                <Grid Grid.Row="0"
+                      ColumnSpacing="12">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="*" />
@@ -91,88 +93,130 @@
                         </Grid>
                     </dev:Card>
                 </Grid>
-                <StackPanel Spacing="8">
-                    <Grid ColumnSpacing="{x:Bind ViewModel.ColumnSpacing, Mode=OneWay}">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="{x:Bind ViewModel.ECoreColumnWidth, Mode=OneWay}" />
-                        </Grid.ColumnDefinitions>
-                        <ScrollViewer Grid.Column="0"
-                                      HorizontalScrollBarVisibility="Disabled"
-                                      HorizontalScrollMode="Disabled"
-                                      VerticalScrollBarVisibility="Auto"
-                                      VerticalScrollMode="Auto">
-                            <dev:Card Title="P-Cores"
-                                      IsEnabled="{x:Bind ViewModel.IsCoreSelectionEnabled, Mode=OneWay}">
-                                <Grid>
-                                    <ItemsRepeater HorizontalAlignment="Stretch"
-                                                   ItemsSource="{x:Bind ViewModel.PCores, Mode=OneWay}">
-                                        <ItemsRepeater.Layout>
-                                            <controls:StaggeredLayout ColumnSpacing="8"
-                                                                      DesiredColumnWidth="140"
-                                                                      ItemsStretch="Fill"
-                                                                      RowSpacing="8" />
-                                        </ItemsRepeater.Layout>
-                                        <ItemsRepeater.ItemTemplate>
-                                            <DataTemplate x:DataType="models:CpuCore">
-                                                <dev:Card Title="{x:Bind Name}"
-                                                          HorizontalAlignment="Stretch">
-                                                    <Grid>
-                                                        <ItemsRepeater HorizontalAlignment="Stretch"
-                                                                       ItemsSource="{x:Bind Threads}">
-                                                            <ItemsRepeater.ItemTemplate>
-                                                                <DataTemplate x:DataType="models:CpuThread">
-                                                                    <CheckBox Content="{x:Bind Name}"
-                                                                              IsChecked="{x:Bind IsSelected, Mode=TwoWay}" />
-                                                                </DataTemplate>
-                                                            </ItemsRepeater.ItemTemplate>
-                                                        </ItemsRepeater>
-                                                    </Grid>
-                                                </dev:Card>
-                                            </DataTemplate>
-                                        </ItemsRepeater.ItemTemplate>
-                                    </ItemsRepeater>
-                                </Grid>
-                            </dev:Card>
-                        </ScrollViewer>
-                        <ScrollViewer Grid.Column="1"
-                                      HorizontalAlignment="Stretch"
-                                      HorizontalScrollBarVisibility="Disabled"
-                                      HorizontalScrollMode="Disabled"
-                                      VerticalScrollBarVisibility="Auto"
-                                      VerticalScrollMode="Auto"
-                                      Visibility="{x:Bind ViewModel.HasEfficiencyClass, Mode=OneWay}">
-                            <dev:Card Title="E-Cores"
-                                      HorizontalAlignment="Stretch"
-                                      IsEnabled="{x:Bind ViewModel.IsCoreSelectionEnabled, Mode=OneWay}">
-                                <ItemsRepeater ItemsSource="{x:Bind ViewModel.ECores, Mode=OneWay}">
-                                    <ItemsRepeater.Layout>
-                                        <controls:StaggeredLayout ColumnSpacing="8"
-                                                                  DesiredColumnWidth="140"
-                                                                  ItemsStretch="Fill"
-                                                                  RowSpacing="8" />
-                                    </ItemsRepeater.Layout>
-                                    <ItemsRepeater.ItemTemplate>
-                                        <DataTemplate x:DataType="models:CpuCore">
-                                            <dev:Card Title="{x:Bind Name}">
-                                                <StackPanel>
-                                                    <ItemsRepeater ItemsSource="{x:Bind Threads}">
-                                                        <ItemsRepeater.ItemTemplate>
-                                                            <DataTemplate x:DataType="models:CpuThread">
-                                                                <CheckBox Content="{x:Bind Name}"
-                                                                          IsChecked="{x:Bind IsSelected, Mode=TwoWay}" />
-                                                            </DataTemplate>
-                                                        </ItemsRepeater.ItemTemplate>
-                                                    </ItemsRepeater>
-                                                </StackPanel>
-                                            </dev:Card>
-                                        </DataTemplate>
-                                    </ItemsRepeater.ItemTemplate>
-                                </ItemsRepeater>
-                            </dev:Card>
-                        </ScrollViewer>
-                    </Grid>
-                </StackPanel>
+                <Grid HorizontalAlignment="Stretch"
+                      VerticalAlignment="Stretch">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="{x:Bind ViewModel.Group0Width, Mode=OneWay}" />
+                        <ColumnDefinition Width="{x:Bind ViewModel.Group1Width, Mode=OneWay}" />
+                        <ColumnDefinition Width="{x:Bind ViewModel.Group2Width, Mode=OneWay}" />
+                    </Grid.ColumnDefinitions>
+                    <dev:Card Grid.Column="0"
+                              Margin="{x:Bind ViewModel.Group0Margin, Mode=OneWay}"
+                              Title="{x:Bind ViewModel.Group0.Name, Mode=OneWay}"
+                              HorizontalAlignment="Stretch"
+                              VerticalAlignment="Stretch">
+                        <ItemsControl HorizontalAlignment="Stretch"
+                                      VerticalAlignment="Top"
+                                      DataContext="{x:Bind ViewModel.Group0, Mode=OneWay}"
+                                      ItemsSource="{x:Bind ViewModel.Group0.Cores, Mode=OneWay}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <controls:UniformGrid HorizontalAlignment="Stretch"
+                                                          VerticalAlignment="Top"
+                                                          Columns="{Binding RecommendedColumns}" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="models:CpuCore">
+                                    <dev:Card Title="{x:Bind Name}"
+                                              Margin="4"
+                                              HorizontalAlignment="Stretch"
+                                              VerticalAlignment="Top">
+                                        <Grid>
+                                            <ItemsRepeater HorizontalAlignment="Stretch"
+                                                           ItemsSource="{x:Bind Threads}">
+                                                <ItemsRepeater.ItemTemplate>
+                                                    <DataTemplate x:DataType="models:CpuThread">
+                                                        <CheckBox Content="{x:Bind Name}"
+                                                                  IsChecked="{x:Bind IsSelected, Mode=TwoWay}" />
+                                                    </DataTemplate>
+                                                </ItemsRepeater.ItemTemplate>
+                                            </ItemsRepeater>
+                                        </Grid>
+                                    </dev:Card>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </dev:Card>
+                    <dev:Card Grid.Column="1"
+                              Margin="{x:Bind ViewModel.Group1Margin, Mode=OneWay}"
+                              Title="{x:Bind ViewModel.Group1.Name, Mode=OneWay}"
+                              Visibility="{x:Bind ViewModel.Group1Visibility, Mode=OneWay}"
+                              HorizontalAlignment="Stretch"
+                              VerticalAlignment="Stretch">
+                        <ItemsControl HorizontalAlignment="Stretch"
+                                      VerticalAlignment="Top"
+                                      DataContext="{x:Bind ViewModel.Group1, Mode=OneWay}"
+                                      ItemsSource="{x:Bind ViewModel.Group1.Cores, Mode=OneWay}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <controls:UniformGrid HorizontalAlignment="Stretch"
+                                                          VerticalAlignment="Top"
+                                                          Columns="{Binding RecommendedColumns}" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="models:CpuCore">
+                                    <dev:Card Title="{x:Bind Name}"
+                                              Margin="4"
+                                              HorizontalAlignment="Stretch"
+                                              VerticalAlignment="Top">
+                                        <Grid>
+                                            <ItemsRepeater HorizontalAlignment="Stretch"
+                                                           ItemsSource="{x:Bind Threads}">
+                                                <ItemsRepeater.ItemTemplate>
+                                                    <DataTemplate x:DataType="models:CpuThread">
+                                                        <CheckBox Content="{x:Bind Name}"
+                                                                  IsChecked="{x:Bind IsSelected, Mode=TwoWay}" />
+                                                    </DataTemplate>
+                                                </ItemsRepeater.ItemTemplate>
+                                            </ItemsRepeater>
+                                        </Grid>
+                                    </dev:Card>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </dev:Card>
+                    <dev:Card Grid.Column="2"
+                              Margin="{x:Bind ViewModel.Group2Margin, Mode=OneWay}"
+                              Title="{x:Bind ViewModel.Group2.Name, Mode=OneWay}"
+                              Visibility="{x:Bind ViewModel.Group2Visibility, Mode=OneWay}"
+                              HorizontalAlignment="Stretch"
+                              VerticalAlignment="Stretch">
+                        <ItemsControl HorizontalAlignment="Stretch"
+                                      VerticalAlignment="Top"
+                                      DataContext="{x:Bind ViewModel.Group2, Mode=OneWay}"
+                                      ItemsSource="{x:Bind ViewModel.Group2.Cores, Mode=OneWay}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <controls:UniformGrid HorizontalAlignment="Stretch"
+                                                          VerticalAlignment="Top"
+                                                          Columns="{Binding RecommendedColumns}" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="models:CpuCore">
+                                    <dev:Card Title="{x:Bind Name}"
+                                              Margin="4"
+                                              HorizontalAlignment="Stretch"
+                                              VerticalAlignment="Top">
+                                        <Grid>
+                                            <ItemsRepeater HorizontalAlignment="Stretch"
+                                                           ItemsSource="{x:Bind Threads}">
+                                                <ItemsRepeater.ItemTemplate>
+                                                    <DataTemplate x:DataType="models:CpuThread">
+                                                        <CheckBox Content="{x:Bind Name}"
+                                                                  IsChecked="{x:Bind IsSelected, Mode=TwoWay}" />
+                                                    </DataTemplate>
+                                                </ItemsRepeater.ItemTemplate>
+                                            </ItemsRepeater>
+                                        </Grid>
+                                    </dev:Card>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </dev:Card>
+                </Grid>
             </StackPanel>
         </ScrollViewer>
     </Grid>

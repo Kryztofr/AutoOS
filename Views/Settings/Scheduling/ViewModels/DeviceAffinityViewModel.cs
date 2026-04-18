@@ -65,19 +65,50 @@ public partial class DeviceAffinityViewModel : INotifyPropertyChanged
 
     public bool IsCoreSelectionEnabled => DevicePolicy == 4;
 
-    private ObservableCollection<CpuCore> _pCores = [];
-    public ObservableCollection<CpuCore> PCores
+    private ObservableCollection<CpuCoreGroup> _cpuGroups = [];
+    public ObservableCollection<CpuCoreGroup> CpuGroups
     {
-        get => _pCores;
-        set => SetProperty(ref _pCores, value);
+        get => _cpuGroups;
+        set => SetProperty(ref _cpuGroups, value);
     }
 
-    private ObservableCollection<CpuCore> _eCores = [];
-    public ObservableCollection<CpuCore> ECores
+    private string _groupColumnDefinitions = "1*";
+    public string GroupColumnDefinitions
     {
-        get => _eCores;
-        set => SetProperty(ref _eCores, value);
+        get => _groupColumnDefinitions;
+        set => SetProperty(ref _groupColumnDefinitions, value);
     }
+
+    private int _totalColumns = 1;
+    public int TotalColumns
+    {
+        get => _totalColumns;
+        set => SetProperty(ref _totalColumns, value);
+    }
+
+    public GridLength Group0Width => GetGroupWidth(0);
+    public GridLength Group1Width => GetGroupWidth(1);
+    public GridLength Group2Width => GetGroupWidth(2);
+
+    public CpuCoreGroup Group0 => CpuGroups.Count > 0 ? CpuGroups[0] : null;
+    public CpuCoreGroup Group1 => CpuGroups.Count > 1 ? CpuGroups[1] : null;
+    public CpuCoreGroup Group2 => CpuGroups.Count > 2 ? CpuGroups[2] : null;
+
+    public Visibility Group1Visibility => CpuGroups.Count > 1 ? Visibility.Visible : Visibility.Collapsed;
+    public Visibility Group2Visibility => CpuGroups.Count > 2 ? Visibility.Visible : Visibility.Collapsed;
+
+    public Thickness Group0Margin => new(0, 0, CpuGroups.Count == 2 ? 6 : 0, 0);
+    public Thickness Group1Margin => new(CpuGroups.Count == 2 ? 6 : (CpuGroups.Count > 1 ? 12 : 0), 0, 0, 0);
+    public Thickness Group2Margin => new(CpuGroups.Count > 2 ? 12 : 0, 0, 0, 0);
+
+    private GridLength GetGroupWidth(int index)
+    {
+        if (CpuGroups.Count <= index) return new GridLength(0);
+        return new GridLength(CpuGroups[index].RecommendedColumns, GridUnitType.Star);
+    }
+
+    public double Group1Spacing => CpuGroups.Count > 1 ? 12 : 0;
+    public double Group2Spacing => CpuGroups.Count > 2 ? 12 : 0;
 
     private ulong _processMask;
     public ulong ProcessMask
@@ -144,21 +175,53 @@ public partial class DeviceAffinityViewModel : INotifyPropertyChanged
 
     private void LoadCpuInformation(CpuSetsInfo cpuSetsInfo)
     {
-        var (pCores, eCores) = CpuHelper.GroupCpuSetsByEfficiencyClass(cpuSetsInfo);
+        var groups = CpuHelper.GroupCpuSetsSequentially(cpuSetsInfo);
+        int maxColumns = groups.Count switch { 1 => 5, 2 => 4, _ => 3 };
 
-        PCores = new ObservableCollection<CpuCore>(pCores);
-        ECores = new ObservableCollection<CpuCore>(eCores);
-        HasEfficiencyClass = cpuSetsInfo.EfficiencyClass && ECores.Count > 0;
+        foreach (var group in groups)
+            group.MaxColumns = maxColumns;
+
+        if (groups.Count > 1)
+        {
+            int maxRows = groups.Max(g => (g.Cores.Count + g.RecommendedColumns - 1) / g.RecommendedColumns);
+            foreach (var group in groups)
+            {
+                int targetCols = (group.Cores.Count + maxRows - 1) / maxRows;
+                if (targetCols > 0 && targetCols < group.RecommendedColumns)
+                    group.FixedColumns = targetCols;
+            }
+        }
+
+        for (int i = 0; i < groups.Count; i++)
+            groups[i].ColumnIndex = i;
+
+        GroupColumnDefinitions = string.Join(", ", groups.Select(g => $"{g.RecommendedColumns}*"));
+        TotalColumns = groups.Sum(g => g.RecommendedColumns);
+
+        CpuGroups = new ObservableCollection<CpuCoreGroup>(groups);
+        OnPropertyChanged(nameof(Group0Width));
+        OnPropertyChanged(nameof(Group1Width));
+        OnPropertyChanged(nameof(Group2Width));
+        OnPropertyChanged(nameof(Group0));
+        OnPropertyChanged(nameof(Group1));
+        OnPropertyChanged(nameof(Group2));
+        OnPropertyChanged(nameof(Group1Visibility));
+        OnPropertyChanged(nameof(Group2Visibility));
+        OnPropertyChanged(nameof(Group0Margin));
+        OnPropertyChanged(nameof(Group1Margin));
+        OnPropertyChanged(nameof(Group2Margin));
+
+        HasEfficiencyClass = cpuSetsInfo.EfficiencyClass && CpuGroups.Any(g => g.Name == "E-Cores");
 
         SetCpuSelectionFromMask(ProcessMask);
 
-        foreach (var thread in PCores.Concat(ECores).SelectMany(c => c.Threads))
+        foreach (var thread in CpuGroups.SelectMany(g => g.Cores).SelectMany(c => c.Threads))
             thread.PropertyChanged += Thread_PropertyChanged;
     }
 
     private void SetCpuSelectionFromMask(ulong mask)
     {
-        foreach (var thread in PCores.Concat(ECores).SelectMany(c => c.Threads))
+        foreach (var thread in CpuGroups.SelectMany(g => g.Cores).SelectMany(c => c.Threads))
             thread.IsSelected = (mask & thread.BitMask) != 0;
     }
 
