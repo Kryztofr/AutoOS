@@ -32,13 +32,6 @@ public static class StartupStage
         bool IMOD = JsonNode.Parse(localSettings.Values["XHCIs"]?.ToString() ?? "[]")?.AsArray()?.Any(x => x?["IsActive"]?.GetValue<bool>() == false) == true;
         bool OBS = localSettings.Values["OBS"]?.ToString() == "1" && File.Exists(@"C:\Program Files\obs-studio\bin\64bit\obs64.exe");
 
-        string defaultEndpoint = SoundHelper.GetDefaultAudioEndpointId(EDataFlow.eRender);
-        string hdaud = defaultEndpoint != null ? DeviceHelper.GetParentPnpId(defaultEndpoint) : null;
-        string controller = hdaud != null ? DeviceHelper.GetParentPnpId(hdaud) : null;
-        var audioControllers = DeviceHelper.GetDevices(DeviceType.AudioController);
-        var audioController = audioControllers.FirstOrDefault(device => device.PnpDeviceId == controller) ?? audioControllers.FirstOrDefault();
-        bool AUDIO_AFFINITY = audioController != null && audioController.DevicePolicy == 4 && audioController.AssignmentSetOverride != 0;
-
         string previousTitle = string.Empty;
 
         var actions = new List<(string Title, Func<Task> Action, Func<bool> Condition)>
@@ -52,9 +45,6 @@ public static class StartupStage
             // apply msi afterburner profile
             ("Applying MSI Afterburner profile", async () => await Process.Start(new ProcessStartInfo { FileName = @"C:\Program Files (x86)\MSI Afterburner\MSIAfterburner.exe", Arguments = "/Profile1 /q" })!.WaitForExitAsync(), () => MSI == true),
 
-            // apply audio service affinity
-            ("Applying Audio Service Affinity", async () => { foreach (var process in Process.GetProcessesByName("audiodg").Concat([Process.GetProcessById(ServicesHelper.GetServicePid("Audiosrv"))])) using (process) PInvoke.SetProcessAffinityMask((HANDLE)process.Handle, (nuint)audioController.AssignmentSetOverride); }, () => AUDIO_AFFINITY),
-            
             // apply sound buffer sizes
             ("Applying sound buffer sizes", async () => SoundHelper.SetBufferSizes(), () => SOUND == true),
 

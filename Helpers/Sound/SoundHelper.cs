@@ -653,33 +653,6 @@ public static partial class SoundHelper
         }
     }
 
-    internal static unsafe string GetDefaultAudioEndpointId(EDataFlow flow)
-    {
-        PInvoke.CoInitializeEx(null, COINIT.COINIT_MULTITHREADED);
-        if (PInvoke.CoCreateInstance(typeof(MMDeviceEnumerator).GUID, null, CLSCTX.CLSCTX_ALL, typeof(IMMDeviceEnumerator).GUID, out void* pEnumerator).Value >= 0)
-        {
-            IMMDeviceEnumerator* enumerator = (IMMDeviceEnumerator*)pEnumerator;
-            IMMDevice* endpoint = null;
-            try
-            {
-                enumerator->GetDefaultAudioEndpoint(flow, ERole.eConsole, &endpoint);
-                if (endpoint != null)
-                {
-                    PWSTR id = default;
-                    endpoint->GetId(&id);
-                    string result = @"SWD\MMDEVAPI\" + id.ToString();
-                    PInvoke.CoTaskMemFree(id);
-                    endpoint->Release();
-                    enumerator->Release();
-                    return result;
-                }
-            }
-            catch { }
-            enumerator->Release();
-        }
-        return null;
-    }
-
     public static void ApplyAudioSettings(DeviceInfo device, BufferSizeOption option)
     {
         if (option == null) return;

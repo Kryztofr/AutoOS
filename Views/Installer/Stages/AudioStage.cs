@@ -1,7 +1,6 @@
 using AutoOS.Views.Installer.Actions;
 using AutoOS.Helpers.Registry;
 using AutoOS.Helpers.Device;
-using AutoOS.Helpers.Sound;
 using Microsoft.Win32;
 using Windows.Storage;
 using System.Diagnostics;
