@@ -101,7 +101,7 @@ In **AutoOS Settings** you can:
 - Toggle Dynamic P-States, HDCP and HDMI/DP Audio for your GPUs.
 - Manually adjust or import an MSI Afterburner profile.
 - Toggle OBS Studio Replay Buffer.
-- Manually adjust or automatically optimize GPU, XHCI and NIC Affinities.
+- Manually adjust or automatically optimize Audio, GPU, XHCI and NIC Affinities.
 - Toggle Bluetooth Services and Drivers.
 - Toggle XHCI Interrupt Moderation (IMOD) per USB controller.
 - Manually adjust or automatically optimize advanced network adapter settings.
