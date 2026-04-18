@@ -90,12 +90,12 @@ public static class SteamHelper
     public static async Task SteamLogin()
     {
         // launch steam
-        Process.Start(SteamHelper.SteamPath);
+        Process.Start(SteamPath);
 
         // check when logged in
         while (true)
         {
-            if (File.Exists(SteamHelper.SteamLoginUsersPath))
+            if (File.Exists(SteamLoginUsersPath))
             {
                 var options = new KVSerializerOptions
                 {
@@ -105,7 +105,7 @@ public static class SteamHelper
                 if (KVSerializer.Create(KVSerializationFormat.KeyValues1Text).Deserialize(new MemoryStream(Encoding.UTF8.GetBytes(File.ReadAllText(SteamLoginUsersPath))), options).Root.Children.Any())
                 {
                     // close steam
-                    SteamHelper.CloseSteam();
+                    CloseSteam();
 
                     var kv = KVSerializer.Create(KVSerializationFormat.KeyValues1Text).Deserialize(new MemoryStream(Encoding.UTF8.GetBytes(File.ReadAllText(SteamLoginUsersPath))), options);
 
@@ -145,8 +145,8 @@ public static class SteamHelper
         string sourceDrive = Path.GetPathRoot(newestFile.FullName)?.TrimEnd('\\') ?? "";
         string targetDrive = @"C:\";
 
-        string sourceCacheDir = SteamHelper.SteamLibraryCacheDir.Replace(Path.GetPathRoot(SteamHelper.SteamLibraryCacheDir) ?? "", sourceDrive + @"\");
-        string targetCacheDir = SteamHelper.SteamLibraryCacheDir.Replace(Path.GetPathRoot(SteamHelper.SteamLibraryCacheDir) ?? "", targetDrive);
+        string sourceCacheDir = SteamLibraryCacheDir.Replace(Path.GetPathRoot(SteamLibraryCacheDir) ?? "", sourceDrive + @"\");
+        string targetCacheDir = SteamLibraryCacheDir.Replace(Path.GetPathRoot(SteamLibraryCacheDir) ?? "", targetDrive);
 
         Directory.CreateDirectory(targetCacheDir);
 
@@ -162,7 +162,7 @@ public static class SteamHelper
             File.Copy(file, targetFile, true);
         }
 
-        Directory.CreateDirectory(Path.GetDirectoryName(SteamHelper.SteamLibraryPath));
+        Directory.CreateDirectory(Path.GetDirectoryName(SteamLibraryPath));
 
         var options = new KVSerializerOptions
         {

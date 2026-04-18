@@ -37,6 +37,8 @@
                                                     Spacing="8">
                                             <dev:ProgressButton x:Name="ProgressButton"
                                                                 Checked="ProgressButton_Checked"
+                                                                CheckedContent="Checking for updates..."
+                                                                Content="No updates available"
                                                                 DataContext="{x:Bind}"
                                                                 IsIndeterminate="True"
                                                                 Loaded="ProgressButton_Loaded"
