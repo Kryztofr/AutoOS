@@ -803,7 +803,7 @@ public static class BiosSettingRecommendationsList
         new BiosSettingRecommendation { SetupQuestion = "LPDDR Refresh Mode", Type = "Option", RecommendedOption = "Per Bank" },
         new BiosSettingRecommendation { SetupQuestion = "LPDDR4 Refresh Mode", Type = "Option", RecommendedOption = "Per Bank" },
         new BiosSettingRecommendation { SetupQuestion = "Latency Killer", Type = "Option", RecommendedOption = "Disabled" },
-        new BiosSettingRecommendation { SetupQuestion = "Legacy USB Support", Type = "Option", RecommendedOption = "Auto" },
+        new BiosSettingRecommendation { SetupQuestion = "Legacy USB Support", Type = "Option", RecommendedOption = "Enabled" },
         new BiosSettingRecommendation { SetupQuestion = "Loopback Mode", Type = "Option", RecommendedOption = "Disabled" },
         new BiosSettingRecommendation { SetupQuestion = "Max CPU Boost Clock Override", Type = "Value", RecommendedOption = "200" },
         new BiosSettingRecommendation { SetupQuestion = "Max CPU Boost Clock Override", Type = "Option", RecommendedOption = "200MHz" },
