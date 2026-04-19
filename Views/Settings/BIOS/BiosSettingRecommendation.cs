@@ -13,8 +13,9 @@ public class BiosSettingRecommendation
 public static class BiosSettingRecommendationsList
 {
     private static readonly CpuArchitecture CpuArch = CpuHelper.GetCpuArchitecture();
-    private static readonly bool Ryzen9 = CpuArch.DisplayName.Contains("Ryzen 9", StringComparison.OrdinalIgnoreCase);
-    private static readonly bool X3D = CpuArch.DisplayName.Contains("X3D", StringComparison.OrdinalIgnoreCase);
+    private static readonly bool Ryzen9 = CpuArch.Vendor == CpuVendor.AMD && CpuArch.DisplayName.Contains("Ryzen 9", StringComparison.OrdinalIgnoreCase);
+    private static readonly bool X3D = CpuArch.Vendor == CpuVendor.AMD && CpuArch.DisplayName.Contains("X3D", StringComparison.OrdinalIgnoreCase);
+    private static readonly bool APU = CpuArch.Vendor == CpuVendor.AMD && CpuArch.DisplayName.Contains("G", StringComparison.OrdinalIgnoreCase);
 
     public static readonly List<BiosSettingRecommendation> Rules =
     [
@@ -597,6 +598,7 @@ public static class BiosSettingRecommendationsList
         //new BiosSettingRecommendation { SetupQuestion = "Package Power Time Window", Type = "Option", RecommendedOption = "448" },
 
         // AMD
+        new BiosSettingRecommendation { SetupQuestion = "1TB remap", Type = "Option", RecommendedOption = "Do not remap" },
         new BiosSettingRecommendation { SetupQuestion = "AB Clock Gating", Type = "Option", RecommendedOption = "Disabled" },
         new BiosSettingRecommendation { SetupQuestion = "AB MSI Option", Type = "Option", RecommendedOption = "Enabled" },
         new BiosSettingRecommendation { SetupQuestion = "ABL Basic Console Out Control", Type = "Option", RecommendedOption = "Disable" },
@@ -633,7 +635,9 @@ public static class BiosSettingRecommendationsList
         new BiosSettingRecommendation { SetupQuestion = "Algorithm 1", Type = "Option", RecommendedOption = "Disabled" },
         new BiosSettingRecommendation { SetupQuestion = "Algorithm 2", Type = "Option", RecommendedOption = "Disabled" },
         new BiosSettingRecommendation { SetupQuestion = "Algorithm 3", Type = "Option", RecommendedOption = "Disabled" },
-        new BiosSettingRecommendation { SetupQuestion = "All Core Curve Optimizer Magnitude", Type = "Value", RecommendedOption = "10" },
+        new BiosSettingRecommendation { SetupQuestion = "ALink RAS Support", Type = "Option", RecommendedOption = "Disabled" },
+        new BiosSettingRecommendation { SetupQuestion = "All Core Curve Optimizer Magnitude", Type = "Value", RecommendedOption = "10", Condition = () => CpuArch.ArchitectureName == "Zen 2" || CpuArch.ArchitectureName == "Zen 3" },
+        new BiosSettingRecommendation { SetupQuestion = "All Core Curve Optimizer Magnitude", Type = "Value", RecommendedOption = "20", Condition = () => CpuArch.ArchitectureName == "Zen 4" || CpuArch.ArchitectureName == "Zen 5" },
         new BiosSettingRecommendation { SetupQuestion = "All Core Curve Optimizer Sign", Type = "Option", RecommendedOption = "Negative" },
         new BiosSettingRecommendation { SetupQuestion = "App Compatibility Database", Type = "Option", RecommendedOption = "Disabled" },
         new BiosSettingRecommendation { SetupQuestion = "Audio LED Lighting", Type = "Option", RecommendedOption = "Disabled" },
@@ -692,12 +696,15 @@ public static class BiosSettingRecommendationsList
         new BiosSettingRecommendation { SetupQuestion = "DRAM ECC Enable", Type = "Option", RecommendedOption = "Disabled" },
         new BiosSettingRecommendation { SetupQuestion = "DRAM Latency Enhance", Type = "Option", RecommendedOption = "Enabled" },
         new BiosSettingRecommendation { SetupQuestion = "DRAM map inversion", Type = "Option", RecommendedOption = "Auto" },
+        new BiosSettingRecommendation { SetupQuestion = "DRAM Post Package Repair", Type = "Option", RecommendedOption = "Disable" },
         new BiosSettingRecommendation { SetupQuestion = "DRAM Read Link ECC Enable", Type = "Option", RecommendedOption = "Disabled" },
         new BiosSettingRecommendation { SetupQuestion = "DRAM scrub time", Type = "Option", RecommendedOption = "Disabled" },
         new BiosSettingRecommendation { SetupQuestion = "DRAM UECC Retry", Type = "Option", RecommendedOption = "Disabled" },
+        new BiosSettingRecommendation { SetupQuestion = "DRAM Write CRC Enable and Retry Limit", Type = "Option", RecommendedOption = "Disabled" },
         new BiosSettingRecommendation { SetupQuestion = "DRAM Write Link ECC Enable", Type = "Option", RecommendedOption = "Disabled" },
         new BiosSettingRecommendation { SetupQuestion = "DVFSC Mode", Type = "Option", RecommendedOption = "Disabled" },
-        new BiosSettingRecommendation { SetupQuestion = "Data Scramble", Type = "Option", RecommendedOption = "Enabled" },
+        new BiosSettingRecommendation { SetupQuestion = "Data Poisoning", Type = "Option", RecommendedOption = "Disabled" },
+        new BiosSettingRecommendation { SetupQuestion = "Data Scramble", Type = "Option", RecommendedOption = "Disabled" },
         new BiosSettingRecommendation { SetupQuestion = "Data for Tool Automation", Type = "Option", RecommendedOption = "Disabled" },
         new BiosSettingRecommendation { SetupQuestion = "Determinism Control", Type = "Option", RecommendedOption = "Manual" },
         new BiosSettingRecommendation { SetupQuestion = "Determinism Slider", Type = "Option", RecommendedOption = "Performance" },
@@ -719,11 +726,13 @@ public static class BiosSettingRecommendationsList
         new BiosSettingRecommendation { SetupQuestion = "ECO Mode", Type = "Option", RecommendedOption = "Disable" },
         new BiosSettingRecommendation { SetupQuestion = "EHCI D3 Support", Type = "Option", RecommendedOption = "Disabled" },
         new BiosSettingRecommendation { SetupQuestion = "EHCI Traffic Handling", Type = "Option", RecommendedOption = "Disabled" },
+        new BiosSettingRecommendation { SetupQuestion = "eMMC Boot", Type = "Option", RecommendedOption = "Disabled" },
         new BiosSettingRecommendation { SetupQuestion = "Enable AER Cap", Type = "Option", RecommendedOption = "Disabled" },
         new BiosSettingRecommendation { SetupQuestion = "Enhanced REP MOVSB/STOSB", Type = "Option", RecommendedOption = "Enabled" },
         new BiosSettingRecommendation { SetupQuestion = "Enhanced REP MOVSB/STOSB (ERSM)", Type = "Option", RecommendedOption = "Enabled" },
         new BiosSettingRecommendation { SetupQuestion = "FCH Spread Spectrum", Type = "Option", RecommendedOption = "Disabled" },
         new BiosSettingRecommendation { SetupQuestion = "FCH Spread Spectrum", Type = "Option", RecommendedOption = "Disable" },
+        new BiosSettingRecommendation { SetupQuestion = "Fast Short REP MOVSB", Type = "Option", RecommendedOption = "Enabled" },
         new BiosSettingRecommendation { SetupQuestion = "Fast Short REP MOVSB (FSRM)", Type = "Option", RecommendedOption = "Enabled" },
         new BiosSettingRecommendation { SetupQuestion = "Freeze DF module queues on error", Type = "Option", RecommendedOption = "Disabled" },
         new BiosSettingRecommendation { SetupQuestion = "GMI encryption control", Type = "Option", RecommendedOption = "Disabled" },
@@ -770,8 +779,10 @@ public static class BiosSettingRecommendationsList
         new BiosSettingRecommendation { SetupQuestion = "I3C/I2C 3 Enable", Type = "Option", RecommendedOption = "Both Disabled" },
         new BiosSettingRecommendation { SetupQuestion = "IBUF_LPWR_MODE", Type = "Option", RecommendedOption = "Disabled" },
         new BiosSettingRecommendation { SetupQuestion = "IOMMU", Type = "Option", RecommendedOption = "Enabled" }, // required for faceit
-        new BiosSettingRecommendation { SetupQuestion = "Indirect Branch Prediction Speculation", Type = "Option", RecommendedOption = "Enabled" }, // required for faceit
+        new BiosSettingRecommendation { SetupQuestion = "Indirect Branch Prediction Speculation", Type = "Option", RecommendedOption = "Enabled" },
         new BiosSettingRecommendation { SetupQuestion = "Int. Clk Differential Spread", Type = "Option", RecommendedOption = "Disabled" },
+        new BiosSettingRecommendation { SetupQuestion = "Integrated Graphics", Type = "Option", RecommendedOption = "Disabled", Condition = () => APU == false },
+        new BiosSettingRecommendation { SetupQuestion = "Integrated Graphics Controller", Type = "Option", RecommendedOption = "Disabled", Condition = () => APU == false },
         new BiosSettingRecommendation { SetupQuestion = "Internal PCIe GPP 0 D3", Type = "Option", RecommendedOption = "Disabled" },
         //new BiosSettingRecommendation { SetupQuestion = "Internal PCIe GPP 2 D3", Type = "Option", RecommendedOption = "Disabled" }, // already disabled by default
         new BiosSettingRecommendation { SetupQuestion = "Internal USB4 PCIe Tunneling D3", Type = "Option", RecommendedOption = "Disabled" },
@@ -783,6 +794,7 @@ public static class BiosSettingRecommendationsList
         new BiosSettingRecommendation { SetupQuestion = "L2 Up/Down Prefetcher", Type = "Option", RecommendedOption = "Enable" },
         new BiosSettingRecommendation { SetupQuestion = "L3 DFLL Stretch Mode", Type = "Option", RecommendedOption = "Disabled" },
         new BiosSettingRecommendation { SetupQuestion = "LCLK DPM", Type = "Option", RecommendedOption = "Disabled" },
+        new BiosSettingRecommendation { SetupQuestion = "LCLK DPM Enhanced PCIe Detection", Type = "Option", RecommendedOption = "Disabled" },
         new BiosSettingRecommendation { SetupQuestion = "LED Lighting", Type = "Option", RecommendedOption = "Disabled" },
         new BiosSettingRecommendation { SetupQuestion = "LN2 Mode", Type = "Option", RecommendedOption = "Disable" },
         new BiosSettingRecommendation { SetupQuestion = "LN2 Mode", Type = "Option", RecommendedOption = "Disabled" },
@@ -804,6 +816,7 @@ public static class BiosSettingRecommendationsList
         new BiosSettingRecommendation { SetupQuestion = "Max CPU Boost Clock Override (+)", Type = "Value", RecommendedOption = "25", Condition = () => CpuArch.ArchitectureName == "Zen 3" && X3D == true },
         new BiosSettingRecommendation { SetupQuestion = "MBIST Aggressors", Type = "Option", RecommendedOption = "Disabled" },
         new BiosSettingRecommendation { SetupQuestion = "MBIST Enable", Type = "Option", RecommendedOption = "Disabled" },
+        new BiosSettingRecommendation { SetupQuestion = "MBIST Per Bit Slave Die Reporting", Type = "Option", RecommendedOption = "Disabled" },
         new BiosSettingRecommendation { SetupQuestion = "MCA FruText", Type = "Option", RecommendedOption = "False" },
         new BiosSettingRecommendation { SetupQuestion = "MCA error thresh enable", Type = "Option", RecommendedOption = "False" },
         new BiosSettingRecommendation { SetupQuestion = "Medium Load Boostit", Type = "Option", RecommendedOption = "Enabled" },
@@ -852,6 +865,7 @@ public static class BiosSettingRecommendationsList
         new BiosSettingRecommendation { SetupQuestion = "Power Down Enable", Type = "Option", RecommendedOption = "Disabled" },
         new BiosSettingRecommendation { SetupQuestion = "Power Supply Idle Control", Type = "Option", RecommendedOption = "Typical Current Idle" },
         new BiosSettingRecommendation { SetupQuestion = "PowerDownEn", Type = "Option", RecommendedOption = "Disabled" },
+        new BiosSettingRecommendation { SetupQuestion = "PPIN Opt-in", Type = "Option", RecommendedOption = "Disabled" },
         new BiosSettingRecommendation { SetupQuestion = "Precision Boost Overdrive", Type = "Option", RecommendedOption = "Enhancement" },
         new BiosSettingRecommendation { SetupQuestion = "Precision Boost Overdrive", Type = "Option", RecommendedOption = "Advanced" },
         new BiosSettingRecommendation { SetupQuestion = "Precision Boost Overdrive Scalar", Type = "Option", RecommendedOption = "Manual" },
@@ -865,6 +879,7 @@ public static class BiosSettingRecommendationsList
         new BiosSettingRecommendation { SetupQuestion = "Redirect scrubber control", Type = "Option", RecommendedOption = "Disabled" },
         new BiosSettingRecommendation { SetupQuestion = "Relaxed EDC throttling", Type = "Option", RecommendedOption = "Disabled" },
         new BiosSettingRecommendation { SetupQuestion = "Remote Display Feature", Type = "Option", RecommendedOption = "Disabled" },
+        new BiosSettingRecommendation { SetupQuestion = "REP-MOV/STOS Streaming", Type = "Option", RecommendedOption = "Enabled" },
         new BiosSettingRecommendation { SetupQuestion = "Reset after sync flood", Type = "Option", RecommendedOption = "Disable" },
         new BiosSettingRecommendation { SetupQuestion = "Runtime BCLK Adjustments", Type = "Option", RecommendedOption = "Disabled" },
         new BiosSettingRecommendation { SetupQuestion = "S0I3", Type = "Option", RecommendedOption = "Disabled" },
@@ -895,7 +910,7 @@ public static class BiosSettingRecommendationsList
         new BiosSettingRecommendation { SetupQuestion = "SOC USB4 PCIe Endpoint D3", Type = "Option", RecommendedOption = "Disabled" },
         new BiosSettingRecommendation { SetupQuestion = "SOC VRHOT Protection", Type = "Option", RecommendedOption = "Disabled" },
         //new BiosSettingRecommendation { SetupQuestion = "SR-IOV Support", Type = "Value", RecommendedOption = "0" }, // already disabled by default
-        new BiosSettingRecommendation { SetupQuestion = "SRIS", Type = "Option", RecommendedOption = "Enable" },
+        new BiosSettingRecommendation { SetupQuestion = "SRIS", Type = "Option", RecommendedOption = "Disable" },
         new BiosSettingRecommendation { SetupQuestion = "STAPM", Type = "Option", RecommendedOption = "Disabled" },
         new BiosSettingRecommendation { SetupQuestion = "STAPM Enable", Type = "Option", RecommendedOption = "Disable" },
         new BiosSettingRecommendation { SetupQuestion = "SVM Enable", Type = "Option", RecommendedOption = "Enabled" },
@@ -916,9 +931,10 @@ public static class BiosSettingRecommendationsList
         new BiosSettingRecommendation { SetupQuestion = "SoC/Uncore OC Mode", Type = "Option", RecommendedOption = "Enabled" },
         new BiosSettingRecommendation { SetupQuestion = "Spread Spectrum", Type = "Option", RecommendedOption = "Disabled" },
         new BiosSettingRecommendation { SetupQuestion = "Stability Boost", Type = "Option", RecommendedOption = "Disable" },
-        new BiosSettingRecommendation { SetupQuestion = "Streaming Stores Control", Type = "Option", RecommendedOption = "Disabled" },
+        new BiosSettingRecommendation { SetupQuestion = "Streaming Stores Control", Type = "Option", RecommendedOption = "Enabled" },
         new BiosSettingRecommendation { SetupQuestion = "Sync Flood Propagation to DF Components", Type = "Option", RecommendedOption = "Sync flood disabled" },
         new BiosSettingRecommendation { SetupQuestion = "Sync Flood on PCIe Fatal Error", Type = "Option", RecommendedOption = "False" },
+        new BiosSettingRecommendation { SetupQuestion = "System Hub Watchdog Timer", Type = "Value", RecommendedOption = "0" },
         new BiosSettingRecommendation { SetupQuestion = "System probe filter", Type = "Option", RecommendedOption = "Disabled" },
         new BiosSettingRecommendation { SetupQuestion = "Turbo Performance Boost Ratio", Type = "Option", RecommendedOption = "Auto" },
         new BiosSettingRecommendation { SetupQuestion = "TSME", Type = "Option", RecommendedOption = "Disabled" },
@@ -947,11 +963,13 @@ public static class BiosSettingRecommendationsList
         new BiosSettingRecommendation { SetupQuestion = "Unused GPP Clocks Off", Type = "Option", RecommendedOption = "Enabled" },
         new BiosSettingRecommendation { SetupQuestion = "WCK Always On", Type = "Option", RecommendedOption = "Enabled" },
         new BiosSettingRecommendation { SetupQuestion = "Win7 USB Wake Support", Type = "Option", RecommendedOption = "Disabled" },
+        new BiosSettingRecommendation { SetupQuestion = "Write CRC Enable", Type = "Option", RecommendedOption = "Disabled" },
         new BiosSettingRecommendation { SetupQuestion = "X3D Gaming Mode", Type = "Option", RecommendedOption = "Enabled", Condition = () => Ryzen9 == true },
         new BiosSettingRecommendation { SetupQuestion = "X3D Gaming Mode", Type = "Option", RecommendedOption = "Disabled", Condition = () => Ryzen9 == false },
         new BiosSettingRecommendation { SetupQuestion = "XHCI D3 Support", Type = "Option", RecommendedOption = "Disabled" },
         new BiosSettingRecommendation { SetupQuestion = "xGMI encryption control", Type = "Option", RecommendedOption = "Disabled" },
         new BiosSettingRecommendation { SetupQuestion = "ZEN5 Gaming Optimizations", Type = "Option", RecommendedOption = "Level 2" },
+        new BiosSettingRecommendation { SetupQuestion = "_OSC For PCI0", Type = "Option", RecommendedOption = "Disabled" },
 
         // both
         //new BiosSettingRecommendation { SetupQuestion = "ACPI Sleep State", Type = "Option", RecommendedOption = "Suspend Disabled" }, // breaks sleep
@@ -1008,6 +1026,7 @@ public static class BiosSettingRecommendationsList
         new BiosSettingRecommendation { SetupQuestion = "Port 60/64 Emulation", Type = "Option", RecommendedOption = "Disabled" }, // already disabled on AMD
         new BiosSettingRecommendation { SetupQuestion = "Power Loading", Type = "Option", RecommendedOption = "Disabled" },
         new BiosSettingRecommendation { SetupQuestion = "RGB Fusion", Type = "Option", RecommendedOption = "Off" },
+        new BiosSettingRecommendation { SetupQuestion = "RGB Fusion (Onboard LED)", Type = "Option", RecommendedOption = "Off" },
         new BiosSettingRecommendation { SetupQuestion = "RGB Light", Type = "Value", RecommendedOption = "0" },
         new BiosSettingRecommendation { SetupQuestion = "Re-Size BAR Support", Type = "Option", RecommendedOption = "Enabled" },
         new BiosSettingRecommendation { SetupQuestion = "Re-Size BAR Support", Type = "Option", RecommendedOption = "Auto" },
