@@ -219,6 +219,14 @@ if (-not [Environment]::Is64BitProcess) {
     exit 1
 }
 
+$VirtualDriveEnum = Get-PnpDevice -FriendlyName 'Microsoft Virtual Drive Enumerator' -ErrorAction SilentlyContinue
+if ($VirtualDriveEnum -and $VirtualDriveEnum.Status -ne 'OK') {
+    $VirtualDriveEnum | Enable-PnpDevice -Confirm:$False | Out-Null
+    Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\vdrvroot" -Name "Start" -Value 0
+    Write-Host "Restart your PC and rerun this script."
+    exit 1
+}
+
 Write-Host "Please select the Windows ISO..."
 $IsoPicker = New-Object System.Windows.Forms.OpenFileDialog
 $IsoPicker.Filter = "ISO Files (*.iso)|*.iso"
@@ -332,11 +340,6 @@ Write-Host "Formatting partition $TargetDrive..."
 Start-Process -FilePath "cmd.exe" -ArgumentList "/c ""format $TargetDrive /fs:ntfs /q /y /v:AutoOS > nul 2> nul""" -NoNewWindow -Wait
 
 Write-Host "`n===== Step 5: Apply Windows Image =====`n"
-$VirtualDriveEnum = Get-PnpDevice -FriendlyName 'Microsoft Virtual Drive Enumerator' -ErrorAction SilentlyContinue
-if ($VirtualDriveEnum -and $VirtualDriveEnum.Status -ne 'OK') {
-    $VirtualDriveEnum | Enable-PnpDevice -Confirm:$False | Out-Null
-}
-
 try {
     Write-Host "Mounting ISO..." 
     $MountedIso = (Mount-DiskImage -ImagePath $IsoPicker.FileName -PassThru | Get-Volume).DriveLetter + ":"

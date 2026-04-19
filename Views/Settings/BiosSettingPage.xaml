@@ -18,7 +18,7 @@
             <!--  Title  -->
             <TextBlock Style="{StaticResource TitleTextBlockStyle}"
                        Text="BIOS Settings" />
-            <Grid Margin="0,48,0,12"
+            <Grid Margin="0,48,0,8"
                   HorizontalAlignment="Stretch">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
@@ -27,7 +27,7 @@
                 <!--  Search  -->
                 <dev:TextBox x:Name="Search"
                              Grid.Column="0"
-                             Margin="0,0,12,0"
+                             Margin="0,0,8,0"
                              IsEnabled="False"
                              PlaceholderText="Search..."
                              TextChanged="SearchBox_TextChanged">
@@ -38,7 +38,7 @@
                 <!--  Backup  -->
                 <StackPanel Grid.Column="1"
                             Orientation="Horizontal"
-                            Spacing="12">
+                            Spacing="8">
                     <Button x:Name="Backup"
                             Click="Backup_Click"
                             IsEnabled="False">
@@ -352,7 +352,7 @@
                         </Grid.RowDefinitions>
                         <InfoBar Title="Before applying any changes, make sure you know how to reset CMOS in case something goes wrong. The recommended changes should be safe but will disable all kinds of powersaving features."
                                  Grid.Row="0"
-                                 Margin="0,0,0,12"
+                                 Margin="0,0,0,8"
                                  IsClosable="False"
                                  IsOpen="True"
                                  Severity="Warning">
@@ -360,7 +360,7 @@
                         <!--  Recommended Changes  -->
                         <Expander x:Name="RecommendedChanges"
                                   Grid.Row="1"
-                                  Margin="0,0,0,12"
+                                  Margin="0,0,0,8"
                                   HorizontalAlignment="Stretch"
                                   HorizontalContentAlignment="Stretch"
                                   IsEnabled="{x:Bind HasRecommendations, Mode=OneWay}"
@@ -399,7 +399,7 @@
                                 </Grid>
                             </Expander.Header>
                             <!--  ListView  -->
-                            <Grid MaxHeight="495">
+                            <Grid MaxHeight="505">
                                 <ListView x:Name="RecommendedChangesListView"
                                           HorizontalContentAlignment="Stretch"
                                           ItemsSource="{x:Bind recommendedSettings}"
@@ -498,7 +498,7 @@
                             </Expander.Header>
                             <!--  ListView  -->
                             <Grid x:Name="AllSettingsGrid"
-                                  MaxHeight="495">
+                                  MaxHeight="505">
                                 <ListView x:Name="SettingsListView"
                                           HorizontalContentAlignment="Stretch"
                                           ItemsSource="{x:Bind biosSettings}"
