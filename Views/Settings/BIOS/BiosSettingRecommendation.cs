@@ -1,4 +1,4 @@
-﻿using Microsoft.Win32;
+using AutoOS.Helpers.CPU;
 
 namespace AutoOS.Views.Settings.BIOS;
 
@@ -12,11 +12,9 @@ public class BiosSettingRecommendation
 
 public static class BiosSettingRecommendationsList
 {
-    public static readonly bool Ryzen9 = (Registry.LocalMachine.OpenSubKey(@"HARDWARE\DESCRIPTION\System\CentralProcessor\0")
-        ?.GetValue("ProcessorNameString")?.ToString() ?? "").Contains("Ryzen 9", StringComparison.OrdinalIgnoreCase);
-
-    public static readonly bool RyzenX3D = (Registry.LocalMachine.OpenSubKey(@"HARDWARE\DESCRIPTION\System\CentralProcessor\0")
-        ?.GetValue("ProcessorNameString")?.ToString() ?? "").Contains("X3D", StringComparison.OrdinalIgnoreCase);
+    private static readonly CpuArchitecture CpuArch = CpuHelper.GetCpuArchitecture();
+    private static readonly bool Ryzen9 = CpuArch.DisplayName.Contains("Ryzen 9", StringComparison.OrdinalIgnoreCase);
+    private static readonly bool X3D = CpuArch.DisplayName.Contains("X3D", StringComparison.OrdinalIgnoreCase);
 
     public static readonly List<BiosSettingRecommendation> Rules =
     [
@@ -658,9 +656,10 @@ public static class BiosSettingRecommendationsList
         new BiosSettingRecommendation { SetupQuestion = "CPPC", Type = "Option", RecommendedOption = "Enabled" },
         new BiosSettingRecommendation { SetupQuestion = "CPPC CTRL", Type = "Option", RecommendedOption = "Enabled" },
         new BiosSettingRecommendation { SetupQuestion = "CPPC Preferred Cores", Type = "Option", RecommendedOption = "Enabled" },
-        new BiosSettingRecommendation { SetupQuestion = "CPPC Dynamic Preferred Cores", Type = "Option", RecommendedOption = "Cache", Condition = () => Ryzen9 == true || RyzenX3D == true },
+        new BiosSettingRecommendation { SetupQuestion = "CPPC Dynamic Preferred Cores", Type = "Option", RecommendedOption = "Cache", Condition = () => Ryzen9 == true || X3D == true },
         new BiosSettingRecommendation { SetupQuestion = "CPU Boost Clock Override", Type = "Option", RecommendedOption = "Enabled" },
         new BiosSettingRecommendation { SetupQuestion = "CPU Boost Clock Override", Type = "Option", RecommendedOption = "Enabled (Positive)" },
+        new BiosSettingRecommendation { SetupQuestion = "CPU Boost Clock Override", Type = "Option", RecommendedOption = "Disabled", Condition = () => CpuArch.ArchitectureName == "Zen 3" && X3D == true },
         new BiosSettingRecommendation { SetupQuestion = "CPU PCIE ASPM Mode Control", Type = "Option", RecommendedOption = "Disabled" },
         new BiosSettingRecommendation { SetupQuestion = "CPU Power Duty Control", Type = "Option", RecommendedOption = "Extreme" },
         new BiosSettingRecommendation { SetupQuestion = "CPU Power Phase Control", Type = "Option", RecommendedOption = "Extreme" },
@@ -730,8 +729,8 @@ public static class BiosSettingRecommendationsList
         new BiosSettingRecommendation { SetupQuestion = "GMI encryption control", Type = "Option", RecommendedOption = "Disabled" },
         new BiosSettingRecommendation { SetupQuestion = "GPP Serial Debug Bus Enable", Type = "Option", RecommendedOption = "Disabled" },
         new BiosSettingRecommendation { SetupQuestion = "Gear Down Mode", Type = "Option", RecommendedOption = "Disabled" },
-        new BiosSettingRecommendation { SetupQuestion = "Global C-state Control", Type = "Option", RecommendedOption = "Disabled", Condition = () => RyzenX3D == false },
-        new BiosSettingRecommendation { SetupQuestion = "Global C-state Control", Type = "Option", RecommendedOption = "Enabled", Condition = () => RyzenX3D == true },
+        new BiosSettingRecommendation { SetupQuestion = "Global C-state Control", Type = "Option", RecommendedOption = "Disabled", Condition = () => X3D == false },
+        new BiosSettingRecommendation { SetupQuestion = "Global C-state Control", Type = "Option", RecommendedOption = "Enabled", Condition = () => X3D == true },
         new BiosSettingRecommendation { SetupQuestion = "GPP Clock 0 Force Output", Type = "Option", RecommendedOption = "Disabled" },
         new BiosSettingRecommendation { SetupQuestion = "GPP Clock 1 Force Output", Type = "Option", RecommendedOption = "Disabled" },
         new BiosSettingRecommendation { SetupQuestion = "GPP Clock 2 Force Output", Type = "Option", RecommendedOption = "Disabled" },
@@ -796,9 +795,13 @@ public static class BiosSettingRecommendationsList
         new BiosSettingRecommendation { SetupQuestion = "Latency Killer", Type = "Option", RecommendedOption = "Disabled" },
         new BiosSettingRecommendation { SetupQuestion = "Legacy USB Support", Type = "Option", RecommendedOption = "Auto" },
         new BiosSettingRecommendation { SetupQuestion = "Loopback Mode", Type = "Option", RecommendedOption = "Disabled" },
+        new BiosSettingRecommendation { SetupQuestion = "Max CPU Boost Clock Override", Type = "Value", RecommendedOption = "200" },
         new BiosSettingRecommendation { SetupQuestion = "Max CPU Boost Clock Override", Type = "Option", RecommendedOption = "200MHz" },
         new BiosSettingRecommendation { SetupQuestion = "Max CPU Boost Clock Override(+)", Type = "Value", RecommendedOption = "200" },
         new BiosSettingRecommendation { SetupQuestion = "Max CPU Boost Clock Override (+)", Type = "Value", RecommendedOption = "200" },
+        new BiosSettingRecommendation { SetupQuestion = "Max CPU Boost Clock Override", Type = "Value", RecommendedOption = "Auto", Condition = () => CpuArch.ArchitectureName == "Zen 3" && X3D == true },
+        new BiosSettingRecommendation { SetupQuestion = "Max CPU Boost Clock Override", Type = "Option", RecommendedOption = "0MHz", Condition = () => CpuArch.ArchitectureName == "Zen 3" && X3D == true },
+        new BiosSettingRecommendation { SetupQuestion = "Max CPU Boost Clock Override (+)", Type = "Value", RecommendedOption = "25", Condition = () => CpuArch.ArchitectureName == "Zen 3" && X3D == true },
         new BiosSettingRecommendation { SetupQuestion = "MBIST Aggressors", Type = "Option", RecommendedOption = "Disabled" },
         new BiosSettingRecommendation { SetupQuestion = "MBIST Enable", Type = "Option", RecommendedOption = "Disabled" },
         new BiosSettingRecommendation { SetupQuestion = "MCA FruText", Type = "Option", RecommendedOption = "False" },
