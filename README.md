@@ -172,13 +172,14 @@ If you get any errors during the script, it’s most likely because your current
 **Step 8:** Carefully look through every tab and select your preferences and apps. Then click "Install AutoOS". This process will take around 15-30 minutes.
 
 ### What to do after the installation is finished?
-- `Disable` the toggle in `Services & Drivers` tab and restart whenever you are `Gaming`.
-- `Enable` it again and restart if you need functionality back for `Work` or installing applications / drivers.
 - For `Riot Games` titles to show up in the `Games` tab, install them through the `Epic Games Launcher` as well.
 - For `EA` or `Ubisoft Connect` titles to show up in the `Games` tab, add them to your `Epic Games Launcher` library.
+- `Disable` the toggle in `Services & Drivers` tab and restart whenever you are `Gaming`.
+- `Enable` it again and restart if you need functionality back for `Work` or installing applications / drivers.
 - Go to the `Games` tab while `Services & Drivers` are disabled and press the `Play` button.
 - Once you are in the `Game`, press the `Stop Processes` button. 
 - Press the `Restart Processes` button to restore the taskbar etc.
+- Use `NVIDIA Reflex Low Latency` set to `Off` in all competetive games unless you are GPU bound with a low end GPU.
 - Check the `BIOS Settings` tab for recommendations, click `Merge All` then `Import to NVRAM`.
 - If you get `freezes` or `crashes` after on `Intel`, lower your `Max Turbo Ratios` or disable `E-Cores` and make sure `Hyper-Threading` is enabled.
 - If your output supports a lower buffer size in the `Sound` tab, you may lower it in exchange for higher CPU usage.
@@ -187,9 +188,10 @@ If you get any errors during the script, it’s most likely because your current
 - If you have experience with `C# and WinUI3` and want to become a part of the project, let me know.
 
 ### What **NOT** to do after the installation is finished?
-- Run other `tweaks` or `optimizers` like `CTT` etc.
+- Run other `tweaks` or `optimizers` like `CTT` etc. for obvious reasons.
 - Apply `timer resolution` because it does more harm than good.
-- Set `visual effects` to `Best Performance`, `disable animations / transparency / paging file`. 
+- Use `external frame rate limiters` like  `NVIDIA Control Panel` or `Rivatuner Statistics Server (RTSS)` because they trade smoother 1% lows for more latency.
+- Set `visual effects` to `Best Performance`, `disable animations / transparency / paging file`.
 - `Uninstall` `MSI Afterburner, OBS, Everything, Windhawk, StartAllBack` or any of the `runtimes`.
 - `Install` `7-Zip`, because `NanaZip` is already installed.
 - `Uninstall` more AppX Packages like `Xbox Game Bar` or `Microsoft Edge` because it **breaks functionality**.
