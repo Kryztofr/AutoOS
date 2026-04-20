@@ -196,6 +196,17 @@ If you get any errors during the script, it’s most likely because your current
 
 If you want to delete your old Windows partition and merge the unallocated space with the AutoOS partition, use [Minitool Partition Wizard Free](https://cdn2.minitool.com/?p=pw&e=pw-free) (decline each offer in the installer). Then use the `Delete` function on the old Windows partition and the `Extend` function on the AutoOS partition and max out the slider. Click apply and restart. Make sure to delete `Minitool Partition Wizard Free` again after you are done.
 
+You will also need to open cmd an run:
+```
+bcdedit /enum
+``` 
+
+find your old OS entry, copy its `identifier` value and then run:
+
+```
+bcdedit /delete {identifier}
+```
+
 ## 📷 Screenshots
 ### AutoOS Installer
 
