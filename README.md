@@ -155,7 +155,7 @@ Alternatively download the [Intel Rapid Storage Technology Driver](https://www.d
 
 **Step 4:** Open PowerShell **as Administrator**.
 
-**Step 5:** Paste this into the PowerShell window to download and run the deployment script. Then select the **ISO** and your **drivers folder** or skip the driver installation if you are sure that you don't need them.
+**Step 5:** Paste this into the PowerShell window to run the deployment script. Then select the **ISO** and your **drivers folder** or skip the driver installation if you are sure that you don't need them.
 
 ```ps1
 $PSDefaultParameterValues['Invoke-WebRequest:UseBasicParsing'] = $true
@@ -191,24 +191,35 @@ If you get any errors during the script, it’s most likely because your current
 ### What **NOT** to do after the installation is finished?
 - Run other `tweaks` or `optimizers` like `CTT` etc. for obvious reasons.
 - Apply `timer resolution` because it does more harm than good.
-- Use `external frame rate limiters` like  `NVIDIA Control Panel` or `Rivatuner Statistics Server (RTSS)` because they trade smoother 1% lows for more latency.
+- Use `external frame rate limiters` like `NVCP` or `RTSS` because they trade better 1% lows for added latency.
 - Set `visual effects` to `Best Performance`, `disable animations / transparency / paging file`.
 - `Uninstall` `MSI Afterburner, OBS, Everything, Windhawk, StartAllBack` or any of the `runtimes`.
 - `Install` `7-Zip`, because `NanaZip` is already installed.
 - `Uninstall` more AppX Packages like `Xbox Game Bar` or `Microsoft Edge` because it **breaks functionality**.
 
-If you want to delete your old Windows partition and merge the unallocated space with the AutoOS partition, use [Minitool Partition Wizard Free](https://cdn2.minitool.com/?p=pw&e=pw-free) (decline each offer in the installer). Then use the `Delete` function on the old Windows partition and the `Extend` function on the AutoOS partition and max out the slider. Click apply and restart. Make sure to delete `Minitool Partition Wizard Free` again after you are done.
+### Merging the old Windows partition
+To delete your old Windows partition and merge the unallocated space with the AutoOS partition: 
 
-You will also need to open cmd an run:
+- Move your Games to the AutoOS partition and replace the drive letters in the Game Launchers config files:
+  - Epic Games 
+    - `C:\ProgramData\Epic\UnrealEngineLauncher\LauncherInstalled.dat"`
+    - `C:\ProgramData\Epic\EpicGamesLauncher\Data\Manifests"`
+  - Steam 
+    - `C:\Program Files (x86)\Steam\steamapps\libraryfolders.vdf`
+- Open Command Prompt and paste:
 ```
 bcdedit /enum
 ``` 
 
-find your old OS entry, copy its `identifier` value and then run:
+- Find the entry of your old Windows partition, copy its `identifier` value and then run:
 
 ```
 bcdedit /delete {identifier}
 ```
+
+- Install [Minitool Partition Wizard Free](https://cdn2.minitool.com/?p=pw&e=pw-free) (decline each offer in the installer). 
+- Then use the `Delete` function on the old Windows partition and the `Extend` function on the AutoOS partition and max out the slider. 
+- Click `Apply` and then `Restart Now`. Make sure to delete `Minitool Partition Wizard Free` again after you are done.
 
 ## 📷 Screenshots
 ### AutoOS Installer
