@@ -525,6 +525,10 @@ namespace AutoOS.Helpers.GPU
                 // disable non-contiguous allocation
                 ("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RMDisableNoncontigAlloc", 1, RegistryValueKind.DWord), null),
 
+                // force "hardware composed: independent flip"
+                (@"Forcing ""Hardware Composed: Independent Flip""", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "enableRS2FlipCollapse", 1, RegistryValueKind.DWord), null),
+                (@"Forcing ""Hardware Composed: Independent Flip""", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "enableRS2ImmediateFlipCompletionReporting", 1, RegistryValueKind.DWord), null),
+
                 // disable display power savings
                 ("Disabling Display Power Savings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\nvlddmkm\Global\NVTweak", "DisplayPowerSaving", 0, RegistryValueKind.DWord), null),
                 ("Disabling Display Power Savings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\Software\NVIDIA Corporation\Global\NVTweak", "DisplayPowerSaving", 0, RegistryValueKind.DWord), null),
