@@ -218,8 +218,9 @@ bcdedit /delete {identifier}
 ```
 
 - Install [Minitool Partition Wizard Free](https://cdn2.minitool.com/?p=pw&e=pw-free) (decline each offer in the installer). 
-- Then use the `Delete` function on the old Windows partition and the `Extend` function on the AutoOS partition and max out the slider. 
-- Click `Apply` and then `Restart Now`. Make sure to delete `Minitool Partition Wizard Free` again after you are done.
+- Use the `Delete` function on the old Windows partition
+- Use the `Extend` function on the AutoOS partition, select the old Windows partition and max out the slider. 
+- Click `Apply` and then `Restart Now`. After its done, delete `Minitool Partition Wizard Free`.
 
 ## 📷 Screenshots
 ### AutoOS Installer
