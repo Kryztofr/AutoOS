@@ -109,6 +109,7 @@ namespace AutoOS.Views.Settings
 
                     _ = updater.ShowAsync();
                     await updateDialog.RunActions(actions);
+                    await Task.Delay(1000);
                     updateDialog.SetStatus("Update complete.");
                     updateDialog.SetSuccess();
                     await Task.Delay(1000);
