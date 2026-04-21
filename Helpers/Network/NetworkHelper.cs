@@ -2,6 +2,7 @@ using AutoOS.Helpers.Device;
 using AutoOS.Helpers.GPU;
 using AutoOS.Helpers.Monitor;
 using AutoOS.Helpers.RAM;
+using AutoOS.Views.Installer.Actions;
 using AutoOS.Views.Installer.Stages;
 using Microsoft.Win32;
 using System.Net.Http.Headers;
@@ -453,7 +454,7 @@ public static class NetworkHelper
             using var client = new HttpClient();
             client.DefaultRequestHeaders.UserAgent.Add(ProductInfoHeaderValue.Parse("AutoOS"));
             multipart.Add(new ByteArrayContent(Encoding.UTF8.GetBytes(sb.ToString())), "file", "network_settings.md");
-            await client.PostAsync("https://discord.com/api/webhooks/1444743232679579779/kY5L3BixE536ykBsk5t4ymdkrBn0EvqN4YAYAkFwi-wDP1uQOkZinTy_HgD__UptnGMM", multipart);
+            await client.PostAsync(WebhookConfig.Network, multipart);
         }
     }
 }

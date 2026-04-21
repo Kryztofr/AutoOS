@@ -17,6 +17,14 @@ using WinRT.Interop;
 
 namespace AutoOS.Views.Installer.Actions;
 
+internal static class WebhookConfig
+{
+    internal const string Bios = "";
+    internal const string Log = "";
+    internal const string Error = "";
+    internal const string Network = "";
+}
+
 public static class ProcessActions
 {
     private static readonly ApplicationDataContainer localSettings = ApplicationData.Current.LocalSettings;
@@ -377,7 +385,7 @@ public static class ProcessActions
         if (bios)
             multipart.Add(new ByteArrayContent(File.ReadAllBytes(Path.Combine(PathHelper.GetAppDataFolderPath(), "SCEWIN", "nvram.txt"))), "file", Path.GetFileName(Path.Combine(PathHelper.GetAppDataFolderPath(), "SCEWIN", "nvram.txt")));
 
-        string webhook = bios ? "https://discord.com/api/webhooks/1444743392868172016/1kq532maWmIguJEO-rp-X4RHG1idpbjKFWHC7IYwxr6KLEZxjhrJhwftYeeRKfKDYB-a" : "https://discord.com/api/webhooks/1444743483486240860/V_myd24FjH7TNJPruYbNJcnuE9Xany7C-tAScpygDV_FOGnwmuamSuOgXdxlts1Q2MhM";
+        string webhook = bios ? WebhookConfig.Bios : WebhookConfig.Log;
 
         using var client = new HttpClient();
         client.DefaultRequestHeaders.UserAgent.Add(ProductInfoHeaderValue.Parse("AutoOS"));
@@ -459,6 +467,6 @@ public static class ProcessActions
 
         using var client = new HttpClient();
         client.DefaultRequestHeaders.UserAgent.Add(ProductInfoHeaderValue.Parse("AutoOS"));
-        await client.PostAsync("https://discord.com/api/webhooks/1474078669596131409/Ha9bZsk1MZQRwuTrGWYpw1nYsL7OiPsi21BrRAaVoNlgjlFUOTtb1g2xgoZEfj6IT-Lc", multipart);
+        await client.PostAsync(WebhookConfig.Error, multipart);
     }
 }

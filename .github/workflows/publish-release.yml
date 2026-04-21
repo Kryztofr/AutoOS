@@ -103,6 +103,18 @@ jobs:
         [IO.File]::WriteAllBytes("GitHubActionsWorkflow.pfx", $pfx_cert_byte)
       shell: pwsh
 
+    # Inject webhook secrets
+    - name: Inject webhook secrets
+      run: |
+        $file = 'Views/Installer/Actions/Actions.cs'
+        $content = Get-Content $file -Raw
+        $content = $content -replace 'internal const string Bios = "";', 'internal const string Bios = "${{ secrets.DISCORD_WEBHOOK_BIOS }}";'
+        $content = $content -replace 'internal const string Log = "";', 'internal const string Log = "${{ secrets.DISCORD_WEBHOOK_LOG }}";'
+        $content = $content -replace 'internal const string Error = "";', 'internal const string Error = "${{ secrets.DISCORD_WEBHOOK_ERROR }}";'
+        $content = $content -replace 'internal const string Network = "";', 'internal const string Network = "${{ secrets.DISCORD_WEBHOOK_NETWORK }}";'
+        Set-Content $file $content -NoNewline
+      shell: pwsh
+
     # Building with configured commands
     - name: Create the MSIX package
       run: dotnet publish $env:PROJECT_PATH /p:Configuration=Release /p:Platform=${{ matrix.platform }} /p:RuntimeIdentifier=win-${{ matrix.platform }} /p:SelfContained=${{ env.PUBLISH_SELF_CONTAINED }} /p:PublishAot=${{ env.PUBLISH_AOT }} /p:PublishTrimmed=${{ env.PUBLISH_TRIMMED }} /p:TrimmerDefaultAction=${{ env.PUBLISH_TRIM_MODE }} /p:UapAppxPackageBuildMode=SideloadOnly /p:AppxBundle=Never /p:PackageCertificateKeyFile=GitHubActionsWorkflow.pfx /p:AppxPackageDir=Packages\ /p:GenerateAppxPackageOnBuild=true /p:CppBuiltSeparately=true
