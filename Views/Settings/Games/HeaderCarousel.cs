@@ -131,7 +131,7 @@ public partial class HeaderCarousel : ItemsControl
         SearchBox = GetTemplateChild("SearchBox") as AutoSuggestBox;
         SearchBox.TextChanged += SearchBox_TextChanged;
         SearchBox.QuerySubmitted += SearchBox_QuerySubmitted;
-        
+
         Sort = GetTemplateChild("Sort") as Button;
 
         SortByName = GetTemplateChild("SortByName") as RadioMenuFlyoutItem;
@@ -221,7 +221,7 @@ public partial class HeaderCarousel : ItemsControl
         _staticEventsSubscribed = true;
 
         _inputInjector = InputInjector.TryCreate();
-        
+
         Gamepad.GamepadAdded += (s, e) =>
         {
             DispatcherQueue.TryEnqueue(() =>
@@ -273,7 +273,7 @@ public partial class HeaderCarousel : ItemsControl
             }
         }
 
-        if ((activeInstance.Play != null && !activeInstance.Play.IsEnabled) && 
+        if ((activeInstance.Play != null && !activeInstance.Play.IsEnabled) &&
             (currentFocused == activeInstance.Play || (_lastFocusedElement == activeInstance.Play && (currentFocused == null || !IsElementDescendantOf(currentFocused, activeInstance)))))
         {
             if (activeInstance.selectedTile != null)
@@ -320,9 +320,9 @@ public partial class HeaderCarousel : ItemsControl
         }
         else if (isLeft || isRight)
         {
-            if (isLeft && (currentFocused == activeInstance.Play || 
+            if (isLeft && (currentFocused == activeInstance.Play ||
                            currentFocused == activeInstance.StopProcesses ||
-                           IsElementDescendantOf(currentFocused, activeInstance.Metadata_ScrollViewer) || 
+                           IsElementDescendantOf(currentFocused, activeInstance.Metadata_ScrollViewer) ||
                            IsElementDescendantOf(currentFocused, activeInstance.SearchBox)))
             {
                 suppressHorizontal = true;
@@ -332,7 +332,7 @@ public partial class HeaderCarousel : ItemsControl
             {
                 var direction = isLeft ? FocusNavigationDirection.Left : FocusNavigationDirection.Right;
                 var next = FocusManager.FindNextElement(direction, new FindNextElementOptions { SearchRoot = root.Content }) as UIElement;
-                
+
                 if (next != null && currentFocused is UIElement currentUI)
                 {
                     try
@@ -357,9 +357,9 @@ public partial class HeaderCarousel : ItemsControl
         _scrollingButtons &= buttons;
 
         bool isBottomButtonFocused = currentFocused is Button btn && (
-            btn == activeInstance.Play || 
-            btn == activeInstance.Update || 
-            btn == activeInstance.StopProcesses || 
+            btn == activeInstance.Play ||
+            btn == activeInstance.Update ||
+            btn == activeInstance.StopProcesses ||
             btn == activeInstance.RestartProcesses);
 
         if (isBottomButtonFocused)
@@ -407,7 +407,7 @@ public partial class HeaderCarousel : ItemsControl
                         activeInstance.StopProcesses.Focus(FocusState.Programmatic);
                     else if (activeInstance.Update?.Visibility == Visibility.Visible && activeInstance.Update.IsEnabled)
                         activeInstance.Update.Focus(FocusState.Programmatic);
-                    
+
                     suppressUp = true;
                 }
             }
@@ -1015,7 +1015,7 @@ public partial class HeaderCarousel : ItemsControl
         if (!tile.IsLoaded) return;
 
         if (selectedTile == tile && tile.IsSelected) return;
- 
+
         selectedTile = tile;
         SelectTile(tile.FocusState != FocusState.Pointer);
 
@@ -2088,64 +2088,64 @@ public partial class HeaderCarousel : ItemsControl
         // disable hittestvisible to avoid double-clicking
         StopProcesses.IsHitTestVisible = false;
 
-        await Task.Run(() =>
+        try
         {
-            Process.GetProcessesByName("ClassicWindowSwitcher").FirstOrDefault()?.Kill();
-
-            // launch explorer
-            Process.Start("explorer.exe");
-
-            // start windhawk service
-            using var windhawkService = new ServiceController("Windhawk");
-            if (windhawkService.Status == ServiceControllerStatus.Stopped)
+            await Task.Run(() =>
             {
-                windhawkService.Start();
-            }
+                Process.GetProcessesByName("ClassicWindowSwitcher").FirstOrDefault()?.Kill();
 
-            // restart services
-            var serviceNames = new[]
-            {
-                "AudioEndpointBuilder",
-                "AppXSvc",
-                "Appinfo",
-                "CaptureService",
-                "cbdhsvc",
-                "ClipSvc",
-                "CryptSvc",
-                "DevicesFlowUserSvc",
-                "DeviceAssociationService",
-                "Dhcp",
-                "DispBrokerDesktopSvc",
-                //"Dnscache",
-                "DoSvc",
-                "Everything (1.5a)",
-                "gpsvc",
-                "InstallService",
-                "KeyIso",
-                "LicenseManager",
-                "lfsvc",
-                "msiserver",
-                "Netman",
-                "NetSetupSvc",
-                "netprofm",
-                "NgcCtnrSvc",
-                "NgcSvc",
-                "nsi",
-                "ProfSvc",
-                "StateRepository",
-                //"TextInputManagementService",
-                "TrustedInstaller",
-                "UdkUserSvc",
-                "UserManager",
-                "WFDSConMgrSvc",
-                //"WinHttpAutoProxySvc",
-                "Winmgmt",
-                //"Wcmsvc"
-            };
+                // launch explorer
+                Process.Start("explorer.exe");
 
-            foreach (var serviceName in serviceNames)
-            {
-                try
+                // start windhawk service
+                using var windhawkService = new ServiceController("Windhawk");
+                if (windhawkService.Status == ServiceControllerStatus.Stopped)
+                {
+                    windhawkService.Start();
+                }
+
+                // restart services
+                var serviceNames = new[]
+                {
+                    "AudioEndpointBuilder",
+                    "AppXSvc",
+                    "Appinfo",
+                    "CaptureService",
+                    "cbdhsvc",
+                    "ClipSvc",
+                    "CryptSvc",
+                    "DevicesFlowUserSvc",
+                    "DeviceAssociationService",
+                    "Dhcp",
+                    "DispBrokerDesktopSvc",
+                    //"Dnscache",
+                    "DoSvc",
+                    "Everything (1.5a)",
+                    "gpsvc",
+                    "InstallService",
+                    "KeyIso",
+                    "LicenseManager",
+                    "lfsvc",
+                    "msiserver",
+                    "Netman",
+                    "NetSetupSvc",
+                    "netprofm",
+                    "NgcCtnrSvc",
+                    "NgcSvc",
+                    "nsi",
+                    "ProfSvc",
+                    "StateRepository",
+                    //"TextInputManagementService",
+                    "TrustedInstaller",
+                    "UdkUserSvc",
+                    "UserManager",
+                    "WFDSConMgrSvc",
+                    //"WinHttpAutoProxySvc",
+                    "Winmgmt",
+                    //"Wcmsvc"
+                };
+
+                foreach (var serviceName in serviceNames)
                 {
                     using var sc = new ServiceController(serviceName);
 
@@ -2154,21 +2154,22 @@ public partial class HeaderCarousel : ItemsControl
                         sc.Start();
                     }
                 }
-                catch { }
-            }
 
-            string filePath = @"C:\Program Files\Everything 1.5a\Everything.exe";
+                string filePath = @"C:\Program Files\Everything 1.5a\Everything.exe";
 
-            if (File.Exists(filePath))
-            {
-                Process.Start(new ProcessStartInfo
+                if (File.Exists(filePath))
                 {
-                    FileName = filePath,
-                    WindowStyle = ProcessWindowStyle.Hidden,
-                    Arguments = "-startup",
-                });
-            }
-        });
+                    Process.Start(new ProcessStartInfo
+                    {
+                        FileName = filePath,
+                        WindowStyle = ProcessWindowStyle.Hidden,
+                        Arguments = "-startup",
+                    });
+                }
+            });
+        }
+        catch
+        { }
 
         // re-enable hittestvisible
         StopProcesses.IsHitTestVisible = true;
@@ -2281,16 +2282,13 @@ public partial class HeaderCarousel : ItemsControl
         }
         else if (Launcher == "Steam")
         {
-            var exeNames = Directory.GetFiles(InstallLocation, "*.exe", SearchOption.AllDirectories)
-                .Select(Path.GetFileNameWithoutExtension)
-                .Distinct()
-                .ToList();
+            var exeFiles = Directory.GetFiles(InstallLocation, "*.exe", SearchOption.AllDirectories);
+            var exeNames = exeFiles.Select(Path.GetFileNameWithoutExtension).Distinct().ToList();
+            var exeSet = new HashSet<string>(exeFiles, StringComparer.OrdinalIgnoreCase);
 
             if (exeNames.Count == 0) return;
 
-            StartGameWatcher(() =>
-                exeNames.Any(name => Process.GetProcessesByName(name).Length > 0)
-            );
+            StartGameWatcher(() => exeNames.Any(name => Process.GetProcessesByName(name).Any(p => exeSet.Contains(p.MainModule.FileName))));
         }
         else if (Launcher == "Eden")
         {
