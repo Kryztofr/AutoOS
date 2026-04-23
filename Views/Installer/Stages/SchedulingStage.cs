@@ -19,7 +19,7 @@ public static class SchedulingStage
             ("Optimizing Affinities", async () => await Task.Delay(2000), () => PCores >= 4),
 
             // disable interrupt steering
-            ("Disabling interrupt steering", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\kernel", "InterruptSteeringFlags", 1, RegistryValueKind.DWord), () => PCores >= 4),
+            ("Disabling interrupt steering", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\kernel", "InterruptSteeringFlags", 1, RegistryValueKind.DWord), null),
         
             // disable thread dpcs
             ("Disabling Thread DPCs", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\Session Manager\kernel", "ThreadDpcEnable", 0, RegistryValueKind.DWord), null),

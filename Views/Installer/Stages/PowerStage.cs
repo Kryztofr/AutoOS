@@ -9,7 +9,6 @@ public static class PowerStage
 {
     public static List<(string Title, Func<Task> Action, Func<bool> Condition)> GetActions()
     {
-        int PCores = PreparingStage.PCores;
         bool HyperThreading = PreparingStage.HyperThreading;
         Guid guid = Guid.Empty;
 
@@ -44,8 +43,8 @@ public static class PowerStage
 
             // interrupt steering settings
             (@"Setting ""Target Load"" to 0", async () => PowerApi.WriteACValueIndex(guid, new Guid("48672f38-7a9a-4bb2-8bf8-3d85be19de4e"), new Guid("73cde64d-d720-4bb2-a860-c755afe77ef2"), 0), null),
-            (@"Setting ""Interrupt Steering Mode"" to ""Any processor""", async () => PowerApi.WriteACValueIndex(guid, new Guid("48672f38-7a9a-4bb2-8bf8-3d85be19de4e"), new Guid("2bfc24f9-5ea2-4801-8213-3dbae01aa39d"), 1), () => PCores >= 4),
-            (@"Setting ""Interrupt Steering Mode"" to ""Any processor""", async () => PowerApi.WriteDCValueIndex(guid, new Guid("48672f38-7a9a-4bb2-8bf8-3d85be19de4e"), new Guid("2bfc24f9-5ea2-4801-8213-3dbae01aa39d"), 1), () => PCores >= 4),
+            (@"Setting ""Interrupt Steering Mode"" to ""Any processor""", async () => PowerApi.WriteACValueIndex(guid, new Guid("48672f38-7a9a-4bb2-8bf8-3d85be19de4e"), new Guid("2bfc24f9-5ea2-4801-8213-3dbae01aa39d"), 1), null),
+            (@"Setting ""Interrupt Steering Mode"" to ""Any processor""", async () => PowerApi.WriteDCValueIndex(guid, new Guid("48672f38-7a9a-4bb2-8bf8-3d85be19de4e"), new Guid("2bfc24f9-5ea2-4801-8213-3dbae01aa39d"), 1), null),
             (@"Setting ""Unparked time trigger"" to 0", async () => PowerApi.WriteACValueIndex(guid, new Guid("48672f38-7a9a-4bb2-8bf8-3d85be19de4e"), new Guid("d6ba4903-386f-4c2c-8adb-5c21b3328d25"), 0), null),
 
             // power buttons and lid
