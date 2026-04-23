@@ -934,7 +934,7 @@ public static class BiosSettingRecommendationsList
         new BiosSettingRecommendation { SetupQuestion = "Streaming Stores Control", Type = "Option", RecommendedOption = "Enabled" },
         new BiosSettingRecommendation { SetupQuestion = "Sync Flood Propagation to DF Components", Type = "Option", RecommendedOption = "Sync flood disabled" },
         new BiosSettingRecommendation { SetupQuestion = "Sync Flood on PCIe Fatal Error", Type = "Option", RecommendedOption = "False" },
-        new BiosSettingRecommendation { SetupQuestion = "System Hub Watchdog Timer", Type = "Value", RecommendedOption = "0" },
+        //new BiosSettingRecommendation { SetupQuestion = "System Hub Watchdog Timer", Type = "Value", RecommendedOption = "0" }, // causes non boot
         new BiosSettingRecommendation { SetupQuestion = "System probe filter", Type = "Option", RecommendedOption = "Disabled" },
         new BiosSettingRecommendation { SetupQuestion = "Turbo Performance Boost Ratio", Type = "Option", RecommendedOption = "Auto" },
         new BiosSettingRecommendation { SetupQuestion = "TSME", Type = "Option", RecommendedOption = "Disabled" },

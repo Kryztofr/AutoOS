@@ -174,7 +174,14 @@ public sealed partial class BiosSettingPage : Page, INotifyPropertyChanged
                 string backupRoot = Path.Combine(PathHelper.GetAppDataFolderPath(), "SCEWIN", "Backup");
 
                 if (!Directory.Exists(backupRoot))
-                    await ProcessActions.Log(true);
+                {
+                    try
+                    {
+                        await ProcessActions.Log(true);
+                    }
+                    catch
+                    { }
+                }
 
                 string timestamp = DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss");
                 string backupDir = Path.Combine(backupRoot, timestamp);
