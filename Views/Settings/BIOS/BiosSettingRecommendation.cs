@@ -15,7 +15,7 @@ public static class BiosSettingRecommendationsList
     private static readonly CpuArchitecture CpuArch = CpuHelper.GetCpuArchitecture();
     private static readonly bool Ryzen9 = CpuArch.Vendor == CpuVendor.AMD && CpuArch.DisplayName.Contains("Ryzen 9", StringComparison.OrdinalIgnoreCase);
     private static readonly bool X3D = CpuArch.Vendor == CpuVendor.AMD && CpuArch.DisplayName.Contains("X3D", StringComparison.OrdinalIgnoreCase);
-    private static readonly bool APU = CpuArch.Vendor == CpuVendor.AMD && CpuArch.DisplayName.Contains("G", StringComparison.OrdinalIgnoreCase);
+    private static readonly bool APU = CpuArch.Vendor == CpuVendor.AMD && CpuArch.DisplayName.Contains('G', StringComparison.OrdinalIgnoreCase);
 
     public static readonly List<BiosSettingRecommendation> Rules =
     [
@@ -247,11 +247,11 @@ public static class BiosSettingRecommendationsList
         new BiosSettingRecommendation { SetupQuestion = "HDC Control", Type = "Option", RecommendedOption = "Disabled" },
         new BiosSettingRecommendation { SetupQuestion = "HDCP Support", Type = "Option", RecommendedOption = "Disabled" },
         new BiosSettingRecommendation { SetupQuestion = "HID Event Filter Driver", Type = "Option", RecommendedOption = "Disabled" },
-        new BiosSettingRecommendation { SetupQuestion = "HPET", Type = "Option", RecommendedOption = "Disabled" },
         new BiosSettingRecommendation { SetupQuestion = "Hardware Autonomous Speed", Type = "Option", RecommendedOption = "Disabled" },
         new BiosSettingRecommendation { SetupQuestion = "Hardware Autonomous Width", Type = "Option", RecommendedOption = "Disabled" },
         new BiosSettingRecommendation { SetupQuestion = "Hardware Flow Control", Type = "Option", RecommendedOption = "Disabled" },
         new BiosSettingRecommendation { SetupQuestion = "Hardware Prefetcher", Type = "Option", RecommendedOption = "Enabled" },
+        new BiosSettingRecommendation { SetupQuestion = "High Precision Timer", Type = "Option", RecommendedOption = "Enabled" },
         new BiosSettingRecommendation { SetupQuestion = "Hot-Plug Support", Type = "Value", RecommendedOption = "0" },
         new BiosSettingRecommendation { SetupQuestion = "HW Notification", Type = "Option", RecommendedOption = "Disabled" },
         new BiosSettingRecommendation { SetupQuestion = "HwP Autonomous EPP Grouping", Type = "Option", RecommendedOption = "Disabled" },
@@ -748,7 +748,7 @@ public static class BiosSettingRecommendationsList
         new BiosSettingRecommendation { SetupQuestion = "GPP Clock 5 Force Output", Type = "Option", RecommendedOption = "Disabled" },
         new BiosSettingRecommendation { SetupQuestion = "GPP Clock 6 Force Output", Type = "Option", RecommendedOption = "Disabled" },
         new BiosSettingRecommendation { SetupQuestion = "GPP Clock 7 Force Output", Type = "Option", RecommendedOption = "Disabled" },
-        new BiosSettingRecommendation { SetupQuestion = "High Precision Event Timer", Type = "Option", RecommendedOption = "Disabled" },
+        new BiosSettingRecommendation { SetupQuestion = "High Precision Event Timer", Type = "Option", RecommendedOption = "Enabled" },
         new BiosSettingRecommendation { SetupQuestion = "High-Efficiency Mode", Type = "Option", RecommendedOption = "Auto" },
         new BiosSettingRecommendation { SetupQuestion = "Hot Plug Handling mode", Type = "Option", RecommendedOption = "OS First (No Error Handling)" },
         new BiosSettingRecommendation { SetupQuestion = "Hotplug Mode Control", Type = "Option", RecommendedOption = "Disabled" },
@@ -1001,6 +1001,7 @@ public static class BiosSettingRecommendationsList
         new BiosSettingRecommendation { SetupQuestion = "Fast Boot", Type = "Option", RecommendedOption = "Disabled" },
         new BiosSettingRecommendation { SetupQuestion = "Game Boost", Type = "Option", RecommendedOption = "Disabled" },
         new BiosSettingRecommendation { SetupQuestion = "Gigabyte Utilities Downloader", Type = "Option", RecommendedOption = "Disabled" },
+        new BiosSettingRecommendation { SetupQuestion = "HPET", Type = "Option", RecommendedOption = "Enabled" },
         new BiosSettingRecommendation { SetupQuestion = "IPv4 PXE Support", Type = "Option", RecommendedOption = "Disabled" },
         new BiosSettingRecommendation { SetupQuestion = "IPv6 PXE Support", Type = "Option", RecommendedOption = "Disabled" },
         new BiosSettingRecommendation { SetupQuestion = "LEDs in System Power On State", Type = "Option", RecommendedOption = "Off" },
