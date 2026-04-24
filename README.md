@@ -394,6 +394,16 @@ This project is licensed under the **GNU General Public License v3.0**. See the 
 
 ### Third-Party Components
 
+#### Code used:
+1. **LowAudioLatency**
+   - Licensed under the **MIT License**.
+   - Source: [spddl/LowAudioLatency](https://github.com/spddl/LowAudioLatency)
+
+2. **GoInterruptPolicy**
+   - Licensed under the **MIT License**.
+   - Source: [spddl/GoInterruptPolicy](https://github.com/spddl/GoInterruptPolicy)
+
+#### Binaries included:
 1. **nvidiaProfileInspector**
    - Licensed under the **MIT License**.
    - Source: [Orbmu2k/nvidiaProfileInspector](https://github.com/Orbmu2k/nvidiaProfileInspector)
@@ -432,7 +442,7 @@ OTHER LIABILITY IN CONNECTION WITH THE USE OF THE SOFTWARE.
 ```
 - Source: [Custom Resolution Utility (CRU)](https://monitortests.com/custom-resolution-utility)
 
-6. **7-Zip**
+5. **7-Zip**
 ```
   7-Zip
   ~~~~~

@@ -343,9 +343,16 @@ Write-Host "`n===== Step 5: Apply Windows Image =====`n"
 try {
     Write-Host "Mounting ISO..." 
     $MountedIso = (Mount-DiskImage -ImagePath $IsoPicker.FileName -PassThru | Get-Volume).DriveLetter + ":"
+    
+    $WimPath = Join-Path $MountedIso "sources\install.wim"
+    $Images = Get-WindowsImage -ImagePath $WimPath
+    if ($Images.Count -ne 1 -or $Images[0].ImageName -notmatch "Pro") {
+        throw "The selected ISO is not supported, please use the ISO linked in Step 2."
+    }
+
     Write-Host "Copying install.wim..."
     $TempWim = "$env:TEMP\install.wim"
-    Copy-Item -Path "$MountedIso\sources\install.wim" -Destination $TempWim -Force
+    Copy-Item -Path $WimPath -Destination $TempWim -Force
     attrib -r $TempWim
 } finally {
     Write-Host "Unmounting ISO..."
@@ -399,8 +406,4 @@ bcdedit /set "{default}" description "AutoOS"
 bcdedit /set "{default}" bootmenupolicy legacy
 bcdedit /timeout 6
 Write-Host "`n===== AutoOS Deployment Completed Successfully! ====="
-Write-Host "Press Enter to exit..."
-if ($Host.Name -eq 'ConsoleHost') {
-    [void][System.Console]::ReadLine()
-    return
-}
+Write-Host "Open the installation guide on your phone and continue with Step 6."
