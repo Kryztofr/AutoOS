@@ -48,7 +48,7 @@ public partial class GpuInfo : INotifyPropertyChanged
         set { if (hdcp != value) { hdcp = value; OnPropertyChanged(); } }
     }
 
-    private bool gspFirmware = true;
+    private bool gspFirmware = false;
     public bool GspFirmware
     {
         get => gspFirmware;
@@ -163,7 +163,7 @@ public static class GpuHelper
                 string codename = string.Empty;
                 bool pstates = false;
                 bool hdcp = false;
-                bool gspFirmware = true;
+                bool gspFirmware = false;
                 bool hdmidpaudio = true;
 
                 string gpuLocation = GetLocationInfo(hDevInfo, devInfo);
