@@ -1855,20 +1855,7 @@ public partial class HeaderCarousel : ItemsControl
             var startInfo = new ProcessStartInfo
             {
                 FileName = Path.Combine(installLocation, launchExecutable),
-                Arguments = string.Join(" ", new[]
-                {
-                    launchCommand,
-                    "-AUTH_LOGIN=unused",
-                    $"-AUTH_PASSWORD={exchangeCode}",
-                    "-AUTH_TYPE=exchangeCode",
-                    "-epicenv=Prod",
-                    "-EpicPortal",
-                    $"-epicapp={appName}",
-                    $"-epicusername={displayName}",
-                    $"-epicuserid={accountId}",
-                    "-epiclocale=en",
-                    $"-epicsandboxid={catalogNamespace}"
-                }),
+                Arguments = $@"{launchCommand} -AUTH_LOGIN=unused -AUTH_PASSWORD={exchangeCode} -AUTH_TYPE=exchangeCode -epicenv=Prod -EpicPortal -epicapp={appName} -epicusername={displayName} -epicuserid={accountId} -epiclocale=en -epicsandboxid={catalogNamespace}",
                 WorkingDirectory = Path.GetDirectoryName(Path.Combine(installLocation, launchExecutable)),
                 UseShellExecute = false
             };
@@ -1881,10 +1868,17 @@ public partial class HeaderCarousel : ItemsControl
         }
         else if (launcher == "The EA App" || launcher == "Origin")
         {
-            Process.Start(new ProcessStartInfo
+            string exchangeCode = await EpicGamesHelper.Exchange();
+            var (accountId, displayName, _, _) = EpicGamesHelper.GetAccountData(EpicGamesHelper.ActiveEpicGamesAccountPath);
+
+            var startInfo = new ProcessStartInfo
             {
-                FileName = Path.Combine(installLocation, launchExecutable)
-            });
+                FileName = @"C:\Program Files\Electronic Arts\EA Desktop\EA Desktop\Link2EA.exe",
+                Arguments = $@"""link2ea://launchgame/{appName}?AUTH_PASSWORD={exchangeCode}&AUTH_TYPE=exchangeCode&epicusername={Uri.EscapeDataString(displayName)}&epicuserid={accountId}&epiclocale=en&platform=epic"" """" """" """" """" """" """" """" """"",
+                WorkingDirectory = @"C:\Program Files\Electronic Arts\EA Desktop\EA Desktop",
+                UseShellExecute = false
+            };
+            Process.Start(startInfo);
         }
         else if (launcher == "Steam")
         {
@@ -1955,6 +1949,7 @@ public partial class HeaderCarousel : ItemsControl
     {
         // disable hittestvisible to avoid double-clicking
         StopProcesses.IsHitTestVisible = false;
+        RestartProcesses.IsHitTestVisible = false;
 
         await Task.Run(() =>
         {
@@ -2081,98 +2076,96 @@ public partial class HeaderCarousel : ItemsControl
 
         // re-enable hittestvisible
         StopProcesses.IsHitTestVisible = true;
+        RestartProcesses.IsHitTestVisible = true;
     }
 
     private async void RestartProcesses_Click(object sender, RoutedEventArgs e)
     {
         // disable hittestvisible to avoid double-clicking
         StopProcesses.IsHitTestVisible = false;
+        RestartProcesses.IsHitTestVisible = false;
 
-        try
+        await Task.Run(() =>
         {
-            await Task.Run(() =>
+            Process.GetProcessesByName("ClassicWindowSwitcher").FirstOrDefault()?.Kill();
+
+            // launch explorer
+            Process.Start("explorer.exe");
+
+            // start windhawk service
+            using var windhawkService = new ServiceController("Windhawk");
+            if (windhawkService.Status == ServiceControllerStatus.Stopped)
             {
-                Process.GetProcessesByName("ClassicWindowSwitcher").FirstOrDefault()?.Kill();
+                windhawkService.Start();
+            }
 
-                // launch explorer
-                Process.Start("explorer.exe");
+            // restart services
+            var serviceNames = new[]
+            {
+                "AudioEndpointBuilder",
+                "AppXSvc",
+                "Appinfo",
+                "CaptureService",
+                "cbdhsvc",
+                "ClipSvc",
+                "CryptSvc",
+                "DevicesFlowUserSvc",
+                "DeviceAssociationService",
+                "Dhcp",
+                "DispBrokerDesktopSvc",
+                //"Dnscache",
+                "DoSvc",
+                "Everything (1.5a)",
+                "gpsvc",
+                "InstallService",
+                "KeyIso",
+                "LicenseManager",
+                "lfsvc",
+                "msiserver",
+                "Netman",
+                "NetSetupSvc",
+                "netprofm",
+                "NgcCtnrSvc",
+                "NgcSvc",
+                "nsi",
+                "ProfSvc",
+                "StateRepository",
+                //"TextInputManagementService",
+                "TrustedInstaller",
+                "UdkUserSvc",
+                "UserManager",
+                "WFDSConMgrSvc",
+                //"WinHttpAutoProxySvc",
+                "Winmgmt",
+                //"Wcmsvc"
+            };
 
-                // start windhawk service
-                using var windhawkService = new ServiceController("Windhawk");
-                if (windhawkService.Status == ServiceControllerStatus.Stopped)
+            foreach (var serviceName in serviceNames)
+            {
+                using var sc = new ServiceController(serviceName);
+
+                if (sc.Status == ServiceControllerStatus.Stopped)
                 {
-                    windhawkService.Start();
+                    sc.Start();
                 }
+            }
 
-                // restart services
-                var serviceNames = new[]
+            string filePath = @"C:\Program Files\Everything 1.5a\Everything.exe";
+
+            if (File.Exists(filePath))
+            {
+                Process.Start(new ProcessStartInfo
                 {
-                    "AudioEndpointBuilder",
-                    "AppXSvc",
-                    "Appinfo",
-                    "CaptureService",
-                    "cbdhsvc",
-                    "ClipSvc",
-                    "CryptSvc",
-                    "DevicesFlowUserSvc",
-                    "DeviceAssociationService",
-                    "Dhcp",
-                    "DispBrokerDesktopSvc",
-                    //"Dnscache",
-                    "DoSvc",
-                    "Everything (1.5a)",
-                    "gpsvc",
-                    "InstallService",
-                    "KeyIso",
-                    "LicenseManager",
-                    "lfsvc",
-                    "msiserver",
-                    "Netman",
-                    "NetSetupSvc",
-                    "netprofm",
-                    "NgcCtnrSvc",
-                    "NgcSvc",
-                    "nsi",
-                    "ProfSvc",
-                    "StateRepository",
-                    //"TextInputManagementService",
-                    "TrustedInstaller",
-                    "UdkUserSvc",
-                    "UserManager",
-                    "WFDSConMgrSvc",
-                    //"WinHttpAutoProxySvc",
-                    "Winmgmt",
-                    //"Wcmsvc"
-                };
-
-                foreach (var serviceName in serviceNames)
-                {
-                    using var sc = new ServiceController(serviceName);
-
-                    if (sc.Status == ServiceControllerStatus.Stopped)
-                    {
-                        sc.Start();
-                    }
-                }
-
-                string filePath = @"C:\Program Files\Everything 1.5a\Everything.exe";
-
-                if (File.Exists(filePath))
-                {
-                    Process.Start(new ProcessStartInfo
-                    {
-                        FileName = filePath,
-                        WindowStyle = ProcessWindowStyle.Hidden,
-                        Arguments = "-startup",
-                    });
-                }
-            });
-        }
-        catch
-        { }
+                    FileName = filePath,
+                    WindowStyle = ProcessWindowStyle.Hidden,
+                    Arguments = "-startup",
+                });
+            }
+        });
 
         // re-enable hittestvisible
         StopProcesses.IsHitTestVisible = true;
+        RestartProcesses.IsHitTestVisible = true;
     }
 
     private DispatcherTimer gameWatcherTimer;
@@ -2269,16 +2262,11 @@ public partial class HeaderCarousel : ItemsControl
         }
         else if (Launcher == "UbisoftConnect")
         {
-            StartGameWatcher(() =>
-                Process.GetProcessesByName("UbisoftGameLauncher").Any(process => ProcessesHelper.GetCommandLine(process).Contains($"-upc_uplay_id {GameID}", StringComparison.OrdinalIgnoreCase))
-            );
+            StartGameWatcher(() => Process.GetProcessesByName("UbisoftGameLauncher").Any(process => ProcessesHelper.GetCommandLine(process).Contains($"-upc_uplay_id {GameID}", StringComparison.OrdinalIgnoreCase)));
         }
         else if (Launcher == "The EA App" || Launcher == "Origin")
         {
-            StartGameWatcher(() =>
-                Process.GetProcessesByName(Path.GetFileNameWithoutExtension(LaunchExecutable)).Length > 0 ||
-                Process.GetProcessesByName("EALaunchHelper").Any(process => ProcessesHelper.GetCommandLine(process).Contains(Path.GetFileNameWithoutExtension(LaunchExecutable), StringComparison.OrdinalIgnoreCase))
-            );
+            StartGameWatcher(() => Process.GetProcessesByName("EAEgsProxy").Any(process => ProcessesHelper.GetCommandLine(process).Contains(InstallLocation, StringComparison.OrdinalIgnoreCase)));
         }
         else if (Launcher == "Steam")
         {
