@@ -169,7 +169,7 @@ If you get any errors during the script, it’s most likely because your current
 
 **Step 7:** Once finished, wait for AutoOS to open up.
 
-**Step 8:** Carefully look through every tab and select your preferences and apps. Then click "Install AutoOS". This process will take around 15-30 minutes.
+**Step 8:** Carefully look through every tab and select your preferences and apps. Please select the Discord app and don't use Discord in the Browser. Then click "Install AutoOS". This process will take around 15-30 minutes.
 
 ### What to do after the installation is finished?
 - For `Riot Games` titles to show up in the `Games` tab, install them through the `Epic Games Launcher` as well.
