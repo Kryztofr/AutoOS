@@ -1,9 +1,11 @@
+using System.Runtime.InteropServices;
 using System.Text;
 using Windows.Wdk.System.Threading;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.System.Threading;
 using System.Diagnostics;
+using Microsoft.Win32.SafeHandles;
 
 namespace AutoOS.Helpers.Processes;
 
@@ -11,12 +13,10 @@ public static partial class ProcessesHelper
 {
     public static unsafe string GetCommandLine(Process proc)
     {
-        HANDLE handle = PInvoke.OpenProcess(
-            PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_INFORMATION | PROCESS_ACCESS_RIGHTS.PROCESS_VM_READ,
-            false,
-            (uint)proc.Id);
+        HANDLE handle = PInvoke.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_INFORMATION | PROCESS_ACCESS_RIGHTS.PROCESS_VM_READ, false, (uint)proc.Id);
 
-        if ((IntPtr)handle.Value == IntPtr.Zero) return string.Empty;
+        if ((IntPtr)handle.Value == IntPtr.Zero) 
+            return string.Empty;
 
         try
         {
@@ -24,12 +24,7 @@ public static partial class ProcessesHelper
             uint returnLength;
             nuint bytesRead;
 
-            NTSTATUS status = Windows.Wdk.PInvoke.NtQueryInformationProcess(
-                handle,
-                PROCESSINFOCLASS.ProcessBasicInformation,
-                &pbi,
-                (uint)sizeof(PROCESS_BASIC_INFORMATION),
-                &returnLength);
+            NTSTATUS status = Windows.Wdk.PInvoke.NtQueryInformationProcess(handle, PROCESSINFOCLASS.ProcessBasicInformation, &pbi, (uint)sizeof(PROCESS_BASIC_INFORMATION), &returnLength);
 
             if (status.Value != 0) return string.Empty;
 
@@ -52,9 +47,7 @@ public static partial class ProcessesHelper
             }
 
             ushort len = BitConverter.ToUInt16(unicodeStringHeader, 0);
-            IntPtr bufferPtr = (IntPtr.Size == 8)
-                ? (IntPtr)BitConverter.ToInt64(unicodeStringHeader, 8)
-                : (IntPtr)BitConverter.ToInt32(unicodeStringHeader, 4);
+            IntPtr bufferPtr = (IntPtr.Size == 8) ? (IntPtr)BitConverter.ToInt64(unicodeStringHeader, 8) : (IntPtr)BitConverter.ToInt32(unicodeStringHeader, 4);
 
             if (len == 0 || bufferPtr == IntPtr.Zero) return string.Empty;
 
@@ -70,6 +63,38 @@ public static partial class ProcessesHelper
         finally
         {
             PInvoke.CloseHandle(handle);
+        }
+    }
+
+    public static unsafe string GetProcessPath(Process proc)
+    {
+        HANDLE handle = PInvoke.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_QUERY_LIMITED_INFORMATION, false, (uint)proc.Id);
+
+        if ((IntPtr)handle.Value == IntPtr.Zero) 
+            return string.Empty;
+
+        using var safeHandle = new SafeProcessHandle((IntPtr)handle.Value, true);
+
+        uint bufferSize = 256;
+        while (true)
+        {
+            char[] buffer = new char[bufferSize];
+            uint size = bufferSize;
+            if (PInvoke.QueryFullProcessImageName(safeHandle, PROCESS_NAME_FORMAT.PROCESS_NAME_WIN32, buffer, ref size))
+            {
+                return new string(buffer, 0, (int)size);
+            }
+
+            if (Marshal.GetLastWin32Error() == 122)
+            {
+                bufferSize *= 2;
+                if (bufferSize > 32768) 
+                    return string.Empty;
+            }
+            else
+            {
+                return string.Empty;
+            }
         }
     }
 }

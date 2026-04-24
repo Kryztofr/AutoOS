@@ -2276,7 +2276,7 @@ public partial class HeaderCarousel : ItemsControl
 
             if (exeNames.Count == 0) return;
 
-            StartGameWatcher(() => exeNames.Any(name => Process.GetProcessesByName(name).Any(p => exeSet.Contains(p.MainModule.FileName))));
+            StartGameWatcher(() => exeNames.Any(name => Process.GetProcessesByName(name).Any(process => exeSet.Contains(ProcessesHelper.GetProcessPath(process)))));
         }
         else if (Launcher == "Eden")
         {

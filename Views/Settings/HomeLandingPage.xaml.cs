@@ -109,7 +109,7 @@ namespace AutoOS.Views.Settings
 
                     _ = updater.ShowAsync();
                     await updateDialog.RunActions(actions);
-                    await Task.Delay(1000);
+                    await Task.Delay(500);
                     updateDialog.SetStatus("Update complete.");
                     updateDialog.SetSuccess();
                     await Task.Delay(1000);
@@ -118,7 +118,11 @@ namespace AutoOS.Views.Settings
 
                 localSettings.Values["Version"] = currentVersion.ToString();
                 Registry.SetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\AutoOS", "IsInstalled", 1, RegistryValueKind.DWord);
-                await ProcessActions.Log();
+                try
+                {
+                    await ProcessActions.Log();
+                }
+                catch { }
             }
 
             try
