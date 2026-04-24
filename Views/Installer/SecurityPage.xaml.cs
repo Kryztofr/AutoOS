@@ -37,14 +37,12 @@ public sealed partial class SecurityPage : Page
 
         bool IsTamperOn()
         {
-            using var k = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows Defender\Features", false);
-            return (k?.GetValue("TamperProtection") as int?) == 1;
+            return (Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows Defender\Features", false)?.GetValue("TamperProtection") as int?) != 4;
         }
 
         bool IsRealtimeOn()
         {
-            using var k = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows Defender\Real-Time Protection", false);
-            return (k?.GetValue("DisableRealtimeMonitoring") as int?) != 1;
+            return (Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows Defender\Real-Time Protection", false)?.GetValue("DisableRealtimeMonitoring") as int?) != 1;
         }
 
         if (!IsTamperOn() && !IsRealtimeOn())

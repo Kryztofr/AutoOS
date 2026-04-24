@@ -106,6 +106,7 @@ PROPVARIANT
 PropVariantClear
 ReadProcessMemory
 RegisterApplicationRestart
+QueryFullProcessImageName
 SC_ACTION
 SC_ACTION_TYPE
 SC_ENUM_TYPE
