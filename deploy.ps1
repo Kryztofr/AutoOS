@@ -219,9 +219,23 @@ if (-not [Environment]::Is64BitProcess) {
     exit 1
 }
 
-$VirtualDriveEnum = Get-PnpDevice -FriendlyName 'Microsoft Virtual Drive Enumerator' -ErrorAction SilentlyContinue
-if ($VirtualDriveEnum -and $VirtualDriveEnum.Status -ne 'OK') {
-    $VirtualDriveEnum | Enable-PnpDevice -Confirm:$False | Out-Null
+$devices = @(
+    'Microsoft Virtual Drive Enumerator',
+    'Microsoft Virtual DVD-ROM',
+    'Microsoft Storage Spaces Controller'
+)
+
+$restartRequired = $false
+foreach ($name in $devices) {
+    $device = Get-PnpDevice -FriendlyName $name -ErrorAction SilentlyContinue
+    if ($device -and $device.Status -ne 'OK') {
+        Write-Host "Enabling $name..."
+        $device | Enable-PnpDevice -Confirm:$false | Out-Null
+        $restartRequired = $true
+    }
+}
+
+if ($restartRequired) {
     Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\vdrvroot" -Name "Start" -Value 0
     Write-Host "Restart your PC and rerun this script."
     exit 1
