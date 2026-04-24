@@ -29,6 +29,7 @@ public static class ScheduledTasksStage
             @"\Microsoft\Windows\Flighting\FeatureConfig\UsageDataReceiver",
             @"\Microsoft\Windows\Flighting\FeatureConfig\UsageDataReporting",
             @"\Microsoft\Windows\Flighting\OneSettings\RefreshCache",
+            @"\Microsoft\Windows\Hotpatch\Monitoring",
             @"\Microsoft\Windows\Maps\MapsToastTask",
             @"\Microsoft\Windows\Maps\MapsUpdateTask",
             @"\Microsoft\Windows\Power Efficiency Diagnostics\AnalyzeSystem",
