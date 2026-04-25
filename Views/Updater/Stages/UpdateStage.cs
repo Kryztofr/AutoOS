@@ -1,3 +1,5 @@
+using AutoOS.Views.Installer.Actions;
+
 namespace AutoOS.Views.Updater.Stages;
 
 public static class UpdateStage
@@ -7,7 +9,8 @@ public static class UpdateStage
 
         var actions = new List<(string Title, Func<Task> Action, Func<bool> Condition)>
         {
-            
+            // optimize xbox gaming overlay settings
+            ("Optimizing Xbox Gaming Overlay settings", async () => await ProcessActions.RunPowerShellScript("xboxgamingoverlay.ps1", ""), null),
         };
 
         return actions;

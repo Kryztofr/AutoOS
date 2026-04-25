@@ -89,6 +89,9 @@ public static class ApplicationStage
         {
             // optimize notepad settings
             ("Optimizing Notepad settings", async () => await ProcessActions.RunPowerShellScript("notepad.ps1", ""), null),
+            
+            // optimize xbox gaming overlay settings
+            ("Optimizing Xbox Gaming Overlay settings", async () => await ProcessActions.RunPowerShellScript("xboxgamingoverlay.ps1", ""), null),
 
             // download heif image extension
             ("Downloading HEIF Image Extension", async () => await StoreHelper.Download("Microsoft.HEIFImageExtension_8wekyb3d8bbwe"), null),
