@@ -219,24 +219,31 @@ if (-not [Environment]::Is64BitProcess) {
     exit 1
 }
 
-$devices = @(
-    'Microsoft Virtual Drive Enumerator',
-    'Microsoft Virtual DVD-ROM',
-    'Microsoft Storage Spaces Controller'
+$restartRequired = $false
+
+$services = @(
+    @{ Path = "HKLM:\SYSTEM\CurrentControlSet\Services\cdrom"; Name = "Start"; Value = 1 },
+    @{ Path = "HKLM:\SYSTEM\CurrentControlSet\Services\spaceport"; Name = "Start"; Value = 0 },
+    @{ Path = "HKLM:\SYSTEM\CurrentControlSet\Services\vdrvroot"; Name = "Start"; Value = 0 }
 )
 
-$restartRequired = $false
-foreach ($name in $devices) {
-    $device = Get-PnpDevice -FriendlyName $name -ErrorAction SilentlyContinue
-    if ($device -and $device.Status -ne 'OK') {
-        Write-Host "Enabling $name..."
-        $device | Enable-PnpDevice -Confirm:$false | Out-Null
+foreach ($service in $services) {
+    if ((Get-ItemProperty -Path $service.Path -Name $service.Name -ErrorAction SilentlyContinue).$($service.Name) -ne $service.Value) {
+        $serviceName = Split-Path $service.Path -Leaf
+        Write-Host "Updating $serviceName startup..."
+        Set-ItemProperty -Path $service.Path -Name $service.Name -Value $service.Value -ErrorAction SilentlyContinue
         $restartRequired = $true
     }
 }
 
+$virtualDriveEnumerator = Get-PnpDevice -FriendlyName 'Microsoft Virtual Drive Enumerator' -ErrorAction SilentlyContinue
+if ($virtualDriveEnumerator -and $virtualDriveEnumerator.Status -ne 'OK') {
+    Write-Host "Enabling Microsoft Virtual Drive Enumerator..."
+    $virtualDriveEnumerator | Enable-PnpDevice -Confirm:$false | Out-Null
+    $restartRequired = $true
+}
+
 if ($restartRequired) {
-    Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\vdrvroot" -Name "Start" -Value 0
     Write-Host "Restart your PC and rerun this script."
     exit 1
 }
