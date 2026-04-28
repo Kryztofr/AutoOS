@@ -228,8 +228,12 @@ $services = @(
 )
 
 foreach ($service in $services) {
-    if ((Get-ItemProperty -Path $service.Path -Name $service.Name -ErrorAction SilentlyContinue).$($service.Name) -ne $service.Value) {
-        $serviceName = Split-Path $service.Path -Leaf
+    if (-not (Test-Path $service.Path)) {
+        continue
+    }
+    $serviceName = Split-Path $service.Path -Leaf
+    $current = (Get-ItemProperty -Path $service.Path -Name $service.Name -ErrorAction SilentlyContinue).$($service.Name)
+    if ($current -ne $service.Value) {
         Write-Host "Updating $serviceName startup..."
         Set-ItemProperty -Path $service.Path -Name $service.Name -Value $service.Value -ErrorAction SilentlyContinue
         $restartRequired = $true
