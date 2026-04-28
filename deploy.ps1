@@ -229,7 +229,8 @@ $services = @(
 
 foreach ($service in $services) {
     if (-not (Test-Path $service.Path)) {
-        continue
+        Write-Host "Your OS has the $serviceName removed. Either use an existing dual boot or install a default Windows and run the script there."
+        return
     }
     $serviceName = Split-Path $service.Path -Leaf
     $current = (Get-ItemProperty -Path $service.Path -Name $service.Name -ErrorAction SilentlyContinue).$($service.Name)
