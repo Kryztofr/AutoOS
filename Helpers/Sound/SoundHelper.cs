@@ -725,8 +725,8 @@ public static partial class SoundHelper
         if (array == null || array.Count == 0) return;
 
         PInvoke.CoInitializeEx(null, COINIT.COINIT_MULTITHREADED);
-        string currentOutputId = GetDefaultAudioEndpointId(EDataFlow.eRender);
-        string currentInputId = GetDefaultAudioEndpointId(EDataFlow.eCapture);
+        string currentOutputId = GetDefaultAudioEndpointId(EDataFlow.eRender)?.Replace(@"SWD\MMDEVAPI\", "");
+        string currentInputId = GetDefaultAudioEndpointId(EDataFlow.eCapture)?.Replace(@"SWD\MMDEVAPI\", "");
 
         float outputMs = 0;
         float inputMs = 0;
