@@ -216,7 +216,7 @@ if (-not $admin.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 
 if (-not [Environment]::Is64BitProcess) {
     Write-Host "This script must be run in 64-bit PowerShell."
-    exit 1
+    return
 }
 
 $restartRequired = $false
@@ -245,7 +245,7 @@ if ($virtualDriveEnumerator -and $virtualDriveEnumerator.Status -ne 'OK') {
 
 if ($restartRequired) {
     Write-Host "Restart your PC and rerun this script."
-    exit 1
+    return
 }
 
 Write-Host "Please select the Windows ISO..."
