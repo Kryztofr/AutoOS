@@ -263,7 +263,7 @@ public static class PreparingStage
                 .SelectMany(d =>
                 {
                     string usersPath = Path.Combine(d.Name, "Users");
-                    if (!Directory.Exists(usersPath)) return Array.Empty<string>();
+                    if (!Directory.Exists(usersPath)) return [];
 
                     return Directory.GetDirectories(usersPath)
                         .Select(userDir =>

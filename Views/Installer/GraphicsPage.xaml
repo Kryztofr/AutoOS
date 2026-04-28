@@ -51,7 +51,7 @@
                                         <ToggleSwitch DataContext="{x:Bind}"
                                                       IsOn="{x:Bind HDCP, Mode=TwoWay}" />
                                     </dev:SettingsCard>
-                                    <dev:SettingsCard Description="Enabling GPU System Processor (GSP) Firmware offloads driver tasks from the CPU to the GPU System Processor (GSP) for lower latency but can cause unexpected driver issues."
+                                    <dev:SettingsCard Description="Enabling GPU System Processor (GSP) Firmware offloads driver tasks from the CPU to the GPU System Processor (GSP) for lower latency but can cause driver / display issues that requires you to go into safe mode to disable it."
                                                       Header="GPU System Processor (GSP) Firmware"
                                                       Visibility="{x:Bind RTX, Converter={StaticResource BoolToVisibilityConverter}}">
                                         <ToggleSwitch DataContext="{x:Bind}"
