@@ -280,7 +280,7 @@ if ((Get-Partition -DriveLetter "C" | Get-Disk).PartitionStyle -eq 'MBR') {
 
 Write-Host "`n===== Step 2: Check BitLocker State =====`n"
 try {
-    if ((Get-BitLockerVolume -MountPoint C:).VolumeStatus -eq "FullyEncrypted") {
+    if ((Get-BitLockerVolume -MountPoint C:).VolumeStatus -ne "FullyDecrypted") {
         Write-Host "BitLocker is enabled. Disabling..."
         Disable-BitLocker -MountPoint C:
         Write-Host "Wait until decryption finishes, then rerun this script."
