@@ -531,7 +531,7 @@ public static class ApplicationStage
             ("Downloading Vencord", async () => await ProcessActions.RunDownload("https://github.com/Vencord/Installer/releases/latest/download/VencordInstallerCli.exe", ApplicationData.Current.TemporaryFolder.Path, "VencordInstallerCli.exe"), () => Discord == true),
 
             // install vencord
-            ("Installing Vencord", async () => await Process.Start(new ProcessStartInfo { FileName = "cmd.exe", Arguments = $@"/c """"{Path.Combine(ApplicationData.Current.TemporaryFolder.Path, "VencordInstallerCli.exe")}"" -install -branch auto""" , CreateNoWindow = true })!.WaitForExitAsync(), () => Discord == true),
+            ("Installing Vencord", async () => await Process.Start(new ProcessStartInfo { FileName = "cmd.exe", Arguments = $@"/c """"{Path.Combine(ApplicationData.Current.TemporaryFolder.Path, "VencordInstallerCli.exe")}"" -install -install-openasar -branch auto""" , CreateNoWindow = true })!.WaitForExitAsync(), () => Discord == true),
             ("Installing Vencord", async () => await (await ApplicationData.Current.TemporaryFolder.GetFileAsync("VencordInstallerCli.exe")).DeleteAsync(), () => Discord == true),
 
             // import vencord settings

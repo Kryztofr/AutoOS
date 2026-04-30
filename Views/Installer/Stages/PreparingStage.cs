@@ -143,13 +143,6 @@ public static class PreparingStage
                 SSD = true;
             }
 
-            Process.Start(new ProcessStartInfo
-            {
-                FileName = "powershell.exe",
-                Arguments = $@"-NoProfile -ExecutionPolicy Bypass -Command ""Add-MpPreference -ExclusionProcess 'AutoOS.exe'""",
-                CreateNoWindow = true
-            });
-
             ScheduleMode = localSettings.Values["ScheduleMode"]?.ToString();
             LightTime = localSettings.Values["LightTime"]?.ToString();
             DarkTime = localSettings.Values["DarkTime"]?.ToString();

@@ -1,7 +1,5 @@
-using AutoOS.Helpers.GPU;
-using AutoOS.Helpers.Registry;
-using Microsoft.Win32;
 using System.Diagnostics;
+using Windows.Storage;
 
 namespace AutoOS.Views.Updater.Stages;
 
@@ -9,19 +7,17 @@ public static class UpdateStage
 {
     public static List<(string Title, Func<Task> Action, Func<bool> Condition)> UpdateActions(UpdateDialog dialog)
     {
-        var gpus = GpuHelper.GetGPUs().Where(gpu => gpu.NVIDIA);
+        bool Discord = Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Discord"));
 
         var actions = new List<(string Title, Func<Task> Action, Func<bool> Condition)>
         {
-            // change account display name to "autoos"
-            (@"Changing Account Display Name to ""AutoOS""", async () => await RegistryHelper.RunAs(RegistryHelper.Identity.CurrentUser, new ProcessStartInfo("net.exe", @"user user /fullname:""AutoOS""") { CreateNoWindow = true }), null),
-        };
+            // download vencord
+            ("Downloading Vencord", async () => await dialog.Download("https://github.com/Vencord/Installer/releases/latest/download/VencordInstallerCli.exe", ApplicationData.Current.TemporaryFolder.Path, "VencordInstallerCli.exe", "Downloading Vencord", dialog.CurrentGroupStart, dialog.CurrentGroupTarget), () => Discord),
 
-        foreach (var gpu in gpus)
-        {
-            // adjust "rmclkslowdown"
-            actions.Add((@"Adjusting ""RMClkSlowDown""", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RMClkSlowDown", 67108864, RegistryValueKind.DWord), null));
-        }
+            // install vencord
+            ("Installing Vencord", async () => await Process.Start(new ProcessStartInfo { FileName = "cmd.exe", Arguments = $@"/c """"{Path.Combine(ApplicationData.Current.TemporaryFolder.Path, "VencordInstallerCli.exe")}"" -install -install-openasar -branch auto""" , CreateNoWindow = true })!.WaitForExitAsync(), () => Discord),
+            ("Installing Vencord", async () => await (await ApplicationData.Current.TemporaryFolder.GetFileAsync("VencordInstallerCli.exe")).DeleteAsync(), () => Discord),
+        };
 
         return actions;
     }
