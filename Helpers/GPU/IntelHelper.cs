@@ -116,9 +116,7 @@ namespace AutoOS.Helpers.GPU
                 (gpu.IsInstalled ?  "Updating INTEL driver" : "Installing INTEL driver", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(ApplicationData.Current.TemporaryFolder.Path, "INTEL", "driver", "Installer.exe"), Arguments = "/silent", UseShellExecute = false, CreateNoWindow = true })!.WaitForExitAsync(), null),
                 (gpu.IsInstalled ?  "Updating INTEL driver" : "Installing INTEL driver", async () => await Task.Delay(3000), null),
                 (gpu.IsInstalled ? "Updating INTEL driver" : "Installing INTEL driver", async () => GpuHelper.RefreshGpu(gpu), null),
-                (gpu.IsInstalled ? "Updating INTEL driver" : "Installing INTEL driver", async () => await (await ApplicationData.Current.TemporaryFolder.GetFileAsync("driver.zip")).DeleteAsync(), () => Intel_6th == true),
-                (gpu.IsInstalled ? "Updating INTEL driver" : "Installing INTEL driver", async () => await (await ApplicationData.Current.TemporaryFolder.GetFileAsync("driver.exe")).DeleteAsync(), () => Intel_6th == false),
-                (gpu.IsInstalled ? "Updating INTEL driver" : "Installing INTEL driver", async () => await (await ApplicationData.Current.TemporaryFolder.GetFolderAsync("driver")).DeleteAsync(), null)
+                (gpu.IsInstalled ? "Updating INTEL driver" : "Installing INTEL driver", async () => await (await ApplicationData.Current.TemporaryFolder.GetFolderAsync("INTEL")).DeleteAsync(), null)
             };
 
             return actions;

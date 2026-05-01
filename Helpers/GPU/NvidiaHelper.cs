@@ -159,8 +159,7 @@ namespace AutoOS.Helpers.GPU
                 (gpu.IsInstalled ? "Updating NVIDIA driver" : "Installing NVIDIA driver", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(ApplicationData.Current.TemporaryFolder.Path, "NVIDIA", "driver", "setup.exe"), Arguments = $"/s{(gpu.IsInstalled ? " /clean" : "")}", CreateNoWindow = true })!.WaitForExitAsync(), null),
                 (gpu.IsInstalled ? "Updating NVIDIA driver" : "Installing NVIDIA driver", async () => await Task.Delay(3000), null),
                 (gpu.IsInstalled ? "Updating NVIDIA driver" : "Installing NVIDIA driver", async () => GpuHelper.RefreshGpu(gpu), null),
-                (gpu.IsInstalled ? "Updating NVIDIA driver" : "Installing NVIDIA driver", async () => await (await ApplicationData.Current.TemporaryFolder.GetFileAsync("driver.exe")).DeleteAsync(), null),
-                (gpu.IsInstalled ? "Updating NVIDIA driver" : "Installing NVIDIA driver", async () => await (await ApplicationData.Current.TemporaryFolder.GetFolderAsync("driver")).DeleteAsync(), null)
+                (gpu.IsInstalled ? "Updating NVIDIA driver" : "Installing NVIDIA driver", async () => await (await ApplicationData.Current.TemporaryFolder.GetFolderAsync("NVIDIA")).DeleteAsync(), null)
             };
 
             return actions;
