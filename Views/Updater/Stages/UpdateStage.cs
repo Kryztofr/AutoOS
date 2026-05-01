@@ -17,7 +17,7 @@ public static class UpdateStage
             ("Downloading OpenAsar", async () => await dialog.Download("https://github.com/Vencord/Installer/releases/latest/download/VencordInstallerCli.exe", ApplicationData.Current.TemporaryFolder.Path, "VencordInstallerCli.exe", "Downloading Vencord", dialog.CurrentGroupStart, dialog.CurrentGroupTarget), () => Discord),
 
             // install openasar
-            ("Installing OpenAsar", async () => { foreach (var p in Process.GetProcessesByName("Discord")) { try { p.Kill(); await p.WaitForExitAsync(); } catch { } } }, () => Discord),
+            ("Installing OpenAsar", async () => { foreach (var process in Process.GetProcessesByName("Discord")) { try { process.Kill(); await process.WaitForExitAsync(); } catch { } } }, () => Discord),
             ("Installing OpenAsar", async () => await Process.Start(new ProcessStartInfo { FileName = "cmd.exe", Arguments = $@"/c """"{Path.Combine(ApplicationData.Current.TemporaryFolder.Path, "VencordInstallerCli.exe")}"" -install -branch auto""" , CreateNoWindow = true })!.WaitForExitAsync(), () => Discord),
             ("Installing OpenAsar", async () => await Process.Start(new ProcessStartInfo { FileName = "cmd.exe", Arguments = $@"/c """"{Path.Combine(ApplicationData.Current.TemporaryFolder.Path, "VencordInstallerCli.exe")}"" -install-openasar -branch auto""" , CreateNoWindow = true })!.WaitForExitAsync(), () => Discord == true),
             ("Installing OpenAsar", async () => await (await ApplicationData.Current.TemporaryFolder.GetFileAsync("VencordInstallerCli.exe")).DeleteAsync(), () => Discord),
