@@ -1,4 +1,6 @@
-﻿using AutoOS.Views.Installer.Actions;
+using System.Diagnostics;
+using AutoOS.Helpers.Registry;
+using AutoOS.Views.Installer.Actions;
 using AutoOS.Views.Updater;
 using AutoOS.Views.Updater.Stages;
 using CommunityToolkit.WinUI.Controls;
@@ -46,6 +48,28 @@ namespace AutoOS.Views.Settings
                 };
                 await dialog.ShowAsync();
                 Application.Current.Exit();
+            }
+
+            if (ubr >= 8313 && (Registry.GetValue(@"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\FeatureManagement\Overrides\8\3036241548", "EnabledState", null) as int?) == 1)
+            {
+                RegistryHelper.DeleteKey(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Windhawk\Engine\Mods\windows-11-start-menu-styler\Settings");
+                RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_LOCAL_MACHINE\SOFTWARE\Windhawk\Engine\Mods\windows-11-start-menu-styler\Settings", "webContentStyles[0].styles[0]", "display: none !important", RegistryValueKind.String);
+                RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_LOCAL_MACHINE\SOFTWARE\Windhawk\Engine\Mods\windows-11-start-menu-styler\Settings", "webContentStyles[0].target", "#temporaryMessages", RegistryValueKind.String);
+                RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_LOCAL_MACHINE\SOFTWARE\Windhawk\Engine\Mods\windows-11-start-menu-styler", "Disabled", 0, RegistryValueKind.DWord);
+                RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\FeatureManagement\Overrides\8\3036241548", "EnabledState", 2, RegistryValueKind.DWord);
+                
+                var restartDialog = new ContentDialog
+                {
+                    Title = "Restart Required",
+                    Content = "A restart is required to apply the Windows Start Menu changes.",
+                    PrimaryButtonText = "Restart",
+                    DefaultButton = ContentDialogButton.Primary,
+                    XamlRoot = XamlRoot
+                };
+
+                await restartDialog.ShowAsync();
+                Process.Start(new ProcessStartInfo("shutdown", "/r /t 0") { CreateNoWindow = true });
+                return;
             }
 
             Version currentVersion = new(ProcessInfoHelper.Version);

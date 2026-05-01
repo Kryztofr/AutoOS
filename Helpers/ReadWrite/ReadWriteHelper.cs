@@ -8,11 +8,11 @@ public partial class ReadWriteHelper : IDisposable
 {
     public ReadWriteHelper()
     {
-        if (WinRing.InitializeOls() == 0)
-            throw new Exception("Failed to initialize WinRing0 driver.");
+        //if (WinRing.InitializeOls() == 0)
+        //    throw new Exception("Failed to initialize WinRing0 driver.");
 
-        if (WinRing.GetDllStatus() != 0)
-            throw new Exception($"WinRing0 status error: {WinRing.GetDllStatus()}");
+        //if (WinRing.GetDllStatus() != 0)
+        //    throw new Exception($"WinRing0 status error: {WinRing.GetDllStatus()}");
     }
 
     // MSR

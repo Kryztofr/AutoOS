@@ -120,14 +120,9 @@ public static class PreparingStage
 
         await Task.Run(async () =>
         {
-            using var cpuKey = Registry.LocalMachine.OpenSubKey(@"HARDWARE\DESCRIPTION\System\CentralProcessor\0", writable: false);
-
-            var cpuVendor = cpuKey.GetValue("VendorIdentifier") as string;
-
-            if (cpuVendor.Contains("GenuineIntel"))
-                INTELCPU = true;
-            else if (cpuVendor.Contains("AuthenticAMD"))
-                AMDCPU = true;
+            CpuArchitecture CpuArch = CpuHelper.GetCpuArchitecture();
+            INTELCPU = CpuArch.Vendor == CpuVendor.Intel;
+            AMDCPU = CpuArch.Vendor == CpuVendor.AMD;
 
             var output = Process.Start(new ProcessStartInfo
             {
