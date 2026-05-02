@@ -175,7 +175,7 @@ public sealed partial class InstallPage : Page
                     {
                         try
                         {
-                            await ProcessActions.LogError(ex);
+                            await ProcessActions.LogError(ex, previousTitle);
                         }
                         catch {   }
 
@@ -244,7 +244,7 @@ public sealed partial class InstallPage : Page
                 {
                     try
                     {
-                        await ProcessActions.LogError(ex);
+                        await ProcessActions.LogError(ex, previousTitle);
                     }
                     catch { }
 

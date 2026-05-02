@@ -189,6 +189,25 @@ public static class ProcessActions
             };
 
             await download.StartAsync();
+
+            string finalFileName = download.Package?.FileName ?? (!string.IsNullOrEmpty(file) ? Path.Combine(path, file) : null);
+
+            string downloadFile = finalFileName + ".download";
+            int retries = 0;
+            while (!File.Exists(finalFileName) && retries < 50)
+            {
+                if (File.Exists(downloadFile))
+                {
+                    try
+                    {
+                        File.Move(downloadFile, finalFileName);
+                        break;
+                    }
+                    catch { }
+                }
+                await Task.Delay(100);
+                retries++;
+            }
         }
     }
 
@@ -220,7 +239,7 @@ public static class ProcessActions
         {
             foreach (var process in Process.GetProcessesByName(name))
             {
-                process.Kill(); 
+                process.Kill();
                 await process.WaitForExitAsync();
             }
         }
@@ -269,11 +288,12 @@ public static class ProcessActions
                     }
                 }
             }
-            try 
-            { 
-                if (File.Exists(old)) 
-                    File.Delete(old); 
-            } catch { }
+            try
+            {
+                if (File.Exists(old))
+                    File.Delete(old);
+            }
+            catch { }
         }
 
         Registry.SetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon", "AutoRestartShell", 1, RegistryValueKind.DWord);
@@ -372,7 +392,7 @@ public static class ProcessActions
         await client.PostAsync(webhook, multipart);
     }
 
-    public static async Task LogError(Exception ex)
+    public static async Task LogError(Exception ex, string actionTitle = null)
     {
         string installStart = localSettings.Values["Install_Start"]?.ToString() ?? "N/A";
         string installEnd = localSettings.Values["Install_End"]?.ToString() ?? "N/A";
@@ -435,6 +455,7 @@ public static class ProcessActions
                 $"{build}.{ubr}\n" +
                 $"Install start: {installStart}\n" +
                 $"Install end: {installEnd}\n" +
+                (!string.IsNullOrEmpty(actionTitle) ? $"Action Title: {actionTitle}\n" : "") +
                 $"{ex.GetType().FullName}\n" +
                 $"Message: {ex.Message}\n" +
                 $"HResult: 0x{ex.HResult:X}\n" +
