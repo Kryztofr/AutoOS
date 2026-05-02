@@ -96,7 +96,8 @@ public static class ProcessActions
         if (url.Contains("raw.githubusercontent.com", StringComparison.OrdinalIgnoreCase))
         {
             using var client = new HttpClient();
-            await File.WriteAllTextAsync(path, await client.GetStringAsync(url), Encoding.UTF8);
+            string destination = string.IsNullOrWhiteSpace(file) ? path : Path.Combine(path, file);
+            await File.WriteAllTextAsync(destination, await client.GetStringAsync(url), Encoding.UTF8);
             return;
         }
         else
