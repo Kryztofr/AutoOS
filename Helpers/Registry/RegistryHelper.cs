@@ -7,6 +7,10 @@ using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.Security;
 using Windows.Win32.System.Threading;
+using Windows.Win32.System.Services;
+using AutoOS.Helpers.Services;
+using System.ServiceProcess;
+using System.ComponentModel;
 
 namespace AutoOS.Helpers.Registry;
 
@@ -40,6 +44,23 @@ public static partial class RegistryHelper
         {
             EnablePrivilege("SeImpersonatePrivilege");
 
+            using (var sc = new ServiceController("seclogon"))
+            {
+                if (sc.Status != ServiceControllerStatus.Running)
+                {
+                    try
+                    {
+                        sc.Start();
+                    }
+                    catch
+                    {
+                        ServicesHelper.SetStartupType("seclogon", SERVICE_START_TYPE.SERVICE_DEMAND_START);
+                        sc.Start();
+                    }
+                }
+                sc.WaitForStatus(ServiceControllerStatus.Running, TimeSpan.FromSeconds(10));
+            }
+
             var si = new STARTUPINFOW();
             si.cb = (uint)Marshal.SizeOf<STARTUPINFOW>();
             si.dwFlags = STARTUPINFOW_FLAGS.STARTF_USESHOWWINDOW;
@@ -60,7 +81,7 @@ public static partial class RegistryHelper
             unsafe
             {
                 if (!PInvoke.CreateProcessWithToken(hToken, (CREATE_PROCESS_LOGON_FLAGS)1, null, ref pCommandLine, creationFlags, null, string.IsNullOrEmpty(psi.WorkingDirectory) ? null : psi.WorkingDirectory, in si, out pi))
-                    throw new System.ComponentModel.Win32Exception(Marshal.GetLastWin32Error());
+                    throw new Win32Exception(Marshal.GetLastWin32Error());
             }
 
             try
@@ -178,12 +199,12 @@ public static partial class RegistryHelper
     {
         var winlogon = Process.GetProcessesByName("winlogon").FirstOrDefault() ?? throw new Exception("winlogon.exe not found.");
         if (!PInvoke.OpenProcessToken(winlogon.SafeHandle, TOKEN_ACCESS_MASK.TOKEN_DUPLICATE, out SafeFileHandle hToken))
-            throw new System.ComponentModel.Win32Exception(Marshal.GetLastWin32Error());
+            throw new Win32Exception(Marshal.GetLastWin32Error());
 
         using (hToken)
         {
             if (!PInvoke.DuplicateTokenEx(hToken, (TOKEN_ACCESS_MASK)0x01FF, null, SECURITY_IMPERSONATION_LEVEL.SecurityImpersonation, TOKEN_TYPE.TokenPrimary, out SafeFileHandle hNewToken))
-                throw new System.ComponentModel.Win32Exception(Marshal.GetLastWin32Error());
+                throw new Win32Exception(Marshal.GetLastWin32Error());
             
             IntPtr handle = hNewToken.DangerousGetHandle();
             hNewToken.SetHandleAsInvalid();
@@ -197,20 +218,31 @@ public static partial class RegistryHelper
         return WindowsIdentity.RunImpersonated(sysToken, () =>
         {
             EnablePrivilege("SeDebugPrivilege");
-            using (var sc = new System.ServiceProcess.ServiceController("TrustedInstaller"))
+            using (var sc = new ServiceController("TrustedInstaller"))
             {
-                if (sc.Status != System.ServiceProcess.ServiceControllerStatus.Running) sc.Start();
-                sc.WaitForStatus(System.ServiceProcess.ServiceControllerStatus.Running, TimeSpan.FromSeconds(10));
+                if (sc.Status != ServiceControllerStatus.Running)
+                {
+                    try
+                    {
+                        sc.Start();
+                    }
+                    catch
+                    {
+                        ServicesHelper.SetStartupType("TrustedInstaller", SERVICE_START_TYPE.SERVICE_DEMAND_START);
+                        sc.Start();
+                    }
+                }
+                sc.WaitForStatus(ServiceControllerStatus.Running, TimeSpan.FromSeconds(10));
             }
 
             var tiProcess = Process.GetProcessesByName("TrustedInstaller").FirstOrDefault() ?? throw new Exception("TrustedInstaller not found.");
             if (!PInvoke.OpenProcessToken(tiProcess.SafeHandle, (TOKEN_ACCESS_MASK)0x01FF, out SafeFileHandle tiToken))
-                throw new System.ComponentModel.Win32Exception(Marshal.GetLastWin32Error());
+                throw new Win32Exception(Marshal.GetLastWin32Error());
 
             using (tiToken)
             {
                 if (!PInvoke.DuplicateTokenEx(tiToken, (TOKEN_ACCESS_MASK)0x01FF, null, SECURITY_IMPERSONATION_LEVEL.SecurityImpersonation, TOKEN_TYPE.TokenPrimary, out SafeFileHandle hNewToken))
-                    throw new System.ComponentModel.Win32Exception(Marshal.GetLastWin32Error());
+                    throw new Win32Exception(Marshal.GetLastWin32Error());
                 
                 IntPtr handle = hNewToken.DangerousGetHandle();
                 hNewToken.SetHandleAsInvalid();
@@ -222,12 +254,12 @@ public static partial class RegistryHelper
     private static unsafe SafeAccessTokenHandle CreateCurrentUserToken()
     {
         if (!PInvoke.OpenProcessToken(Process.GetCurrentProcess().SafeHandle, TOKEN_ACCESS_MASK.TOKEN_DUPLICATE | TOKEN_ACCESS_MASK.TOKEN_QUERY, out SafeFileHandle hToken))
-            throw new System.ComponentModel.Win32Exception(Marshal.GetLastWin32Error());
+            throw new Win32Exception(Marshal.GetLastWin32Error());
 
         using (hToken)
         {
             if (!PInvoke.DuplicateTokenEx(hToken, (TOKEN_ACCESS_MASK)0x01FF, null, SECURITY_IMPERSONATION_LEVEL.SecurityImpersonation, TOKEN_TYPE.TokenPrimary, out SafeFileHandle hNewToken))
-                throw new System.ComponentModel.Win32Exception(Marshal.GetLastWin32Error());
+                throw new Win32Exception(Marshal.GetLastWin32Error());
 
             IntPtr handle = hNewToken.DangerousGetHandle();
             hNewToken.SetHandleAsInvalid();
