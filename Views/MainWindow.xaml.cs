@@ -1,4 +1,4 @@
-﻿using Microsoft.UI.Windowing;
+using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml.Input;
 using Windows.Win32;
 using Windows.Win32.Foundation;
@@ -55,7 +55,7 @@ namespace AutoOS.Views
             {
                 App.Current.NavService
                     .Initialize(NavView, NavFrame, NavigationPageMappingsInstaller.PageDictionary)
-                    .ConfigureDefaultPage(typeof(Installer.HomeLandingPage))
+                    .ConfigureDefaultPage((Windows.Storage.ApplicationData.Current.LocalSettings.Values["actionStage"] as int? ?? -1) > 0 ? typeof(Installer.InstallPage) : typeof(Installer.HomeLandingPage))
                     .ConfigureJsonFile("Assets/NavViewMenu/Installer.json")
                     .ConfigureTitleBar(AppTitleBar, false)
                     .ConfigureBreadcrumbBar(BreadCrumbNav, BreadcrumbPageMappings.PageDictionary);
