@@ -50,7 +50,7 @@ namespace AutoOS.Views.Settings
                 Application.Current.Exit();
             }
 
-            if (ubr >= 8313 && (Registry.GetValue(@"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\FeatureManagement\Overrides\8\3036241548", "EnabledState", null) as int?) == 1)
+            if (ubr >= 8313 && (Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Windhawk\Engine\Mods\windows-11-start-menu-styler\Settings", "theme", null) as string) == "SideBySide2")
             {
                 RegistryHelper.DeleteKey(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Windhawk\Engine\Mods\windows-11-start-menu-styler\Settings");
                 RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_LOCAL_MACHINE\SOFTWARE\Windhawk\Engine\Mods\windows-11-start-menu-styler\Settings", "webContentStyles[0].styles[0]", "display: none !important", RegistryValueKind.String);
