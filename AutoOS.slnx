@@ -7,13 +7,13 @@
   <Folder Name="/Solution Items/">
     <File Path=".editorconfig" />
   </Folder>
-  <Project Path="AutoOS.csproj">
+  <Project Path="src\AutoOS.App.Sound\AutoOS.Sound.vcxproj" Id="2c195a31-78fe-4baf-9328-bb5d0ada390a">
+    <Platform Project="x64" />
+  </Project>
+  <Project Path="src\AutoOS.App\AutoOS.App.csproj">
     <Platform Solution="*|ARM64" Project="ARM64" />
     <Platform Solution="*|x64" Project="x64" />
     <Platform Solution="*|x86" Project="x86" />
     <Deploy />
-  </Project>
-  <Project Path="Helpers\Sound\SoundHelper.vcxproj" Id="2c195a31-78fe-4baf-9328-bb5d0ada390a">
-    <Platform Project="x64" />
   </Project>
 </Solution>

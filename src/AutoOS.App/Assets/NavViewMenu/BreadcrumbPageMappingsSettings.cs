@@ -1,0 +1,24 @@
+using DevWinUI;
+
+namespace AutoOS.Assets.NavViewMenu;
+
+public partial class BreadcrumbPageMappingsSettings
+{
+    public static Dictionary<Type, BreadcrumbPageConfig> PageDictionary { get; } = new()
+    {
+        { typeof(Views.Settings.HomeLandingPage), new BreadcrumbPageConfig { PageTitle = null, IsHeaderVisible = false, ClearNavigation = false } },
+        { typeof(Views.Settings.SoundPage), new BreadcrumbPageConfig { PageTitle = null, IsHeaderVisible = false, ClearNavigation = false } },
+        { typeof(Views.Settings.DisplayPage), new BreadcrumbPageConfig { PageTitle = null, IsHeaderVisible = false, ClearNavigation = false } },
+        { typeof(Views.Settings.GraphicsPage), new BreadcrumbPageConfig { PageTitle = null, IsHeaderVisible = false, ClearNavigation = false } },
+        { typeof(Views.Settings.SchedulingPage), new BreadcrumbPageConfig { PageTitle = null, IsHeaderVisible = false, ClearNavigation = false } },
+        { typeof(Views.Settings.DevicesPage), new BreadcrumbPageConfig { PageTitle = null, IsHeaderVisible = false, ClearNavigation = false } },
+        { typeof(Views.Settings.InternetPage), new BreadcrumbPageConfig { PageTitle = null, IsHeaderVisible = false, ClearNavigation = false } },
+        { typeof(Views.Settings.PowerPage), new BreadcrumbPageConfig { PageTitle = null, IsHeaderVisible = false, ClearNavigation = false } },
+        { typeof(Views.Settings.ServicesPage), new BreadcrumbPageConfig { PageTitle = null, IsHeaderVisible = false, ClearNavigation = false } },
+        { typeof(Views.Settings.BiosSettingPage), new BreadcrumbPageConfig { PageTitle = null, IsHeaderVisible = false, ClearNavigation = false } },
+        { typeof(Views.Settings.DiskCleanupPage), new BreadcrumbPageConfig { PageTitle = null, IsHeaderVisible = false, ClearNavigation = false } },
+        { typeof(Views.Settings.SecurityPage), new BreadcrumbPageConfig { PageTitle = null, IsHeaderVisible = false, ClearNavigation = false } },
+        { typeof(Views.Settings.UpdatePage), new BreadcrumbPageConfig { PageTitle = null, IsHeaderVisible = false, ClearNavigation = false } },
+        { typeof(Views.Settings.GamesPage), new BreadcrumbPageConfig { PageTitle = null, IsHeaderVisible = false, ClearNavigation = false } },
+    };
+}

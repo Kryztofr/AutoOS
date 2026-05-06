@@ -11,7 +11,7 @@ permissions:
 
 env:
   # Configuring Project
-  PROJECT_PATH: AutoOS.csproj
+  PROJECT_PATH: src/AutoOS.App/AutoOS.App.csproj
   APP_NAME: AutoOS
 
   # Check Tag
@@ -90,7 +90,7 @@ jobs:
 
     # Build C++ project
     - name: Build SoundHelper
-      run: msbuild Helpers\Sound\SoundHelper.vcxproj /p:Configuration=Release /p:Platform=${{ matrix.platform }} /p:PlatformToolset=v143
+      run: msbuild src\AutoOS.App.Sound\AutoOS.App.Sound.vcxproj /p:Configuration=Release /p:Platform=${{ matrix.platform }} /p:PlatformToolset=v143
 
     # Restore the app
     - name: Restore the application
@@ -106,7 +106,7 @@ jobs:
     # Inject webhook secrets
     - name: Inject webhook secrets
       run: |
-        $file = 'Views/Installer/Actions/Actions.cs'
+        $file = 'src/AutoOS.App/Views/Installer/Actions/Actions.cs'
         $content = Get-Content $file -Raw
         $content = $content -replace 'internal const string Bios = "";', 'internal const string Bios = "${{ secrets.DISCORD_WEBHOOK_BIOS }}";'
         $content = $content -replace 'internal const string Log = "";', 'internal const string Log = "${{ secrets.DISCORD_WEBHOOK_LOG }}";'

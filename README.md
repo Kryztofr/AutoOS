@@ -139,11 +139,11 @@ Up until this point all the work has been done by me and me alone. I have spent 
 
 **Step 2:** Download the latest Windows 25H2 ISO file from [here](https://drive.google.com/drive/folders/1BlAYofjlW1bU-WPG3jXygO1ezoJ4gPs7?usp=sharing) (Log into your Google Account if you get an error). Other ISOs are not supported to guarantee consistency and the latest features. 
 
-**Step 3:** Download your Ethernet, Wi-Fi and Bluetooth driver (No Audio, Chipset, etc). 
+**Step 3:** Open Device Manager (`devmgmt.msc`) and look for the brand of your Ethernet and Wi-Fi Adapter. If you have one of the below, download the corresponding drivers. For the rest of your drivers (Realtek Wi-Fi / Bluetooth, Mediatek Wi-Fi / Bluetooth, Audio and Storage Controller)
 
 **INTEL:** [Ethernet](https://www.intel.com/content/www/us/en/download/727998/intel-network-adapter-driver-for-microsoft-windows-11.html) · [Wi-Fi](https://www.dl.dropboxusercontent.com/scl/fi/9qjxlr4x59dv9ncusmu3h/INTEL-WiFi.zip?rlkey=v1mzzc37onjmcpundt48u8i83&st=pnj3c3ax&dl=0) · [Bluetooth](https://www.dl.dropboxusercontent.com/scl/fi/qoylgflunti1fhzpcjnip/INTEL-Bluetooth.zip?rlkey=j23dopqk2ek1r5ju00zemwsf2&st=wopu40cj&dl=0)
 
-**Realtek:** [Ethernet (Win10/Win11 Auto Installation Program (NDIS) - Not Support Power Saving)](https://www.dl.dropboxusercontent.com/scl/fi/gr47u24zve7ll7lmel9ke/Install_Win11_Win10_10079_20_DMAROFF_01262026.zip?rlkey=pp7modxp8ht1zxcwlu5foam8l&st=vsxyeok0&dl=0)
+**Realtek:** [Ethernet](https://www.dl.dropboxusercontent.com/scl/fi/gr47u24zve7ll7lmel9ke/Install_Win11_Win10_10079_20_DMAROFF_01262026.zip?rlkey=pp7modxp8ht1zxcwlu5foam8l&st=vsxyeok0&dl=0)
 
 If your Ethernet / Wi-Fi / Bluetooth adapter is not listed above, go to the Drivers / Support page or your Mainboard / PC and download them from there.
 
@@ -160,7 +160,7 @@ Alternatively download the [Intel Rapid Storage Technology Driver](https://www.d
 ```ps1
 $PSDefaultParameterValues['Invoke-WebRequest:UseBasicParsing'] = $true
 Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force 
-irm https://raw.githubusercontent.com/tinodin/AutoOS/master/deploy.ps1 | iex
+irm https://raw.githubusercontent.com/tinodin/AutoOS/master/deploy/deploy.ps1 | iex
 ```
 
 If you get any errors during the script leave a message in my discord server.
