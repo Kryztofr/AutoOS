@@ -1,5 +1,4 @@
-﻿using AutoOS.Common;
-using AutoOS.Core.Helpers.CPU.Models;
+﻿using AutoOS.Core.Helpers.CPU.Models;
 using AutoOS.Core.Helpers.CPU;
 using AutoOS.Core.Helpers.Device.Models;
 using AutoOS.Core.Helpers.Device;
