@@ -78,22 +78,15 @@ namespace AutoOS
 			{
 				AppActivationArguments appActivationArguments = AppInstance.GetCurrent().GetActivatedEventArgs();
 
-				if (appActivationArguments.Kind is ExtendedActivationKind.StartupTask)
-				{
-					Application.Current.Exit();
-				}
-				else
-				{
-					MainWindow = new MainWindow();
-					MainWindow.Title = MainWindow.AppWindow.Title = "AutoOS Installer";
-					MainWindow.AppWindow.SetIcon("Assets/AppIcon.ico");
+				MainWindow = new MainWindow();
+				MainWindow.Title = MainWindow.AppWindow.Title = "AutoOS Installer";
+				MainWindow.AppWindow.SetIcon("Assets/AppIcon.ico");
 
-					AppWindow.GetFromWindowId(Win32Interop.GetWindowIdFromWindow(WindowNative.GetWindowHandle(MainWindow))).Closing += AppWindow_Closing;
+				AppWindow.GetFromWindowId(Win32Interop.GetWindowIdFromWindow(WindowNative.GetWindowHandle(MainWindow))).Closing += AppWindow_Closing;
 
-					ThemeService = new ThemeService().Initialize(MainWindow);
+				ThemeService = new ThemeService().Initialize(MainWindow);
 
-					MainWindow.Activate();
-				}
+				MainWindow.Activate();
 			}
 		}
 
