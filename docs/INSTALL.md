@@ -3,13 +3,13 @@
 > [!TIP]
 > Join my [Discord Server](https://discord.gg/bZU4dMMWpg) to receive installation support and stay informed about future updates or changes.
 
-### Step 1 Downloading the ISO: 
+### Step 1: Downloading the ISO
 Download the latest Windows 25H2 ISO file from [here](https://drive.google.com/drive/folders/1BlAYofjlW1bU-WPG3jXygO1ezoJ4gPs7?usp=sharing) (Log into your Google Account if you get an error).<br/>
 Other ISOs are not supported (will not work) to guarantee consistency and the latest features. 
 
 ### Step 2: Downloading Drivers
-Open Device Manager (`devmgmt.msc`) and look for the brand of your Ethernet and Wi-Fi Adapter.<br/>
-If you have one of the below, download the corresponding drivers.<br/>
+Open Device Manager (`devmgmt.msc`) and look for the brand of your Ethernet and Wi-Fi Adapter under the `Network Adapters` section.<br/>
+If you have one of following below, download them.<br/>
 
 **INTEL:** [Ethernet](https://www.intel.com/content/www/us/en/download/727998/intel-network-adapter-driver-for-microsoft-windows-11.html) · [Wi-Fi](https://www.dl.dropboxusercontent.com/scl/fi/9qjxlr4x59dv9ncusmu3h/INTEL-WiFi.zip?rlkey=v1mzzc37onjmcpundt48u8i83&st=pnj3c3ax&dl=0) · [Bluetooth](https://www.dl.dropboxusercontent.com/scl/fi/qoylgflunti1fhzpcjnip/INTEL-Bluetooth.zip?rlkey=j23dopqk2ek1r5ju00zemwsf2&st=wopu40cj&dl=0)
 
