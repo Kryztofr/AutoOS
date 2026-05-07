@@ -88,8 +88,6 @@ namespace AutoOS
 					MainWindow.Title = MainWindow.AppWindow.Title = "AutoOS Installer";
 					MainWindow.AppWindow.SetIcon("Assets/AppIcon.ico");
 
-					AppWindow.GetFromWindowId(Win32Interop.GetWindowIdFromWindow(WindowNative.GetWindowHandle(MainWindow))).Closing += AppWindow_Closing;
-
 					ThemeService = new ThemeService().Initialize(MainWindow);
 
 					MainWindow.Activate();
@@ -134,32 +132,6 @@ namespace AutoOS
 					await MessageBox.ShowErrorAsync(MainWindow, ex.Message, "Unexpected Error");
 				});
 			}
-		}
-
-		private async void AppWindow_Closing(AppWindow sender, AppWindowClosingEventArgs args)
-		{
-			args.Cancel = true;
-
-			var dialog = new ContentDialog
-			{
-				Title = "Close AutoOS?",
-				Content = "Are you sure that you want to close AutoOS?",
-				PrimaryButtonText = "Yes",
-				CloseButtonText = "No",
-				DefaultButton = ContentDialogButton.Close,
-				XamlRoot = MainWindow.Content.XamlRoot
-			};
-
-			try
-			{
-				var result = await dialog.ShowAsync();
-
-				if (result == ContentDialogResult.Primary)
-				{
-					Current.Exit();
-				}
-			}
-			catch { }
 		}
 	}
 }

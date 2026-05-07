@@ -227,6 +227,7 @@ public static partial class DeviceHelper
                 NicType = nicDeviceType,
                 IsActive = isActive,
                 XhciType = xhciType,
+                DeviceType = type,
                 BaseAddress = baseAddress,
                 CurrentVersion = driverVersion
             };

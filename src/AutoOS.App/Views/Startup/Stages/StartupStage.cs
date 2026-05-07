@@ -3,7 +3,6 @@ using AutoOS.Core.Helpers.Device;
 using AutoOS.Core.Helpers.Logging;
 using AutoOS.Core.Helpers.Registry;
 using AutoOS.Core.Helpers.Services;
-using AutoOS.Core.Helpers.Sound.Models;
 using AutoOS.Core.Helpers.Sound;
 using AutoOS.Views.Installer.Actions;
 using Microsoft.UI.Xaml.Media;

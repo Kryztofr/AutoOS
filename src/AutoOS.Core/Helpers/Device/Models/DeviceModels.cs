@@ -71,6 +71,7 @@ public partial class DeviceInfo : INotifyPropertyChanged
     }
 
     public XhciDeviceType XhciType { get; set; }
+    public DeviceType DeviceType { get; set; }
     public ulong BaseAddress { get; set; }
     public string CurrentVersion { get; set; } = string.Empty;
 

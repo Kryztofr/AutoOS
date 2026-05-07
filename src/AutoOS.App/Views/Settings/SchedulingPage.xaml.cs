@@ -1,4 +1,4 @@
-﻿using AutoOS.Core.Helpers.CPU.Models;
+using AutoOS.Core.Helpers.CPU.Models;
 using AutoOS.Core.Helpers.CPU;
 using AutoOS.Core.Helpers.Device.Models;
 using AutoOS.Core.Helpers.Device;
@@ -89,7 +89,7 @@ public sealed partial class SchedulingPage : Page
     private async void Optimize_Checked(object sender, RoutedEventArgs e)
     {
         await Task.Delay(1000);
-        await SchedulingHelper.OptimizeAffinities(UpdateDevice);
+        await SchedulingHelper.OptimizeAffinities(onDeviceUpdated: UpdateDevice);
         Optimize.IsChecked = false;
     }
 

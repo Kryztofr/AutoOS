@@ -12,6 +12,7 @@ using System.Diagnostics;
 using System.ServiceProcess;
 using Windows.Storage;
 using AutoOS.Core.Helpers.Registry;
+using AutoOS.Core.Helpers.Scheduling;
 
 namespace AutoOS.Views.Settings;
 
@@ -179,6 +180,8 @@ public sealed partial class GraphicsPage : Page
                         }
                     }
 
+                    bool wasInstalled = gpu.IsInstalled;
+
                     switch (gpu.VendorId)
                     {
                         case "10de":
@@ -196,6 +199,15 @@ public sealed partial class GraphicsPage : Page
                             var intelActions = IntelHelper.InstallActions(gpu, newestDownloadUrl, new ProgressButtonReporter(progressButton)).Concat(IntelHelper.TweakActions(gpu)).ToList();
                             await RunActions(progressButton, intelActions);
                             break;
+                    }
+
+                    if (!wasInstalled)
+                    {
+                        var deviceInfo = DeviceHelper.GetDevices(DeviceType.GPU).FirstOrDefault(device => device.PnpDeviceId == gpu.PnPDeviceId);
+                        if (deviceInfo != null)
+                        {
+                            await SchedulingHelper.OptimizeAffinities(deviceInfo);
+                        }
                     }
 
                     // apply profile

@@ -1,6 +1,7 @@
 using AutoOS.Core.Helpers.GPU;
 using AutoOS.Core.Helpers.Registry;
 using Microsoft.Win32;
+
 namespace AutoOS.Views.Updater.Stages;
 
 public static class UpdateStage

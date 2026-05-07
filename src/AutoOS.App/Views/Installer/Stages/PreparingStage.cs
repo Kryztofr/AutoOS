@@ -1,4 +1,4 @@
-﻿using AutoOS.Core.Helpers.CPU.Models;
+using AutoOS.Core.Helpers.CPU.Models;
 using AutoOS.Core.Helpers.CPU;
 using AutoOS.Core.Helpers.Device.Models;
 using AutoOS.Core.Helpers.Device;
@@ -227,6 +227,8 @@ public static class PreparingStage
                         RegistryPath = obj["RegistryPath"]?.ToString(),
                         Location = obj["Location"]?.ToString(),
                         PStates = obj["PStates"]?.GetValue<bool>() ?? false,
+                        ECC = obj["ECC"]?.GetValue<bool>() ?? false,
+                        GspFirmware = obj["GspFirmware"]?.GetValue<bool>() ?? false,
                         HDCP = obj["HDCP"]?.GetValue<bool>() ?? false,
                         HDMIDPAudio = obj["HDMIDPAudio"]?.GetValue<bool>() ?? false,
                         CurrentVersion = obj["CurrentVersion"]?.ToString()

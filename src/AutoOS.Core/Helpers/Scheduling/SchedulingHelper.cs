@@ -7,7 +7,7 @@ namespace AutoOS.Core.Helpers.Scheduling;
 
 public static partial class SchedulingHelper
 {
-    public static async Task OptimizeAffinities(Action<DeviceType, string, DeviceInfo> onDeviceUpdated = null)
+    public static async Task OptimizeAffinities(DeviceInfo device = null, Action<DeviceType, string, DeviceInfo> onDeviceUpdated = null)
     {
         var cpuSetsInfo = CpuHelper.GetCpuSets();
         var (pCores, eCores) = CpuHelper.GroupCpuSetsByEfficiencyClass(cpuSetsInfo);
@@ -33,10 +33,18 @@ public static partial class SchedulingHelper
             audioMask = GetCoreMask(pCores[cores - 5]);
         }
 
-        var audioDevices = DeviceHelper.GetDevices(DeviceType.AudioController).Where(d => d.SupportsIrq).ToList();
-        var gpuDevices = DeviceHelper.GetDevices(DeviceType.GPU).Where(d => d.SupportsIrq).ToList();
-        var xhciDevices = DeviceHelper.GetDevices(DeviceType.XHCI).Where(d => d.SupportsIrq).ToList();
-        var nicDevices = DeviceHelper.GetDevices(DeviceType.NIC).Where(d => d.SupportsIrq).ToList();
+        var audioDevices = (device == null || device.DeviceType == DeviceType.AudioController) ? DeviceHelper.GetDevices(DeviceType.AudioController).Where(d => d.SupportsIrq).ToList() : new List<DeviceInfo>();
+        var gpuDevices = (device == null || device.DeviceType == DeviceType.GPU) ? DeviceHelper.GetDevices(DeviceType.GPU).Where(d => d.SupportsIrq).ToList() : new List<DeviceInfo>();
+        var xhciDevices = (device == null || device.DeviceType == DeviceType.XHCI) ? DeviceHelper.GetDevices(DeviceType.XHCI).Where(d => d.SupportsIrq).ToList() : new List<DeviceInfo>();
+        var nicDevices = (device == null || device.DeviceType == DeviceType.NIC) ? DeviceHelper.GetDevices(DeviceType.NIC).Where(d => d.SupportsIrq).ToList() : new List<DeviceInfo>();
+
+        if (device != null)
+        {
+            audioDevices = audioDevices.Where(device => device.PnpDeviceId == device.PnpDeviceId).ToList();
+            gpuDevices = gpuDevices.Where(device => device.PnpDeviceId == device.PnpDeviceId).ToList();
+            xhciDevices = xhciDevices.Where(device => device.PnpDeviceId == device.PnpDeviceId).ToList();
+            nicDevices = nicDevices.Where(device => device.PnpDeviceId == device.PnpDeviceId).ToList();
+        }
 
         var allChangedDevices = new List<(DeviceInfo device, DeviceType deviceType)>();
 
@@ -65,15 +73,15 @@ public static partial class SchedulingHelper
         {
             if (onDeviceUpdated != null)
             {
-                foreach (var (device, deviceType) in allChangedDevices)
+                foreach (var (changedDevice, deviceType) in allChangedDevices)
                 {
-                    onDeviceUpdated(deviceType, device.PnpDeviceId, device);
+                    onDeviceUpdated(deviceType, changedDevice.PnpDeviceId, changedDevice);
                 }
             }
 
-            foreach (DeviceInfo device in allChangedDevices.Select(d => d.device))
+            foreach (DeviceInfo changedDevice in allChangedDevices.Select(d => d.device))
             {
-                await Task.Run(() => DeviceHelper.RestartDevice(device));
+                await Task.Run(() => DeviceHelper.RestartDevice(changedDevice));
             }
         }
     }
@@ -87,15 +95,28 @@ public static partial class SchedulingHelper
 
         foreach (var device in devices)
         {
+            bool msiChanged = device.MsiSupported != 1;
             bool affinityChanged = device.DevicePolicy != 4 || device.AssignmentSetOverride != assignmentSetOverride;
+
+            if (msiChanged)
+            {
+                uint msiLimit = device.MaxMsiLimit > 0 ? device.MaxMsiLimit : 1;
+                DeviceHelper.SetMSIMode(device.PnpDeviceId, true, msiLimit);
+                device.MsiSupported = 1;
+                device.MsiLimit = msiLimit;
+            }
 
             if (affinityChanged)
             {
-                DeviceHelper.SetAffinityPolicy(device.PnpDeviceId, 4, device.DevicePriority, assignmentSetOverride);
+                DeviceHelper.SetAffinityPolicy(device.PnpDeviceId, 4, 0, assignmentSetOverride);
                 
                 device.DevicePolicy = 4;
+                device.DevicePriority = 0;
                 device.AssignmentSetOverride = assignmentSetOverride;
+            }
 
+            if (msiChanged || affinityChanged)
+            {
                 if (!changedDevices.Contains(device))
                     changedDevices.Add(device);
             }
