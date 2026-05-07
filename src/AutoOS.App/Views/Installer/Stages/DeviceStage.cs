@@ -1,8 +1,9 @@
+﻿using AutoOS.Core.Helpers.Device.Models;
+using AutoOS.Core.Helpers.Device;
+using AutoOS.Core.Helpers.Registry;
 using AutoOS.Views.Installer.Actions;
-using AutoOS.Helpers.Device;
-using AutoOS.Helpers.Registry;
-using System.Diagnostics;
 using Microsoft.Win32;
+using System.Diagnostics;
 
 namespace AutoOS.Views.Installer.Stages;
 
@@ -46,3 +47,4 @@ public static class DeviceStage
         };
     }
 }
+

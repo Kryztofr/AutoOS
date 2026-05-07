@@ -1,13 +1,17 @@
-using AutoOS.Helpers.GPU;
-using AutoOS.Helpers.Device;
+﻿using AutoOS.Common;
+using AutoOS.Core.Helpers.Device.Models;
+using AutoOS.Core.Helpers.Device;
+using AutoOS.Core.Helpers.GPU.Converters;
+using AutoOS.Core.Helpers.GPU.Models;
+using AutoOS.Core.Helpers.GPU;
+using AutoOS.Core.Helpers.Picker;
+using AutoOS.Views.Installer.Actions;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.Win32;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.ServiceProcess;
 using Windows.Storage;
-using AutoOS.Helpers.Picker;
-using AutoOS.Views.Installer.Actions;
 
 namespace AutoOS.Views.Settings;
 
@@ -106,17 +110,17 @@ public sealed partial class GraphicsPage : Page
                     {
                         case "10de":
                             (newestVersion, newestDownloadUrl) = await NvidiaHelper.CheckUpdate(gpu);
-                            var nvidiaActions = NvidiaHelper.InstallActions(gpu, newestDownloadUrl, progressButton).Concat(NvidiaHelper.TweakActions(gpu)).ToList();
+                            var nvidiaActions = NvidiaHelper.InstallActions(gpu, newestDownloadUrl, new ProgressButtonReporter(progressButton)).Concat(NvidiaHelper.TweakActions(gpu)).ToList();
                             await RunActions(progressButton, nvidiaActions);
                             break;
                         case "1002":
                             (newestVersion, newestDownloadUrl) = await AmdHelper.CheckUpdate(gpu);
-                            var amdActions = AmdHelper.InstallActions(gpu, newestDownloadUrl, progressButton).Concat(AmdHelper.TweakActions(gpu)).ToList();
+                            var amdActions = AmdHelper.InstallActions(gpu, newestDownloadUrl, new ProgressButtonReporter(progressButton)).Concat(AmdHelper.TweakActions(gpu)).ToList();
                             await RunActions(progressButton, amdActions);
                             break;
                         case "8086":
                             (newestVersion, newestDownloadUrl) = await IntelHelper.CheckUpdate(gpu);
-                            var intelActions = IntelHelper.InstallActions(gpu, newestDownloadUrl, progressButton).Concat(IntelHelper.TweakActions(gpu)).ToList();
+                            var intelActions = IntelHelper.InstallActions(gpu, newestDownloadUrl, new ProgressButtonReporter(progressButton)).Concat(IntelHelper.TweakActions(gpu)).ToList();
                             await RunActions(progressButton, intelActions);
                             break;
                     }
@@ -174,17 +178,17 @@ public sealed partial class GraphicsPage : Page
                     {
                         case "10de":
                             (newestVersion, newestDownloadUrl) = await NvidiaHelper.CheckUpdate(gpu);
-                            var nvidiaActions = NvidiaHelper.InstallActions(gpu, newestDownloadUrl, progressButton).Concat(NvidiaHelper.TweakActions(gpu)).ToList();
+                            var nvidiaActions = NvidiaHelper.InstallActions(gpu, newestDownloadUrl, new ProgressButtonReporter(progressButton)).Concat(NvidiaHelper.TweakActions(gpu)).ToList();
                             await RunActions(progressButton, nvidiaActions);
                             break;
                         case "1002":
                             (newestVersion, newestDownloadUrl) = await AmdHelper.CheckUpdate(gpu);
-                            var amdActions = AmdHelper.InstallActions(gpu, newestDownloadUrl, progressButton).Concat(AmdHelper.TweakActions(gpu)).ToList();
+                            var amdActions = AmdHelper.InstallActions(gpu, newestDownloadUrl, new ProgressButtonReporter(progressButton)).Concat(AmdHelper.TweakActions(gpu)).ToList();
                             await RunActions(progressButton, amdActions);
                             break;
                         case "8086":
                             (newestVersion, newestDownloadUrl) = await IntelHelper.CheckUpdate(gpu);
-                            var intelActions = IntelHelper.InstallActions(gpu, newestDownloadUrl, progressButton).Concat(IntelHelper.TweakActions(gpu)).ToList();
+                            var intelActions = IntelHelper.InstallActions(gpu, newestDownloadUrl, new ProgressButtonReporter(progressButton)).Concat(IntelHelper.TweakActions(gpu)).ToList();
                             await RunActions(progressButton, intelActions);
                             break;
                     }

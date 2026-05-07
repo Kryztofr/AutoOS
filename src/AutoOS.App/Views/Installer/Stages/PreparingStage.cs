@@ -1,6 +1,10 @@
-using AutoOS.Helpers.CPU;
-using AutoOS.Helpers.Device;
-using AutoOS.Helpers.GPU;
+﻿using AutoOS.Common;
+using AutoOS.Core.Helpers.CPU.Models;
+using AutoOS.Core.Helpers.CPU;
+using AutoOS.Core.Helpers.Device.Models;
+using AutoOS.Core.Helpers.Device;
+using AutoOS.Core.Helpers.GPU.Models;
+using AutoOS.Core.Helpers.GPU;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.Win32;
 using System.Diagnostics;
@@ -113,7 +117,7 @@ public static class PreparingStage
 
         InstallPage.Info.Severity = InfoBarSeverity.Warning;
         InstallPage.Progress.Foreground = (Brush)Application.Current.Resources["SystemFillColorCautionBrush"];
-        Helpers.Taskbar.TaskbarHelper.SetProgressState(WindowHandle, Helpers.Taskbar.TaskbarStates.Paused);
+		TaskbarHelper.SetProgressState(WindowHandle, TaskbarStates.Paused);
         InstallPage.ProgressRingControl.Foreground = (Brush)Application.Current.Resources["SystemFillColorCautionBrush"];
         if (localSettings.Values["Install_Start"] == null)
             localSettings.Values["Install_Start"] = DateTimeOffset.Now.ToString("O");
@@ -308,8 +312,9 @@ public static class PreparingStage
 
         InstallPage.Info.Severity = InfoBarSeverity.Informational;
         InstallPage.Progress.ClearValue(ProgressBar.ForegroundProperty);
-        Helpers.Taskbar.TaskbarHelper.SetProgressState(WindowHandle, Helpers.Taskbar.TaskbarStates.Normal);
+		TaskbarHelper.SetProgressState(WindowHandle, TaskbarStates.Normal);
         InstallPage.ProgressRingControl.Foreground = null;
-        Helpers.Taskbar.TaskbarHelper.SetProgressValue(WindowHandle, InstallPage.Progress.Value, 100);
+		TaskbarHelper.SetProgressValue(WindowHandle, InstallPage.Progress.Value, 100);
     }
 }
+

@@ -1,9 +1,10 @@
-using AutoOS.Helpers.Registry;
-using AutoOS.Helpers.Services;
-using AutoOS.Helpers.TaskScheduler;
+﻿using AutoOS.Common;
+using AutoOS.Core.Helpers.Registry;
+using AutoOS.Core.Helpers.Services;
+using AutoOS.Core.Helpers.TaskScheduler;
+using AutoOS.Views.Installer.Actions;
 using Microsoft.Win32;
 using System.Diagnostics;
-using AutoOS.Views.Installer.Actions;
 
 namespace AutoOS.Views.Installer.Stages;
 
@@ -269,3 +270,4 @@ public static class RegistryStage
         };
     }
 }
+

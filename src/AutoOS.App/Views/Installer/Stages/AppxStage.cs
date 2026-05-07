@@ -1,7 +1,8 @@
-using AutoOS.Helpers.Store;
+﻿using AutoOS.Common;
+using AutoOS.Core.Helpers.Registry;
+using AutoOS.Core.Helpers.Store;
+using AutoOS.Core.Helpers.TaskScheduler;
 using System.Diagnostics;
-using AutoOS.Helpers.TaskScheduler;
-using AutoOS.Helpers.Registry;
 
 namespace AutoOS.Views.Installer.Stages;
 
@@ -89,9 +90,10 @@ public static class AppxStage
 
         foreach (var package in packagesToUpdate)
         {
-            actions.Add(($"Updating {package}", async () => await StoreHelper.Update(package), null));
+            actions.Add(($"Updating {package}", async () => await StoreHelper.Update(package, new InstallPageReporter()), null));
         }
 
         return actions;
     }
 }
+

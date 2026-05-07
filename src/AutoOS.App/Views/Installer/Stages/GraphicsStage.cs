@@ -1,10 +1,16 @@
-using Windows.Storage;
-using AutoOS.Helpers.Registry;
+﻿using AutoOS.Common;
+using AutoOS.Core.Helpers.Download;
+using AutoOS.Core.Helpers.Extract;
+using AutoOS.Core.Helpers.GPU.Models;
+using AutoOS.Core.Helpers.GPU;
+using AutoOS.Core.Helpers.Monitor.Models;
+using AutoOS.Core.Helpers.Monitor;
+using AutoOS.Core.Helpers.Registry;
+using AutoOS.Views.Installer.Actions;
 using Microsoft.Win32;
 using System.Diagnostics;
-using AutoOS.Views.Installer.Actions;
-using AutoOS.Helpers.Monitor;
-using AutoOS.Helpers.GPU;
+using System.Text.Json;
+using Windows.Storage;
 
 namespace AutoOS.Views.Installer.Stages;
 
@@ -23,7 +29,7 @@ public static class GraphicsStage
         InIHelper iniHelper = new(Path.Combine(ApplicationData.Current.TemporaryFolder.Path, "obs-studio", "basic", "profiles", "Untitled", "basic.ini"));
         string obsVersion = "";
 
-        var actions = new List<(string Title, Func<Task> Action, Func<bool> Condition)>
+		var actions = new List<(string Title, Func<Task> Action, Func<bool> Condition)>
         {
             // system -> display -> graphics -> default graphics settings
             (@"Enabling ""Hardware-accelerated GPU scheduling"" (HAGS)", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\GraphicsDrivers", "HwSchMode", 2, RegistryValueKind.DWord), null),
@@ -42,10 +48,10 @@ public static class GraphicsStage
             ("Setting the highest supported refresh rate for every monitor", async () => await Task.Delay(3000), null),
 
             // download msi afterburner
-            ("Downloading MSI Afterburner", async () => await ProcessActions.RunDownload("https://www.dl.dropboxusercontent.com/scl/fi/6dvl62kgm3z38x49752bt/MSI-Afterburner.zip?rlkey=h2m2riyjisrb3ph0i8j0q4eu5&st=l87whmmi&dl=0", ApplicationData.Current.TemporaryFolder.Path, "MSI Afterburner.zip"), null),
+            ("Downloading MSI Afterburner", async () => await DownloadHelper.Download("https://www.dl.dropboxusercontent.com/scl/fi/6dvl62kgm3z38x49752bt/MSI-Afterburner.zip?rlkey=h2m2riyjisrb3ph0i8j0q4eu5&st=l87whmmi&dl=0", ApplicationData.Current.TemporaryFolder.Path, "MSI Afterburner.zip", new InstallPageReporter()), null),
 
             // install msi afterburner
-            ("Installing MSI Afterburner", async () => { await ProcessActions.RunExtract(Path.Combine(ApplicationData.Current.TemporaryFolder.Path, "MSI Afterburner.zip"), @"C:\Program Files (x86)\MSI Afterburner"); await (await ApplicationData.Current.TemporaryFolder.GetFileAsync("MSI Afterburner.zip")).DeleteAsync(); }, null),
+            ("Installing MSI Afterburner", async () => { await ExtractHelper.Extract(Path.Combine(ApplicationData.Current.TemporaryFolder.Path, "MSI Afterburner.zip"), @"C:\Program Files (x86)\MSI Afterburner"); await (await ApplicationData.Current.TemporaryFolder.GetFileAsync("MSI Afterburner.zip")).DeleteAsync(); }, null),
             ("Installing MSI Afterburner", async () => await Process.Start(new ProcessStartInfo { FileName = @"C:\Program Files (x86)\MSI Afterburner\Redist\vc_redist.x86.exe", Arguments = "/q", WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), null),
             ("Installing MSI Afterburner", async () => RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\Afterburner", "DisplayIcon", @"C:\Program Files (x86)\MSI Afterburner\uninstall.exe", RegistryValueKind.String), null),
             ("Installing MSI Afterburner", async () => RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\Afterburner", "DisplayName", "MSI Afterburner 4.6.6", RegistryValueKind.String), null),
@@ -62,13 +68,13 @@ public static class GraphicsStage
             ("Applying MSI Afterburner profile", async () => await Process.Start(new ProcessStartInfo { FileName = @"C:\Program Files (x86)\MSI Afterburner\MSIAfterburner.exe", Arguments = "/Profile1 /q", WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => MSI == true),
         
             // download obs studio
-            ("Downloading OBS Studio", async () => await ProcessActions.RunDownload(await ProcessActions.GetLatestObsStudioUrl(), ApplicationData.Current.TemporaryFolder.Path, "OBS-Studio-Windows-x64-Installer.exe"), null),
-            ("Downloading OBS Studio settings", async () => await ProcessActions.RunDownload("https://www.dl.dropboxusercontent.com/scl/fi/gkhuws75qnckr63lnfbzn/obs-studio.zip?rlkey=6ziow6s1a85a7s5snrdi7v1x2&st=db3yzo4m&dl=0", ApplicationData.Current.TemporaryFolder.Path, "obs-studio.zip"), null),
-            ("Downloading OBS Studio uninstaller", async () => await ProcessActions.RunDownload("https://www.dl.dropboxusercontent.com/scl/fi/k8dboxunne9wk5j955n0u/uninstall.exe?rlkey=4egb9y4mbsg7pboczrrulto98&st=xmldubc2&dl=0", @"C:\Program Files\obs-studio", "uninstall.exe"), null),
+            ("Downloading OBS Studio", async () => await DownloadHelper.Download(JsonDocument.Parse(await new HttpClient { DefaultRequestHeaders = { { "User-Agent", "AutoOS" } } }.GetStringAsync("https://api.github.com/repos/obsproject/obs-studio/releases/latest")).RootElement.GetProperty("assets").EnumerateArray().First(a => a.GetProperty("name").GetString().Contains("Windows-x64-Installer.exe")).GetProperty("browser_download_url").GetString(), ApplicationData.Current.TemporaryFolder.Path, "OBS-Studio-Windows-x64-Installer.exe", new InstallPageReporter()), null),
+            ("Downloading OBS Studio settings", async () => await DownloadHelper.Download("https://www.dl.dropboxusercontent.com/scl/fi/gkhuws75qnckr63lnfbzn/obs-studio.zip?rlkey=6ziow6s1a85a7s5snrdi7v1x2&st=db3yzo4m&dl=0", ApplicationData.Current.TemporaryFolder.Path, "obs-studio.zip", new InstallPageReporter()), null),
+            ("Downloading OBS Studio uninstaller", async () => await DownloadHelper.Download("https://www.dl.dropboxusercontent.com/scl/fi/k8dboxunne9wk5j955n0u/uninstall.exe?rlkey=4egb9y4mbsg7pboczrrulto98&st=xmldubc2&dl=0", @"C:\Program Files\obs-studio", "uninstall.exe", new InstallPageReporter()), null),
 
             // install obs studio
-            ("Installing OBS Studio", async () => { await ProcessActions.RunExtract(Path.Combine(ApplicationData.Current.TemporaryFolder.Path, "OBS-Studio-Windows-x64-Installer.exe"), @"C:\Program Files\obs-studio"); await (await ApplicationData.Current.TemporaryFolder.GetFileAsync("OBS-Studio-Windows-x64-Installer.exe")).DeleteAsync(); }, null),
-            ("Installing OBS Studio", async () => { await ProcessActions.RunExtract(Path.Combine(ApplicationData.Current.TemporaryFolder.Path, "obs-studio.zip"), Path.Combine(ApplicationData.Current.TemporaryFolder.Path, "obs-studio")); await (await ApplicationData.Current.TemporaryFolder.GetFileAsync("obs-studio.zip")).DeleteAsync(); }, null),
+            ("Installing OBS Studio", async () => { await ExtractHelper.Extract(Path.Combine(ApplicationData.Current.TemporaryFolder.Path, "OBS-Studio-Windows-x64-Installer.exe"), @"C:\Program Files\obs-studio"); await (await ApplicationData.Current.TemporaryFolder.GetFileAsync("OBS-Studio-Windows-x64-Installer.exe")).DeleteAsync(); }, null),
+            ("Installing OBS Studio", async () => { await ExtractHelper.Extract(Path.Combine(ApplicationData.Current.TemporaryFolder.Path, "obs-studio.zip"), Path.Combine(ApplicationData.Current.TemporaryFolder.Path, "obs-studio")); await (await ApplicationData.Current.TemporaryFolder.GetFileAsync("obs-studio.zip")).DeleteAsync(); }, null),
             ("Installing OBS Studio", async () => iniHelper.AddValue("Encoder", "obs_qsv11_v2", "AdvOut"), () => NVIDIA == false && INTEL == true),
             ("Installing OBS Studio", async () => iniHelper.AddValue("RecEncoder", "obs_qsv11_v2", "AdvOut"), () => NVIDIA == false && INTEL == true),
             ("Installing OBS Studio", async () => iniHelper.AddValue("Encoder", "h264_texture_amf", "AdvOut"), () => NVIDIA == false && AMD == true),
@@ -106,13 +112,13 @@ public static class GraphicsStage
                 switch (gpu.VendorId)
                 {
                     case "10de":
-                        driverInstallActions.AddRange(NvidiaHelper.InstallActions(gpu, newestDownloadUrl));
+                        driverInstallActions.AddRange(NvidiaHelper.InstallActions(gpu, newestDownloadUrl, new InstallPageReporter()));
                         break;
                     case "1002":
-                        driverInstallActions.AddRange(AmdHelper.InstallActions(gpu, newestDownloadUrl));
+                        driverInstallActions.AddRange(AmdHelper.InstallActions(gpu, newestDownloadUrl, new InstallPageReporter()));
                         break;
                     case "8086":
-                        driverInstallActions.AddRange(IntelHelper.InstallActions(gpu, newestDownloadUrl));
+                        driverInstallActions.AddRange(IntelHelper.InstallActions(gpu, newestDownloadUrl, new InstallPageReporter()));
                         break;
                 }
             }
@@ -134,3 +140,4 @@ public static class GraphicsStage
         return [.. driverInstallActions, .. actions.Take(2), .. actions.Skip(2).Take(8), .. driverTweakActions, .. actions.Skip(10)];
     }
 }
+

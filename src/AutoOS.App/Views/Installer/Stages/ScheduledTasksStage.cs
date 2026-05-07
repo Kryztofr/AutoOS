@@ -1,4 +1,5 @@
-using AutoOS.Helpers.TaskScheduler;
+﻿using AutoOS.Common;
+using AutoOS.Core.Helpers.TaskScheduler;
 
 namespace AutoOS.Views.Installer.Stages;
 
@@ -48,3 +49,4 @@ public static class ScheduledTasksStage
         return actions;
     }
 }
+

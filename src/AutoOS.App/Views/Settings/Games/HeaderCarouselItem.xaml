@@ -3,7 +3,6 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:dev="using:DevWinUI"
                     xmlns:local="using:AutoOS.Views.Settings.Games">
-
     <Style BasedOn="{StaticResource DefaultCarouselItemStyle}"
            TargetType="local:HeaderCarouselItem" />
 

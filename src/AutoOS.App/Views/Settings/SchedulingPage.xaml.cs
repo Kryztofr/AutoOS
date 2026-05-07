@@ -1,9 +1,11 @@
-using System.Collections.ObjectModel;
-using AutoOS.Helpers.CPU;
-using AutoOS.Helpers.Device;
-using AutoOS.Helpers.Scheduling;
+﻿using AutoOS.Core.Helpers.CPU.Models;
+using AutoOS.Core.Helpers.CPU;
+using AutoOS.Core.Helpers.Device.Models;
+using AutoOS.Core.Helpers.Device;
+using AutoOS.Core.Helpers.Scheduling;
 using AutoOS.Views.Settings.Scheduling;
 using DevWinUI;
+using System.Collections.ObjectModel;
 
 namespace AutoOS.Views.Settings;
 
@@ -87,7 +89,7 @@ public sealed partial class SchedulingPage : Page
     private async void Optimize_Checked(object sender, RoutedEventArgs e)
     {
         await Task.Delay(1000);
-        await SchedulingHelper.OptimizeAffinities(this);
+        await SchedulingHelper.OptimizeAffinities(UpdateDevice);
         Optimize.IsChecked = false;
     }
 
@@ -119,7 +121,7 @@ public sealed partial class SchedulingPage : Page
         contentDialog.Resources["ContentDialogMaxWidth"] = 1350;
         contentDialog.Resources["ContentDialogMaxHeight"] = 900;
 
-        DeviceHelper.ApplyResult applyResult = null;
+        ApplyResult applyResult = null;
         var applyEventCompleted = new TaskCompletionSource<bool>();
 
         schedulingDialog.ViewModel.OnSettingsApplied += result =>

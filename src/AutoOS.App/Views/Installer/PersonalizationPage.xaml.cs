@@ -1,11 +1,11 @@
-using Microsoft.Win32;
+﻿using Microsoft.Win32;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Windows.Storage;
-using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.System.Com;
 using Windows.Win32.UI.WindowsAndMessaging;
+using Windows.Win32;
 using WinRT;
 
 namespace AutoOS.Views.Installer;

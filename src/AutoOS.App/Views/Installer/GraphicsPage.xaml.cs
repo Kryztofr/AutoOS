@@ -1,8 +1,10 @@
-using AutoOS.Helpers.GPU;
+﻿using AutoOS.Core.Helpers.GPU.Converters;
+using AutoOS.Core.Helpers.GPU.Models;
+using AutoOS.Core.Helpers.GPU;
+using AutoOS.Core.Helpers.Picker;
 using System.Collections.ObjectModel;
 using System.Text.Json.Nodes;
 using Windows.Storage;
-using AutoOS.Helpers.Picker;
 
 namespace AutoOS.Views.Installer;
 

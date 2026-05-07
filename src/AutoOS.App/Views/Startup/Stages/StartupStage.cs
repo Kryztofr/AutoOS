@@ -1,13 +1,16 @@
-using AutoOS.Helpers.Device;
-using AutoOS.Helpers.Registry;
+﻿using AutoOS.Core.Helpers.Device.Models;
+using AutoOS.Core.Helpers.Device;
+using AutoOS.Core.Helpers.Logging;
+using AutoOS.Core.Helpers.Registry;
+using AutoOS.Core.Helpers.Services;
+using AutoOS.Core.Helpers.Sound.Models;
+using AutoOS.Core.Helpers.Sound;
+using AutoOS.Views.Installer.Actions;
 using Microsoft.UI.Xaml.Media;
 using System.Diagnostics;
-using AutoOS.Helpers.Services;
 using System.Text.Json.Nodes;
 using Windows.Storage;
-using AutoOS.Views.Installer.Actions;
 using Windows.Win32.System.Services;
-using AutoOS.Helpers.Sound;
 
 namespace AutoOS.Views.Startup.Stages;
 
@@ -95,7 +98,7 @@ public static class StartupStage
                     {
                         try
                         {
-                            await ProcessActions.LogError(ex, previousTitle);
+                            await LogHelper.LogError(ex, null, previousTitle);
                         }
                         catch { }
                         StartupWindow.Status.Text = ex.Message;
@@ -125,7 +128,7 @@ public static class StartupStage
                 {
                     try
                     {
-                        await ProcessActions.LogError(ex, previousTitle);
+                        await LogHelper.LogError(ex, null, previousTitle);
                     }
                     catch { }
                     StartupWindow.Status.Text = ex.Message;

@@ -1,12 +1,13 @@
+﻿using AutoOS.Core.Helpers.Picker;
+using AutoOS.Helpers.Picker;
+using AutoOS.Views.Settings.Power;
+using Microsoft.UI.Text;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using AutoOS.Views.Settings.Power;
-using Microsoft.UI.Text;
-using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.System.Power;
-using AutoOS.Helpers.Picker;
+using Windows.Win32;
 
 namespace AutoOS.Views.Settings
 {

@@ -1,4 +1,5 @@
-using AutoOS.Helpers.Registry;
+﻿using AutoOS.Common;
+using AutoOS.Core.Helpers.Registry;
 using AutoOS.Views.Installer.Actions;
 using Microsoft.Win32;
 using System.Diagnostics;
@@ -61,3 +62,4 @@ public static class CleanupStage
         return actions;
     }
 }
+

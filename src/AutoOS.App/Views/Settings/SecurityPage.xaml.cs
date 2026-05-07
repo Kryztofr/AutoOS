@@ -1,5 +1,5 @@
-using AutoOS.Helpers.Registry;
-using AutoOS.Helpers.Services;
+using AutoOS.Core.Helpers.Registry;
+using AutoOS.Core.Helpers.Services;
 using Microsoft.UI.Xaml.Documents;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.Win32;

@@ -7,7 +7,8 @@
       xmlns:dev="using:DevWinUI"
       xmlns:local="using:AutoOS.Views.Settings"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-      xmlns:models="using:AutoOS.Helpers.Device"
+      xmlns:models="using:AutoOS.Core.Helpers.Device.Models"
+      xmlns:soundConverters="using:AutoOS.Core.Helpers.Sound.Converters"
       xmlns:views="using:AutoOS.Views.Settings"
       mc:Ignorable="d">
     <Page.Resources>
@@ -21,6 +22,7 @@
         <converters:BoolToVisibilityConverter x:Key="MuteIconVisibilityConverter"
                                               FalseValue="Collapsed"
                                               TrueValue="Visible" />
+        <soundConverters:FormFactorToImageIconConverter x:Key="FormFactorToImageIconConverter" />
         <converters:BoolToVisibilityConverter x:Key="ActiveIconVisibilityConverter"
                                               FalseValue="Visible"
                                               TrueValue="Collapsed" />
@@ -42,10 +44,8 @@
                                          Header="Output"
                                          Visibility="{x:Bind HasOutputDevice, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                     <dev:SettingsGroup Description="{x:Bind CurrentOutput.Description, Mode=OneWay}"
-                                       Header="{x:Bind CurrentOutput.FriendlyName, Mode=OneWay}">
-                        <dev:SettingsGroup.HeaderIcon>
-                            <ImageIcon Source="{x:Bind CurrentOutput.DevObjName, Mode=OneWay}" />
-                        </dev:SettingsGroup.HeaderIcon>
+                                       Header="{x:Bind CurrentOutput.FriendlyName, Mode=OneWay}"
+                                       HeaderIcon="{x:Bind CurrentOutput.FormFactor, Mode=OneWay, Converter={StaticResource FormFactorToImageIconConverter}}">
                         <dev:SettingsGroup.Items>
                             <dev:SettingsExpander Margin="0,-2"
                                                   Header="  Volume"
@@ -178,10 +178,8 @@
                 <dev:SimpleSettingsGroup Header="Input"
                                          Visibility="{x:Bind HasInputDevice, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                     <dev:SettingsGroup Description="{x:Bind CurrentInput.Description, Mode=OneWay}"
-                                       Header="{x:Bind CurrentInput.FriendlyName, Mode=OneWay}">
-                        <dev:SettingsGroup.HeaderIcon>
-                            <ImageIcon Source="{x:Bind CurrentInput.DevObjName, Mode=OneWay}" />
-                        </dev:SettingsGroup.HeaderIcon>
+                                       Header="{x:Bind CurrentInput.FriendlyName, Mode=OneWay}"
+                                       HeaderIcon="{x:Bind CurrentInput.FormFactor, Mode=OneWay, Converter={StaticResource FormFactorToImageIconConverter}}">
                         <dev:SettingsGroup.Items>
                             <dev:SettingsCard Header="Input volume">
                                 <StackPanel Orientation="Horizontal"

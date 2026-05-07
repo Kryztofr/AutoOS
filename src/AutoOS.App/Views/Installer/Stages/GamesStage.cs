@@ -1,10 +1,11 @@
-using AutoOS.Helpers.Monitor;
-using AutoOS.Helpers.Registry;
+﻿using AutoOS.Core.Helpers.Monitor.Models;
+using AutoOS.Core.Helpers.Monitor;
+using AutoOS.Core.Helpers.Registry;
+using AutoOS.Core.Helpers.Services;
 using Microsoft.Win32;
 using System.Diagnostics;
-using AutoOS.Helpers.Services;
-using Windows.Storage;
 using System.Text.Json;
+using Windows.Storage;
 
 namespace AutoOS.Views.Installer.Stages;
 
@@ -50,3 +51,4 @@ public static partial class GamesStage
         return actions;
     }
 }
+

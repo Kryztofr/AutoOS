@@ -1,6 +1,7 @@
-using AutoOS.Helpers.Games;
-using AutoOS.Helpers.Processes;
-using AutoOS.Helpers.Services;
+using AutoOS.Core.Helpers.Games;
+using AutoOS.Core.Helpers.Processes;
+using AutoOS.Core.Helpers.Services;
+using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Markup;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.Win32;
@@ -8,13 +9,12 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.ServiceProcess;
-using System.Text;
 using System.Text.RegularExpressions;
+using System.Text;
 using ValveKeyValue;
 using Windows.Foundation;
-using Windows.Storage;
-using Microsoft.UI.Xaml.Input;
 using Windows.Gaming.Input;
+using Windows.Storage;
 using Windows.System;
 using Windows.UI.Input.Preview.Injection;
 using WinRT;
@@ -576,34 +576,41 @@ public partial class HeaderCarousel : ItemsControl
         LoadSortSettings();
 
         // load games
-        var tasks = new List<Task>();
+        var tasks = new List<Task<List<GameModel>>>();
 
         if (EpicGamesAccounts.SelectedItem is ComboBoxItem item && item.Content?.ToString() != "Not logged in" && EpicGamesButton.Visibility == Visibility.Visible)
         {
-            tasks.Add(EpicGamesHelper.LoadGames());
+            tasks.Add(EpicGamesHelper.GetGames());
         }
 
         if ((SteamAccounts.SelectedItem is string && SteamAccounts.SelectedItem.ToString() != "Not logged in") && SteamButton.Visibility == Visibility.Visible)
         {
-            tasks.Add(SteamHelper.LoadGames());
+            tasks.Add(SteamHelper.GetGames());
         }
 
         switch (localSettings.Values["SwitchEmulator"] as string ?? "Eden")
         {
             case "Eden":
-                tasks.Add(EdenHelper.LoadGames());
+                tasks.Add(EdenHelper.GetGames(localSettings.Values["EdenLocation"]?.ToString(), localSettings.Values["EdenDataLocation"]?.ToString()));
                 break;
 
             case "Citron":
-                tasks.Add(CitronHelper.LoadGames());
+                tasks.Add(CitronHelper.GetGames(localSettings.Values["CitronLocation"]?.ToString(), localSettings.Values["CitronDataLocation"]?.ToString()));
                 break;
 
             case "Ryujinx":
-                tasks.Add(RyujinxHelper.LoadGames());
+                tasks.Add(RyujinxHelper.GetGames(localSettings.Values["RyujinxLocation"]?.ToString(), localSettings.Values["RyujinxDataLocation"]?.ToString()));
                 break;
         }
 
-        await Task.WhenAll(tasks);
+        var results = await Task.WhenAll(tasks);
+
+        Items.Clear();
+
+        foreach (var list in results)
+        {
+			AddGames(list);
+		}
 
         // sort games
         LoadSortSettings();
@@ -635,6 +642,49 @@ public partial class HeaderCarousel : ItemsControl
 
         if (Items.Count > 1)
             selectionTimer.Start();
+    }
+
+    private void AddGames(List<GameModel> games)
+    {
+		foreach (var game in games)
+        {
+            Items.Add(new HeaderCarouselItem
+            {
+                Launcher = game.Launcher,
+                LauncherLocation = game.LauncherLocation,
+                DataLocation = game.DataLocation,
+                CatalogNamespace = game.CatalogNamespace,
+                CatalogItemId = game.CatalogItemId,
+                AppName = game.AppName,
+                InstallLocation = game.InstallLocation,
+                LaunchCommand = game.LaunchCommand,
+                LaunchExecutable = game.LaunchExecutable,
+                GameLocation = game.GameLocation,
+                GameID = game.GameID,
+                ProcessNames = game.ProcessNames,
+                ArtifactId = game.ArtifactId,
+                UpdateIsAvailable = game.UpdateIsAvailable,
+                ImageUrl = game.ImageUrl,
+                BackgroundImageUrl = game.BackgroundImageUrl,
+                Title = game.Title,
+                Developers = game.Developers,
+                Genres = game.Genres,
+                Features = game.Features,
+                Rating = game.Rating,
+                PlayTime = game.PlayTime,
+                AgeRatingUrl = game.AgeRatingUrl,
+                AgeRatingTitle = game.AgeRatingTitle,
+                AgeRatingDescription = game.AgeRatingDescription,
+                Elements = game.Elements,
+                Description = game.Description,
+                Screenshots = game.Screenshots,
+                ReleaseDate = game.ReleaseDate,
+                Size = game.Size,
+                Version = game.Version,
+				Width = 240,
+				Height = 320
+            }); 
+        }
     }
 
     private void ApplyBackdropBlur()
@@ -1324,8 +1374,14 @@ public partial class HeaderCarousel : ItemsControl
         LoadEpicGamesAccounts();
 
         // refresh library
-        await EpicGamesHelper.LoadGames();
+        foreach (var item in Items.OfType<HeaderCarouselItem>().Where(item => item.Launcher == "Epic Games" || item.Launcher == "UbisoftConnect" || item.Launcher == "The EA App" || item.Launcher == "Origin").ToList())
+            Items.Remove(item);
+        
+        AddGames(await EpicGamesHelper.GetGames());
+        
         LoadSortSettings();
+        NoGames_StackPanel.Visibility = Items.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+        SwitchPresenter.Value = false;
     }
 
     private async void UpdateInvalidEpicGamesToken()
@@ -1392,8 +1448,14 @@ public partial class HeaderCarousel : ItemsControl
         LoadEpicGamesAccounts();
 
         // refresh library
-        await EpicGamesHelper.LoadGames();
+        foreach (var item in Items.OfType<HeaderCarouselItem>().Where(item => item.Launcher == "Epic Games" || item.Launcher == "UbisoftConnect" || item.Launcher == "The EA App" || item.Launcher == "Origin").ToList())
+            Items.Remove(item);
+
+        AddGames(await EpicGamesHelper.GetGames());
+
         LoadSortSettings();
+        NoGames_StackPanel.Visibility = Items.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+        SwitchPresenter.Value = false;
     }
 
     private async void AddEpicGamesAccount_Click(object sender, RoutedEventArgs e)
@@ -1479,8 +1541,14 @@ public partial class HeaderCarousel : ItemsControl
             LoadEpicGamesAccounts();
 
             // refresh library
-            await EpicGamesHelper.LoadGames();
+            foreach (var item in Items.OfType<HeaderCarouselItem>().Where(item => item.Launcher == "Epic Games" || item.Launcher == "UbisoftConnect" || item.Launcher == "The EA App" || item.Launcher == "Origin").ToList())
+                Items.Remove(item);
+
+            AddGames(await EpicGamesHelper.GetGames());
+
             LoadSortSettings();
+            NoGames_StackPanel.Visibility = Items.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+            SwitchPresenter.Value = false;
         }
     }
 
@@ -1631,8 +1699,14 @@ public partial class HeaderCarousel : ItemsControl
         LoadSteamAccounts();
 
         // refresh library
-        await SteamHelper.LoadGames();
+        foreach (var item in Items.OfType<HeaderCarouselItem>().Where(item => item.Launcher == "Steam").ToList())
+            Items.Remove(item);
+
+        AddGames(await SteamHelper.GetGames());
+        
         LoadSortSettings();
+        NoGames_StackPanel.Visibility = Items.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+        SwitchPresenter.Value = false;
     }
 
     private async void AddSteamAccount_Click(object sender, RoutedEventArgs e)
@@ -1721,8 +1795,14 @@ public partial class HeaderCarousel : ItemsControl
             LoadSteamAccounts();
 
             // refresh library
-            await SteamHelper.LoadGames();
+            foreach (var item in Items.OfType<HeaderCarouselItem>().Where(item => item.Launcher == "Steam").ToList())
+                Items.Remove(item);
+
+            AddGames(await SteamHelper.GetGames());
+
             LoadSortSettings();
+            NoGames_StackPanel.Visibility = Items.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+            SwitchPresenter.Value = false;
 
             // clear
             Growl.Clear("Steam");

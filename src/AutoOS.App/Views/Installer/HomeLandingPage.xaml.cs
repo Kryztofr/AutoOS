@@ -1,5 +1,5 @@
-using AutoOS.Helpers.Registry;
-using AutoOS.Views.Installer.Actions;
+using AutoOS.Core.Helpers.OS;
+using AutoOS.Core.Helpers.Registry;
 using Microsoft.Win32;
 using System.Diagnostics;
 
@@ -37,7 +37,7 @@ namespace AutoOS.Views.Installer
                 }
             }
 
-            var (major, minor, build, ubr) = ProcessActions.GetWindowsVersion();
+            var (major, minor, build, ubr) = OSHelper.GetWindowsVersion();
             if (build < 26200 || (build == 26200 && ubr < 8117))
             {
                 var dialog = new ContentDialog

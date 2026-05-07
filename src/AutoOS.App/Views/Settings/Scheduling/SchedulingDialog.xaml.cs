@@ -1,5 +1,5 @@
+using AutoOS.Core.Helpers.CPU.Models;
 using AutoOS.Views.Settings.Scheduling.ViewModels;
-using AutoOS.Helpers.CPU;
 
 namespace AutoOS.Views.Settings.Scheduling;
 

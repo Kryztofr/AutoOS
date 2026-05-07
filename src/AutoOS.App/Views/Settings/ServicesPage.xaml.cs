@@ -1,7 +1,7 @@
-﻿using Microsoft.Win32;
+﻿using AutoOS.Core.Helpers.Registry;
+using Microsoft.Win32;
 using System.Diagnostics;
 using System.ServiceProcess;
-using AutoOS.Helpers.Registry;
 
 namespace AutoOS.Views.Settings;
 

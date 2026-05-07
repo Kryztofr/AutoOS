@@ -1,7 +1,11 @@
-using AutoOS.Helpers.Device;
+﻿using AutoOS.Common;
+using AutoOS.Core.Helpers.Device.Models;
+using AutoOS.Core.Helpers.Device;
+using AutoOS.Core.Helpers.Network.Models;
+using AutoOS.Core.Helpers.Network;
+using AutoOS.Core.Helpers.Registry;
 using AutoOS.Views.Installer.Actions;
 using Microsoft.Win32;
-using AutoOS.Helpers.Registry;
 using System.Diagnostics;
 
 namespace AutoOS.Views.Installer.Stages;
@@ -43,7 +47,7 @@ public static class NetworkStage
 
         foreach (var adapter in DeviceHelper.GetDevices(DeviceType.NIC).Where(d => d.NicType == NicDeviceType.WiFi || d.NicType == NicDeviceType.LAN).ToList())
         {
-            actions.Add(($@"Optimizing advanced network adapter settings for {adapter.FriendlyName}", async () => await Task.Run(() => Helpers.Network.NetworkHelper.OptimizeAdapter(adapter)), null));
+            actions.Add(($@"Optimizing advanced network adapter settings for {adapter.FriendlyName}", async () => await Task.Run(() => Core.Helpers.Network.NetworkHelper.OptimizeAdapter(adapter)), null));
             actions.Add(($@"Optimizing advanced network adapter settings for {adapter.FriendlyName}", async () => await Task.Delay(500), null));
             actions.Add((@"Restarting " + adapter.FriendlyName, async () => await Task.Run(() => DeviceHelper.RestartDevice(adapter)), null));
             
@@ -54,3 +58,4 @@ public static class NetworkStage
         return actions;
     }
 }
+

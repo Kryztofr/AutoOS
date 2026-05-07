@@ -1,5 +1,6 @@
-using AutoOS.Helpers.Scheduling;
-using AutoOS.Helpers.Registry;
+﻿using AutoOS.Common;
+using AutoOS.Core.Helpers.Registry;
+using AutoOS.Core.Helpers.Scheduling;
 using Microsoft.Win32;
 
 namespace AutoOS.Views.Installer.Stages;
@@ -31,3 +32,4 @@ public static class SchedulingStage
         return actions;
     }
 }
+

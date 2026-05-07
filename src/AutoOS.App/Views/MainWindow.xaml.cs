@@ -1,10 +1,10 @@
+﻿using AutoOS.Assets.NavViewMenu;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml.Input;
-using Windows.Win32;
 using Windows.Win32.Foundation;
-using WinRT;
+using Windows.Win32;
 using WinRT.Interop;
-using AutoOS.Assets.NavViewMenu;
+using WinRT;
 
 namespace AutoOS.Views
 {

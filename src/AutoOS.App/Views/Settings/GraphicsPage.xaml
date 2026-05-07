@@ -7,7 +7,8 @@
       xmlns:dev="using:DevWinUI"
       xmlns:local="using:AutoOS"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-      xmlns:models="using:AutoOS.Helpers.GPU"
+      xmlns:gpuModels="using:AutoOS.Core.Helpers.GPU.Models"
+      xmlns:gpuConverters="using:AutoOS.Core.Helpers.GPU.Converters"
       xmlns:views="using:AutoOS.Views"
       mc:Ignorable="d">
     <Grid>
@@ -27,7 +28,7 @@
                 <ItemsRepeater x:Name="GpuRepeater"
                                ItemsSource="{x:Bind GPUs, Mode=OneWay}">
                     <ItemsRepeater.ItemTemplate>
-                        <DataTemplate x:DataType="models:GpuInfo">
+                        <DataTemplate x:DataType="gpuModels:GpuInfo">
                             <StackPanel>
                                 <dev:SettingsGroup Description="{x:Bind CurrentVersion, Mode=OneWay}"
                                                    Header="{x:Bind DeviceName, Mode=OneWay}"
@@ -125,7 +126,7 @@
         </ScrollViewer>
     </Grid>
     <Page.Resources>
-        <models:VendorIdToImageIconConverter x:Key="VendorIdToImageIconConverter" />
+        <gpuConverters:VendorIdToImageIconConverter x:Key="VendorIdToImageIconConverter" />
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
     </Page.Resources>
 </Page>

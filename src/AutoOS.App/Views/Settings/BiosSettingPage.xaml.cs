@@ -1,5 +1,7 @@
-using AutoOS.Helpers.Picker;
+﻿using AutoOS.Core.Helpers.Logging;
+using AutoOS.Core.Helpers.Picker;
 using AutoOS.Views.Installer.Actions;
+using AutoOS.Views.Installer.Stages;
 using AutoOS.Views.Settings.BIOS;
 using Microsoft.Win32;
 using System.Collections.ObjectModel;
@@ -177,7 +179,7 @@ public sealed partial class BiosSettingPage : Page, INotifyPropertyChanged
                 {
                     try
                     {
-                        await ProcessActions.Log(true);
+                        await LogHelper.Log(PreparingStage.GPUs, true);
                     }
                     catch
                     { }

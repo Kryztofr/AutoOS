@@ -1,10 +1,13 @@
-using System.Diagnostics;
-using AutoOS.Helpers.Registry;
+﻿using AutoOS.Core.Helpers.Logging;
+using AutoOS.Core.Helpers.OS;
+using AutoOS.Core.Helpers.Registry;
 using AutoOS.Views.Installer.Actions;
-using AutoOS.Views.Updater;
+using AutoOS.Views.Installer.Stages;
 using AutoOS.Views.Updater.Stages;
+using AutoOS.Views.Updater;
 using CommunityToolkit.WinUI.Controls;
 using Microsoft.Win32;
+using System.Diagnostics;
 using System.Net.Http.Headers;
 using System.Text.Json;
 using Windows.Storage;
@@ -35,7 +38,7 @@ namespace AutoOS.Views.Settings
 
         private async void CheckForUpdates(object sender, RoutedEventArgs e)
         {
-            var (major, minor, build, ubr) = ProcessActions.GetWindowsVersion();
+            var (major, minor, build, ubr) = OSHelper.GetWindowsVersion();
             if (build < 26200)
             {
                 var dialog = new ContentDialog
@@ -145,7 +148,7 @@ namespace AutoOS.Views.Settings
                 Registry.SetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\AutoOS", "IsInstalled", 1, RegistryValueKind.DWord);
                 try
                 {
-                    await ProcessActions.Log();
+                    await LogHelper.Log(PreparingStage.GPUs);
                 }
                 catch { }
             }

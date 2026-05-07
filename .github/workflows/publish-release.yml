@@ -106,12 +106,12 @@ jobs:
     # Inject webhook secrets
     - name: Inject webhook secrets
       run: |
-        $file = 'src/AutoOS.App/Views/Installer/Actions/Actions.cs'
+        $file = 'src/AutoOS.Core/Helpers/Logging/LogConfig.cs'
         $content = Get-Content $file -Raw
-        $content = $content -replace 'internal const string Bios = "";', 'internal const string Bios = "${{ secrets.DISCORD_WEBHOOK_BIOS }}";'
-        $content = $content -replace 'internal const string Log = "";', 'internal const string Log = "${{ secrets.DISCORD_WEBHOOK_LOG }}";'
-        $content = $content -replace 'internal const string Error = "";', 'internal const string Error = "${{ secrets.DISCORD_WEBHOOK_ERROR }}";'
-        $content = $content -replace 'internal const string Network = "";', 'internal const string Network = "${{ secrets.DISCORD_WEBHOOK_NETWORK }}";'
+        $content = $content -replace 'public static string Bios { get; set; } = "";', 'public static string Bios { get; set; } = "${{ secrets.DISCORD_WEBHOOK_BIOS }}";'
+        $content = $content -replace 'public static string Log { get; set; } = "";', 'public static string Log { get; set; } = "${{ secrets.DISCORD_WEBHOOK_LOG }}";'
+        $content = $content -replace 'public static string Error { get; set; } = "";', 'public static string Error { get; set; } = "${{ secrets.DISCORD_WEBHOOK_ERROR }}";'
+        $content = $content -replace 'public static string Network { get; set; } = "";', 'public static string Network { get; set; } = "${{ secrets.DISCORD_WEBHOOK_NETWORK }}";'
         Set-Content $file $content -NoNewline
       shell: pwsh
 

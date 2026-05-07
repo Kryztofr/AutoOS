@@ -1,12 +1,12 @@
-﻿using Microsoft.UI.Xaml.Media;
+﻿using AutoOS.Core.Helpers.Registry;
+using AutoOS.Views.Installer.Actions;
 using Microsoft.UI.Xaml.Media.Imaging;
+using Microsoft.UI.Xaml.Media;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
-using Windows.Storage;
 using Windows.Storage.FileProperties;
-using AutoOS.Views.Installer.Actions;
-using AutoOS.Helpers.Registry;
+using Windows.Storage;
 
 namespace AutoOS.Views.Settings;
 

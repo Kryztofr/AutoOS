@@ -1,5 +1,7 @@
-using AutoOS.Helpers.Device;
-using AutoOS.Helpers.Network;
+﻿using AutoOS.Core.Helpers.Device.Models;
+using AutoOS.Core.Helpers.Device;
+using AutoOS.Core.Helpers.Network.Models;
+using AutoOS.Core.Helpers.Network;
 using Microsoft.UI.Xaml.Media;
 using System.Collections.ObjectModel;
 using Windows.Win32;
@@ -31,7 +33,7 @@ public sealed partial class InternetPage : Page
         {
             if (device.NicType == NicDeviceType.WiFi || device.NicType == NicDeviceType.LAN)
             {
-                device.AdvancedSettings = Helpers.Network.NetworkHelper.GetAdvancedSettings(device);
+                device.AdvancedSettings = Core.Helpers.Network.NetworkHelper.GetAdvancedSettings(device);
                 NetworkAdapters.Add(device);
             }
         }
@@ -219,7 +221,7 @@ public sealed partial class InternetPage : Page
             bool success = await Task.Run(() =>
             {
                 foreach (var change in changes)
-                    Helpers.Network.NetworkHelper.SetAdvancedSetting(device, change.Key, change.Value.Value);
+					Core.Helpers.Network.NetworkHelper.SetAdvancedSetting(device, change.Key, change.Value.Value);
                 
                 return DeviceHelper.RestartDevice(device);
             });
@@ -270,7 +272,7 @@ public sealed partial class InternetPage : Page
                 infoBarContainer.Children.Clear();
         }
 
-        bool anyChanged = Helpers.Network.NetworkHelper.OptimizeAdapter(device);
+        bool anyChanged = Core.Helpers.Network.NetworkHelper.OptimizeAdapter(device);
         
         if (anyChanged)
         {

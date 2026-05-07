@@ -1,4 +1,4 @@
-﻿using Windows.Storage;
+using Windows.Storage;
 using WinRT;
 
 namespace AutoOS.Views.Installer;

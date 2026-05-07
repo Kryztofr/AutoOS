@@ -1,8 +1,10 @@
+﻿using AutoOS.Core.Helpers.CPU.Models;
+using AutoOS.Core.Helpers.CPU;
+using AutoOS.Core.Helpers.Device.Models;
+using AutoOS.Core.Helpers.Device;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using AutoOS.Helpers.Device;
-using AutoOS.Helpers.CPU;
 using WinRT;
 
 namespace AutoOS.Views.Settings.Scheduling.ViewModels;
@@ -255,7 +257,7 @@ public partial class DeviceAffinityViewModel : INotifyPropertyChanged
         OnSettingsApplied?.Invoke(result);
     }
 
-    internal event Action<DeviceHelper.ApplyResult> OnSettingsApplied;
+    internal event Action<ApplyResult> OnSettingsApplied;
     public event PropertyChangedEventHandler PropertyChanged;
 
     protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)

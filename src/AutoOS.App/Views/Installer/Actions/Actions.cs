@@ -1,47 +1,15 @@
-using AutoOS.Helpers.Device;
-using AutoOS.Helpers.GPU;
-using AutoOS.Helpers.Monitor;
-using AutoOS.Helpers.RAM;
-using AutoOS.Views.Installer.Stages;
-using Downloader;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.Win32;
 using System.Diagnostics;
-using System.Net;
 using System.Net.Http.Headers;
-using System.Text;
-using System.Text.Json;
-using Windows.Storage;
-using Windows.System.Profile;
 using WinRT.Interop;
 
 namespace AutoOS.Views.Installer.Actions;
 
-internal static class WebhookConfig
-{
-    internal const string Bios = "";
-    internal const string Log = "";
-    internal const string Error = "";
-    internal const string Network = "";
-}
-
 public static class ProcessActions
 {
-    private static readonly ApplicationDataContainer localSettings = ApplicationData.Current.LocalSettings;
     public static IntPtr WindowHandle { get; private set; }
     public static readonly HttpClient httpClient = new() { DefaultRequestHeaders = { UserAgent = { ProductInfoHeaderValue.Parse("AutoOS") } } };
-
-    public static (ushort major, ushort minor, ushort build, ushort ubr) GetWindowsVersion()
-    {
-        string deviceFamilyVersion = AnalyticsInfo.VersionInfo.DeviceFamilyVersion;
-        ulong version = ulong.Parse(deviceFamilyVersion);
-        ushort major = (ushort)((version & 0xFFFF000000000000L) >> 48);
-        ushort minor = (ushort)((version & 0x0000FFFF00000000L) >> 32);
-        ushort build = (ushort)((version & 0x00000000FFFF0000L) >> 16);
-        ushort ubr = (ushort)(version & 0x000000000000FFFFL);
-
-        return (major, minor, build, ubr);
-    }
 
     public static async Task RunPowerShell(string command)
     {
@@ -53,7 +21,7 @@ public static class ProcessActions
         WindowHandle = WindowNative.GetWindowHandle(App.MainWindow);
         InstallPage.Info.Severity = InfoBarSeverity.Warning;
         InstallPage.Progress.Foreground = (Brush)Application.Current.Resources["SystemFillColorCautionBrush"];
-        Helpers.Taskbar.TaskbarHelper.SetProgressState(WindowHandle, Helpers.Taskbar.TaskbarStates.Paused);
+		TaskbarHelper.SetProgressState(WindowHandle, TaskbarStates.Paused);
         InstallPage.ProgressRingControl.Foreground = (Brush)Application.Current.Resources["SystemFillColorCautionBrush"];
 
         await Task.Delay(1000);
@@ -69,7 +37,7 @@ public static class ProcessActions
                 {
                     InstallPage.Info.Severity = InfoBarSeverity.Informational;
                     InstallPage.Progress.ClearValue(ProgressBar.ForegroundProperty);
-                    Helpers.Taskbar.TaskbarHelper.SetProgressState(WindowHandle, Helpers.Taskbar.TaskbarStates.Normal);
+					TaskbarHelper.SetProgressState(WindowHandle, TaskbarStates.Normal);
                     InstallPage.ProgressRingControl.Foreground = null;
                     InstallPage.Info.Title = "Internet connection successfully established...";
                     await Task.Delay(500);
@@ -86,150 +54,6 @@ public static class ProcessActions
     public static async Task RunPowerShellScript(string script, string arguments)
     {
         await Process.Start(new ProcessStartInfo("powershell.exe", @$"-ExecutionPolicy Bypass -File ""{Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Scripts", script)}"" {arguments}") { CreateNoWindow = true, UseShellExecute = false })!.WaitForExitAsync();
-    }
-
-    public static async Task RunDownload(string url, string path, string file = null, ProgressButton progressButton = null)
-    {
-        var uiContext = SynchronizationContext.Current;
-        string title = progressButton == null ? InstallPage.Info?.Title ?? string.Empty : string.Empty;
-
-        if (url.Contains("raw.githubusercontent.com", StringComparison.OrdinalIgnoreCase))
-        {
-            using var client = new HttpClient();
-            string destination = string.IsNullOrWhiteSpace(file) ? path : Path.Combine(path, file);
-            await File.WriteAllTextAsync(destination, await client.GetStringAsync(url), Encoding.UTF8);
-            return;
-        }
-        else
-        {
-            DownloadBuilder downloadBuilder;
-            DownloadConfiguration config;
-
-            if (url.Contains("www2.ati.com", StringComparison.OrdinalIgnoreCase))
-            {
-                config = new DownloadConfiguration
-                {
-                    RequestConfiguration = new RequestConfiguration
-                    {
-                        Headers = new WebHeaderCollection
-                        {
-                            { "Referer", "http://support.amd.com" },
-                            { "Accept", "*/*" },
-                            { "User-Agent", "AMD Catalyst Install Manager/0.0" },
-                            { "Cache-Control", "no-cache" },
-                            { "Connection", "Keep-Alive" }
-                        }
-                    }
-                };
-
-                downloadBuilder = DownloadBuilder.New()
-                    .WithUrl(url)
-                    .WithDirectory(path)
-                    .WithFileName(file)
-                    .WithConfiguration(config);
-            }
-            else
-            {
-                downloadBuilder = DownloadBuilder.New()
-                    .WithUrl(url)
-                    .WithDirectory(path)
-                    .WithFileName(file)
-                    .WithConfiguration(new DownloadConfiguration());
-            }
-
-            var download = downloadBuilder.Build();
-
-            double speedMB = 0.0;
-            double receivedMB = 0.0;
-            double totalMB = 0.0;
-            double percentage = 0.0;
-            DateTime lastLoggedTime = DateTime.MinValue;
-
-            download.DownloadProgressChanged += (sender, e) =>
-            {
-                if ((DateTime.Now - lastLoggedTime).TotalMilliseconds < 50) return;
-                lastLoggedTime = DateTime.Now;
-
-                speedMB = e.BytesPerSecondSpeed / (1024.0 * 1024.0);
-                receivedMB = e.ReceivedBytesSize / (1024.0 * 1024.0);
-                totalMB = e.TotalBytesToReceive / (1024.0 * 1024.0);
-                percentage = e.ProgressPercentage;
-
-                uiContext?.Post(_ =>
-                {
-                    if (progressButton != null)
-                    {
-                        progressButton.IsIndeterminate = false;
-                        progressButton.Progress = percentage;
-                    }
-                    else if (!string.IsNullOrEmpty(title))
-                    {
-                        InstallPage.Info.Title = $"{title} ({speedMB:F1} MB/s - {receivedMB:F2} MB of {totalMB:F2} MB)";
-                        InstallPage.ProgressRingControl.IsIndeterminate = false;
-                        InstallPage.ProgressRingControl.Value = percentage;
-                    }
-                }, null);
-            };
-
-            download.DownloadFileCompleted += (sender, e) =>
-            {
-                uiContext?.Post(_ =>
-                {
-                    if (progressButton != null)
-                    {
-                        progressButton.Progress = 100;
-                        progressButton.IsIndeterminate = true;
-                    }
-                    else if (!string.IsNullOrEmpty(title))
-                    {
-                        InstallPage.Info.Title = $"{title} ({speedMB:F1} MB/s - {totalMB:F2} MB of {totalMB:F2} MB)";
-                        InstallPage.ProgressRingControl.Value = 100;
-                        InstallPage.ProgressRingControl.IsIndeterminate = true;
-                    }
-                }, null);
-            };
-
-            await download.StartAsync();
-
-            string finalFileName = download.Package?.FileName ?? (!string.IsNullOrEmpty(file) ? Path.Combine(path, file) : null);
-
-            string downloadFile = finalFileName + ".download";
-            int retries = 0;
-            while (!File.Exists(finalFileName) && retries < 50)
-            {
-                if (File.Exists(downloadFile))
-                {
-                    try
-                    {
-                        File.Move(downloadFile, finalFileName);
-                        break;
-                    }
-                    catch { }
-                }
-                await Task.Delay(100);
-                retries++;
-            }
-        }
-    }
-
-    public static async Task RunExtract(string inputPath, string outputPath)
-    {
-        await Process.Start(new ProcessStartInfo { FileName = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Applications", "7-Zip", "7z.exe"), Arguments = $"x \"{inputPath}\" -y -o\"{outputPath}\"", CreateNoWindow = true })!.WaitForExitAsync();
-    }
-
-    public static async Task<string> GetLatestObsStudioUrl()
-    {
-        using var client = new HttpClient();
-        client.DefaultRequestHeaders.UserAgent.Add(ProductInfoHeaderValue.Parse("AutoOS"));
-        string json = await client.GetStringAsync("https://api.github.com/repos/obsproject/obs-studio/releases/latest");
-        using var doc = JsonDocument.Parse(json);
-
-        return doc.RootElement
-            .GetProperty("assets")
-            .EnumerateArray()
-            .First(a => a.GetProperty("name").GetString().Contains("Windows-x64-Installer.exe"))
-            .GetProperty("browser_download_url")
-            .GetString();
     }
 
     public static async Task PatchStartAllBack()
@@ -314,165 +138,5 @@ public static class ProcessActions
             }
         }
         catch { }
-    }
-
-    public static async Task Log(bool bios = false)
-    {
-        string installStart = localSettings.Values["Install_Start"]?.ToString() ?? "N/A";
-        string installEnd = localSettings.Values["Install_End"]?.ToString() ?? "N/A";
-
-        string cpuName = Registry.GetValue(@"HKEY_LOCAL_MACHINE\HARDWARE\DESCRIPTION\System\CentralProcessor\0", "ProcessorNameString", "")?.ToString() ?? "";
-
-        string manufacturer = Registry.GetValue(@"HKEY_LOCAL_MACHINE\HARDWARE\DESCRIPTION\System\BIOS", "BaseBoardManufacturer", "")?.ToString() ?? "";
-
-        string product = Registry.GetValue(@"HKEY_LOCAL_MACHINE\HARDWARE\DESCRIPTION\System\BIOS", "BaseBoardProduct", "")?.ToString() ?? "";
-
-        string motherboard = $"{manufacturer} {product}".Trim();
-
-        string ram = $"{(RamHelper.GetRam() is var r ? $"{r.CapacityGB:N1} GB {r.DDRVersion} @ {r.MaxSpeedMHz} MHz" : "")}";
-
-        var currentGpus = GpuHelper.GetGPUs();
-        string gpus = string.Join(", ", currentGpus.Select(gpu => $"{gpu.DeviceName} (DeviceId: {gpu.DeviceId}, Install: {PreparingStage.GPUs.FirstOrDefault(x => x.PnPDeviceId == gpu.PnPDeviceId)?.Install ?? true}, {gpu.CurrentVersion})"));
-
-        string monitors = string.Join(", ", MonitorHelper.GetMonitors().Select(m => $"{m.DeviceName} ({m.Resolution.Width}x{m.Resolution.Height} @ {m.RefreshRate} Hz)"));
-
-        var nicsList = DeviceHelper.GetDevices(DeviceType.NIC);
-        string nics = nicsList.Count > 0 ? string.Join("\n", nicsList.Select(n => $"{n.FriendlyName} (DeviceId: {n.DeviceId}, Current Version: {n.DriverType} {n.CurrentVersion}, Connected: {n.IsActive})")) : "N/A";
-
-        var (major, minor, build, ubr) = GetWindowsVersion();
-
-        string discordId = "Failed to get Discord account id";
-
-        string discordLogPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "discord", "logs", "renderer_js.log");
-        if (File.Exists(discordLogPath))
-        {
-            try
-            {
-                foreach (string line in File.ReadLines(discordLogPath))
-                {
-                    if (line.Contains("[DatabaseManager] removing database (user: "))
-                    {
-                        int startIndex = line.IndexOf("user: ") + 6;
-                        int endIndex = line.IndexOf(",", startIndex);
-                        if (startIndex != -1 && endIndex != -1)
-                        {
-                            discordId = line.Substring(startIndex, endIndex - startIndex);
-                            break;
-                        }
-                    }
-                }
-            }
-            catch
-            {
-
-            }
-        }
-
-        using var multipart = new MultipartFormDataContent
-        {
-            { new StringContent(
-                $"<@{discordId}>\n" +
-                $"{motherboard}\n" +
-                $"{cpuName}\n" +
-                $"{ram}\n" +
-                $"{gpus}\n" +
-                $"{monitors}\n" +
-                $"{nics}\n" +
-                $"{build}.{ubr}\n" +
-                $"Install start: {installStart}\n" +
-                $"Install end: {installEnd}\n" +
-                $"{ProcessInfoHelper.Version}"
-            ), "content" }
-        };
-
-        if (bios)
-            multipart.Add(new ByteArrayContent(File.ReadAllBytes(Path.Combine(PathHelper.GetAppDataFolderPath(), "SCEWIN", "nvram.txt"))), "file", Path.GetFileName(Path.Combine(PathHelper.GetAppDataFolderPath(), "SCEWIN", "nvram.txt")));
-
-        string webhook = bios ? WebhookConfig.Bios : WebhookConfig.Log;
-
-        using var client = new HttpClient();
-        client.DefaultRequestHeaders.UserAgent.Add(ProductInfoHeaderValue.Parse("AutoOS"));
-        await client.PostAsync(webhook, multipart);
-    }
-
-    public static async Task LogError(Exception ex, string actionTitle = null)
-    {
-        string installStart = localSettings.Values["Install_Start"]?.ToString() ?? "N/A";
-        string installEnd = localSettings.Values["Install_End"]?.ToString() ?? "N/A";
-
-        string cpuName = Registry.GetValue(@"HKEY_LOCAL_MACHINE\HARDWARE\DESCRIPTION\System\CentralProcessor\0", "ProcessorNameString", "")?.ToString() ?? "";
-
-        string manufacturer = Registry.GetValue(@"HKEY_LOCAL_MACHINE\HARDWARE\DESCRIPTION\System\BIOS", "BaseBoardManufacturer", "")?.ToString() ?? "";
-
-        string product = Registry.GetValue(@"HKEY_LOCAL_MACHINE\HARDWARE\DESCRIPTION\System\BIOS", "BaseBoardProduct", "")?.ToString() ?? "";
-
-        string motherboard = $"{manufacturer} {product}".Trim();
-
-        string ram = $"{(RamHelper.GetRam() is var r ? $"{r.CapacityGB:N1} GB {r.DDRVersion} @ {r.MaxSpeedMHz} MHz" : "")}";
-
-        var currentGpus = GpuHelper.GetGPUs();
-        string gpus = string.Join(", ", currentGpus.Select(gpu => $"{gpu.DeviceName} (DeviceId: {gpu.DeviceId}, Install: {PreparingStage.GPUs.FirstOrDefault(x => x.PnPDeviceId == gpu.PnPDeviceId)?.Install ?? true}, {gpu.CurrentVersion})"));
-
-        string monitors = string.Join(", ", MonitorHelper.GetMonitors().Select(m => $"{m.DeviceName} ({m.Resolution.Width}x{m.Resolution.Height} @ {m.RefreshRate} Hz)"));
-
-        var nicsList = DeviceHelper.GetDevices(DeviceType.NIC);
-        string nics = nicsList.Count > 0 ? string.Join("\n", nicsList.Select(n => $"{n.FriendlyName} (DeviceId: {n.DeviceId}, VendorId: {n.VendorId}, Current Version: {n.DriverType} {n.CurrentVersion}, Connected: {n.IsActive})")) : "N/A";
-
-        var (major, minor, build, ubr) = GetWindowsVersion();
-
-        string discordId = "Failed to get Discord account id";
-
-        string discordLogPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "discord", "logs", "renderer_js.log");
-        if (File.Exists(discordLogPath))
-        {
-            try
-            {
-                foreach (string line in File.ReadLines(discordLogPath))
-                {
-                    if (line.Contains("[DatabaseManager] removing database (user: "))
-                    {
-                        int startIndex = line.IndexOf("user: ") + 6;
-                        int endIndex = line.IndexOf(",", startIndex);
-                        if (startIndex != -1 && endIndex != -1)
-                        {
-                            discordId = line.Substring(startIndex, endIndex - startIndex);
-                            break;
-                        }
-                    }
-                }
-            }
-            catch
-            {
-
-            }
-        }
-
-        using var multipart = new MultipartFormDataContent
-        {
-            { new StringContent(
-                $"<@{discordId}>\n" +
-                $"{motherboard}\n" +
-                $"{cpuName}\n" +
-                $"{ram}\n" +
-                $"{gpus}\n" +
-                $"{monitors}\n" +
-                $"{nics}\n" +
-                $"{build}.{ubr}\n" +
-                $"Install start: {installStart}\n" +
-                $"Install end: {installEnd}\n" +
-                (!string.IsNullOrEmpty(actionTitle) ? $"Action Title: {actionTitle}\n" : "") +
-                $"{ex.GetType().FullName}\n" +
-                $"Message: {ex.Message}\n" +
-                $"HResult: 0x{ex.HResult:X}\n" +
-                $"Source: {ex.Source}\n" +
-                $"StackTrace:\n{ex.StackTrace}\n" +
-                (ex.InnerException != null ? $"\nInnerException:\n{ex.InnerException}" : "") +
-                $"\n{ProcessInfoHelper.Version}"
-            ), "content" }
-        };
-
-        using var client = new HttpClient();
-        client.DefaultRequestHeaders.UserAgent.Add(ProductInfoHeaderValue.Parse("AutoOS"));
-        await client.PostAsync(WebhookConfig.Error, multipart);
     }
 }

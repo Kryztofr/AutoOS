@@ -1,16 +1,18 @@
-using AutoOS.Helpers.Device;
-using AutoOS.Helpers.Sound;
+﻿using AutoOS.Core.Helpers.Device.Models;
+using AutoOS.Core.Helpers.Device;
+using AutoOS.Core.Helpers.Sound.Models;
+using AutoOS.Core.Helpers.Sound;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.Media.Audio;
-using Windows.Win32.System.Com;
 using Windows.Win32.System.Com.StructuredStorage;
+using Windows.Win32.System.Com;
 using Windows.Win32.System.Variant;
 using Windows.Win32.UI.Shell.PropertiesSystem;
+using Windows.Win32;
 
 namespace AutoOS.Views.Settings
 {

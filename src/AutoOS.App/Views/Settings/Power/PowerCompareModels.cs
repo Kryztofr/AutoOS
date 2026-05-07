@@ -1,7 +1,7 @@
-﻿using System.Collections.ObjectModel;
+﻿using Microsoft.UI.Text;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using Microsoft.UI.Text;
 using WinRT;
 
 namespace AutoOS.Views.Settings.Power

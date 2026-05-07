@@ -1,5 +1,5 @@
+﻿using Downloader;
 using Microsoft.UI.Xaml.Media;
-using Downloader;
 
 namespace AutoOS.Views.Updater;
 

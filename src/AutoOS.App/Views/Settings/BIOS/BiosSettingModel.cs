@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
 namespace AutoOS.Views.Settings.BIOS;
@@ -17,19 +17,19 @@ public partial class BiosSettingModel : INotifyPropertyChanged
 
     public int Line { get; set; }
 
-    // ─────── State Tracking ───────
+    // ------- State Tracking -------
     public List<string> OriginalLines { get; set; }
     public string OriginalValue { get; set; }
     public Option OriginalSelectedOption { get; set; }
 
-    // ─────── Display Helpers ───────
+    // ------- Display Helpers -------
     public string DisplayBiosDefault => $"Default: {BiosDefault}";
     public string DisplayCurrent =>
         OriginalSelectedOption?.Label ?? OriginalValue ?? SelectedOption?.Label ?? Value;
     public string DisplayRecommended =>
         RecommendedOption?.Label ?? RecommendedValue;
 
-    // ─────── Metadata ───────
+    // ------- Metadata -------
     public string SetupQuestion { get; set; }
     public string HelpString { get; set; }
     public string Token { get; set; }
@@ -37,12 +37,12 @@ public partial class BiosSettingModel : INotifyPropertyChanged
     public string Width { get; set; }
     public string BiosDefault { get; set; }
 
-    // ─────── Recommendation Info ───────
+    // ------- Recommendation Info -------
     public bool IsRecommended { get; set; }
     public string RecommendedValue { get; set; }
     public Option RecommendedOption { get; set; }
 
-    // ─────── Value / Options ───────
+    // ------- Value / Options -------
     public string Value
     {
         get => _value;
@@ -84,7 +84,7 @@ public partial class BiosSettingModel : INotifyPropertyChanged
         }
     }
 
-    // ─────── UI Conditions ───────
+    // ------- UI Conditions -------
     public bool HasHelpString => !string.IsNullOrEmpty(HelpString);
     public bool HasDefault => !string.IsNullOrEmpty(BiosDefault);
     public bool HasOptions => Options.Count > 0;
@@ -115,13 +115,13 @@ public partial class Option : INotifyPropertyChanged
     protected void OnPropertyChanged([CallerMemberName] string propertyName = null) =>
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 
-    // ─────── Option Info ───────
+    // ------- Option Info -------
     public string Index { get; set; }
     public string Label { get; set; }
 
     public BiosSettingModel Parent { get; set; }
 
-    // ─────── Flags ───────
+    // ------- Flags -------
     public bool IsSelected
     {
         get => _isSelected;

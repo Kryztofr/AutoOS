@@ -1,5 +1,6 @@
+﻿using AutoOS.Common;
+using AutoOS.Core.Helpers.Registry;
 using AutoOS.Views.Settings.Power;
-using AutoOS.Helpers.Registry;
 using Microsoft.Win32;
 using System.Diagnostics;
 
@@ -121,3 +122,4 @@ public static class PowerStage
         };
     }
 }
+

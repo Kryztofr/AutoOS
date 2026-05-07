@@ -1,7 +1,7 @@
-﻿using System.Diagnostics;
-using Windows.Storage;
-using AutoOS.Helpers.Picker;
+﻿using AutoOS.Core.Helpers.Picker;
 using AutoOS.Views.Installer.Actions;
+using System.Diagnostics;
+using Windows.Storage;
 
 namespace AutoOS.Views.Settings;
 

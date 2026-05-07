@@ -1,10 +1,10 @@
-using AutoOS.Views.Installer.Actions;
+﻿using AutoOS.Core.Helpers.Logging;
 using AutoOS.Views.Installer.Stages;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.Win32;
 using System.Diagnostics;
-using WinRT.Interop;
 using Windows.Storage;
+using WinRT.Interop;
 
 namespace AutoOS.Views.Installer;
 
@@ -57,7 +57,7 @@ public sealed partial class InstallPage : Page
 
         Progress.Value = localSettings.Values["actionProgress"] as double? ?? 0;
         PercentageText.Text = $"{(int)Progress.Value}%";
-        Helpers.Taskbar.TaskbarHelper.SetProgressValue(WindowNative.GetWindowHandle(App.MainWindow), Progress.Value, 100);
+		TaskbarHelper.SetProgressValue(WindowNative.GetWindowHandle(App.MainWindow), Progress.Value, 100);
 
         if (savedStage <= 0)
         {
@@ -100,8 +100,8 @@ public sealed partial class InstallPage : Page
         Registry.SetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\Explorer", "LockedStartLayout", 0, RegistryValueKind.DWord);
         try
         {
-            await ProcessActions.Log();
-            await Helpers.Network.NetworkHelper.LogNetworkSettings();
+            await LogHelper.Log(PreparingStage.GPUs);
+            await LogHelper.LogNetworkSettings(PreparingStage.GPUs);
         }
         catch { }
         Info.Title = "Restarting in 3...";
@@ -175,14 +175,14 @@ public sealed partial class InstallPage : Page
                     {
                         try
                         {
-                            await ProcessActions.LogError(ex, previousTitle);
+                            await LogHelper.LogError(ex, PreparingStage.GPUs, previousTitle);
                         }
                         catch {   }
 
                         Info.Title = $"{previousTitle}: {ex.Message}";
                         Info.Severity = InfoBarSeverity.Error;
                         Progress.Foreground = (Brush)Application.Current.Resources["SystemFillColorCriticalBrush"];
-                        Helpers.Taskbar.TaskbarHelper.SetProgressState(windowHandle, Helpers.Taskbar.TaskbarStates.Error);
+						TaskbarHelper.SetProgressState(windowHandle, TaskbarStates.Error);
                         ProgressRingControl.Visibility = Visibility.Collapsed;
                         ResumeButton.Visibility = Visibility.Visible;
 
@@ -193,7 +193,7 @@ public sealed partial class InstallPage : Page
                             ResumeButton.Click -= resumeHandler;
                             Info.Severity = InfoBarSeverity.Informational;
                             Progress.ClearValue(ProgressBar.ForegroundProperty);
-                            Helpers.Taskbar.TaskbarHelper.SetProgressState(windowHandle, Helpers.Taskbar.TaskbarStates.Normal);
+							TaskbarHelper.SetProgressState(windowHandle, TaskbarStates.Normal);
                             ProgressRingControl.Visibility = Visibility.Visible;
                             ResumeButton.Visibility = Visibility.Collapsed;
                             tcs.TrySetResult(true);
@@ -213,7 +213,7 @@ public sealed partial class InstallPage : Page
                     executedGroupsCount++;
                     Progress.Value = startProgress + (stagePercentage * executedGroupsCount) / groupedTitleCount;
                     localSettings.Values["actionProgress"] = Progress.Value;
-                    Helpers.Taskbar.TaskbarHelper.SetProgressValue(windowHandle, Progress.Value, 100);
+					TaskbarHelper.SetProgressValue(windowHandle, Progress.Value, 100);
                     await Task.Delay(150);
                 }
                 currentGroup.Clear();
@@ -244,14 +244,14 @@ public sealed partial class InstallPage : Page
                 {
                     try
                     {
-                        await ProcessActions.LogError(ex, previousTitle);
+                        await LogHelper.LogError(ex, PreparingStage.GPUs, previousTitle);
                     }
                     catch { }
 
                     Info.Title = $"{previousTitle}: {ex.Message}";
                     Info.Severity = InfoBarSeverity.Error;
                     Progress.Foreground = (Brush)Application.Current.Resources["SystemFillColorCriticalBrush"];
-                    Helpers.Taskbar.TaskbarHelper.SetProgressState(windowHandle, Helpers.Taskbar.TaskbarStates.Error);
+					TaskbarHelper.SetProgressState(windowHandle, TaskbarStates.Error);
                     ProgressRingControl.Visibility = Visibility.Collapsed;
                     ResumeButton.Visibility = Visibility.Visible;
 
@@ -262,7 +262,7 @@ public sealed partial class InstallPage : Page
                         ResumeButton.Click -= resumeHandler;
                         Info.Severity = InfoBarSeverity.Informational;
                         Progress.ClearValue(ProgressBar.ForegroundProperty);
-                        Helpers.Taskbar.TaskbarHelper.SetProgressState(windowHandle, Helpers.Taskbar.TaskbarStates.Normal);
+						TaskbarHelper.SetProgressState(windowHandle, TaskbarStates.Normal);
                         ProgressRingControl.Visibility = Visibility.Visible;
                         ResumeButton.Visibility = Visibility.Collapsed;
                         tcs.TrySetResult(true);
@@ -282,7 +282,7 @@ public sealed partial class InstallPage : Page
                 executedGroupsCount++;
                 Progress.Value = startProgress + (stagePercentage * executedGroupsCount) / groupedTitleCount;
                 localSettings.Values["actionProgress"] = Progress.Value;
-                Helpers.Taskbar.TaskbarHelper.SetProgressValue(windowHandle, Progress.Value, 100);
+				TaskbarHelper.SetProgressValue(windowHandle, Progress.Value, 100);
             }
         }
 
@@ -293,7 +293,7 @@ public sealed partial class InstallPage : Page
         {
             Progress.Value = startProgress + stagePercentage;
             localSettings.Values["actionProgress"] = Progress.Value;
-            Helpers.Taskbar.TaskbarHelper.SetProgressValue(windowHandle, Progress.Value, 100);
+			TaskbarHelper.SetProgressValue(windowHandle, Progress.Value, 100);
         }
     }
 }

@@ -1,11 +1,12 @@
+﻿using AutoOS.Common;
+using AutoOS.Core.Helpers.Registry;
+using AutoOS.Core.Helpers.Services;
 using AutoOS.Views.Installer.Actions;
-using AutoOS.Helpers.Registry;
-using System.Diagnostics;
-using AutoOS.Helpers.Services;
-using Microsoft.Win32;
-using System.ServiceProcess;
 using Microsoft.UI.Xaml.Documents;
 using Microsoft.UI.Xaml.Media;
+using Microsoft.Win32;
+using System.Diagnostics;
+using System.ServiceProcess;
 
 namespace AutoOS.Views.Installer.Stages;
 
@@ -192,3 +193,4 @@ public static class SecurityStage
         };
     }
 }
+

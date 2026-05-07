@@ -1,6 +1,7 @@
-using AutoOS.Helpers.Registry;
+﻿using AutoOS.Common;
+using AutoOS.Core.Helpers.Registry;
+using AutoOS.Core.Helpers.Services;
 using Microsoft.Win32;
-using AutoOS.Helpers.Services;
 
 namespace AutoOS.Views.Installer.Stages;
 
@@ -48,3 +49,4 @@ public static class ServicesStage
         return actions;
     }
 }
+
