@@ -88,7 +88,7 @@ public static partial class GpuHelper
                             currentVersion = string.Concat(versionParts[2].AsSpan()[1..], versionParts[3].AsSpan()[..2], ".", versionParts[3].AsSpan(2, 2));
                         }
                         pstates = Microsoft.Win32.Registry.GetValue(registryPath, "DisableDynamicPstate", null) is not int pstateValue || pstateValue == 0;
-                        ecc = Microsoft.Win32.Registry.GetValue(registryPath, "RMNoECCFuseCheck", null) is not int eccValue || eccValue == 0;
+                        ecc = Microsoft.Win32.Registry.GetValue(registryPath, "RMEnableL1ECC", null) is not int eccValue || eccValue == 1;
                         gspFirmware = Microsoft.Win32.Registry.GetValue(registryPath, "EnableGpuFirmware", null) is int firmwareValue && firmwareValue == 1;
                         hdcp = Microsoft.Win32.Registry.GetValue(registryPath, "RMHdcpKeyglobZero", null) is int intValue && intValue == 0;
                      }

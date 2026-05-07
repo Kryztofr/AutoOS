@@ -20,6 +20,7 @@ public static class BrowsersStage
     {
         bool? Chrome = PreparingStage.Chrome;
         bool? Thorium = PreparingStage.Thorium;
+        bool? Helium = PreparingStage.Helium;
         bool? Brave = PreparingStage.Brave;
         bool? Vivaldi = PreparingStage.Vivaldi;
         bool? Arc = PreparingStage.Arc;
@@ -42,6 +43,7 @@ public static class BrowsersStage
         string chromeVersion = "";
         string chromeVersion2 = "";
         string thoriumVersion = "";
+        string heliumVersion = "";
         string braveVersion = "";
         string vivaldiVersion = "";
         string arcVersion = "";
@@ -216,6 +218,64 @@ public static class BrowsersStage
 
             // remove thorium shortcut from the desktop
             ("Removing Thorium shortcut from the desktop", async () => File.Delete(@"C:\Users\Public\Desktop\Thorium.lnk"), () => Thorium == true),
+
+			// download helium
+			("Downloading Helium", async () => await DownloadHelper.Download(JsonDocument.Parse(await new HttpClient { DefaultRequestHeaders = { { "User-Agent", "AutoOS" } } }.GetStringAsync("https://api.github.com/repos/imputnet/helium-windows/releases/latest")).RootElement.GetProperty("assets").EnumerateArray().First(a => a.GetProperty("name").GetString().Contains("_x64-installer.exe")).GetProperty("browser_download_url").GetString(), ApplicationData.Current.TemporaryFolder.Path, "helium_x64-installer.exe", new InstallPageReporter()), () => Helium == true),
+
+            // install helium
+            ("Installing Helium", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(ApplicationData.Current.TemporaryFolder.Path, "helium_x64-installer.exe"), Arguments = "/S /SYSTEM", WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => Helium == true),
+			("Installing Helium", async () => heliumVersion = FileVersionInfo.GetVersionInfo(@"C:\Program Files\imput\Helium\Application\chrome.exe").ProductVersion, () => Helium == true),
+			("Cleaning up Helium files", async () => await (await ApplicationData.Current.TemporaryFolder.GetFileAsync("helium_x64-installer.exe")).DeleteAsync(), () => Helium == true),
+
+            // disable helium services
+            ("Disabling Helium services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Active Setup\Installed Components\AutorunsDisabled\{FB68A146-637A-48C2-A0C4-1565DE45FEBD}", "", "Helium", RegistryValueKind.String), () => Helium == true),
+			("Disabling Helium services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Active Setup\Installed Components\AutorunsDisabled\{FB68A146-637A-48C2-A0C4-1565DE45FEBD}", "Localized Name", "Helium", RegistryValueKind.String), () => Helium == true),
+			("Disabling Helium services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, $@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Active Setup\Installed Components\AutorunsDisabled\{{FB68A146-637A-48C2-A0C4-1565DE45FEBD}}", "StubPath", $@"""C:\Program Files\Helium\Application\{heliumVersion}\Installer\chrmstp.exe"" --configure-user-settings --verbose-logging --system-level", RegistryValueKind.String), () => Helium == true),
+			("Disabling Helium services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Active Setup\Installed Components\AutorunsDisabled\{FB68A146-637A-48C2-A0C4-1565DE45FEBD}", "Version", "43,0,0,0", RegistryValueKind.String), () => Helium == true),
+			("Disabling Helium services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Active Setup\Installed Components\AutorunsDisabled\{FB68A146-637A-48C2-A0C4-1565DE45FEBD}", "IsInstalled", 1, RegistryValueKind.DWord), () => Helium == true),
+			("Disabling Helium services", async () => RegistryHelper.DeleteKey(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Active Setup\Installed Components\{FB68A146-637A-48C2-A0C4-1565DE45FEBD}"), () => Helium == true),
+
+            // pin helium to the taskbar
+            ("Pinning Helium to the taskbar", async () => await ProcessActions.RunPowerShellScript("taskbarpin.ps1", @"-Type Link -Path ""C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Helium.lnk"""), () => Helium == true),
+
+            // install ublock origin extension
+            ("Installing uBlock Origin Extension", async () => await ProcessActions.RunPowerShell(@"$BaseKey = 'HKLM:\SOFTWARE\Policies\Helium\ExtensionInstallForcelist'; $Index = (Get-Item $BaseKey).Property | Sort-Object {[int]$_} | Select-Object -Last 1; $NewIndex = [int]$Index + 1; reg add 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Helium\ExtensionInstallForcelist' /v $NewIndex /t REG_SZ /d 'cjpalhdlnbpafiamejdnhcphjbkeiagm' /f"), () => Helium == true && uBlock == true),
+
+            // install sponsorblock extension
+            ("Installing SponsorBlock Extension", async () => await ProcessActions.RunPowerShell(@"$BaseKey = 'HKLM:\SOFTWARE\Policies\Helium\ExtensionInstallForcelist'; $Index = (Get-Item $BaseKey).Property | Sort-Object {[int]$_} | Select-Object -Last 1; $NewIndex = [int]$Index + 1; reg add 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Helium\ExtensionInstallForcelist' /v $NewIndex /t REG_SZ /d 'mnjggcdmjocbbbhaepdhchncahnbgone' /f"), () => Helium == true && SponsorBlock == true),
+
+            // install return youtube dislike extension
+            ("Installing ReturnYouTubeDislike Extension", async () => await ProcessActions.RunPowerShell(@"$BaseKey = 'HKLM:\SOFTWARE\Policies\Helium\ExtensionInstallForcelist'; $Index = (Get-Item $BaseKey).Property | Sort-Object {[int]$_} | Select-Object -Last 1; $NewIndex = [int]$Index + 1; reg add 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Helium\ExtensionInstallForcelist' /v $NewIndex /t REG_SZ /d 'gebbhagfogifgggkldgodflihgfeippi' /f"), () => Helium == true && ReturnYouTubeDislike == true),
+
+            // install i still dont care about cookies extension
+            ("Installing I still don't care about cookies Extension", async () => await ProcessActions.RunPowerShell(@"$BaseKey = 'HKLM:\SOFTWARE\Policies\Helium\ExtensionInstallForcelist'; $Index = (Get-Item $BaseKey).Property | Sort-Object {[int]$_} | Select-Object -Last 1; $NewIndex = [int]$Index + 1; reg add 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Helium\ExtensionInstallForcelist' /v $NewIndex /t REG_SZ /d 'edibdbjcniadpccecjdfdjjppcpchdlm' /f"), () => Helium == true && Cookies == true),
+
+            // install dark reader extension
+            ("Installing Dark Reader Extension", async () => await ProcessActions.RunPowerShell(@"$BaseKey = 'HKLM:\SOFTWARE\Policies\Helium\ExtensionInstallForcelist'; $Index = (Get-Item $BaseKey).Property | Sort-Object {[int]$_} | Select-Object -Last 1; $NewIndex = [int]$Index + 1; reg add 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Helium\ExtensionInstallForcelist' /v $NewIndex /t REG_SZ /d 'eimadpbcbfnmbkopoojfekhnkhdbieeh' /f"), () => Helium == true && DarkReader == true),
+            
+            // install violentmonkey extension
+            ("Installing Violentmonkey Extension", async () => await ProcessActions.RunPowerShell(@"$BaseKey = 'HKLM:\SOFTWARE\Policies\Helium\ExtensionInstallForcelist'; $Index = (Get-Item $BaseKey).Property | Sort-Object {[int]$_} | Select-Object -Last 1; $NewIndex = [int]$Index + 1; reg add 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Helium\ExtensionInstallForcelist' /v $NewIndex /t REG_SZ /d 'jinjaccalgkegednnccohejagnlnfdag' /f"), () => Helium == true && Violentmonkey == true),
+
+            // install tampermonkey extension
+            ("Installing Tampermonkey Extension", async () => await ProcessActions.RunPowerShell(@"$BaseKey = 'HKLM:\SOFTWARE\Policies\Helium\ExtensionInstallForcelist'; $Index = (Get-Item $BaseKey).Property | Sort-Object {[int]$_} | Select-Object -Last 1; $NewIndex = [int]$Index + 1; reg add 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist' /v $NewIndex /t REG_SZ /d 'dhdgffkkebhmkfjojejmpbldmpobfkfo' /f"), () => Helium == true && Tampermonkey == true),
+
+            // install shazam extension
+            ("Installing Shazam Extension", async () => await ProcessActions.RunPowerShell(@"$BaseKey = 'HKLM:\SOFTWARE\Policies\Helium\ExtensionInstallForcelist'; $Index = (Get-Item $BaseKey).Property | Sort-Object {[int]$_} | Select-Object -Last 1; $NewIndex = [int]$Index + 1; reg add 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Helium\ExtensionInstallForcelist' /v $NewIndex /t REG_SZ /d 'mmioliijnhnoblpgimnlajmefafdfilb' /f"), () => Helium == true && Shazam == true),
+
+            // install icloud passwords extension
+            ("Installing iCloud Passwords Extension", async () => await ProcessActions.RunPowerShell(@"$BaseKey = 'HKLM:\SOFTWARE\Policies\Helium\ExtensionInstallForcelist'; $Index = (Get-Item $BaseKey).Property | Sort-Object {[int]$_} | Select-Object -Last 1; $NewIndex = [int]$Index + 1; reg add 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Helium\ExtensionInstallForcelist' /v $NewIndex /t REG_SZ /d 'pejdijmoenmkgeppbflobdenhhabjlaj' /f"), () => Helium == true && iCloud == true),
+
+            // install bitwarden extension
+            ("Installing Bitwarden Extension", async () => await ProcessActions.RunPowerShell(@"$BaseKey = 'HKLM:\SOFTWARE\Policies\Helium\ExtensionInstallForcelist'; $Index = (Get-Item $BaseKey).Property | Sort-Object {[int]$_} | Select-Object -Last 1; $NewIndex = [int]$Index + 1; reg add 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Helium\ExtensionInstallForcelist' /v $NewIndex /t REG_SZ /d 'nngceckbapebfimnlniiiahkandclblb' /f"), () => Helium == true && Bitwarden == true),
+
+            // install 1password extension
+            ("Installing 1Password Extension", async () => await ProcessActions.RunPowerShell(@"$BaseKey = 'HKLM:\SOFTWARE\Policies\Helium\ExtensionInstallForcelist'; $Index = (Get-Item $BaseKey).Property | Sort-Object {[int]$_} | Select-Object -Last 1; $NewIndex = [int]$Index + 1; reg add 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Helium\ExtensionInstallForcelist' /v $NewIndex /t REG_SZ /d 'aeblfdkhhhdcdjpifhhbdiojplfjncoa' /f"), () => Helium == true && OnePassword == true),
+
+            // log in to helium
+            ("Please log in to your Helium account (Close to continue)", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(@"C:\Program Files\Helium\Application", "helium.exe"), WindowStyle = ProcessWindowStyle.Maximized })!.WaitForExitAsync(), () => Helium == true),
+
+            // remove helium shortcut from the desktop
+            ("Removing Helium shortcut from the desktop", async () => File.Delete(@"C:\Users\Public\Desktop\Helium.lnk"), () => Helium == true),
 
             // download brave
             ("Downloading Brave", async () => await DownloadHelper.Download("https://github.com/brave/brave-browser/releases/latest/download/BraveBrowserStandaloneSetup.exe", ApplicationData.Current.TemporaryFolder.Path, "BraveBrowserStandaloneSetup.exe", new InstallPageReporter()), () => Brave == true),

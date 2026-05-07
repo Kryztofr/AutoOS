@@ -284,228 +284,140 @@ namespace AutoOS.Core.Helpers.GPU
                 // configure color settings
                 ("Configuring color settings", async () => { foreach (string key in Microsoft.Win32.Registry.LocalMachine.OpenSubKey(@"System\CurrentControlSet\Services\nvlddmkm\State\DisplayDatabase")?.GetSubKeyNames() ?? []) RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, $@"HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\nvlddmkm\State\DisplayDatabase\{key}", "ColorformatConfig", new byte[] { 0xDB, 0x02, 0x00, 0x00, 0x14, 0x00, 0x00, 0x00, 0x00, 0x0A, 0x00, 0x08, 0x00, 0x00, 0x00, 0x00, 0x03, 0x01, 0x00, 0x00 }, RegistryValueKind.Binary); }, null),
 
+				// rmpowerfeature
+                ("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RmPowerFeature", 1073741888, RegistryValueKind.DWord), null),
+                
+				// rmpowerfeature2
+				("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RmPowerFeature2", 64, RegistryValueKind.DWord), null),
+
+                // enable d3 pc latency
+                ("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "D3PCLatency", 1, RegistryValueKind.DWord), null),
+                
+				// enableperformancemode
+                ("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "EnablePerformanceMode", 1, RegistryValueKind.DWord), null),
+
                 // disable runtime power management
                 ("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "EnableRuntimePowerManagement", 0, RegistryValueKind.DWord), null),
 
-                // disables hw fault buffers on pascal+ chips
-                ("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RmDisableHwFaultBuffer", 1, RegistryValueKind.DWord), null),
-
-                // disable all engine level clock gating settings
+                // rmelcg
                 ("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RMElcg", 1431655765, RegistryValueKind.DWord), null),
-
-                // disable all engine level power gating settings
-                ("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RMElpg", 4095, RegistryValueKind.DWord), null),
-
-                // disable all block level clock gating settings
-                ("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RMBlcg", 286331153, RegistryValueKind.DWord), null),
-
-                // disable all second level clock gating settings
-                ("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RMSlcg", 262143, RegistryValueKind.DWord), null),
-
-                // disable all floorsweep power gating settings
-                ("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RMFspg", 15, RegistryValueKind.DWord), null),
 
                 // disable gc6
                 ("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RMGC6Feature", 699050, RegistryValueKind.DWord), null),
 
                 // disable all latency optimizations for gc6
-                ("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RMGC6Parameters", 85, RegistryValueKind.DWord), null),
+                ("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RMGC6Parameters", 55, RegistryValueKind.DWord), null),
+
+                // rmgcofffeature
+                ("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RMGCOffFeature", 2, RegistryValueKind.DWord), null),
 
                 // disable all gc5 idle features
                 ("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RMDidleFeatureGC5", 44731050, RegistryValueKind.DWord), null),
 
-                // disable hot plug support
-                ("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RMHotPlugSupportDisable", 1, RegistryValueKind.DWord), null),
+                // disable d3 related features
+                ("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RMD3Feature", 2, RegistryValueKind.DWord), null),
 
-                // enable the paged dma mode for fbsr
-                ("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RmFbsrPagedDMA", 1, RegistryValueKind.DWord), null),
+                // disable slowdowns
+				("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RMClkSlowDown", 67108864, RegistryValueKind.DWord), null),
+				("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RmOverrideIdleSlowdownSettings", 0, RegistryValueKind.DWord), null),
+
+                // disable lowering mclk
+                ("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RmOptp2LowerMclk", 0, RegistryValueKind.DWord), null),
+
+                // disable the power-off-dram-pll-when-unused feature
+                ("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RmClkPowerOffDramPllWhenUnused", 0, RegistryValueKind.DWord), null),
+
+                // configure low power features
+                ("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RMLpwrArch", 349525, RegistryValueKind.DWord), null),
+				("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RMLpwrEiClient", 5, RegistryValueKind.DWord), null),
+				("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RmLpwrCtrlGrRgParameters", 89478485, RegistryValueKind.DWord), null),
+				("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RmLpwrCtrlMsDifrCgParameters", 1365, RegistryValueKind.DWord), null),
+				("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RmLpwrCtrlMsDifrSwAsrParameters", 5461, RegistryValueKind.DWord), null),
+				("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RmLpwrCtrlMsLtcParameters", 5, RegistryValueKind.DWord), null),
+				("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RmLpwrGrPgSwFilterFunction", 0, RegistryValueKind.DWord), null),
+				("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RmLpwrCacheStatsOnD3", 0, RegistryValueKind.DWord), null),
+
+                // keep mscg enabled from rm side
+                ("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RmDwbMscg", 1, RegistryValueKind.DWord), null),
+
+                // disable slides mclk
+                ("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "SlideMCLK", 0, RegistryValueKind.DWord), null),
+
+				// disable aspm
+				("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RMEnableASPMAtLoad", 0, RegistryValueKind.DWord), null),
+				("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RMDisableGpuASPMFlags", 3, RegistryValueKind.DWord), null),
+				
+                // disable optimal power for padlink pll
+                ("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RMDisableOptimalPowerForPadlinkPll", 1, RegistryValueKind.DWord), null),
+
+                // disable rtd3 d3hot
+                ("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RMForceRtd3D3Hot", 2, RegistryValueKind.DWord), null),
+
+                // force never power off the mios
+                ("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RmMIONoPowerOff", 1, RegistryValueKind.DWord), null),
+
+                // enable war
+				("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RM2644249", 1, RegistryValueKind.DWord), null),
+
+				("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RM303107", 16, RegistryValueKind.DWord), null),
+
+                // disable clkreq and deep l1
+                ("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RM2779240", 5, RegistryValueKind.DWord), null),
+
+                // enable opsb feature
+                ("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RM580312", 1, RegistryValueKind.DWord), null),
+
+				// rmbug2519005war
+				("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RMBug2519005War", 1, RegistryValueKind.DWord), null),
+				
+				// rmceelcgwar1895530
+				("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RmCeElcgWar1895530", 1, RegistryValueKind.DWord), null),
+				
+				// rmwar1760398
+				("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RmWar1760398", 1, RegistryValueKind.DWord), null),
+
+                // disable opsb (optional power saving bundle)
+                ("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RMOPSB", 10914, RegistryValueKind.DWord), null),
+				
+                // disable bbx inform
+                ("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RmDisableInforomBBX", 15, RegistryValueKind.DWord), null),
+
+                // configure paging features
+                ("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RmPgCtrlParameters", 1431655765, RegistryValueKind.DWord), null),
+				("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RmPgCtrlGrParameters", 1431655765, RegistryValueKind.DWord), null),
+
+                // disable lpwr fsms on init
+                ("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RMElpgStateOnInit", 3, RegistryValueKind.DWord), null),
+
+                // disable 10 types of acpi calls from the resource manager to the sbios
+                ("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RmDisableACPI", 1023, RegistryValueKind.DWord), null),
 
                 // disable post l2 compression
                 ("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RMDisablePostL2Compression", 1, RegistryValueKind.DWord), null),
 
-                // disable rc watchdog
-                ("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RmRcWatchdog", 0, RegistryValueKind.DWord), null),
-
-                // disable event logging on rc errors
-                ("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RmLogonRC", 0, RegistryValueKind.DWord), null),
-
-                // disable more detailed debug intr logs
-                ("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RMIntrDetailedLogs", 0, RegistryValueKind.DWord), null),
-
-                // disable fecs context switch logging
-                ("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RMCtxswLog", 0, RegistryValueKind.DWord), null),
-
-                // disable logging
-                ("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RMNvLog", 0, RegistryValueKind.DWord), null),
-
-                // disable logging of nvlink fatal errors
-                ("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RmDisableInforomNvlink", 3, RegistryValueKind.DWord), null),
-
-                // disable feature disablement
-                ("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RMDisableFeatureDisablement", 0, RegistryValueKind.DWord), null),
-
-                // disable break
-                ("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RmBreak", 0, RegistryValueKind.DWord), null),
-
-                // disable breakpoint on debug resource manager on rc errors
-                ("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RmBreakonRC", 0, RegistryValueKind.DWord), null),
-
-                // disable smc on a specific gpu
-                ("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RMDebugSetSMCMode", 0, RegistryValueKind.DWord), null),
-
-                // disable lrc coalescing
-                ("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RMDisableLRCCoalescing", 1, RegistryValueKind.DWord), null),
-
-                // disable i2c nanny
-                ("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RmEnableI2CNanny", 0, RegistryValueKind.DWord), null),
-
-                // latency tolerance
-                ("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RMPcieLtrOverride", 1, RegistryValueKind.DWord), null),
-				("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RMDeepL1EntryLatencyUsec", 1, RegistryValueKind.DWord), null),
-
+                // disable non-contiguous allocation
+                ("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RMDisableNoncontigAlloc", 1, RegistryValueKind.DWord), null),
+				
                 // configure bandwidth feature
                 ("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RMBandwidthFeature", 1896072192, RegistryValueKind.DWord), null),
 
                 // disable mempool compression
                 ("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RMBandwidthFeature2", 1, RegistryValueKind.DWord), null),
 
-                // disable pre os apps
-                ("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RmDisablePreosapps", 1, RegistryValueKind.DWord), null),
-
-                // rmperflimitsoverride
-                ("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RmPerfLimitsOverride", 21, RegistryValueKind.DWord), null),
-
-                // rmgcofffeature
-                ("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RMGCOffFeature", 2, RegistryValueKind.DWord), null),
-
-                // disable aspm
-                ("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RmOverrideSupportChipsetAspm", 1, RegistryValueKind.DWord), null),
-				("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RMEnableASPMDT", 1, RegistryValueKind.DWord), null),
-				("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RMDisableGpuASPMFlags", 3, RegistryValueKind.DWord), null),
-				("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RMEnableASPMAtLoad", 0, RegistryValueKind.DWord), null),
-
-                // disable event tracer
-                ("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RMEnableEventTracer", 0, RegistryValueKind.DWord), null),
-
-                // skip error checks
-                ("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "SkipSwStateErrChecks", 1, RegistryValueKind.DWord), null),
-
-                // disable advanced error reporting
-                ("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RMAERRForceDisable", 1, RegistryValueKind.DWord), null),
-
-                // enable opsb feature
-                ("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RM580312", 1, RegistryValueKind.DWord), null),
-
-                // enable war
-                ("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RMBug2519005War", 1, RegistryValueKind.DWord), null),
-				("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RmCeElcgWar1895530", 1, RegistryValueKind.DWord), null),
-				("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RmWar1760398", 1, RegistryValueKind.DWord), null),
-				("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RM2644249", 1, RegistryValueKind.DWord), null),
-
-                // configure low power features
-                ("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RMLpwrArch", 349525, RegistryValueKind.DWord), null),
-				("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RMLpwrEiClient", 5, RegistryValueKind.DWord), null),
-				("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RmLpwrCtrlMsDifrCgParameters", 1365, RegistryValueKind.DWord), null),
-
-				("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RmLpwrGrPgSwFilterFunction", 0, RegistryValueKind.DWord), null),
-				("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RmLpwrCtrlMsLtcParameters", 5, RegistryValueKind.DWord), null),
-				("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RmLpwrCtrlMsDifrSwAsrParameters", 5461, RegistryValueKind.DWord), null),
-				("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RmLpwrCacheStatsOnD3", 0, RegistryValueKind.DWord), null),
-				("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RmLpwrCtrlGrRgParameters", 89478485, RegistryValueKind.DWord), null),
-
-                // configure paging features
-                ("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RmPgCtrlParameters", 1431655765, RegistryValueKind.DWord), null),
-				("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RmPgCtrlGrParameters", 1431655765, RegistryValueKind.DWord), null),
-
-                // keep mscg enabled from rm side
-                ("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RmDwbMscg", 1, RegistryValueKind.DWord), null),
-
-                // disable bbx inform
-                ("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RmDisableInforomBBX", 15, RegistryValueKind.DWord), null),
-
                 // prefer system memory contiguous
                 ("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "PreferSystemMemoryContiguous", 1, RegistryValueKind.DWord), null),
-				("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\nvlddmkm", "PreferSystemMemoryContiguous", 1, RegistryValueKind.DWord), null),
-
-                // configure sec2 to not use profile with apm task enabled
-                ("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RmSec2EnableApm", 0, RegistryValueKind.DWord), null),
-
-                // disables silentrunning performance levels
-                ("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "MaxPerfWithPerfMon", 0, RegistryValueKind.DWord), null),
-
-                // disable lowering mclk
-                ("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RmOptp2LowerMclk", 0, RegistryValueKind.DWord), null),
-
-                // disable slowdowns
-                ("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RmOverrideIdleSlowdownSettings", 0, RegistryValueKind.DWord), null),
-				("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RMClkSlowDown", 67108864, RegistryValueKind.DWord), null),
-
-                // disable d3 related features
-                ("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RMD3Feature", 2, RegistryValueKind.DWord), null),
-
-                // disable 10 types of acpi calls from the resource manager to the sbios
-                ("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RmDisableACPI", 1023, RegistryValueKind.DWord), null),
-
-                // disable native pcie l1
-                ("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RMNativePcieL1WarFlags", 16, RegistryValueKind.DWord), null),
-				("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RM303107", 16, RegistryValueKind.DWord), null),
-
-                // force disable clear perfmon and reset level when entering d4 state
-                ("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RMResetPerfMonD4", 0, RegistryValueKind.DWord), null),
-
+				
                 // disable edc replay
                 ("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RMDisableEDC", 1, RegistryValueKind.DWord), null),
-
-                // disable lpwr fsms on init
-                ("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RMElpgStateOnInit", 3, RegistryValueKind.DWord), null),
-
-                // force never power off the mios
-                ("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RmMIONoPowerOff", 1, RegistryValueKind.DWord), null),
-
-                // force highest nvlink link power states
-                ("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RMNvLinkControlLinkPM", 170, RegistryValueKind.DWord), null),
-
-                // disable optimal power for padlink pll
-                ("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RMDisableOptimalPowerForPadlinkPll", 1, RegistryValueKind.DWord), null),
-
-                // disable clkreq and deep l1
-                ("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RM2779240", 5, RegistryValueKind.DWord), null),
-
-                // disable the power-off-dram-pll-when-unused feature
-                ("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RmClkPowerOffDramPllWhenUnused", 0, RegistryValueKind.DWord), null),
-
-                // disable opsb (optional power saving bundle)
-                ("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RMOPSB", 10914, RegistryValueKind.DWord), null),
-
-                // disable slides mclk
-                ("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "SlideMCLK", 0, RegistryValueKind.DWord), null),
-
-                // disable rtd3 d3hot
-                ("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RMForceRtd3D3Hot", 2, RegistryValueKind.DWord), null),
-
-                // disable uphy init sequence
-                ("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RMNvlinkUPHYInitControl", 16, RegistryValueKind.DWord), null),
-
-                // disable registry caching
-                ("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RmDisableRegistryCaching", 15, RegistryValueKind.DWord), null),
-
-                // disable hulk features
-                ("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RmHulkDisableFeatures", 7, RegistryValueKind.DWord), null),
-
-                // enable d3 pc latency
-                ("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "D3PCLatency", 1, RegistryValueKind.DWord), null),
-
-                // ignore hulk errors
-                ("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RmIgnoreHulkErrors", 1, RegistryValueKind.DWord), null),
-
+				
                 // disable illegal compstat access
                 ("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RMDisableIntrIllegalCompstatAccess", 1, RegistryValueKind.DWord), null),
 
-                // set panel refresh rate
-                ("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "SetPanelRefreshRate", 0, RegistryValueKind.DWord), null),
+                // disable lrc coalescing
+                ("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RMDisableLRCCoalescing", 1, RegistryValueKind.DWord), null),
 
-                // disable non-contiguous allocation
-                ("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RMDisableNoncontigAlloc", 1, RegistryValueKind.DWord), null),
+                // disables hw fault buffers on pascal+ chips
+                ("Configuring Miscellaneous NVIDIA Settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RmDisableHwFaultBuffer", 1, RegistryValueKind.DWord), null),
 
                 // force "hardware composed: independent flip"
                 (@"Forcing ""Hardware Composed: Independent Flip""", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "enableRS2FlipCollapse", 1, RegistryValueKind.DWord), null),
@@ -530,7 +442,7 @@ namespace AutoOS.Core.Helpers.GPU
 				("Disabling telemetry", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\NVIDIA Corporation\Global\FTS", "EnableRID44231", 0, RegistryValueKind.DWord), null),
 				("Disabling telemetry", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\NVIDIA Corporation\Global\FTS", "EnableRID64640", 0, RegistryValueKind.DWord), null),
 				("Disabling telemetry", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\NVIDIA Corporation\Global\FTS", "EnableRID66610", 0, RegistryValueKind.DWord), null),
-				("Disabling telemetry", async () => await RegistryHelper.RunAs(RegistryHelper.Identity.TrustedInstaller, new ProcessStartInfo { FileName = "cmd.exe", Arguments = "/c cd /d \"C:\\Windows\\System32\\DriverStore\\FileRepository\\\" & dir NvTelemetry64.dll /a /b /s & del NvTelemetry64.dll /a /s", CreateNoWindow = true }), null),
+				("Disabling telemetry", async () => await RegistryHelper.RunAs(RegistryHelper.Identity.TrustedInstaller, new ProcessStartInfo { FileName = "cmd.exe", Arguments = @"/c cd /d ""C:\Windows\System32\DriverStore\FileRepository\"" & dir NvTelemetry64.dll /a /b /s & del NvTelemetry64.dll /a /s", CreateNoWindow = true }), null),
 
                 // disable logging
                 ("Disabling logging", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\nvlddmkm\Parameters", "LogDisableMasks", Enumerable.Range(0, "00ffff0f01ffff0f02ffff0f03ffff0f04ffff0f05ffff0f06ffff0f07ffff0f08ffff0f09ffff0f0affff0f0bffff0f0cffff0f0dffff0f0effff0f0fffff0f10ffff0f11ffff0f12ffff0f13ffff0f14ffff0f15ffff0f16ffff0f00ffff1f01ffff1f02ffff1f03ffff1f04ffff1f05ffff1f06ffff1f07ffff1f08ffff1f09ffff1f0affff1f0bffff1f0cffff1f0dffff1f0effff1f0fffff1f00ffff2f01ffff2f02ffff2f03ffff2f04ffff2f05ffff2f06ffff2f07ffff2f08ffff2f09ffff2f0affff2f0bffff2f0cffff2f0dffff2f0effff2f0fffff2f00ffff3f01ffff3f02ffff3f03ffff3f04ffff3f05ffff3f06ffff3f07ffff3f".Length / 2).Select(x => Convert.ToByte("00ffff0f01ffff0f02ffff0f03ffff0f04ffff0f05ffff0f06ffff0f07ffff0f08ffff0f09ffff0f0affff0f0bffff0f0cffff0f0dffff0f0effff0f0fffff0f10ffff0f11ffff0f12ffff0f13ffff0f14ffff0f15ffff0f16ffff0f00ffff1f01ffff1f02ffff1f03ffff1f04ffff1f05ffff1f06ffff1f07ffff1f08ffff1f09ffff1f0affff1f0bffff1f0cffff1f0dffff1f0effff1f0fffff1f00ffff2f01ffff2f02ffff2f03ffff2f04ffff2f05ffff2f06ffff2f07ffff2f08ffff2f09ffff2f0affff2f0bffff2f0cffff2f0dffff2f0effff2f0fffff2f00ffff3f01ffff3f02ffff3f03ffff3f04ffff3f05ffff3f06ffff3f07ffff3f".Substring(x * 2, 2), 16)).ToArray(), RegistryValueKind.Binary), null),
@@ -547,12 +459,10 @@ namespace AutoOS.Core.Helpers.GPU
 
                 // disable error code correction (ecc)
                 ("Disabling Error Code Correction (ECC)", async () => await RegistryHelper.RunAs(RegistryHelper.Identity.TrustedInstaller, new ProcessStartInfo { FileName = "nvidia-smi.exe", Arguments = "-e 0", CreateNoWindow = true }), () => gpu.ECCSupport && gpu.ECC == false),
-                ("Disabling Error Code Correction (ECC)", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RMNoECCFuseCheck", 1, RegistryValueKind.DWord), () => gpu.ECCSupport && gpu.ECC == false),
                 ("Disabling Error Code Correction (ECC)", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RMEnableL1ECC", 0, RegistryValueKind.DWord), () => gpu.ECCSupport && gpu.ECC == false),
                 ("Disabling Error Code Correction (ECC)", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RMEnableSMECC", 0, RegistryValueKind.DWord), () => gpu.ECCSupport && gpu.ECC == false),
                 ("Disabling Error Code Correction (ECC)", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RMEnableSHMECC", 0, RegistryValueKind.DWord), () => gpu.ECCSupport && gpu.ECC == false),
                 ("Disabling Error Code Correction (ECC)", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RMAssertOnEccErrors", 0, RegistryValueKind.DWord), () => gpu.ECCSupport && gpu.ECC == false),
-                ("Disabling Error Code Correction (ECC)", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RMGuestECCState", 0, RegistryValueKind.DWord), () => gpu.ECCSupport && gpu.ECC == false),
 
                 // enable gsp firmware
                 ("Enabling GSP Firmware", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "EnableGpuFirmware", 1, RegistryValueKind.DWord), () => gpu.GspFirmware == true),
@@ -560,8 +470,7 @@ namespace AutoOS.Core.Helpers.GPU
 
                 // disable high-bandwidth digital content protection (hdcp)
                 ("Disabling High-Bandwidth Digital Content Protection (HDCP)", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RMHdcpKeyglobZero", 1, RegistryValueKind.DWord), () => gpu.HDCP == false),
-				("Disabling High-Bandwidth Digital Content Protection (HDCP)", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RmDisableHdcp22", 1, RegistryValueKind.DWord), () => gpu.HDCP == false),
-				("Disabling High-Bandwidth Digital Content Protection (HDCP)", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RmSkipHdcp22Init", 1, RegistryValueKind.DWord), () => gpu.HDCP == false),
+                ("Disabling High-Bandwidth Digital Content Protection (HDCP)", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "RmDisableHdcp22", 1, RegistryValueKind.DWord), () => gpu.HDCP == false),
 
                 // disable high-definition multimedia interface (hdmi)/displayport (dp) audio
                 ("Disabling High-Definition Multimedia Interface (HDMI)/DisplayPort (DP) Audio", async () => GpuHelper.ToggleHdmiDpAudio(gpu, false), () => gpu.HDMIDPAudio == false)

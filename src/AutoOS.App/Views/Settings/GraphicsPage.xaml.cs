@@ -509,22 +509,18 @@ public sealed partial class GraphicsPage : Page
             {
                 await RegistryHelper.RunAs(RegistryHelper.Identity.TrustedInstaller, new ProcessStartInfo { FileName = "nvidia-smi.exe", Arguments = "-e 1", CreateNoWindow = true });
                 using var key = Registry.LocalMachine.OpenSubKey(gpu.RegistryPath["HKEY_LOCAL_MACHINE\\".Length..], writable: true);
-                key?.DeleteValue("RMNoECCFuseCheck", false);
                 key?.DeleteValue("RMEnableL1ECC", false);
                 key?.DeleteValue("RMEnableSMECC", false);
                 key?.DeleteValue("RMEnableSHMECC", false);
                 key?.DeleteValue("RMAssertOnEccErrors", false);
-                key?.DeleteValue("RMGuestECCState", false);
             }
             else
             {
                 await RegistryHelper.RunAs(RegistryHelper.Identity.TrustedInstaller, new ProcessStartInfo { FileName = "nvidia-smi.exe", Arguments = "-e 0", CreateNoWindow = true });
-                Registry.SetValue(gpu.RegistryPath, "RMNoECCFuseCheck", 1, RegistryValueKind.DWord);
                 Registry.SetValue(gpu.RegistryPath, "RMEnableL1ECC", 0, RegistryValueKind.DWord);
                 Registry.SetValue(gpu.RegistryPath, "RMEnableSMECC", 0, RegistryValueKind.DWord);
                 Registry.SetValue(gpu.RegistryPath, "RMEnableSHMECC", 0, RegistryValueKind.DWord);
                 Registry.SetValue(gpu.RegistryPath, "RMAssertOnEccErrors", 0, RegistryValueKind.DWord);
-                Registry.SetValue(gpu.RegistryPath, "RMGuestECCState", 0, RegistryValueKind.DWord);
             }
         }
 
@@ -718,13 +714,11 @@ public sealed partial class GraphicsPage : Page
                 Registry.SetValue(gpu.RegistryPath, "RMHdcpKeyglobZero", 0, RegistryValueKind.DWord);
                 using var key = Registry.LocalMachine.OpenSubKey(gpu.RegistryPath["HKEY_LOCAL_MACHINE\\".Length..], writable: true);
                 key?.DeleteValue("RmDisableHdcp22", false);
-                key?.DeleteValue("RmSkipHdcp22Init", false);
             }
             else
             {
                 Registry.SetValue(gpu.RegistryPath, "RMHdcpKeyglobZero", 1, RegistryValueKind.DWord);
                 Registry.SetValue(gpu.RegistryPath, "RmDisableHdcp22", 1, RegistryValueKind.DWord);
-                Registry.SetValue(gpu.RegistryPath, "RmSkipHdcp22Init", 1, RegistryValueKind.DWord);
             }
         }
 

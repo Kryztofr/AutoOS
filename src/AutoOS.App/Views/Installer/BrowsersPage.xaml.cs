@@ -30,6 +30,7 @@ public sealed partial class BrowsersPage : Page
         {
             new() { Text = "Chrome", ImageSource = "ms-appx:///Assets/Fluent/Chrome.png" },
             new() { Text = "Thorium", ImageSource = "ms-appx:///Assets/Fluent/Thorium.png" },
+            new() { Text = "Helium", ImageSource = "ms-appx:///Assets/Fluent/Helium.png" },
             new() { Text = "Brave", ImageSource = "ms-appx:///Assets/Fluent/Brave.png" },
             new() { Text = "Vivaldi", ImageSource = "ms-appx:///Assets/Fluent/Vivaldi.png" },
             new() { Text = "Arc", ImageSource = "ms-appx:///Assets/Fluent/Arc.png" },

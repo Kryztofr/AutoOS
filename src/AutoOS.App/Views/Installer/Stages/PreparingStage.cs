@@ -4,7 +4,6 @@ using AutoOS.Core.Helpers.CPU;
 using AutoOS.Core.Helpers.Device.Models;
 using AutoOS.Core.Helpers.Device;
 using AutoOS.Core.Helpers.GPU.Models;
-using AutoOS.Core.Helpers.GPU;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.Win32;
 using System.Diagnostics;
@@ -29,6 +28,7 @@ public static class PreparingStage
     public static bool TaskbarAlignment;
     public static bool Chrome;
     public static bool Thorium;
+    public static bool Helium;
     public static bool Brave;
     public static bool Vivaldi;
     public static bool Arc;
@@ -152,6 +152,7 @@ public static class PreparingStage
 
             Chrome = (localSettings.Values["Browsers"]?.ToString().Contains("Chrome") ?? false);
             Thorium = (localSettings.Values["Browsers"]?.ToString().Contains("Thorium") ?? false);
+            Helium = (localSettings.Values["Browsers"]?.ToString().Contains("Helium") ?? false);
             Brave = (localSettings.Values["Browsers"]?.ToString().Contains("Brave") ?? false);
             Vivaldi = (localSettings.Values["Browsers"]?.ToString().Contains("Vivaldi") ?? false);
             Arc = (localSettings.Values["Browsers"]?.ToString().Contains("Arc") ?? false);
