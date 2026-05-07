@@ -8,7 +8,7 @@ This guide will help you get started with setting up your development environmen
 ## 📅 Project Board
 
 Stay updated with the current progress, planned features, and active tasks:
-- [🚀 AutoOS Project Board](https://github.com/users/tinodin/projects/1)
+- [🚀 AutoOS Project Board](https://github.com/users/tinodin/projects/2/views/1)
 
 ---
 
