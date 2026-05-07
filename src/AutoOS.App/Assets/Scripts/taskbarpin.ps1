@@ -35,5 +35,20 @@ $regPath = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Explorer"
 Set-ItemProperty -Path $regPath -Name "StartLayoutFile" -Value $xmlPath -Type ExpandString
 Set-ItemProperty -Path $regPath -Name "LockedStartLayout" -Value 1 -Type DWord
 
-Get-Process explorer | Stop-Process -Force
-Start-Sleep 4
+Get-Process explorer -ErrorAction SilentlyContinue | Where-Object {
+    $cmdLine = (Get-CimInstance Win32_Process -Filter "ProcessId = $($_.Id)" -ErrorAction SilentlyContinue).CommandLine
+    if ($null -eq $cmdLine) { return $false }
+    $cleanCmd = $cmdLine.Replace('"','').Trim()
+    $cleanCmd -eq "C:\Windows\explorer.exe" -or $cleanCmd -eq "explorer.exe"
+} | Stop-Process -Force
+
+Start-Sleep 5
+
+if (-not (Get-Process explorer -ErrorAction SilentlyContinue | Where-Object {
+    $cmdLine = (Get-CimInstance Win32_Process -Filter "ProcessId = $($_.Id)" -ErrorAction SilentlyContinue).CommandLine
+    if ($null -eq $cmdLine) { return $false }
+    $cleanCmd = $cmdLine.Replace('"','').Trim()
+    $cleanCmd -eq "C:\Windows\explorer.exe" -or $cleanCmd -eq "explorer.exe"
+})) {
+    Start-Process explorer.exe
+}

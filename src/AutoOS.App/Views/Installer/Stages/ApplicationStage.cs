@@ -242,6 +242,20 @@ public static class ApplicationStage
             ("Activating StartAllBack", async () => await ProcessActions.PatchStartAllBack(), null),
             ("Activating StartAllBack", async () => await Task.Delay(2000), null),
 
+            // download autoruns
+            ("Downloading Autoruns", async () => await DownloadHelper.Download("https://download.sysinternals.com/files/Autoruns.zip", ApplicationData.Current.TemporaryFolder.Path, "Autoruns.zip", new InstallPageReporter()), null),
+
+            // install autoruns
+            ("Installing Autoruns", async () => await ExtractHelper.Extract(Path.Combine(ApplicationData.Current.TemporaryFolder.Path, "Autoruns.zip"), Path.Combine(ApplicationData.Current.TemporaryFolder.Path, "Autoruns")), null),
+            ("Installing Autoruns", async () => Directory.Move(Path.Combine(ApplicationData.Current.TemporaryFolder.Path, "Autoruns"), Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Autoruns")), null),
+            ("Installing Autoruns", async () => await ProcessActions.RunPowerShell(@"$Shell = New-Object -ComObject WScript.Shell; $Shortcut = $Shell.CreateShortcut([System.IO.Path]::Combine($env:ProgramData, 'Microsoft\Windows\Start Menu\Programs\Autoruns.lnk')); $Shortcut.TargetPath = [System.IO.Path]::Combine($env:ProgramFiles, 'Autoruns\Autoruns64.exe'); $Shortcut.Save()"), null),
+            ("Installing Autoruns", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Autoruns", "DisplayName", "Autoruns", RegistryValueKind.String), null),
+            ("Installing Autoruns", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Autoruns", "UninstallString", $@"cmd /c rd /s /q ""{Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Autoruns")}"" & reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Autoruns"" /f", RegistryValueKind.String), null),
+            ("Installing Autoruns", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Autoruns", "DisplayIcon", Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Autoruns", "Autoruns64.exe"), RegistryValueKind.String), null),
+            ("Installing Autoruns", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Autoruns", "Publisher", "Sysinternals", RegistryValueKind.String), null),
+            ("Installing Autoruns", async () => await Task.Delay(500), null),
+            ("Cleaning up Autoruns files", async () => await (await ApplicationData.Current.TemporaryFolder.GetFileAsync("Autoruns.zip")).DeleteAsync(), null),
+
             // download process explorer
             ("Downloading Process Explorer", async () => await DownloadHelper.Download("https://www.dl.dropboxusercontent.com/scl/fi/a8l16rp3cpcvkkryavix1/procexp64.exe?rlkey=5fec8mcmkfcxlum9a95o1xn3t&st=mjkrpc1f&dl=0", ApplicationData.Current.TemporaryFolder.Path, "procexp64.exe", new InstallPageReporter()), null),
             //("Downloading Process Explorer", async () => await DownloadHelper.Download("https://download.sysinternals.com/files/ProcessExplorer.zip", ApplicationData.Current.TemporaryFolder.Path, "ProcessExplorer.zip", new InstallPageReporter()), null),
@@ -249,12 +263,30 @@ public static class ApplicationStage
             // install process explorer
             //("Installing Process Explorer", async () => await ExtractHelper.Extract(Path.Combine(ApplicationData.Current.TemporaryFolder.Path, "ProcessExplorer.zip"), Path.Combine(ApplicationData.Current.TemporaryFolder.Path, "ProcessExplorer")), null),
             //("Installing Process Explorer", async () => File.Copy(Path.Combine(ApplicationData.Current.TemporaryFolder.Path, "ProcessExplorer", "procexp64.exe"), @"C:\Windows\procexp64.exe", true), null),
-			("Installing Process Explorer", async () => Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Process Explorer")), null),
+            ("Installing Process Explorer", async () => Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Process Explorer")), null),
             ("Installing Process Explorer", async () => File.Copy(Path.Combine(ApplicationData.Current.TemporaryFolder.Path, "procexp64.exe"), Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Process Explorer", "procexp64.exe"), true), null),
             ("Installing Process Explorer", async () => await ProcessActions.RunPowerShell(@"$Shell = New-Object -ComObject WScript.Shell; $Shortcut = $Shell.CreateShortcut([System.IO.Path]::Combine($env:ProgramData, 'Microsoft\Windows\Start Menu\Programs\Process Explorer.lnk')); $Shortcut.TargetPath = [System.IO.Path]::Combine($env:ProgramFiles, 'Process Explorer\procexp64.exe'); $Shortcut.Save()"), null),
+            ("Installing Process Explorer", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\ProcessExplorer", "DisplayName", "Process Explorer", RegistryValueKind.String), null),
+            ("Installing Process Explorer", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\ProcessExplorer", "UninstallString", $@"cmd /c rd /s /q ""{Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Process Explorer")}"" & reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\ProcessExplorer"" /f", RegistryValueKind.String), null),
+            ("Installing Process Explorer", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\ProcessExplorer", "DisplayIcon", Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Process Explorer", "procexp64.exe"), RegistryValueKind.String), null),
+            ("Installing Process Explorer", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\ProcessExplorer", "Publisher", "Sysinternals", RegistryValueKind.String), null),
             ("Installing Process Explorer", async () => await Process.Start(new ProcessStartInfo { FileName = "reg.exe", Arguments = $@"import ""{Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Scripts", "processexplorer.reg")}""", CreateNoWindow = true })!.WaitForExitAsync(), null),
             ("Installing Process Explorer", async () => await Task.Delay(500), null),
             ("Cleaning up Process Explorer files", async () => await (await ApplicationData.Current.TemporaryFolder.GetFileAsync("procexp64.exe")).DeleteAsync(), null),
+
+            // download process monitor
+            ("Downloading Process Monitor", async () => await DownloadHelper.Download("https://download.sysinternals.com/files/ProcessMonitor.zip", ApplicationData.Current.TemporaryFolder.Path, "ProcessMonitor.zip", new InstallPageReporter()), null),
+
+            // install process monitor
+            ("Installing Process Monitor", async () => await ExtractHelper.Extract(Path.Combine(ApplicationData.Current.TemporaryFolder.Path, "ProcessMonitor.zip"), Path.Combine(ApplicationData.Current.TemporaryFolder.Path, "ProcessMonitor")), null),
+            ("Installing Process Monitor", async () => Directory.Move(Path.Combine(ApplicationData.Current.TemporaryFolder.Path, "ProcessMonitor"), Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Process Monitor")), null),
+            ("Installing Process Monitor", async () => await ProcessActions.RunPowerShell(@"$Shell = New-Object -ComObject WScript.Shell; $Shortcut = $Shell.CreateShortcut([System.IO.Path]::Combine($env:ProgramData, 'Microsoft\Windows\Start Menu\Programs\Process Monitor.lnk')); $Shortcut.TargetPath = [System.IO.Path]::Combine($env:ProgramFiles, 'Process Monitor\Procmon64.exe'); $Shortcut.Save()"), null),
+            ("Installing Process Monitor", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\ProcessMonitor", "DisplayName", "Process Monitor", RegistryValueKind.String), null),
+            ("Installing Process Monitor", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\ProcessMonitor", "UninstallString", $@"cmd /c rd /s /q ""{Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Process Monitor")}"" & reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\ProcessMonitor"" /f", RegistryValueKind.String), null),
+            ("Installing Process Monitor", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\ProcessMonitor", "DisplayIcon", Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Process Monitor", "Procmon64.exe"), RegistryValueKind.String), null),
+            ("Installing Process Monitor", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\ProcessMonitor", "Publisher", "Sysinternals", RegistryValueKind.String), null),
+            ("Installing Process Monitor", async () => await Task.Delay(500), null),
+            ("Cleaning up Process Monitor files", async () => await (await ApplicationData.Current.TemporaryFolder.GetFileAsync("ProcessMonitor.zip")).DeleteAsync(), null),
 
             // download office
             ("Downloading Office", async () => await DownloadHelper.Download("https://officecdn.microsoft.com/pr/wsus/setup.exe", ApplicationData.Current.TemporaryFolder.Path, "setup.exe", new InstallPageReporter()), () => Word == true || Excel == true || PowerPoint == true || OneNote == true || Teams == true || Outlook == true || OneDrive == true),

@@ -6,12 +6,13 @@ namespace AutoOS.Common;
 public class InstallPageReporter : IStatusReporter
 {
     private readonly SynchronizationContext _uiContext;
-    private readonly string _initialTitle;
+
+    private string _capturedTitle;
+    private bool _titleHasBeenCaptured;
 
     public InstallPageReporter()
     {
         _uiContext = SynchronizationContext.Current;
-        _initialTitle = InstallPage.Info?.Title ?? string.Empty;
     }
 
     public void Report(string message = null, double? progress = null, bool? isIndeterminate = null)
@@ -20,8 +21,14 @@ public class InstallPageReporter : IStatusReporter
         {
             if (InstallPage.Info != null)
             {
+                if (!_titleHasBeenCaptured)
+                {
+                    _capturedTitle = InstallPage.Info.Title ?? string.Empty;
+                    _titleHasBeenCaptured = true;
+                }
+
                 if (!string.IsNullOrEmpty(message))
-                    InstallPage.Info.Title = string.IsNullOrEmpty(_initialTitle) ? message : $"{_initialTitle} ({message})";
+                    InstallPage.Info.Title = string.IsNullOrEmpty(_capturedTitle) ? message : $"{_capturedTitle} ({message})";
                 
                 if (progress.HasValue)
                     InstallPage.ProgressRingControl.Value = progress.Value;
