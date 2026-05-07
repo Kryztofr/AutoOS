@@ -1,4 +1,4 @@
-﻿using AutoOS.Core.Helpers.Device.Models;
+using AutoOS.Core.Helpers.Device.Models;
 using AutoOS.Core.Helpers.Device;
 using AutoOS.Core.Helpers.Logging;
 using AutoOS.Core.Helpers.Registry;
@@ -27,7 +27,7 @@ public static class StartupStage
             localSettings.Values["XHCIs"] = json.ToJsonString();
         }
 
-        bool MSI = Directory.Exists(@"C:\Program Files (x86)\MSI Afterburner\Profiles\") && Directory.GetFiles(@"C:\Program Files (x86)\MSI Afterburner\Profiles\").Any(f => !f.EndsWith("MSIAfterburner.cfg", StringComparison.OrdinalIgnoreCase));
+        bool MSI = File.Exists(@"C:\Program Files (x86)\MSI Afterburner\MSIAfterburner.exe") && Directory.Exists(@"C:\Program Files (x86)\MSI Afterburner\Profiles\") && Directory.GetFiles(@"C:\Program Files (x86)\MSI Afterburner\Profiles\").Any(f => !f.EndsWith("MSIAfterburner.cfg", StringComparison.OrdinalIgnoreCase));
         bool SOUND = JsonNode.Parse(localSettings.Values["Sound"]?.ToString() ?? "[]")?.AsArray()?.Any(x => x?["BufferSize"]?.GetValue<float>() < 10f) == true;
         bool IMOD = JsonNode.Parse(localSettings.Values["XHCIs"]?.ToString() ?? "[]")?.AsArray()?.Any(x => x?["IsActive"]?.GetValue<bool>() == false) == true;
         bool OBS = localSettings.Values["OBS"]?.ToString() == "1" && File.Exists(@"C:\Program Files\obs-studio\bin\64bit\obs64.exe");

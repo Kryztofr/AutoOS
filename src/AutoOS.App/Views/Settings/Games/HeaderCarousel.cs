@@ -68,8 +68,8 @@ public partial class HeaderCarousel : ItemsControl
     private StackPanel SteamGrowl;
 
     private readonly ApplicationDataContainer localSettings = ApplicationData.Current.LocalSettings;
-
-    private TextBlock AgeRatingDescriptionText;
+	
+	private TextBlock AgeRatingDescriptionText;
     private TextBlock ElementsText;
 
     private AutoSuggestBox SearchBox;
