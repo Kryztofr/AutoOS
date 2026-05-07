@@ -7,7 +7,7 @@
   <Folder Name="/Solution Items/">
     <File Path=".editorconfig" />
   </Folder>
-  <Project Path="src\AutoOS.App.Sound\AutoOS.Sound.vcxproj" Id="2c195a31-78fe-4baf-9328-bb5d0ada390a">
+  <Project Path="src\AutoOS.App.Sound\AutoOS.App.Sound.vcxproj" Id="2c195a31-78fe-4baf-9328-bb5d0ada390a">
     <Platform Project="x64" />
   </Project>
   <Project Path="src\AutoOS.App\AutoOS.App.csproj">
