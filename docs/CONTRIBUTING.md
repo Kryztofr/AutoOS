@@ -95,7 +95,7 @@ public static partial class MyHelper
 ```
 
 ### 🚫 Avoid Reflection
-Avoid using reflection-based logic, or any indirect type access. These break Native AOT compatibility.
+Avoid using reflection-based logic, or any indirect type access. These break Native AOT compatibility..<br/>
 Don't use `DllImport` or `LibraryImport`. Use `NativeMethods.txt` instead.
 
 ---

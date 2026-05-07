@@ -14,7 +14,6 @@
 <h3 align="center">
   <a href="docs/INSTALL.md">Installation Guide</a> •
   <a href="docs/SCREENSHOTS.md">Screenshots</a> •
-  <a href="docs/BUILD.md">Build Instructions</a> •
   <a href="docs/LICENSE_THIRD_PARTY.md">Credits & License</a>
 </h3>
 </div>
