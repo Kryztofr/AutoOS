@@ -22,6 +22,10 @@
 AutoOS is a Native AOT WinUI 3 application that automates Windows setup and optimization with a focus on gaming performance, privacy, system compatibility and quality of life improvements.
 
 ## ✨ Introduction
+
+> [!NOTE]  
+> The following is a description of the AutoOS project, if you just want to install it, head to [Installation Guide](docs/INSTALL.md).
+
 There are plenty of "Windows Debloat" scripts and apps out there, but most of them rely on basic CMD / PowerShell scripts / commands, apply non-researched tweaks, and end up breaking core Windows functionality or security.
 
 There is also a lot of Discord Servers selling services to apply custom ISOs / playbooks that contain copy pasted tweaks or install poorly coded AI utilities that rely on poor research and public knowledge.
