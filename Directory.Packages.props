@@ -1,7 +1,7 @@
 <Project>
   <ItemGroup>
-    <PackageVersion Include="CommunityToolkit.Labs.WinUI.Controls.DataTable" Version="0.1.251217-build.2433" />
-    <PackageVersion Include="CommunityToolkit.Labs.WinUI.Controls.MarkdownTextBlock" Version="0.1.251217-build.2433" />
+    <PackageVersion Include="CommunityToolkit.Labs.WinUI.Controls.DataTable" Version="0.1.260109-build.2471" />
+    <PackageVersion Include="CommunityToolkit.Labs.WinUI.Controls.MarkdownTextBlock" Version="0.1.260109-build.2471" />
     <PackageVersion Include="CommunityToolkit.WinUI.Controls.HeaderedControls" Version="8.3.260402-preview2" />
     <PackageVersion Include="CommunityToolkit.WinUI.Controls.Primitives" Version="8.3.260402-preview2" />
     <PackageVersion Include="CommunityToolkit.WinUI.Converters" Version="8.3.260402-preview2" />
