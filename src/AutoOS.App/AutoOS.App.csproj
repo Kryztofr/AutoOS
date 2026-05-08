@@ -88,7 +88,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\AutoOS.App.Sound\AutoOS.Sound.vcxproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\AutoOS.App.Sound\AutoOS.App.Sound.vcxproj" ReferenceOutputAssembly="false" />
     <ProjectReference Include="..\AutoOS.Core\AutoOS.Core.csproj" />
   </ItemGroup>
 

@@ -100,7 +100,7 @@ jobs:
     - name: Decode the pfx
       run: |
         $pfx_cert_byte = [System.Convert]::FromBase64String("${{ secrets.BASE64_ENCODED_PFX }}")
-        [IO.File]::WriteAllBytes("GitHubActionsWorkflow.pfx", $pfx_cert_byte)
+        [IO.File]::WriteAllBytes("src/AutoOS.App/GitHubActionsWorkflow.pfx", $pfx_cert_byte)
       shell: pwsh
 
     # Inject webhook secrets
@@ -121,7 +121,7 @@ jobs:
     
     # Remove PFX
     - name: Remove the pfx
-      run: Remove-Item -path GitHubActionsWorkflow.pfx
+      run: Remove-Item -path src/AutoOS.App/GitHubActionsWorkflow.pfx
       shell: pwsh
 
     # Zipping folder and all files
