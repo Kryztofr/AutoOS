@@ -40,9 +40,6 @@ public static partial class GamesStage
             // install easyanticheat
             ("Installing EasyAntiCheat", async () => await Process.Start(new ProcessStartInfo($@"{fortnitePath}\FortniteGame\Binaries\Win64\EasyAntiCheat\EasyAntiCheat_EOS_Setup.exe", "install 4fe75bbc5a674f4f9b356b5c90567da5") {  WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => Fortnite == true),
             ("Installing EasyAntiCheat", async () => await Task.Delay(1000), () => Fortnite == true),
-            ("Disabling EasyAntiCheat startup entry", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\EasyAntiCheat_EOS", "Start", 4, RegistryValueKind.DWord), () => Fortnite == true),
-            ("Disabling EasyAntiCheat startup entry", async () => ServicesHelper.StopService("EasyAntiCheat_EOS"), () => Fortnite == true),
-            ("Disabling EasyAntiCheat startup entry", async () => await Task.Delay(1000), () => Fortnite == true),
         
             // disable fullscreen optimizations for fortnite
             ("Disabling fullscreen optimizations for Fortnite", async () => RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers", $@"{fortnitePath}\FortniteGame\Binaries\Win64\FortniteClient-Win64-Shipping.exe", "~ DISABLEDXMAXIMIZEDWINDOWEDMODE", RegistryValueKind.String), () => Fortnite == true),
