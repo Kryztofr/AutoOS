@@ -1,4 +1,4 @@
-﻿using AutoOS.Common;
+using AutoOS.Common;
 using AutoOS.Core.Helpers.Download;
 using AutoOS.Core.Helpers.Extract;
 using AutoOS.Core.Helpers.GPU;
@@ -110,13 +110,13 @@ public static class GraphicsStage
                 switch (gpu.VendorId)
                 {
                     case "10de":
-                        driverInstallActions.AddRange(NvidiaHelper.InstallActions(gpu, newestDownloadUrl, new InstallPageReporter()));
+                        driverInstallActions.AddRange(NvidiaHelper.InstallActions(gpu, newestVersion, newestDownloadUrl, new InstallPageReporter()));
                         break;
                     case "1002":
-                        driverInstallActions.AddRange(AmdHelper.InstallActions(gpu, newestDownloadUrl, new InstallPageReporter()));
+                        driverInstallActions.AddRange(AmdHelper.InstallActions(gpu, newestVersion, newestDownloadUrl, new InstallPageReporter()));
                         break;
                     case "8086":
-                        driverInstallActions.AddRange(IntelHelper.InstallActions(gpu, newestDownloadUrl, new InstallPageReporter()));
+                        driverInstallActions.AddRange(IntelHelper.InstallActions(gpu, newestVersion, newestDownloadUrl, new InstallPageReporter()));
                         break;
                 }
             }

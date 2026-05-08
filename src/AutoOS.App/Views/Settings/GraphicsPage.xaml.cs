@@ -116,17 +116,17 @@ public sealed partial class GraphicsPage : Page
                     {
                         case "10de":
                             (newestVersion, newestDownloadUrl) = await NvidiaHelper.CheckUpdate(gpu);
-                            var nvidiaActions = NvidiaHelper.InstallActions(gpu, newestDownloadUrl, new ProgressButtonReporter(progressButton)).Concat(NvidiaHelper.TweakActions(gpu)).ToList();
+                            var nvidiaActions = NvidiaHelper.InstallActions(gpu, newestVersion, newestDownloadUrl, new ProgressButtonReporter(progressButton)).Concat(NvidiaHelper.TweakActions(gpu)).ToList();
                             await RunActions(progressButton, nvidiaActions);
                             break;
                         case "1002":
                             (newestVersion, newestDownloadUrl) = await AmdHelper.CheckUpdate(gpu);
-                            var amdActions = AmdHelper.InstallActions(gpu, newestDownloadUrl, new ProgressButtonReporter(progressButton)).Concat(AmdHelper.TweakActions(gpu)).ToList();
+                            var amdActions = AmdHelper.InstallActions(gpu, newestVersion, newestDownloadUrl, new ProgressButtonReporter(progressButton)).Concat(AmdHelper.TweakActions(gpu)).ToList();
                             await RunActions(progressButton, amdActions);
                             break;
                         case "8086":
                             (newestVersion, newestDownloadUrl) = await IntelHelper.CheckUpdate(gpu);
-                            var intelActions = IntelHelper.InstallActions(gpu, newestDownloadUrl, new ProgressButtonReporter(progressButton)).Concat(IntelHelper.TweakActions(gpu)).ToList();
+                            var intelActions = IntelHelper.InstallActions(gpu, newestVersion, newestDownloadUrl, new ProgressButtonReporter(progressButton)).Concat(IntelHelper.TweakActions(gpu)).ToList();
                             await RunActions(progressButton, intelActions);
                             break;
                     }
@@ -186,17 +186,17 @@ public sealed partial class GraphicsPage : Page
                     {
                         case "10de":
                             (newestVersion, newestDownloadUrl) = await NvidiaHelper.CheckUpdate(gpu);
-                            var nvidiaActions = NvidiaHelper.InstallActions(gpu, newestDownloadUrl, new ProgressButtonReporter(progressButton)).Concat(NvidiaHelper.TweakActions(gpu)).ToList();
+                            var nvidiaActions = NvidiaHelper.InstallActions(gpu, newestVersion, newestDownloadUrl, new ProgressButtonReporter(progressButton)).Concat(NvidiaHelper.TweakActions(gpu)).ToList();
                             await RunActions(progressButton, nvidiaActions);
                             break;
                         case "1002":
                             (newestVersion, newestDownloadUrl) = await AmdHelper.CheckUpdate(gpu);
-                            var amdActions = AmdHelper.InstallActions(gpu, newestDownloadUrl, new ProgressButtonReporter(progressButton)).Concat(AmdHelper.TweakActions(gpu)).ToList();
+                            var amdActions = AmdHelper.InstallActions(gpu, newestVersion, newestDownloadUrl, new ProgressButtonReporter(progressButton)).Concat(AmdHelper.TweakActions(gpu)).ToList();
                             await RunActions(progressButton, amdActions);
                             break;
                         case "8086":
                             (newestVersion, newestDownloadUrl) = await IntelHelper.CheckUpdate(gpu);
-                            var intelActions = IntelHelper.InstallActions(gpu, newestDownloadUrl, new ProgressButtonReporter(progressButton)).Concat(IntelHelper.TweakActions(gpu)).ToList();
+                            var intelActions = IntelHelper.InstallActions(gpu, newestVersion, newestDownloadUrl, new ProgressButtonReporter(progressButton)).Concat(IntelHelper.TweakActions(gpu)).ToList();
                             await RunActions(progressButton, intelActions);
                             break;
                     }
