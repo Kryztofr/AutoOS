@@ -87,8 +87,10 @@
     <PackageReference Include="ValveKeyValue" />
   </ItemGroup>
 
-  <ItemGroup>
+  <ItemGroup Condition="'$(CppBuiltSeparately)' != 'true'">
     <ProjectReference Include="..\AutoOS.App.Sound\AutoOS.App.Sound.vcxproj" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\AutoOS.Core\AutoOS.Core.csproj" />
   </ItemGroup>
 
