@@ -560,7 +560,7 @@ public static class ApplicationStage
             ("Disabling Discord startup entry", async () => RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run", "Discord", new byte[] { 0x01 }, RegistryValueKind.Binary), () => Discord == true),
 
             // optimize discord settings
-            ("Optimizing Discord settings", async () => await File.WriteAllTextAsync(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Discord", "settings.json"), @"{""enableHardwareAcceleration"": false, ""OPEN_ON_STARTUP"": false, ""MINIMIZE_TO_TRAY"": false, ""debugLogging"": false, ""openasar"": { ""setup"": true, ""noTrack"": true }}"), () => Discord == true),
+            ("Optimizing Discord settings", async () => await File.WriteAllTextAsync(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Discord", "settings.json"), "{\n  \"enableHardwareAcceleration\": false,\n  \"OPEN_ON_STARTUP\": false,\n  \"MINIMIZE_TO_TRAY\": false,\n  \"debugLogging\": false,\n  \"openasar\": {\n    \"setup\": true,\n    \"noTrack\": false\n  }\n}"), () => Discord == true),
 
             // download vencord
             ("Downloading Vencord", async () => await DownloadHelper.Download("https://github.com/Vencord/Installer/releases/latest/download/VencordInstallerCli.exe", ApplicationData.Current.TemporaryFolder.Path, "VencordInstallerCli.exe", new InstallPageReporter()), () => Discord == true),

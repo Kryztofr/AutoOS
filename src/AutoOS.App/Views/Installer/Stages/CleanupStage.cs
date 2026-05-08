@@ -1,5 +1,4 @@
-﻿using AutoOS.Common;
-using AutoOS.Core.Helpers.Registry;
+﻿using AutoOS.Core.Helpers.Registry;
 using AutoOS.Views.Installer.Actions;
 using Microsoft.Win32;
 using System.Diagnostics;
@@ -59,11 +58,11 @@ public static class CleanupStage
             ("Running disk cleanup", async () => await Process.Start(new ProcessStartInfo { FileName = @"C:\Windows\System32\cleanmgr.exe", Arguments = "/sagerun:0", UseShellExecute = false, CreateNoWindow = true })!.WaitForExitAsync(), null),
         
 			// enable system restore
-			("Enabling system restore", async () => await ProcessActions.RunPowerShell(@"Enable-ComputerRestore -Drive ""C:\"""), null),
+			("Enabling system restore", async () => await ProcessActions.RunPowerShell(@"Enable-ComputerRestore -Drive 'C:\'"), null),
 			("Enabling system restore", async () => await Process.Start(new ProcessStartInfo { FileName = @"C:\Windows\System32\vssadmin.exe", Arguments = "resize shadowstorage /for=C: /on=C: /maxsize=10%", UseShellExecute = false, CreateNoWindow = true })!.WaitForExitAsync(), null),
 
             // create a restore point
-            ("Creating a restore point", async () => await ProcessActions.RunPowerShell(@"Checkpoint-Computer -Description ""AutoOS"" -RestorePointType ""MODIFY_SETTINGS"""), null)
+            ("Creating a restore point", async () => await ProcessActions.RunPowerShell(@"Checkpoint-Computer -Description AutoOS -RestorePointType MODIFY_SETTINGS"), null)
 		};
 
         return actions;

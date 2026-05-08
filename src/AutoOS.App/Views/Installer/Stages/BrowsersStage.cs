@@ -108,37 +108,37 @@ public static class BrowsersStage
             ("Pinning Google Chrome to the taskbar", async () => await ProcessActions.RunPowerShellScript("taskbarpin.ps1", @"-Type Link -Path ""C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Google Chrome.lnk"""), () => Chrome == true),
 
             // install ublock origin extension
-            ("Installing uBlock Origin Extension", async () => await ProcessActions.RunPowerShell(@"$BaseKey = 'HKLM:\SOFTWARE\Policies\Google\Chrome\ExtensionInstallForcelist'; $Index = (Get-Item $BaseKey).Property | Sort-Object {[int]$_} | Select-Object -Last 1; $NewIndex = [int]$Index + 1; reg add 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Google\Chrome\ExtensionInstallForcelist' /v $NewIndex /t REG_SZ /d 'cjpalhdlnbpafiamejdnhcphjbkeiagm' /f"), () => Chrome == true && uBlock == true),
+            ("Installing uBlock Origin Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Google\Chrome\ExtensionInstallForcelist", "cjpalhdlnbpafiamejdnhcphjbkeiagm"), () => Chrome == true && uBlock == true),
 
             // install sponsorblock extension
-            ("Installing SponsorBlock Extension", async () => await ProcessActions.RunPowerShell(@"$BaseKey = 'HKLM:\SOFTWARE\Policies\Google\Chrome\ExtensionInstallForcelist'; $Index = (Get-Item $BaseKey).Property | Sort-Object {[int]$_} | Select-Object -Last 1; $NewIndex = [int]$Index + 1; reg add 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Google\Chrome\ExtensionInstallForcelist' /v $NewIndex /t REG_SZ /d 'mnjggcdmjocbbbhaepdhchncahnbgone' /f"), () => Chrome == true && SponsorBlock == true),
+            ("Installing SponsorBlock Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Google\Chrome\ExtensionInstallForcelist", "mnjggcdmjocbbbhaepdhchncahnbgone"), () => Chrome == true && SponsorBlock == true),
 
             // install return youtube dislike extension
-            ("Installing ReturnYouTubeDislike Extension", async () => await ProcessActions.RunPowerShell(@"$BaseKey = 'HKLM:\SOFTWARE\Policies\Google\Chrome\ExtensionInstallForcelist'; $Index = (Get-Item $BaseKey).Property | Sort-Object {[int]$_} | Select-Object -Last 1; $NewIndex = [int]$Index + 1; reg add 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Google\Chrome\ExtensionInstallForcelist' /v $NewIndex /t REG_SZ /d 'gebbhagfogifgggkldgodflihgfeippi' /f"), () => Chrome == true && ReturnYouTubeDislike == true),
+            ("Installing ReturnYouTubeDislike Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Google\Chrome\ExtensionInstallForcelist", "gebbhagfogifgggkldgodflihgfeippi"), () => Chrome == true && ReturnYouTubeDislike == true),
 
             // install i still dont care about cookies extension
-            ("Installing I still don't care about cookies Extension", async () => await ProcessActions.RunPowerShell(@"$BaseKey = 'HKLM:\SOFTWARE\Policies\Google\Chrome\ExtensionInstallForcelist'; $Index = (Get-Item $BaseKey).Property | Sort-Object {[int]$_} | Select-Object -Last 1; $NewIndex = [int]$Index + 1; reg add 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Google\Chrome\ExtensionInstallForcelist' /v $NewIndex /t REG_SZ /d 'edibdbjcniadpccecjdfdjjppcpchdlm' /f"), () => Chrome == true && Cookies == true),
+            ("Installing I still don't care about cookies Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Google\Chrome\ExtensionInstallForcelist", "edibdbjcniadpccecjdfdjjppcpchdlm"), () => Chrome == true && Cookies == true),
 
             // install dark reader extension
-            ("Installing Dark Reader Extension", async () => await ProcessActions.RunPowerShell(@"$BaseKey = 'HKLM:\SOFTWARE\Policies\Google\Chrome\ExtensionInstallForcelist'; $Index = (Get-Item $BaseKey).Property | Sort-Object {[int]$_} | Select-Object -Last 1; $NewIndex = [int]$Index + 1; reg add 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Google\Chrome\ExtensionInstallForcelist' /v $NewIndex /t REG_SZ /d 'eimadpbcbfnmbkopoojfekhnkhdbieeh' /f"), () => Chrome == true && DarkReader == true),
+            ("Installing Dark Reader Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Google\Chrome\ExtensionInstallForcelist", "eimadpbcbfnmbkopoojfekhnkhdbieeh"), () => Chrome == true && DarkReader == true),
             
             // install violentmonkey extension
-            ("Installing Violentmonkey Extension", async () => await ProcessActions.RunPowerShell(@"$BaseKey = 'HKLM:\SOFTWARE\Policies\Google\Chrome\ExtensionInstallForcelist'; $Index = (Get-Item $BaseKey).Property | Sort-Object {[int]$_} | Select-Object -Last 1; $NewIndex = [int]$Index + 1; reg add 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Google\Chrome\ExtensionInstallForcelist' /v $NewIndex /t REG_SZ /d 'jinjaccalgkegednnccohejagnlnfdag' /f"), () => Chrome == true && Violentmonkey == true),
+            ("Installing Violentmonkey Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Google\Chrome\ExtensionInstallForcelist", "jinjaccalgkegednnccohejagnlnfdag"), () => Chrome == true && Violentmonkey == true),
 
             // install tampermonkey extension
-            ("Installing Tampermonkey Extension", async () => await ProcessActions.RunPowerShell(@"$BaseKey = 'HKLM:\SOFTWARE\Policies\Google\Chrome\ExtensionInstallForcelist'; $Index = (Get-Item $BaseKey).Property | Sort-Object {[int]$_} | Select-Object -Last 1; $NewIndex = [int]$Index + 1; reg add 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Google\Chrome\ExtensionInstallForcelist' /v $NewIndex /t REG_SZ /d 'dhdgffkkebhmkfjojejmpbldmpobfkfo' /f"), () => Chrome == true && Tampermonkey == true),
+            ("Installing Tampermonkey Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Google\Chrome\ExtensionInstallForcelist", "dhdgffkkebhmkfjojejmpbldmpobfkfo"), () => Chrome == true && Tampermonkey == true),
 
             // install shazam extension
-            ("Installing Shazam Extension", async () => await ProcessActions.RunPowerShell(@"$BaseKey = 'HKLM:\SOFTWARE\Policies\Google\Chrome\ExtensionInstallForcelist'; $Index = (Get-Item $BaseKey).Property | Sort-Object {[int]$_} | Select-Object -Last 1; $NewIndex = [int]$Index + 1; reg add 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Google\Chrome\ExtensionInstallForcelist' /v $NewIndex /t REG_SZ /d 'mmioliijnhnoblpgimnlajmefafdfilb' /f"), () => Chrome == true && Shazam == true),
+            ("Installing Shazam Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Google\Chrome\ExtensionInstallForcelist", "mmioliijnhnoblpgimnlajmefafdfilb"), () => Chrome == true && Shazam == true),
 
             // install icloud passwords extension
-            ("Installing iCloud Passwords Extension", async () => await ProcessActions.RunPowerShell(@"$BaseKey = 'HKLM:\SOFTWARE\Policies\Google\Chrome\ExtensionInstallForcelist'; $Index = (Get-Item $BaseKey).Property | Sort-Object {[int]$_} | Select-Object -Last 1; $NewIndex = [int]$Index + 1; reg add 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Google\Chrome\ExtensionInstallForcelist' /v $NewIndex /t REG_SZ /d 'pejdijmoenmkgeppbflobdenhhabjlaj' /f"), () => Chrome == true && iCloud == true),
+            ("Installing iCloud Passwords Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Google\Chrome\ExtensionInstallForcelist", "pejdijmoenmkgeppbflobdenhhabjlaj"), () => Chrome == true && iCloud == true),
 
             // install bitwarden extension
-            ("Installing Bitwarden Extension", async () => await ProcessActions.RunPowerShell(@"$BaseKey = 'HKLM:\SOFTWARE\Policies\Google\Chrome\ExtensionInstallForcelist'; $Index = (Get-Item $BaseKey).Property | Sort-Object {[int]$_} | Select-Object -Last 1; $NewIndex = [int]$Index + 1; reg add 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Google\Chrome\ExtensionInstallForcelist' /v $NewIndex /t REG_SZ /d 'nngceckbapebfimnlniiiahkandclblb' /f"), () => Chrome == true && Bitwarden == true),
+            ("Installing Bitwarden Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Google\Chrome\ExtensionInstallForcelist", "nngceckbapebfimnlniiiahkandclblb"), () => Chrome == true && Bitwarden == true),
 
             // install 1password extension
-            ("Installing 1Password Extension", async () => await ProcessActions.RunPowerShell(@"$BaseKey = 'HKLM:\SOFTWARE\Policies\Google\Chrome\ExtensionInstallForcelist'; $Index = (Get-Item $BaseKey).Property | Sort-Object {[int]$_} | Select-Object -Last 1; $NewIndex = [int]$Index + 1; reg add 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Google\Chrome\ExtensionInstallForcelist' /v $NewIndex /t REG_SZ /d 'aeblfdkhhhdcdjpifhhbdiojplfjncoa' /f"), () => Chrome == true && OnePassword == true),
+            ("Installing 1Password Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Google\Chrome\ExtensionInstallForcelist", "aeblfdkhhhdcdjpifhhbdiojplfjncoa"), () => Chrome == true && OnePassword == true),
 
             // log in to google chrome
             ("Please log in to your Google Chrome account (Close to continue)", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(@"C:\Program Files\Google\Chrome\Application", "chrome.exe"), WindowStyle = ProcessWindowStyle.Maximized })!.WaitForExitAsync(), () => Chrome == true),
@@ -162,7 +162,7 @@ public static class BrowsersStage
             ("Disabling Google Chrome services", async () => TaskSchedulerHelper.Toggle("GoogleUpdaterTaskSystem", false), () => Chrome == true),
 
             // download thorium
-            ("Downloading Thorium", async () => await DownloadHelper.Download("https://github.com/Alex313031/Thorium-Win/releases/download/M130.0.6723.174/thorium_SSE4_mini_installer.exe", ApplicationData.Current.TemporaryFolder.Path, "ThoriumSetup.exe", new InstallPageReporter()), () => Thorium == true),
+            ("Downloading Thorium", async () => await DownloadHelper.Download("https://github.com/Alex313031/Thorium-Win/releases/latest/download/thorium_SSE4_mini_installer.exe", ApplicationData.Current.TemporaryFolder.Path, "ThoriumSetup.exe", new InstallPageReporter()), () => Thorium == true),
 
             // install thorium
             ("Installing Thorium", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(ApplicationData.Current.TemporaryFolder.Path, "ThoriumSetup.exe"), Arguments = "--silent --install --system-level --do-not-launch-chrome", WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => Thorium == true),
@@ -180,38 +180,35 @@ public static class BrowsersStage
             // pin thorium to the taskbar
             ("Pinning Thorium to the taskbar", async () => await ProcessActions.RunPowerShellScript("taskbarpin.ps1", @"-Type Link -Path ""C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Thorium.lnk"""), () => Thorium == true),
 
-            // install ublock origin extension
-            ("Installing uBlock Origin Extension", async () => await ProcessActions.RunPowerShell(@"$BaseKey = 'HKLM:\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist'; $Index = (Get-Item $BaseKey).Property | Sort-Object {[int]$_} | Select-Object -Last 1; $NewIndex = [int]$Index + 1; reg add 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist' /v $NewIndex /t REG_SZ /d 'cjpalhdlnbpafiamejdnhcphjbkeiagm' /f"), () => Thorium == true && uBlock == true),
-
             // install sponsorblock extension
-            ("Installing SponsorBlock Extension", async () => await ProcessActions.RunPowerShell(@"$BaseKey = 'HKLM:\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist'; $Index = (Get-Item $BaseKey).Property | Sort-Object {[int]$_} | Select-Object -Last 1; $NewIndex = [int]$Index + 1; reg add 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist' /v $NewIndex /t REG_SZ /d 'mnjggcdmjocbbbhaepdhchncahnbgone' /f"), () => Thorium == true && SponsorBlock == true),
+            ("Installing SponsorBlock Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "mnjggcdmjocbbbhaepdhchncahnbgone"), () => Thorium == true && SponsorBlock == true),
 
             // install return youtube dislike extension
-            ("Installing ReturnYouTubeDislike Extension", async () => await ProcessActions.RunPowerShell(@"$BaseKey = 'HKLM:\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist'; $Index = (Get-Item $BaseKey).Property | Sort-Object {[int]$_} | Select-Object -Last 1; $NewIndex = [int]$Index + 1; reg add 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist' /v $NewIndex /t REG_SZ /d 'gebbhagfogifgggkldgodflihgfeippi' /f"), () => Thorium == true && ReturnYouTubeDislike == true),
+            ("Installing ReturnYouTubeDislike Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "gebbhagfogifgggkldgodflihgfeippi"), () => Thorium == true && ReturnYouTubeDislike == true),
 
             // install i still dont care about cookies extension
-            ("Installing I still don't care about cookies Extension", async () => await ProcessActions.RunPowerShell(@"$BaseKey = 'HKLM:\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist'; $Index = (Get-Item $BaseKey).Property | Sort-Object {[int]$_} | Select-Object -Last 1; $NewIndex = [int]$Index + 1; reg add 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist' /v $NewIndex /t REG_SZ /d 'edibdbjcniadpccecjdfdjjppcpchdlm' /f"), () => Thorium == true && Cookies == true),
+            ("Installing I still don't care about cookies Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "edibdbjcniadpccecjdfdjjppcpchdlm"), () => Thorium == true && Cookies == true),
 
             // install dark reader extension
-            ("Installing Dark Reader Extension", async () => await ProcessActions.RunPowerShell(@"$BaseKey = 'HKLM:\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist'; $Index = (Get-Item $BaseKey).Property | Sort-Object {[int]$_} | Select-Object -Last 1; $NewIndex = [int]$Index + 1; reg add 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist' /v $NewIndex /t REG_SZ /d 'eimadpbcbfnmbkopoojfekhnkhdbieeh' /f"), () => Thorium == true && DarkReader == true),
+            ("Installing Dark Reader Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "eimadpbcbfnmbkopoojfekhnkhdbieeh"), () => Thorium == true && DarkReader == true),
             
             // install violentmonkey extension
-            ("Installing Violentmonkey Extension", async () => await ProcessActions.RunPowerShell(@"$BaseKey = 'HKLM:\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist'; $Index = (Get-Item $BaseKey).Property | Sort-Object {[int]$_} | Select-Object -Last 1; $NewIndex = [int]$Index + 1; reg add 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist' /v $NewIndex /t REG_SZ /d 'jinjaccalgkegednnccohejagnlnfdag' /f"), () => Thorium == true && Violentmonkey == true),
+            ("Installing Violentmonkey Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "jinjaccalgkegednnccohejagnlnfdag"), () => Thorium == true && Violentmonkey == true),
 
             // install tampermonkey extension
-            ("Installing Tampermonkey Extension", async () => await ProcessActions.RunPowerShell(@"$BaseKey = 'HKLM:\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist'; $Index = (Get-Item $BaseKey).Property | Sort-Object {[int]$_} | Select-Object -Last 1; $NewIndex = [int]$Index + 1; reg add 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist' /v $NewIndex /t REG_SZ /d 'dhdgffkkebhmkfjojejmpbldmpobfkfo' /f"), () => Thorium == true && Tampermonkey == true),
+            ("Installing Tampermonkey Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "dhdgffkkebhmkfjojejmpbldmpobfkfo"), () => Thorium == true && Tampermonkey == true),
 
             // install shazam extension
-            ("Installing Shazam Extension", async () => await ProcessActions.RunPowerShell(@"$BaseKey = 'HKLM:\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist'; $Index = (Get-Item $BaseKey).Property | Sort-Object {[int]$_} | Select-Object -Last 1; $NewIndex = [int]$Index + 1; reg add 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist' /v $NewIndex /t REG_SZ /d 'mmioliijnhnoblpgimnlajmefafdfilb' /f"), () => Thorium == true && Shazam == true),
+            ("Installing Shazam Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "mmioliijnhnoblpgimnlajmefafdfilb"), () => Thorium == true && Shazam == true),
 
             // install icloud passwords extension
-            ("Installing iCloud Passwords Extension", async () => await ProcessActions.RunPowerShell(@"$BaseKey = 'HKLM:\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist'; $Index = (Get-Item $BaseKey).Property | Sort-Object {[int]$_} | Select-Object -Last 1; $NewIndex = [int]$Index + 1; reg add 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist' /v $NewIndex /t REG_SZ /d 'pejdijmoenmkgeppbflobdenhhabjlaj' /f"), () => Thorium == true && iCloud == true),
+            ("Installing iCloud Passwords Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "pejdijmoenmkgeppbflobdenhhabjlaj"), () => Thorium == true && iCloud == true),
 
             // install bitwarden extension
-            ("Installing Bitwarden Extension", async () => await ProcessActions.RunPowerShell(@"$BaseKey = 'HKLM:\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist'; $Index = (Get-Item $BaseKey).Property | Sort-Object {[int]$_} | Select-Object -Last 1; $NewIndex = [int]$Index + 1; reg add 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist' /v $NewIndex /t REG_SZ /d 'nngceckbapebfimnlniiiahkandclblb' /f"), () => Thorium == true && Bitwarden == true),
+            ("Installing Bitwarden Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "nngceckbapebfimnlniiiahkandclblb"), () => Thorium == true && Bitwarden == true),
 
             // install 1password extension
-            ("Installing 1Password Extension", async () => await ProcessActions.RunPowerShell(@"$BaseKey = 'HKLM:\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist'; $Index = (Get-Item $BaseKey).Property | Sort-Object {[int]$_} | Select-Object -Last 1; $NewIndex = [int]$Index + 1; reg add 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist' /v $NewIndex /t REG_SZ /d 'aeblfdkhhhdcdjpifhhbdiojplfjncoa' /f"), () => Thorium == true && OnePassword == true),
+            ("Installing 1Password Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "aeblfdkhhhdcdjpifhhbdiojplfjncoa"), () => Thorium == true && OnePassword == true),
 
             // log in to thorium
             ("Please log in to your Thorium account (Close to continue)", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(@"C:\Program Files\Thorium\Application", "thorium.exe"), WindowStyle = ProcessWindowStyle.Maximized })!.WaitForExitAsync(), () => Thorium == true),
@@ -228,6 +225,8 @@ public static class BrowsersStage
 			("Cleaning up Helium files", async () => await (await ApplicationData.Current.TemporaryFolder.GetFileAsync("helium_x64-installer.exe")).DeleteAsync(), () => Helium == true),
 
             // disable helium services
+            ("Disabling Helium services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\HeliumElevationService", "Start", 4, RegistryValueKind.DWord), () => Helium == true),
+            ("Disabling Helium services", async () => ServicesHelper.StopService("HeliumElevationService"), () => Helium == true),
             ("Disabling Helium services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Active Setup\Installed Components\AutorunsDisabled\{FB68A146-637A-48C2-A0C4-1565DE45FEBD}", "", "Helium", RegistryValueKind.String), () => Helium == true),
 			("Disabling Helium services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Active Setup\Installed Components\AutorunsDisabled\{FB68A146-637A-48C2-A0C4-1565DE45FEBD}", "Localized Name", "Helium", RegistryValueKind.String), () => Helium == true),
 			("Disabling Helium services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, $@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Active Setup\Installed Components\AutorunsDisabled\{{FB68A146-637A-48C2-A0C4-1565DE45FEBD}}", "StubPath", $@"""C:\Program Files\Helium\Application\{heliumVersion}\Installer\chrmstp.exe"" --configure-user-settings --verbose-logging --system-level", RegistryValueKind.String), () => Helium == true),
@@ -239,37 +238,37 @@ public static class BrowsersStage
             ("Pinning Helium to the taskbar", async () => await ProcessActions.RunPowerShellScript("taskbarpin.ps1", @"-Type Link -Path ""C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Helium.lnk"""), () => Helium == true),
 
             // install ublock origin extension
-            ("Installing uBlock Origin Extension", async () => await ProcessActions.RunPowerShell(@"$BaseKey = 'HKLM:\SOFTWARE\Policies\Helium\ExtensionInstallForcelist'; $Index = (Get-Item $BaseKey).Property | Sort-Object {[int]$_} | Select-Object -Last 1; $NewIndex = [int]$Index + 1; reg add 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Helium\ExtensionInstallForcelist' /v $NewIndex /t REG_SZ /d 'cjpalhdlnbpafiamejdnhcphjbkeiagm' /f"), () => Helium == true && uBlock == true),
+            ("Installing uBlock Origin Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Helium\ExtensionInstallForcelist", "cjpalhdlnbpafiamejdnhcphjbkeiagm"), () => Helium == true && uBlock == true),
 
             // install sponsorblock extension
-            ("Installing SponsorBlock Extension", async () => await ProcessActions.RunPowerShell(@"$BaseKey = 'HKLM:\SOFTWARE\Policies\Helium\ExtensionInstallForcelist'; $Index = (Get-Item $BaseKey).Property | Sort-Object {[int]$_} | Select-Object -Last 1; $NewIndex = [int]$Index + 1; reg add 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Helium\ExtensionInstallForcelist' /v $NewIndex /t REG_SZ /d 'mnjggcdmjocbbbhaepdhchncahnbgone' /f"), () => Helium == true && SponsorBlock == true),
+            ("Installing SponsorBlock Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Helium\ExtensionInstallForcelist", "mnjggcdmjocbbbhaepdhchncahnbgone"), () => Helium == true && SponsorBlock == true),
 
             // install return youtube dislike extension
-            ("Installing ReturnYouTubeDislike Extension", async () => await ProcessActions.RunPowerShell(@"$BaseKey = 'HKLM:\SOFTWARE\Policies\Helium\ExtensionInstallForcelist'; $Index = (Get-Item $BaseKey).Property | Sort-Object {[int]$_} | Select-Object -Last 1; $NewIndex = [int]$Index + 1; reg add 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Helium\ExtensionInstallForcelist' /v $NewIndex /t REG_SZ /d 'gebbhagfogifgggkldgodflihgfeippi' /f"), () => Helium == true && ReturnYouTubeDislike == true),
+            ("Installing ReturnYouTubeDislike Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Helium\ExtensionInstallForcelist", "gebbhagfogifgggkldgodflihgfeippi"), () => Helium == true && ReturnYouTubeDislike == true),
 
             // install i still dont care about cookies extension
-            ("Installing I still don't care about cookies Extension", async () => await ProcessActions.RunPowerShell(@"$BaseKey = 'HKLM:\SOFTWARE\Policies\Helium\ExtensionInstallForcelist'; $Index = (Get-Item $BaseKey).Property | Sort-Object {[int]$_} | Select-Object -Last 1; $NewIndex = [int]$Index + 1; reg add 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Helium\ExtensionInstallForcelist' /v $NewIndex /t REG_SZ /d 'edibdbjcniadpccecjdfdjjppcpchdlm' /f"), () => Helium == true && Cookies == true),
+            ("Installing I still don't care about cookies Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Helium\ExtensionInstallForcelist", "edibdbjcniadpccecjdfdjjppcpchdlm"), () => Helium == true && Cookies == true),
 
             // install dark reader extension
-            ("Installing Dark Reader Extension", async () => await ProcessActions.RunPowerShell(@"$BaseKey = 'HKLM:\SOFTWARE\Policies\Helium\ExtensionInstallForcelist'; $Index = (Get-Item $BaseKey).Property | Sort-Object {[int]$_} | Select-Object -Last 1; $NewIndex = [int]$Index + 1; reg add 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Helium\ExtensionInstallForcelist' /v $NewIndex /t REG_SZ /d 'eimadpbcbfnmbkopoojfekhnkhdbieeh' /f"), () => Helium == true && DarkReader == true),
+            ("Installing Dark Reader Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Helium\ExtensionInstallForcelist", "eimadpbcbfnmbkopoojfekhnkhdbieeh"), () => Helium == true && DarkReader == true),
             
             // install violentmonkey extension
-            ("Installing Violentmonkey Extension", async () => await ProcessActions.RunPowerShell(@"$BaseKey = 'HKLM:\SOFTWARE\Policies\Helium\ExtensionInstallForcelist'; $Index = (Get-Item $BaseKey).Property | Sort-Object {[int]$_} | Select-Object -Last 1; $NewIndex = [int]$Index + 1; reg add 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Helium\ExtensionInstallForcelist' /v $NewIndex /t REG_SZ /d 'jinjaccalgkegednnccohejagnlnfdag' /f"), () => Helium == true && Violentmonkey == true),
+            ("Installing Violentmonkey Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Helium\ExtensionInstallForcelist", "jinjaccalgkegednnccohejagnlnfdag"), () => Helium == true && Violentmonkey == true),
 
             // install tampermonkey extension
-            ("Installing Tampermonkey Extension", async () => await ProcessActions.RunPowerShell(@"$BaseKey = 'HKLM:\SOFTWARE\Policies\Helium\ExtensionInstallForcelist'; $Index = (Get-Item $BaseKey).Property | Sort-Object {[int]$_} | Select-Object -Last 1; $NewIndex = [int]$Index + 1; reg add 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Helium\ExtensionInstallForcelist' /v $NewIndex /t REG_SZ /d 'dhdgffkkebhmkfjojejmpbldmpobfkfo' /f"), () => Helium == true && Tampermonkey == true),
+            ("Installing Tampermonkey Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Helium\ExtensionInstallForcelist", "dhdgffkkebhmkfjojejmpbldmpobfkfo"), () => Helium == true && Tampermonkey == true),
 
             // install shazam extension
-            ("Installing Shazam Extension", async () => await ProcessActions.RunPowerShell(@"$BaseKey = 'HKLM:\SOFTWARE\Policies\Helium\ExtensionInstallForcelist'; $Index = (Get-Item $BaseKey).Property | Sort-Object {[int]$_} | Select-Object -Last 1; $NewIndex = [int]$Index + 1; reg add 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Helium\ExtensionInstallForcelist' /v $NewIndex /t REG_SZ /d 'mmioliijnhnoblpgimnlajmefafdfilb' /f"), () => Helium == true && Shazam == true),
+            ("Installing Shazam Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Helium\ExtensionInstallForcelist", "mmioliijnhnoblpgimnlajmefafdfilb"), () => Helium == true && Shazam == true),
 
             // install icloud passwords extension
-            ("Installing iCloud Passwords Extension", async () => await ProcessActions.RunPowerShell(@"$BaseKey = 'HKLM:\SOFTWARE\Policies\Helium\ExtensionInstallForcelist'; $Index = (Get-Item $BaseKey).Property | Sort-Object {[int]$_} | Select-Object -Last 1; $NewIndex = [int]$Index + 1; reg add 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Helium\ExtensionInstallForcelist' /v $NewIndex /t REG_SZ /d 'pejdijmoenmkgeppbflobdenhhabjlaj' /f"), () => Helium == true && iCloud == true),
+            ("Installing iCloud Passwords Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Helium\ExtensionInstallForcelist", "pejdijmoenmkgeppbflobdenhhabjlaj"), () => Helium == true && iCloud == true),
 
             // install bitwarden extension
-            ("Installing Bitwarden Extension", async () => await ProcessActions.RunPowerShell(@"$BaseKey = 'HKLM:\SOFTWARE\Policies\Helium\ExtensionInstallForcelist'; $Index = (Get-Item $BaseKey).Property | Sort-Object {[int]$_} | Select-Object -Last 1; $NewIndex = [int]$Index + 1; reg add 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Helium\ExtensionInstallForcelist' /v $NewIndex /t REG_SZ /d 'nngceckbapebfimnlniiiahkandclblb' /f"), () => Helium == true && Bitwarden == true),
+            ("Installing Bitwarden Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Helium\ExtensionInstallForcelist", "nngceckbapebfimnlniiiahkandclblb"), () => Helium == true && Bitwarden == true),
 
             // install 1password extension
-            ("Installing 1Password Extension", async () => await ProcessActions.RunPowerShell(@"$BaseKey = 'HKLM:\SOFTWARE\Policies\Helium\ExtensionInstallForcelist'; $Index = (Get-Item $BaseKey).Property | Sort-Object {[int]$_} | Select-Object -Last 1; $NewIndex = [int]$Index + 1; reg add 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Helium\ExtensionInstallForcelist' /v $NewIndex /t REG_SZ /d 'aeblfdkhhhdcdjpifhhbdiojplfjncoa' /f"), () => Helium == true && OnePassword == true),
+            ("Installing 1Password Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Helium\ExtensionInstallForcelist", "aeblfdkhhhdcdjpifhhbdiojplfjncoa"), () => Helium == true && OnePassword == true),
 
             // log in to helium
             ("Please log in to your Helium account (Close to continue)", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(@"C:\Program Files\imput\Helium\Application", "chrome.exe"), WindowStyle = ProcessWindowStyle.Maximized })!.WaitForExitAsync(), () => Helium == true),
@@ -312,37 +311,37 @@ public static class BrowsersStage
             ("Disabling Brave services", async () => TaskSchedulerHelper.Toggle("BraveSoftwareUpdateTaskMachine", false), () => Brave == true),
 
             // install ublock origin extension
-            ("Installing uBlock Origin Extension", async () => await ProcessActions.RunPowerShell(@"$BaseKey = 'HKLM:\SOFTWARE\Policies\BraveSoftware\Brave\ExtensionInstallForcelist'; $Index = (Get-Item $BaseKey).Property | Sort-Object {[int]$_} | Select-Object -Last 1; $NewIndex = [int]$Index + 1; reg add 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\BraveSoftware\Brave\ExtensionInstallForcelist' /v $NewIndex /t REG_SZ /d 'cjpalhdlnbpafiamejdnhcphjbkeiagm' /f"), () => Brave == true && uBlock == true),
+            ("Installing uBlock Origin Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\BraveSoftware\Brave\ExtensionInstallForcelist", "cjpalhdlnbpafiamejdnhcphjbkeiagm"), () => Brave == true && uBlock == true),
 
             // install sponsorblock extension
-            ("Installing SponsorBlock Extension", async () => await ProcessActions.RunPowerShell(@"$BaseKey = 'HKLM:\SOFTWARE\Policies\BraveSoftware\Brave\ExtensionInstallForcelist'; $Index = (Get-Item $BaseKey).Property | Sort-Object {[int]$_} | Select-Object -Last 1; $NewIndex = [int]$Index + 1; reg add 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\BraveSoftware\Brave\ExtensionInstallForcelist' /v $NewIndex /t REG_SZ /d 'mnjggcdmjocbbbhaepdhchncahnbgone' /f"), () => Brave == true && SponsorBlock == true),
+            ("Installing SponsorBlock Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\BraveSoftware\Brave\ExtensionInstallForcelist", "mnjggcdmjocbbbhaepdhchncahnbgone"), () => Brave == true && SponsorBlock == true),
 
             // install return youtube dislike extension
-            ("Installing Return YouTube Dislike Extension", async () => await ProcessActions.RunPowerShell(@"$BaseKey = 'HKLM:\SOFTWARE\Policies\BraveSoftware\Brave\ExtensionInstallForcelist'; $Index = (Get-Item $BaseKey).Property | Sort-Object {[int]$_} | Select-Object -Last 1; $NewIndex = [int]$Index + 1; reg add 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\BraveSoftware\Brave\ExtensionInstallForcelist' /v $NewIndex /t REG_SZ /d 'gebbhagfogifgggkldgodflihgfeippi' /f"), () => Brave == true && ReturnYouTubeDislike == true),
+            ("Installing Return YouTube Dislike Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\BraveSoftware\Brave\ExtensionInstallForcelist", "gebbhagfogifgggkldgodflihgfeippi"), () => Brave == true && ReturnYouTubeDislike == true),
 
             // install i still dont care about cookies extension
-            ("Installing I still don't care about cookies Extension", async () => await ProcessActions.RunPowerShell(@"$BaseKey = 'HKLM:\SOFTWARE\Policies\BraveSoftware\Brave\ExtensionInstallForcelist'; $Index = (Get-Item $BaseKey).Property | Sort-Object {[int]$_} | Select-Object -Last 1; $NewIndex = [int]$Index + 1; reg add 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\BraveSoftware\Brave\ExtensionInstallForcelist' /v $NewIndex /t REG_SZ /d 'edibdbjcniadpccecjdfdjjppcpchdlm' /f"), () => Brave == true && Cookies == true),
+            ("Installing I still don't care about cookies Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\BraveSoftware\Brave\ExtensionInstallForcelist", "edibdbjcniadpccecjdfdjjppcpchdlm"), () => Brave == true && Cookies == true),
 
             // install dark reader extension
-            ("Installing Dark Reader Extension", async () => await ProcessActions.RunPowerShell(@"$BaseKey = 'HKLM:\SOFTWARE\Policies\BraveSoftware\Brave\ExtensionInstallForcelist'; $Index = (Get-Item $BaseKey).Property | Sort-Object {[int]$_} | Select-Object -Last 1; $NewIndex = [int]$Index + 1; reg add 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\BraveSoftware\Brave\ExtensionInstallForcelist' /v $NewIndex /t REG_SZ /d 'eimadpbcbfnmbkopoojfekhnkhdbieeh' /f"), () => Brave == true && DarkReader == true),
+            ("Installing Dark Reader Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\BraveSoftware\Brave\ExtensionInstallForcelist", "eimadpbcbfnmbkopoojfekhnkhdbieeh"), () => Brave == true && DarkReader == true),
 
             // install violentmonkey extension
-            ("Installing Violentmonkey Extension", async () => await ProcessActions.RunPowerShell(@"$BaseKey = 'HKLM:\SOFTWARE\Policies\BraveSoftware\Brave\ExtensionInstallForcelist'; $Index = (Get-Item $BaseKey).Property | Sort-Object {[int]$_} | Select-Object -Last 1; $NewIndex = [int]$Index + 1; reg add 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\BraveSoftware\Brave\ExtensionInstallForcelist' /v $NewIndex /t REG_SZ /d 'jinjaccalgkegednnccohejagnlnfdag' /f"), () => Brave == true && Violentmonkey == true),
+            ("Installing Violentmonkey Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\BraveSoftware\Brave\ExtensionInstallForcelist", "jinjaccalgkegednnccohejagnlnfdag"), () => Brave == true && Violentmonkey == true),
 
             // install tampermonkey extension
-            ("Installing Tampermonkey Extension", async () => await ProcessActions.RunPowerShell(@"$BaseKey = 'HKLM:\SOFTWARE\Policies\BraveSoftware\Brave\ExtensionInstallForcelist'; $Index = (Get-Item $BaseKey).Property | Sort-Object {[int]$_} | Select-Object -Last 1; $NewIndex = [int]$Index + 1; reg add 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\BraveSoftware\Brave\ExtensionInstallForcelist' /v $NewIndex /t REG_SZ /d 'dhdgffkkebhmkfjojejmpbldmpobfkfo' /f"), () => Brave == true && Tampermonkey == true),
+            ("Installing Tampermonkey Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\BraveSoftware\Brave\ExtensionInstallForcelist", "dhdgffkkebhmkfjojejmpbldmpobfkfo"), () => Brave == true && Tampermonkey == true),
 
             // install shazam extension
-            ("Installing Shazam Extension", async () => await ProcessActions.RunPowerShell(@"$BaseKey = 'HKLM:\SOFTWARE\Policies\BraveSoftware\Brave\ExtensionInstallForcelist'; $Index = (Get-Item $BaseKey).Property | Sort-Object {[int]$_} | Select-Object -Last 1; $NewIndex = [int]$Index + 1; reg add 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\BraveSoftware\Brave\ExtensionInstallForcelist' /v $NewIndex /t REG_SZ /d 'mmioliijnhnoblpgimnlajmefafdfilb' /f"), () => Brave == true && Shazam == true),
+            ("Installing Shazam Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\BraveSoftware\Brave\ExtensionInstallForcelist", "mmioliijnhnoblpgimnlajmefafdfilb"), () => Brave == true && Shazam == true),
 
             // install icloud passwords extension
-            ("Installing iCloud Passwords Extension", async () => await ProcessActions.RunPowerShell(@"$BaseKey = 'HKLM:\SOFTWARE\Policies\BraveSoftware\Brave\ExtensionInstallForcelist'; $Index = (Get-Item $BaseKey).Property | Sort-Object {[int]$_} | Select-Object -Last 1; $NewIndex = [int]$Index + 1; reg add 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\BraveSoftware\Brave\ExtensionInstallForcelist' /v $NewIndex /t REG_SZ /d 'pejdijmoenmkgeppbflobdenhhabjlaj' /f"), () => Brave == true && iCloud == true),
+            ("Installing iCloud Passwords Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\BraveSoftware\Brave\ExtensionInstallForcelist", "pejdijmoenmkgeppbflobdenhhabjlaj"), () => Brave == true && iCloud == true),
 
             // install bitwarden extension
-            ("Installing Bitwarden Extension", async () => await ProcessActions.RunPowerShell(@"$BaseKey = 'HKLM:\SOFTWARE\Policies\BraveSoftware\Brave\ExtensionInstallForcelist'; $Index = (Get-Item $BaseKey).Property | Sort-Object {[int]$_} | Select-Object -Last 1; $NewIndex = [int]$Index + 1; reg add 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\BraveSoftware\Brave\ExtensionInstallForcelist' /v $NewIndex /t REG_SZ /d 'nngceckbapebfimnlniiiahkandclblb' /f"), () => Brave == true && Bitwarden == true),
+            ("Installing Bitwarden Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\BraveSoftware\Brave\ExtensionInstallForcelist", "nngceckbapebfimnlniiiahkandclblb"), () => Brave == true && Bitwarden == true),
 
             // install 1password extension
-            ("Installing 1Password Extension", async () => await ProcessActions.RunPowerShell(@"$BaseKey = 'HKLM:\SOFTWARE\Policies\BraveSoftware\Brave\ExtensionInstallForcelist'; $Index = (Get-Item $BaseKey).Property | Sort-Object {[int]$_} | Select-Object -Last 1; $NewIndex = [int]$Index + 1; reg add 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\BraveSoftware\Brave\ExtensionInstallForcelist' /v $NewIndex /t REG_SZ /d 'aeblfdkhhhdcdjpifhhbdiojplfjncoa' /f"), () => Brave == true && OnePassword == true),
+            ("Installing 1Password Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\BraveSoftware\Brave\ExtensionInstallForcelist", "aeblfdkhhhdcdjpifhhbdiojplfjncoa"), () => Brave == true && OnePassword == true),
 
             // download vivaldi
             ("Downloading Vivaldi", async () => await DownloadHelper.Download("https://vivaldi.com/download/Vivaldi.x64.exe", ApplicationData.Current.TemporaryFolder.Path, "Vivaldi.x64.exe", new InstallPageReporter()), () => Vivaldi == true),
@@ -356,37 +355,37 @@ public static class BrowsersStage
             ("Pinning Vivaldi to the taskbar", async () => await ProcessActions.RunPowerShellScript("taskbarpin.ps1", @"-Type Link -Path ""C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Vivaldi.lnk"""), () => Vivaldi == true),
 
             // install ublock origin extension
-            ("Installing uBlock Origin Extension", async () => await ProcessActions.RunPowerShell(@"$BaseKey = 'HKLM:\SOFTWARE\Policies\Vivaldi\ExtensionInstallForcelist'; $Index = (Get-Item $BaseKey).Property | Sort-Object {[int]$_} | Select-Object -Last 1; $NewIndex = [int]$Index + 1; reg add 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Vivaldi\ExtensionInstallForcelist' /v $NewIndex /t REG_SZ /d 'cjpalhdlnbpafiamejdnhcphjbkeiagm' /f"), () => Vivaldi == true && uBlock == true),
+            ("Installing uBlock Origin Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Vivaldi\ExtensionInstallForcelist", "cjpalhdlnbpafiamejdnhcphjbkeiagm"), () => Vivaldi == true && uBlock == true),
 
             // install sponsorblock extension
-            ("Installing SponsorBlock Extension", async () => await ProcessActions.RunPowerShell(@"$BaseKey = 'HKLM:\SOFTWARE\Policies\Vivaldi\ExtensionInstallForcelist'; $Index = (Get-Item $BaseKey).Property | Sort-Object {[int]$_} | Select-Object -Last 1; $NewIndex = [int]$Index + 1; reg add 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Vivaldi\ExtensionInstallForcelist' /v $NewIndex /t REG_SZ /d 'mnjggcdmjocbbbhaepdhchncahnbgone' /f"), () => Vivaldi == true && SponsorBlock == true),
+            ("Installing SponsorBlock Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Vivaldi\ExtensionInstallForcelist", "mnjggcdmjocbbbhaepdhchncahnbgone"), () => Vivaldi == true && SponsorBlock == true),
 
             // install return youtube dislike extension
-            ("Installing ReturnYouTubeDislike Extension", async () => await ProcessActions.RunPowerShell(@"$BaseKey = 'HKLM:\SOFTWARE\Policies\Vivaldi\ExtensionInstallForcelist'; $Index = (Get-Item $BaseKey).Property | Sort-Object {[int]$_} | Select-Object -Last 1; $NewIndex = [int]$Index + 1; reg add 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Vivaldi\ExtensionInstallForcelist' /v $NewIndex /t REG_SZ /d 'gebbhagfogifgggkldgodflihgfeippi' /f"), () => Vivaldi == true && ReturnYouTubeDislike == true),
+            ("Installing ReturnYouTubeDislike Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Vivaldi\ExtensionInstallForcelist", "gebbhagfogifgggkldgodflihgfeippi"), () => Vivaldi == true && ReturnYouTubeDislike == true),
 
             // install i still dont care about cookies extension
-            ("Installing I still don't care about cookies Extension", async () => await ProcessActions.RunPowerShell(@"$BaseKey = 'HKLM:\SOFTWARE\Policies\Vivaldi\ExtensionInstallForcelist'; $Index = (Get-Item $BaseKey).Property | Sort-Object {[int]$_} | Select-Object -Last 1; $NewIndex = [int]$Index + 1; reg add 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Vivaldi\ExtensionInstallForcelist' /v $NewIndex /t REG_SZ /d 'edibdbjcniadpccecjdfdjjppcpchdlm' /f"), () => Vivaldi == true && Cookies == true),
+            ("Installing I still don't care about cookies Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Vivaldi\ExtensionInstallForcelist", "edibdbjcniadpccecjdfdjjppcpchdlm"), () => Vivaldi == true && Cookies == true),
 
             // install dark reader extension
-            ("Installing Dark Reader Extension", async () => await ProcessActions.RunPowerShell(@"$BaseKey = 'HKLM:\SOFTWARE\Policies\Vivaldi\ExtensionInstallForcelist'; $Index = (Get-Item $BaseKey).Property | Sort-Object {[int]$_} | Select-Object -Last 1; $NewIndex = [int]$Index + 1; reg add 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Vivaldi\ExtensionInstallForcelist' /v $NewIndex /t REG_SZ /d 'eimadpbcbfnmbkopoojfekhnkhdbieeh' /f"), () => Vivaldi == true && DarkReader == true),
+            ("Installing Dark Reader Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Vivaldi\ExtensionInstallForcelist", "eimadpbcbfnmbkopoojfekhnkhdbieeh"), () => Vivaldi == true && DarkReader == true),
             
             // install violentmonkey extension
-            ("Installing Violentmonkey Extension", async () => await ProcessActions.RunPowerShell(@"$BaseKey = 'HKLM:\SOFTWARE\Policies\Vivaldi\ExtensionInstallForcelist'; $Index = (Get-Item $BaseKey).Property | Sort-Object {[int]$_} | Select-Object -Last 1; $NewIndex = [int]$Index + 1; reg add 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Vivaldi\ExtensionInstallForcelist' /v $NewIndex /t REG_SZ /d 'jinjaccalgkegednnccohejagnlnfdag' /f"), () => Vivaldi == true && Violentmonkey == true),
+            ("Installing Violentmonkey Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Vivaldi\ExtensionInstallForcelist", "jinjaccalgkegednnccohejagnlnfdag"), () => Vivaldi == true && Violentmonkey == true),
 
             // install tampermonkey extension
-            ("Installing Tampermonkey Extension", async () => await ProcessActions.RunPowerShell(@"$BaseKey = 'HKLM:\SOFTWARE\Policies\Vivaldi\ExtensionInstallForcelist'; $Index = (Get-Item $BaseKey).Property | Sort-Object {[int]$_} | Select-Object -Last 1; $NewIndex = [int]$Index + 1; reg add 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Vivaldi\ExtensionInstallForcelist' /v $NewIndex /t REG_SZ /d 'dhdgffkkebhmkfjojejmpbldmpobfkfo' /f"), () => Vivaldi == true && Tampermonkey == true),
+            ("Installing Tampermonkey Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Vivaldi\ExtensionInstallForcelist", "dhdgffkkebhmkfjojejmpbldmpobfkfo"), () => Vivaldi == true && Tampermonkey == true),
 
             // install shazam extension
-            ("Installing Shazam Extension", async () => await ProcessActions.RunPowerShell(@"$BaseKey = 'HKLM:\SOFTWARE\Policies\Vivaldi\ExtensionInstallForcelist'; $Index = (Get-Item $BaseKey).Property | Sort-Object {[int]$_} | Select-Object -Last 1; $NewIndex = [int]$Index + 1; reg add 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Vivaldi\ExtensionInstallForcelist' /v $NewIndex /t REG_SZ /d 'mmioliijnhnoblpgimnlajmefafdfilb' /f"), () => Vivaldi == true && Shazam == true),
+            ("Installing Shazam Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Vivaldi\ExtensionInstallForcelist", "mmioliijnhnoblpgimnlajmefafdfilb"), () => Vivaldi == true && Shazam == true),
 
             // install icloud passwords extension
-            ("Installing iCloud Passwords Extension", async () => await ProcessActions.RunPowerShell(@"$BaseKey = 'HKLM:\SOFTWARE\Policies\Vivaldi\ExtensionInstallForcelist'; $Index = (Get-Item $BaseKey).Property | Sort-Object {[int]$_} | Select-Object -Last 1; $NewIndex = [int]$Index + 1; reg add 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Vivaldi\ExtensionInstallForcelist' /v $NewIndex /t REG_SZ /d 'pejdijmoenmkgeppbflobdenhhabjlaj' /f"), () => Vivaldi == true && iCloud == true),
+            ("Installing iCloud Passwords Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Vivaldi\ExtensionInstallForcelist", "pejdijmoenmkgeppbflobdenhhabjlaj"), () => Vivaldi == true && iCloud == true),
 
             // install bitwarden extension
-            ("Installing Bitwarden Extension", async () => await ProcessActions.RunPowerShell(@"$BaseKey = 'HKLM:\SOFTWARE\Policies\Vivaldi\ExtensionInstallForcelist'; $Index = (Get-Item $BaseKey).Property | Sort-Object {[int]$_} | Select-Object -Last 1; $NewIndex = [int]$Index + 1; reg add 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Vivaldi\ExtensionInstallForcelist' /v $NewIndex /t REG_SZ /d 'nngceckbapebfimnlniiiahkandclblb' /f"), () => Vivaldi == true && Bitwarden == true),
+            ("Installing Bitwarden Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Vivaldi\ExtensionInstallForcelist", "nngceckbapebfimnlniiiahkandclblb"), () => Vivaldi == true && Bitwarden == true),
 
             // install 1password extension
-            ("Installing 1Password Extension", async () => await ProcessActions.RunPowerShell(@"$BaseKey = 'HKLM:\SOFTWARE\Policies\Vivaldi\ExtensionInstallForcelist'; $Index = (Get-Item $BaseKey).Property | Sort-Object {[int]$_} | Select-Object -Last 1; $NewIndex = [int]$Index + 1; reg add 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Vivaldi\ExtensionInstallForcelist' /v $NewIndex /t REG_SZ /d 'aeblfdkhhhdcdjpifhhbdiojplfjncoa' /f"), () => Vivaldi == true && OnePassword == true),
+            ("Installing 1Password Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Vivaldi\ExtensionInstallForcelist", "aeblfdkhhhdcdjpifhhbdiojplfjncoa"), () => Vivaldi == true && OnePassword == true),
 
             // remove vivaldi shortcut from the desktop
             ("Removing Vivaldi shortcut from the desktop", async () => File.Delete(@"C:\Users\Public\Desktop\Vivaldi.lnk"), () => Vivaldi == true),
@@ -418,37 +417,37 @@ public static class BrowsersStage
             ("Pinning Arc to the taskbar", async () => await ProcessActions.RunPowerShellScript("taskbarpin.ps1", @"-Type UWA -Path TheBrowserCompany.Arc_ttt1ap7aakyb4!Arc"), () => Arc == true),
 
             // install ublock origin extension
-            ("Installing uBlock Origin Extension", async () => await ProcessActions.RunPowerShell(@"$BaseKey = 'HKLM:\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist'; $Index = (Get-Item $BaseKey).Property | Sort-Object {[int]$_} | Select-Object -Last 1; $NewIndex = [int]$Index + 1; reg add 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist' /v $NewIndex /t REG_SZ /d 'cjpalhdlnbpafiamejdnhcphjbkeiagm' /f"), () => Arc == true && uBlock == true),
+            ("Installing uBlock Origin Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "cjpalhdlnbpafiamejdnhcphjbkeiagm"), () => Arc == true && uBlock == true),
 
             // install sponsorblock extension
-            ("Installing SponsorBlock Extension", async () => await ProcessActions.RunPowerShell(@"$BaseKey = 'HKLM:\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist'; $Index = (Get-Item $BaseKey).Property | Sort-Object {[int]$_} | Select-Object -Last 1; $NewIndex = [int]$Index + 1; reg add 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist' /v $NewIndex /t REG_SZ /d 'mnjggcdmjocbbbhaepdhchncahnbgone' /f"), () => Arc == true && SponsorBlock == true),
+            ("Installing SponsorBlock Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "mnjggcdmjocbbbhaepdhchncahnbgone"), () => Arc == true && SponsorBlock == true),
 
             // install return youtube dislike extension
-            ("Installing ReturnYouTubeDislike Extension", async () => await ProcessActions.RunPowerShell(@"$BaseKey = 'HKLM:\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist'; $Index = (Get-Item $BaseKey).Property | Sort-Object {[int]$_} | Select-Object -Last 1; $NewIndex = [int]$Index + 1; reg add 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist' /v $NewIndex /t REG_SZ /d 'gebbhagfogifgggkldgodflihgfeippi' /f"), () => Arc == true && ReturnYouTubeDislike == true),
+            ("Installing ReturnYouTubeDislike Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "gebbhagfogifgggkldgodflihgfeippi"), () => Arc == true && ReturnYouTubeDislike == true),
 
             // install i still dont care about cookies extension
-            ("Installing I still don't care about cookies Extension", async () => await ProcessActions.RunPowerShell(@"$BaseKey = 'HKLM:\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist'; $Index = (Get-Item $BaseKey).Property | Sort-Object {[int]$_} | Select-Object -Last 1; $NewIndex = [int]$Index + 1; reg add 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist' /v $NewIndex /t REG_SZ /d 'edibdbjcniadpccecjdfdjjppcpchdlm' /f"), () => Arc == true && Cookies == true),
+            ("Installing I still don't care about cookies Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "edibdbjcniadpccecjdfdjjppcpchdlm"), () => Arc == true && Cookies == true),
 
             // install dark reader extension
-            ("Installing Dark Reader Extension", async () => await ProcessActions.RunPowerShell(@"$BaseKey = 'HKLM:\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist'; $Index = (Get-Item $BaseKey).Property | Sort-Object {[int]$_} | Select-Object -Last 1; $NewIndex = [int]$Index + 1; reg add 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist' /v $NewIndex /t REG_SZ /d 'eimadpbcbfnmbkopoojfekhnkhdbieeh' /f"), () => Arc == true && DarkReader == true),
+            ("Installing Dark Reader Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "eimadpbcbfnmbkopoojfekhnkhdbieeh"), () => Arc == true && DarkReader == true),
             
             // install violentmonkey extension
-            ("Installing Violentmonkey Extension", async () => await ProcessActions.RunPowerShell(@"$BaseKey = 'HKLM:\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist'; $Index = (Get-Item $BaseKey).Property | Sort-Object {[int]$_} | Select-Object -Last 1; $NewIndex = [int]$Index + 1; reg add 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist' /v $NewIndex /t REG_SZ /d 'jinjaccalgkegednnccohejagnlnfdag' /f"), () => Arc == true && Violentmonkey == true),
+            ("Installing Violentmonkey Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "jinjaccalgkegednnccohejagnlnfdag"), () => Arc == true && Violentmonkey == true),
 
             // install tampermonkey extension
-            ("Installing Tampermonkey Extension", async () => await ProcessActions.RunPowerShell(@"$BaseKey = 'HKLM:\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist'; $Index = (Get-Item $BaseKey).Property | Sort-Object {[int]$_} | Select-Object -Last 1; $NewIndex = [int]$Index + 1; reg add 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist' /v $NewIndex /t REG_SZ /d 'dhdgffkkebhmkfjojejmpbldmpobfkfo' /f"), () => Arc == true && Tampermonkey == true),
+            ("Installing Tampermonkey Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "dhdgffkkebhmkfjojejmpbldmpobfkfo"), () => Arc == true && Tampermonkey == true),
 
             // install shazam extension
-            ("Installing Shazam Extension", async () => await ProcessActions.RunPowerShell(@"$BaseKey = 'HKLM:\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist'; $Index = (Get-Item $BaseKey).Property | Sort-Object {[int]$_} | Select-Object -Last 1; $NewIndex = [int]$Index + 1; reg add 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist' /v $NewIndex /t REG_SZ /d 'mmioliijnhnoblpgimnlajmefafdfilb' /f"), () => Arc == true && Shazam == true),
+            ("Installing Shazam Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "mmioliijnhnoblpgimnlajmefafdfilb"), () => Arc == true && Shazam == true),
 
             // install icloud passwords extension
-            ("Installing iCloud Passwords Extension", async () => await ProcessActions.RunPowerShell(@"$BaseKey = 'HKLM:\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist'; $Index = (Get-Item $BaseKey).Property | Sort-Object {[int]$_} | Select-Object -Last 1; $NewIndex = [int]$Index + 1; reg add 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist' /v $NewIndex /t REG_SZ /d 'pejdijmoenmkgeppbflobdenhhabjlaj' /f"), () => Arc == true && iCloud == true),
+            ("Installing iCloud Passwords Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "pejdijmoenmkgeppbflobdenhhabjlaj"), () => Arc == true && iCloud == true),
 
             // install bitwarden extension
-            ("Installing Bitwarden Extension", async () => await ProcessActions.RunPowerShell(@"$BaseKey = 'HKLM:\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist'; $Index = (Get-Item $BaseKey).Property | Sort-Object {[int]$_} | Select-Object -Last 1; $NewIndex = [int]$Index + 1; reg add 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist' /v $NewIndex /t REG_SZ /d 'nngceckbapebfimnlniiiahkandclblb' /f"), () => Arc == true && Bitwarden == true),
+            ("Installing Bitwarden Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "nngceckbapebfimnlniiiahkandclblb"), () => Arc == true && Bitwarden == true),
 
             // install 1password extension
-            ("Installing 1Password Extension", async () => await ProcessActions.RunPowerShell(@"$BaseKey = 'HKLM:\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist'; $Index = (Get-Item $BaseKey).Property | Sort-Object {[int]$_} | Select-Object -Last 1; $NewIndex = [int]$Index + 1; reg add 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist' /v $NewIndex /t REG_SZ /d 'aeblfdkhhhdcdjpifhhbdiojplfjncoa' /f"), () => Arc == true && OnePassword == true),
+            ("Installing 1Password Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "aeblfdkhhhdcdjpifhhbdiojplfjncoa"), () => Arc == true && OnePassword == true),
 
             // log in to arc
             ("Please log in to your Arc account (Close to continue)", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(@"C:\Program Files\WindowsApps\TheBrowserCompany.Arc_" + arcVersion + @"_x64__ttt1ap7aakyb4", "Arc.exe"), WindowStyle = ProcessWindowStyle.Maximized })!.WaitForExitAsync(), () => Arc == true),
@@ -465,37 +464,37 @@ public static class BrowsersStage
             ("Pinning Comet to the taskbar", async () => await ProcessActions.RunPowerShellScript("taskbarpin.ps1", @"-Type Link -Path ""C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Comet.lnk"""), () => Comet == true),
 
             // install ublock origin extension
-            ("Installing uBlock Origin Extension", async () => await ProcessActions.RunPowerShell(@"$BaseKey = 'HKLM:\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist'; $Index = (Get-Item $BaseKey).Property | Sort-Object {[int]$_} | Select-Object -Last 1; $NewIndex = [int]$Index + 1; reg add 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist' /v $NewIndex /t REG_SZ /d 'cjpalhdlnbpafiamejdnhcphjbkeiagm' /f"), () => Comet == true && uBlock == true),
+            ("Installing uBlock Origin Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "cjpalhdlnbpafiamejdnhcphjbkeiagm"), () => Comet == true && uBlock == true),
 
             // install sponsorblock extension
-            ("Installing SponsorBlock Extension", async () => await ProcessActions.RunPowerShell(@"$BaseKey = 'HKLM:\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist'; $Index = (Get-Item $BaseKey).Property | Sort-Object {[int]$_} | Select-Object -Last 1; $NewIndex = [int]$Index + 1; reg add 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist' /v $NewIndex /t REG_SZ /d 'mnjggcdmjocbbbhaepdhchncahnbgone' /f"), () => Comet == true && SponsorBlock == true),
+            ("Installing SponsorBlock Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "mnjggcdmjocbbbhaepdhchncahnbgone"), () => Comet == true && SponsorBlock == true),
 
             // install return youtube dislike extension
-            ("Installing ReturnYouTubeDislike Extension", async () => await ProcessActions.RunPowerShell(@"$BaseKey = 'HKLM:\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist'; $Index = (Get-Item $BaseKey).Property | Sort-Object {[int]$_} | Select-Object -Last 1; $NewIndex = [int]$Index + 1; reg add 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist' /v $NewIndex /t REG_SZ /d 'gebbhagfogifgggkldgodflihgfeippi' /f"), () => Comet == true && ReturnYouTubeDislike == true),
+            ("Installing ReturnYouTubeDislike Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "gebbhagfogifgggkldgodflihgfeippi"), () => Comet == true && ReturnYouTubeDislike == true),
 
             // install i still dont care about cookies extension
-            ("Installing I still don't care about cookies Extension", async () => await ProcessActions.RunPowerShell(@"$BaseKey = 'HKLM:\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist'; $Index = (Get-Item $BaseKey).Property | Sort-Object {[int]$_} | Select-Object -Last 1; $NewIndex = [int]$Index + 1; reg add 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist' /v $NewIndex /t REG_SZ /d 'edibdbjcniadpccecjdfdjjppcpchdlm' /f"), () => Comet == true && Cookies == true),
+            ("Installing I still don't care about cookies Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "edibdbjcniadpccecjdfdjjppcpchdlm"), () => Comet == true && Cookies == true),
 
             // install dark reader extension
-            ("Installing Dark Reader Extension", async () => await ProcessActions.RunPowerShell(@"$BaseKey = 'HKLM:\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist'; $Index = (Get-Item $BaseKey).Property | Sort-Object {[int]$_} | Select-Object -Last 1; $NewIndex = [int]$Index + 1; reg add 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist' /v $NewIndex /t REG_SZ /d 'eimadpbcbfnmbkopoojfekhnkhdbieeh' /f"), () => Comet == true && DarkReader == true),
+            ("Installing Dark Reader Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "eimadpbcbfnmbkopoojfekhnkhdbieeh"), () => Comet == true && DarkReader == true),
             
             // install violentmonkey extension
-            ("Installing Violentmonkey Extension", async () => await ProcessActions.RunPowerShell(@"$BaseKey = 'HKLM:\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist'; $Index = (Get-Item $BaseKey).Property | Sort-Object {[int]$_} | Select-Object -Last 1; $NewIndex = [int]$Index + 1; reg add 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist' /v $NewIndex /t REG_SZ /d 'jinjaccalgkegednnccohejagnlnfdag' /f"), () => Comet == true && Violentmonkey == true),
+            ("Installing Violentmonkey Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "jinjaccalgkegednnccohejagnlnfdag"), () => Comet == true && Violentmonkey == true),
 
             // install tampermonkey extension
-            ("Installing Tampermonkey Extension", async () => await ProcessActions.RunPowerShell(@"$BaseKey = 'HKLM:\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist'; $Index = (Get-Item $BaseKey).Property | Sort-Object {[int]$_} | Select-Object -Last 1; $NewIndex = [int]$Index + 1; reg add 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist' /v $NewIndex /t REG_SZ /d 'dhdgffkkebhmkfjojejmpbldmpobfkfo' /f"), () => Comet == true && Tampermonkey == true),
+            ("Installing Tampermonkey Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "dhdgffkkebhmkfjojejmpbldmpobfkfo"), () => Comet == true && Tampermonkey == true),
 
             // install shazam extension
-            ("Installing Shazam Extension", async () => await ProcessActions.RunPowerShell(@"$BaseKey = 'HKLM:\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist'; $Index = (Get-Item $BaseKey).Property | Sort-Object {[int]$_} | Select-Object -Last 1; $NewIndex = [int]$Index + 1; reg add 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist' /v $NewIndex /t REG_SZ /d 'mmioliijnhnoblpgimnlajmefafdfilb' /f"), () => Comet == true && Shazam == true),
+            ("Installing Shazam Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "mmioliijnhnoblpgimnlajmefafdfilb"), () => Comet == true && Shazam == true),
 
             // install icloud passwords extension
-            ("Installing iCloud Passwords Extension", async () => await ProcessActions.RunPowerShell(@"$BaseKey = 'HKLM:\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist'; $Index = (Get-Item $BaseKey).Property | Sort-Object {[int]$_} | Select-Object -Last 1; $NewIndex = [int]$Index + 1; reg add 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist' /v $NewIndex /t REG_SZ /d 'pejdijmoenmkgeppbflobdenhhabjlaj' /f"), () => Comet == true && iCloud == true),
+            ("Installing iCloud Passwords Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "pejdijmoenmkgeppbflobdenhhabjlaj"), () => Comet == true && iCloud == true),
 
             // install bitwarden extension
-            ("Installing Bitwarden Extension", async () => await ProcessActions.RunPowerShell(@"$BaseKey = 'HKLM:\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist'; $Index = (Get-Item $BaseKey).Property | Sort-Object {[int]$_} | Select-Object -Last 1; $NewIndex = [int]$Index + 1; reg add 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist' /v $NewIndex /t REG_SZ /d 'nngceckbapebfimnlniiiahkandclblb' /f"), () => Comet == true && Bitwarden == true),
+            ("Installing Bitwarden Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "nngceckbapebfimnlniiiahkandclblb"), () => Comet == true && Bitwarden == true),
 
             // install 1password extension
-            ("Installing 1Password Extension", async () => await ProcessActions.RunPowerShell(@"$BaseKey = 'HKLM:\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist'; $Index = (Get-Item $BaseKey).Property | Sort-Object {[int]$_} | Select-Object -Last 1; $NewIndex = [int]$Index + 1; reg add 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist' /v $NewIndex /t REG_SZ /d 'aeblfdkhhhdcdjpifhhbdiojplfjncoa' /f"), () => Comet == true && OnePassword == true),
+            ("Installing 1Password Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "aeblfdkhhhdcdjpifhhbdiojplfjncoa"), () => Comet == true && OnePassword == true),
 
             // remove comet shortcut from the desktop
             ("Removing Comet shortcut from the desktop", async () => File.Delete(@"C:\Users\Public\Desktop\Comet.lnk"), () => Comet == true),
@@ -682,6 +681,29 @@ public static class BrowsersStage
             root["policies"] = policies;
             File.WriteAllText(policiesPath, root.ToJsonString(new JsonSerializerOptions { WriteIndented = true }));
         }
+    }
+
+    private static Task InstallChromiumExtension(string baseKey, string extensionId)
+    {
+        string[] valueNames = RegistryHelper.GetValueNames(RegistryHelper.Identity.TrustedInstaller, baseKey);
+        int nextIndex = 0;
+
+        if (valueNames.Length > 0)
+        {
+            var indices = valueNames
+                .Select(n => int.TryParse(n, out int i) ? (int?)i : null)
+                .Where(i => i.HasValue)
+                .Select(i => i.Value)
+                .ToList();
+
+            if (indices.Count > 0)
+            {
+                nextIndex = indices.Max() + 1;
+            }
+        }
+
+        RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, baseKey, nextIndex.ToString(), extensionId, RegistryValueKind.String);
+        return Task.CompletedTask;
     }
 }
 

@@ -52,9 +52,12 @@ Once the script finished, restart your PC and boot into the `default option` by 
 > **DO NOT BYPASS THE NETWORK REQUIREMENT!**
 
 ### Step 5: AutoOS Installer
-Once finished, wait for AutoOS Installer to open up.<br/>
+Once the OOBE has finished, wait for AutoOS Installer to open up.<br/>
 Carefully look through every tab and select your preferences and apps. <br/>
-Please select the Discord app and do not use Discord in the Browser. <br/>
+
+> [!TIP]  
+> Select the Discord app and do not use Discord in the Browser. It uses the same or less RAM and less CPU Usage.<br/>
+
 Then click "Install AutoOS". This process will take around 15-30 minutes.
 
 > [!NOTE]  

@@ -1,4 +1,4 @@
-﻿using AutoOS.Core.Helpers.Services;
+using AutoOS.Core.Helpers.Services;
 using Microsoft.Win32.SafeHandles;
 using Microsoft.Win32;
 using System.ComponentModel;
@@ -139,6 +139,21 @@ public static partial class RegistryHelper
             var (root, subKeyPath) = ParseKeyPath(keyPath);
             root.DeleteSubKeyTree(subKeyPath, false);
         });
+    }
+
+    public static string[] GetValueNames(Identity identity, string keyPath)
+    {
+        string[] names = Array.Empty<string>();
+        RunAs(identity, () =>
+        {
+            var (root, subKeyPath) = ParseKeyPath(keyPath);
+            using var key = root.OpenSubKey(subKeyPath, false);
+            if (key != null)
+            {
+                names = key.GetValueNames();
+            }
+        });
+        return names;
     }
 
     private static (RegistryKey root, string subKey) ParseKeyPath(string fullPath)

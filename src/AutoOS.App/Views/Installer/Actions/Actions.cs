@@ -13,7 +13,7 @@ public static class ProcessActions
 
     public static async Task RunPowerShell(string command)
     {
-        await Process.Start(new ProcessStartInfo("powershell.exe", @$"-Command ""{command}""") { CreateNoWindow = true, UseShellExecute = false }).WaitForExitAsync();
+        await Process.Start(new ProcessStartInfo("powershell.exe", @$"-NoProfile -ExecutionPolicy Bypass -Command ""{command} """) { CreateNoWindow = true, UseShellExecute = false }).WaitForExitAsync();
     }
 
     public static async Task RunConnectionCheck()
