@@ -12,6 +12,7 @@ using Microsoft.Win32;
 using System.Diagnostics;
 using System.Text.Json.Nodes;
 using System.Xml.Linq;
+using System.Text.RegularExpressions;
 using Windows.Storage;
 
 namespace AutoOS.Views.Installer.Stages;
@@ -668,6 +669,16 @@ public static class ApplicationStage
 
             // disable riot client startup entry
             ("Disabling Riot Client startup entry", async () => RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run", "RiotClient", new byte[] { 0x01 }, RegistryValueKind.Binary), () => RiotClient == true),
+
+            // optimize riot client settings
+            ("Optimizing Riot Client settings", async () => { var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), @"Riot Games\Riot Client\Config\RiotClientSettings.yaml"); await File.WriteAllTextAsync(path, Regex.Replace((await File.ReadAllTextAsync(path)).Replace("install:", "install:\n    hardware-acceleration: false"), @"(hardware-acceleration|launch_on_computer_set_by_default|enable_run_in_background_set_by_player|enable_launch_on_computer_start_set_by_player):.*", "$1: false")); }, () => RiotClient == true),
+
+			// download vanguard
+			("Downloading Vanguard", async () => await DownloadHelper.Download("https://www.dl.dropboxusercontent.com/scl/fi/emynbdc0oimyqtgh8ormc/setup.exe?rlkey=o4yii06fxauvaurqcdsgn8hna&st=3r4gvxt8&dl=0", ApplicationData.Current.TemporaryFolder.Path, "setup.exe", new InstallPageReporter()), () => RiotClient == true),
+
+            // install vanguard
+            ("Installing Vanguard", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(ApplicationData.Current.TemporaryFolder.Path, "setup.exe"), WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => RiotClient == true),
+            ("Cleaning up Vanguard files", async () => await (await ApplicationData.Current.TemporaryFolder.GetFileAsync("setup.exe")).DeleteAsync(), () => RiotClient == true),
 
             // download ea
             ("Downloading EA", async () => await DownloadHelper.Download("https://origin-a.akamaihd.net/EA-Desktop-Client-Download/installer-releases/EAappInstaller.exe", ApplicationData.Current.TemporaryFolder.Path, "EAappInstaller.exe", new InstallPageReporter()), () => EA == true),
