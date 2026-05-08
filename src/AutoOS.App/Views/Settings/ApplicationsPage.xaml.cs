@@ -63,7 +63,7 @@ public sealed partial class ApplicationsPage : Page
 
         var musicList = new List<GridViewItem>
         {
-            new() { Text = "Apple Music", ImageSource = "ms-appx:///Assets/Fluent/AppleMusic.png", IsInstalled = Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Packages", "AppleInc.AppleMusicWin_8wekyb3d8bbwe")) },
+            new() { Text = "Apple Music", ImageSource = "ms-appx:///Assets/Fluent/AppleMusic.png", IsInstalled = Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Packages", "AppleInc.AppleMusicWin_nzyj5cx40ttqa")) },
             new() { Text = "TIDAL", ImageSource = "ms-appx:///Assets/Fluent/Tidal.png", IsInstalled = Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Packages", "WiMPMusic.27241E05630EA_kn85bz84x7te4")) },
             new() { Text = "Qobuz", ImageSource = "ms-appx:///Assets/Fluent/Qobuz.png", IsInstalled = Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Qobuz")) },
             new() { Text = "Amazon Music", ImageSource = "ms-appx:///Assets/Fluent/AmazonMusic.png", IsInstalled = Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Packages", "AmazonMobileLLC.AmazonMusic_kc6t79cpj4tp0")) },
