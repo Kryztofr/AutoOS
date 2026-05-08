@@ -1,9 +1,11 @@
-using AutoOS.Common;
+﻿using AutoOS.Common;
 using AutoOS.Core.Helpers.Device.Models;
 using AutoOS.Core.Helpers.Device;
 using AutoOS.Core.Helpers.GPU.Models;
 using AutoOS.Core.Helpers.GPU;
 using AutoOS.Core.Helpers.Picker;
+using AutoOS.Core.Helpers.Registry;
+using AutoOS.Core.Helpers.Scheduling;
 using AutoOS.Views.Installer.Actions;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.Win32;
@@ -11,8 +13,6 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.ServiceProcess;
 using Windows.Storage;
-using AutoOS.Core.Helpers.Registry;
-using AutoOS.Core.Helpers.Scheduling;
 
 namespace AutoOS.Views.Settings;
 

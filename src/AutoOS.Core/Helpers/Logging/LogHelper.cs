@@ -1,4 +1,4 @@
-using AutoOS.Core.Helpers.Device.Models;
+﻿using AutoOS.Core.Helpers.Device.Models;
 using AutoOS.Core.Helpers.Device;
 using AutoOS.Core.Helpers.GPU.Models;
 using AutoOS.Core.Helpers.GPU;
@@ -9,9 +9,9 @@ using DevWinUI;
 using System.Net.Http.Headers;
 using System.Net.Security;
 using System.Security.Authentication;
+using System.Text.Json;
 using System.Text;
 using Windows.Storage;
-using System.Text.Json;
 
 namespace AutoOS.Core.Helpers.Logging;
 

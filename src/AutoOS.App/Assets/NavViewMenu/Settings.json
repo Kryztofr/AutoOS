@@ -1,4 +1,4 @@
-﻿{
+{
   "$schema": "https://raw.githubusercontent.com/Ghost1372/DevWinUI/refs/heads/main/tools/AppData.Schema.json",
   "Groups": [
     {
@@ -14,6 +14,13 @@
           "Title": "Home",
           "Subtitle": "Home Page",
           "ImagePath": "ms-appx:///Assets/Fluent/Home.png",
+          "HideItem": true
+        },
+        {
+          "UniqueId": "AutoOS.Views.Settings.ApplicationsPage",
+          "Title": "Applications",
+          "Subtitle": "Applications",
+          "ImagePath": "ms-appx:///Assets/Fluent/Applications.png",
           "HideItem": true
         },
         {

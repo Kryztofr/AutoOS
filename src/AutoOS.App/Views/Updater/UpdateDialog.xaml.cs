@@ -1,4 +1,4 @@
-﻿using Downloader;
+using Downloader;
 using Microsoft.UI.Xaml.Media;
 
 namespace AutoOS.Views.Updater;
@@ -13,6 +13,10 @@ public sealed partial class UpdateDialog : UserControl
         InitializeComponent();
     }
 
+    public string CurrentTitle { get; set; }
+
+    public string GetStatus() => StatusText.Text;
+
     public void SetStatus(string text)
     {
         StatusText.Text = text;
@@ -21,7 +25,7 @@ public sealed partial class UpdateDialog : UserControl
     public void SetProgress(double value)
     {
         ProgressBar.IsIndeterminate = false;
-        ProgressBar.Value = value;
+        ProgressBar.Value = CurrentGroupStart + (value / 100.0 * (CurrentGroupTarget - CurrentGroupStart));
     }
 
     public void SetSuccess()
@@ -90,6 +94,7 @@ public sealed partial class UpdateDialog : UserControl
             }
 
             StatusText.Text = title + "...";
+            CurrentTitle = title;
             currentGroup.Add(action);
             previousTitle = title;
         }

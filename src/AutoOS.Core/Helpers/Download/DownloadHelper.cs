@@ -13,10 +13,9 @@ public static partial class DownloadHelper
     {
         if (url.Contains("raw.githubusercontent.com", StringComparison.OrdinalIgnoreCase))
         {
-            reporter?.Report("Downloading file from GitHub...", isIndeterminate: true);
             string destination = string.IsNullOrWhiteSpace(file) ? path : Path.Combine(path, file);
             await File.WriteAllTextAsync(destination, await httpClient.GetStringAsync(url), Encoding.UTF8);
-            reporter?.Report("Download complete.", progress: 100);
+            reporter?.Report(progress: 100);
             return;
         }
 
@@ -63,7 +62,7 @@ public static partial class DownloadHelper
 
         download.DownloadFileCompleted += (sender, e) =>
         {
-            reporter?.Report($"{lastSpeedMB:F1} MB/s - {totalSizeMB:F2} MB of {totalSizeMB:F2} MB", 100, true);
+            reporter?.Report($"{lastSpeedMB:F1} MB/s - {totalSizeMB:F2} MB of {totalSizeMB:F2} MB", 100, false);
         };
 
         await download.StartAsync();
