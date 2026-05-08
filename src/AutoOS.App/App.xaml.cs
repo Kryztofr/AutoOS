@@ -57,7 +57,7 @@ namespace AutoOS
 
 					MainWindow.AppWindow.MoveAndResize(new RectInt32(posX, posY, windowWidth, windowHeight));
 
-					if (!localSettings.Values.TryGetValue("LaunchMinimized", out object value) || (int)value == 0)
+					if (!localSettings.Values.TryGetValue("HideStartup", out object value) || (int)value == 0)
 					{
 						MainWindow.Activate();
 					}
@@ -69,7 +69,57 @@ namespace AutoOS
 					MainWindow.AppWindow.SetIcon("Assets/AppIcon.ico");
 					ThemeService = new ThemeService().Initialize(MainWindow);
 
-					WindowHelper.ResizeAndCenterWindowToPercentageOfWorkArea(MainWindow, 92);
+					if (localSettings.Values.TryGetValue("RestoreWindowState", out object restore) && (bool)restore)
+					{
+						if (localSettings.Values.TryGetValue("WindowPositionX", out object posX) && localSettings.Values.TryGetValue("WindowPositionY", out object posY) && localSettings.Values.TryGetValue("WindowWidth", out object windowWidth) && localSettings.Values.TryGetValue("WindowHeight", out object windowHeight))
+						{
+							int x = (int)posX;
+							int y = (int)posY;
+							int width = (int)windowWidth;
+							int height = (int)windowHeight;
+
+							MainWindow.AppWindow.MoveAndResize(new RectInt32(x, y, width, height));
+						}
+
+						if (localSettings.Values.TryGetValue("IsMaximized", out object isMaximized) && (bool)isMaximized)
+						{
+							if (MainWindow.AppWindow.Presenter is OverlappedPresenter overlappedPresenter)
+							{
+								overlappedPresenter.Maximize();
+							}
+						}
+					}
+					else
+					{
+						WindowHelper.ResizeAndCenterWindowToPercentageOfWorkArea(MainWindow, 92);
+					}
+
+					MainWindow.AppWindow.Changed += (s, e) =>
+					{
+						if (localSettings.Values.TryGetValue("RestoreWindowState", out object restoreState) && (bool)restoreState)
+						{
+							if (MainWindow.AppWindow.Presenter is OverlappedPresenter overlappedPresenter)
+							{
+								if (overlappedPresenter.State == OverlappedPresenterState.Minimized)
+									return;
+
+								localSettings.Values["IsMaximized"] = overlappedPresenter.State == OverlappedPresenterState.Maximized;
+
+								if (overlappedPresenter.State == OverlappedPresenterState.Maximized)
+									return;
+							}
+
+							if (e.DidPositionChange || e.DidSizeChange)
+							{
+								var pos = MainWindow.AppWindow.Position;
+								var size = MainWindow.AppWindow.Size;
+								localSettings.Values["WindowPositionX"] = pos.X;
+								localSettings.Values["WindowPositionY"] = pos.Y;
+								localSettings.Values["WindowWidth"] = size.Width;
+								localSettings.Values["WindowHeight"] = size.Height;
+							}
+						}
+					};
 
 					MainWindow.Activate();
 				}

@@ -71,13 +71,20 @@
                                       Toggled="IncludePrerelease_Toggled" />
                     </dev:SettingsCard>
                 </dev:SimpleSettingsGroup>
-                <dev:SimpleSettingsGroup Header="Startup">
-                    <dev:SettingsCard Description="Enable to completely hide the AutoOS Startup window."
-                                      Header="Launch minimized"
+                <dev:SimpleSettingsGroup Header="Windowing">
+                    <dev:SettingsCard Description="Enable to hide the AutoOS Startup window."
+                                      Header="Hide AutoOS Startup"
                                       HeaderIcon="{dev:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
                                                                 Glyph=&#xE73F;}">
-                        <ToggleSwitch x:Name="LaunchMinimized"
-                                      Toggled="LaunchMinimized_Toggled" />
+                        <ToggleSwitch x:Name="HideStartup"
+                                      Toggled="HideStartup_Toggled" />
+                    </dev:SettingsCard>
+                    <dev:SettingsCard Description="Restore the last known window state on launch."
+                                      Header="Remember window state"
+                                      HeaderIcon="{dev:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
+                                                                Glyph=&#xE737;}">
+                        <ToggleSwitch x:Name="RestoreWindowState"
+                                      Toggled="RestoreWindowState_Toggled" />
                     </dev:SettingsCard>
                 </dev:SimpleSettingsGroup>
                 <dev:SimpleSettingsGroup Header="Appearance &amp; behavior">
