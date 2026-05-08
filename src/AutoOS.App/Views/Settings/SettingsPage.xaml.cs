@@ -1,4 +1,4 @@
-﻿using AutoOS.Core.Helpers.Picker;
+using AutoOS.Core.Helpers.Picker;
 using AutoOS.Helpers.Picker;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Storage;
@@ -241,20 +241,30 @@ public sealed partial class SettingsPage : Page
             IncludePrerelease.IsOn = (bool)prereleaseValue;
         }
 
-        if (!localSettings.Values.TryGetValue("LaunchMinimized", out object value))
+        if (!localSettings.Values.TryGetValue("HideStartup", out object hideStartupValue))
         {
-            localSettings.Values["LaunchMinimized"] = 0;
+            localSettings.Values["HideStartup"] = 0;
         }
         else
         {
-            if (value is bool)
+            if (hideStartupValue is bool)
             {
-                localSettings.Values.Remove("LaunchMinimized");
+                localSettings.Values.Remove("HideStartup");
             }
             else
             {
-                LaunchMinimized.IsOn = (int)value == 1;
+                HideStartup.IsOn = (int)hideStartupValue == 1;
             }
+        }
+
+        if (!localSettings.Values.TryGetValue("RestoreWindowState", out object restoreWindowStateValue))
+        {
+            localSettings.Values["RestoreWindowState"] = false;
+            RestoreWindowState.IsOn = false;
+        }
+        else
+        {
+            RestoreWindowState.IsOn = (bool)restoreWindowStateValue;
         }
     }
 
@@ -263,9 +273,14 @@ public sealed partial class SettingsPage : Page
         localSettings.Values["IncludePrerelease"] = IncludePrerelease.IsOn;
     }
 
-    private void LaunchMinimized_Toggled(object sender, RoutedEventArgs e)
+    private void HideStartup_Toggled(object sender, RoutedEventArgs e)
     {
-        localSettings.Values["LaunchMinimized"] = LaunchMinimized.IsOn ? 1 : 0;
+        localSettings.Values["HideStartup"] = HideStartup.IsOn ? 1 : 0;
+    }
+
+    private void RestoreWindowState_Toggled(object sender, RoutedEventArgs e)
+    {
+        localSettings.Values["RestoreWindowState"] = RestoreWindowState.IsOn;
     }
 }
 
