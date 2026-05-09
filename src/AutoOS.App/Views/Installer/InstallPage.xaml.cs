@@ -1,4 +1,4 @@
-﻿using AutoOS.Core.Helpers.Logging;
+using AutoOS.Core.Helpers.Logging;
 using AutoOS.Views.Installer.Stages;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.Win32;
@@ -14,6 +14,7 @@ public sealed partial class InstallPage : Page
     public static ProgressBar Progress { get; private set; }
     public static InfoBar Info { get; private set; }
     public static Microsoft.UI.Xaml.Controls.ProgressRing ProgressRingControl { get; private set; }
+    public static string CurrentTitle { get; set; }
     public static Button ResumeButton { get; private set; }
     private static readonly ApplicationDataContainer localSettings = ApplicationData.Current.LocalSettings;
     private static int currentStageCounter = 0;
@@ -166,7 +167,8 @@ public sealed partial class InstallPage : Page
                     executed = true;
                     try
                     {
-                        Info.Title = previousTitle + "...";
+                        CurrentTitle = previousTitle + "...";
+                        Info.Title = CurrentTitle;
                         await groupedAction();
                         localSettings.Values["actionStage"] = stageIndex;
                         localSettings.Values["actionIndex"] = groupIndex;
@@ -235,7 +237,8 @@ public sealed partial class InstallPage : Page
                 executed = true;
                 try
                 {
-                    Info.Title = previousTitle + "...";
+                    CurrentTitle = previousTitle + "...";
+                    Info.Title = CurrentTitle;
                     await groupedAction();
                     localSettings.Values["actionStage"] = stageIndex;
                     localSettings.Values["actionIndex"] = groupIndex;

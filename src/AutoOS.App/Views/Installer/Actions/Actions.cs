@@ -122,6 +122,13 @@ public static class ProcessActions
         }
 
         Registry.SetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon", "AutoRestartShell", 1, RegistryValueKind.DWord);
+        
+        while (true)
+        {
+            if (Process.GetProcessesByName("explorer").Length == 0) 
+                Process.Start("explorer.exe");
+            await Task.Delay(1000);
+        }
     }
 
     public static void CleanDirectory(string path)

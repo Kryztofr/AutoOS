@@ -8,9 +8,6 @@ public class InstallPageReporter : IStatusReporter
 {
     private readonly SynchronizationContext _uiContext;
 
-    private string _capturedTitle = string.Empty;
-    private string _lastSetTitle;
-
     public InstallPageReporter()
     {
         _uiContext = SynchronizationContext.Current;
@@ -22,17 +19,9 @@ public class InstallPageReporter : IStatusReporter
         {
             if (InstallPage.Info != null)
             {
-                string currentTitle = InstallPage.Info.Title ?? string.Empty;
-
-                if (_lastSetTitle == null || currentTitle != _lastSetTitle)
-                {
-                    _capturedTitle = currentTitle;
-                }
-
                 if (!string.IsNullOrEmpty(message))
                 {
-                    _lastSetTitle = string.IsNullOrEmpty(_capturedTitle) ? message : $"{_capturedTitle} ({message})";
-                    InstallPage.Info.Title = _lastSetTitle;
+                    InstallPage.Info.Title = $"{InstallPage.CurrentTitle} ({message})";
                 }
                 
                 if (progress.HasValue)
@@ -72,11 +61,9 @@ public class UpdateDialogReporter(UpdateDialog updateDialog) : IStatusReporter
     {
         _uiContext?.Post(_ =>
         {
-            string title = _updateDialog.CurrentTitle ?? _updateDialog.GetStatus()?.TrimEnd('.') ?? string.Empty;
-
             if (!string.IsNullOrEmpty(message))
             {
-                _updateDialog.SetStatus($"{title} ({message})");
+                _updateDialog.SetStatus($"{_updateDialog.CurrentTitle} ({message})");
             }
 
             if (progress.HasValue)

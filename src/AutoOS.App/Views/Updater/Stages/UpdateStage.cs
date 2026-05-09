@@ -1,6 +1,7 @@
 using AutoOS.Core.Helpers.GPU;
 using AutoOS.Core.Helpers.Registry;
 using Microsoft.Win32;
+using System.Diagnostics;
 
 namespace AutoOS.Views.Updater.Stages;
 
@@ -16,6 +17,9 @@ public static class UpdateStage
 		{
 			 // optimize discord settings
              ("Optimizing Discord settings", async () => await File.WriteAllTextAsync(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Discord", "settings.json"), "{\n  \"enableHardwareAcceleration\": false,\n  \"OPEN_ON_STARTUP\": false,\n  \"MINIMIZE_TO_TRAY\": false,\n  \"debugLogging\": false,\n  \"openasar\": {\n    \"setup\": true,\n    \"noTrack\": false\n  }\n}"), () => Discord == true),
+
+			 // change account display name to "autoos"
+             (@"Changing Account Display Name to ""AutoOS""", async () => await RegistryHelper.RunAs(RegistryHelper.Identity.CurrentUser, new ProcessStartInfo("net.exe", @"user user /fullname:""AutoOS""") { CreateNoWindow = true }), null),
 		};
 
 		foreach (var gpu in gpus)

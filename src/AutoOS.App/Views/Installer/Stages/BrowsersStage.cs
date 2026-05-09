@@ -220,6 +220,12 @@ public static class BrowsersStage
             // pin thorium to the taskbar
             ("Pinning Thorium to the taskbar", async () => await ProcessActions.RunPowerShellScript("taskbarpin.ps1", @"-Type Link -Path ""C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Thorium.lnk"""), () => Thorium == true),
 
+            // install privacy badger extension
+            ("Installing Privacy Badger Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "pkehgijcmpdhfbdbbnkijodmdjhbjlgp"), () => Thorium == true && PrivacyBadger == true),
+
+            // install decentraleyes extension
+            ("Installing Decentraleyes Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "ldpochfccmkkmhdbclfhpagapcfdljkj"), () => Thorium == true && Decentraleyes == true),
+
             // install sponsorblock extension
             ("Installing SponsorBlock Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "mnjggcdmjocbbbhaepdhchncahnbgone"), () => Thorium == true && SponsorBlock == true),
 
@@ -277,44 +283,41 @@ public static class BrowsersStage
             // pin helium to the taskbar
             ("Pinning Helium to the taskbar", async () => await ProcessActions.RunPowerShellScript("taskbarpin.ps1", @"-Type Link -Path ""C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Helium.lnk"""), () => Helium == true),
 
-            // install ublock origin extension
-            ("Installing uBlock Origin Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "cjpalhdlnbpafiamejdnhcphjbkeiagm"), () => Thorium == true && uBlock == true),
-
             // install privacy badger extension
-            ("Installing Privacy Badger Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "pkehgijcmpdhfbdbbnkijodmdjhbjlgp"), () => Thorium == true && PrivacyBadger == true),
+            ("Installing Privacy Badger Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Helium\ExtensionInstallForcelist", "pkehgijcmpdhfbdbbnkijodmdjhbjlgp"), () => Helium == true && PrivacyBadger == true),
 
             // install decentraleyes extension
-            ("Installing Decentraleyes Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "ldpochfccmkkmhdbclfhpagapcfdljkj"), () => Thorium == true && Decentraleyes == true),
+            ("Installing Decentraleyes Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Helium\ExtensionInstallForcelist", "ldpochfccmkkmhdbclfhpagapcfdljkj"), () => Helium == true && Decentraleyes == true),
 
             // install i still don't care about cookies extension
-            ("Installing I still don't care about cookies Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "edibdbjcniadpccecjdfdjjppcpchdlm"), () => Thorium == true && Cookies == true),
+            ("Installing I still don't care about cookies Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Helium\ExtensionInstallForcelist", "edibdbjcniadpccecjdfdjjppcpchdlm"), () => Helium == true && Cookies == true),
 
             // install violentmonkey extension
-            ("Installing Violentmonkey Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "jinjaccalgkegednnccohejagnlnfdag"), () => Thorium == true && Violentmonkey == true),
+            ("Installing Violentmonkey Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Helium\ExtensionInstallForcelist", "jinjaccalgkegednnccohejagnlnfdag"), () => Helium == true && Violentmonkey == true),
 
             // install tampermonkey extension
-            ("Installing Tampermonkey Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "dhdgffkkebhmkfjojejmpbldmpobfkfo"), () => Thorium == true && Tampermonkey == true),
+            ("Installing Tampermonkey Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Helium\ExtensionInstallForcelist", "dhdgffkkebhmkfjojejmpbldmpobfkfo"), () => Helium == true && Tampermonkey == true),
 
             // install sponsorblock extension
-            ("Installing SponsorBlock Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "mnjggcdmjocbbbhaepdhchncahnbgone"), () => Thorium == true && SponsorBlock == true),
+            ("Installing SponsorBlock Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Helium\ExtensionInstallForcelist", "mnjggcdmjocbbbhaepdhchncahnbgone"), () => Helium == true && SponsorBlock == true),
 
             // install return youtube dislike extension
-            ("Installing Return YouTube Dislike Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "gebbhagfogifgggkldgodflihgfeippi"), () => Thorium == true && ReturnYouTubeDislike == true),
+            ("Installing Return YouTube Dislike Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Helium\ExtensionInstallForcelist", "gebbhagfogifgggkldgodflihgfeippi"), () => Helium == true && ReturnYouTubeDislike == true),
 
             // install dark reader extension
-            ("Installing Dark Reader Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "eimadpbcbfnmbkopoojfekhnkhdbieeh"), () => Thorium == true && DarkReader == true),
+            ("Installing Dark Reader Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Helium\ExtensionInstallForcelist", "eimadpbcbfnmbkopoojfekhnkhdbieeh"), () => Helium == true && DarkReader == true),
             
             // install shazam extension
-            ("Installing Shazam Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "mmioliijnhnoblpgimnlajmefafdfilb"), () => Thorium == true && Shazam == true),
+            ("Installing Shazam Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Helium\ExtensionInstallForcelist", "mmioliijnhnoblpgimnlajmefafdfilb"), () => Helium == true && Shazam == true),
 
             // install icloud passwords extension
-            ("Installing iCloud Passwords Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "pejdijmoenmkgeppbflobdenhhabjlaj"), () => Thorium == true && iCloud == true),
+            ("Installing iCloud Passwords Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Helium\ExtensionInstallForcelist", "pejdijmoenmkgeppbflobdenhhabjlaj"), () => Helium == true && iCloud == true),
 
             // install bitwarden extension
-            ("Installing Bitwarden Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "nngceckbapebfimnlniiiahkandclblb"), () => Thorium == true && Bitwarden == true),
+            ("Installing Bitwarden Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Helium\ExtensionInstallForcelist", "nngceckbapebfimnlniiiahkandclblb"), () => Helium == true && Bitwarden == true),
 
             // install 1password extension
-            ("Installing 1Password Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "aeblfdkhhhdcdjpifhhbdiojplfjncoa"), () => Thorium == true && OnePassword == true),
+            ("Installing 1Password Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Helium\ExtensionInstallForcelist", "aeblfdkhhhdcdjpifhhbdiojplfjncoa"), () => Helium == true && OnePassword == true),
 
             // log in to helium
             ("Please log in to your Helium account (Close to continue)", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(@"C:\Program Files\imput\Helium\Application", "chrome.exe"), WindowStyle = ProcessWindowStyle.Maximized })!.WaitForExitAsync(), () => Helium == true),
@@ -357,56 +360,6 @@ public static class BrowsersStage
             ("Disabling Brave services", async () => TaskSchedulerHelper.Toggle("BraveSoftwareUpdateTaskMachine", false), () => Brave == true),
 
             // install ublock origin extension
-            ("Installing uBlock Origin Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Helium\ExtensionInstallForcelist", "cjpalhdlnbpafiamejdnhcphjbkeiagm"), () => Helium == true && uBlock == true),
-
-            // install privacy badger extension
-            ("Installing Privacy Badger Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Helium\ExtensionInstallForcelist", "pkehgijcmpdhfbdbbnkijodmdjhbjlgp"), () => Helium == true && PrivacyBadger == true),
-
-            // install decentraleyes extension
-            ("Installing Decentraleyes Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Helium\ExtensionInstallForcelist", "ldpochfccmkkmhdbclfhpagapcfdljkj"), () => Helium == true && Decentraleyes == true),
-
-            // install i still don't care about cookies extension
-            ("Installing I still don't care about cookies Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Helium\ExtensionInstallForcelist", "edibdbjcniadpccecjdfdjjppcpchdlm"), () => Helium == true && Cookies == true),
-
-            // install violentmonkey extension
-            ("Installing Violentmonkey Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Helium\ExtensionInstallForcelist", "jinjaccalgkegednnccohejagnlnfdag"), () => Helium == true && Violentmonkey == true),
-
-            // install tampermonkey extension
-            ("Installing Tampermonkey Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Helium\ExtensionInstallForcelist", "dhdgffkkebhmkfjojejmpbldmpobfkfo"), () => Helium == true && Tampermonkey == true),
-
-            // install sponsorblock extension
-            ("Installing SponsorBlock Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Helium\ExtensionInstallForcelist", "mnjggcdmjocbbbhaepdhchncahnbgone"), () => Helium == true && SponsorBlock == true),
-
-            // install return youtube dislike extension
-            ("Installing Return YouTube Dislike Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Helium\ExtensionInstallForcelist", "gebbhagfogifgggkldgodflihgfeippi"), () => Helium == true && ReturnYouTubeDislike == true),
-
-            // install dark reader extension
-            ("Installing Dark Reader Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Helium\ExtensionInstallForcelist", "eimadpbcbfnmbkopoojfekhnkhdbieeh"), () => Helium == true && DarkReader == true),
-            
-            // install shazam extension
-            ("Installing Shazam Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Helium\ExtensionInstallForcelist", "mmioliijnhnoblpgimnlajmefafdfilb"), () => Helium == true && Shazam == true),
-
-            // install icloud passwords extension
-            ("Installing iCloud Passwords Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Helium\ExtensionInstallForcelist", "pejdijmoenmkgeppbflobdenhhabjlaj"), () => Helium == true && iCloud == true),
-
-            // install bitwarden extension
-            ("Installing Bitwarden Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Helium\ExtensionInstallForcelist", "nngceckbapebfimnlniiiahkandclblb"), () => Helium == true && Bitwarden == true),
-
-            // install 1password extension
-            ("Installing 1Password Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Helium\ExtensionInstallForcelist", "aeblfdkhhhdcdjpifhhbdiojplfjncoa"), () => Helium == true && OnePassword == true),
-
-            // download vivaldi
-            ("Downloading Vivaldi", async () => await DownloadHelper.Download("https://vivaldi.com/download/Vivaldi.x64.exe", ApplicationData.Current.TemporaryFolder.Path, "Vivaldi.x64.exe", reporter ?? new InstallPageReporter()), () => Vivaldi == true),
-
-            // install vivaldi
-            ("Installing Vivaldi", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(ApplicationData.Current.TemporaryFolder.Path, "Vivaldi.x64.exe"), Arguments = "--vivaldi-silent --do-not-launch-chrome --system-level", WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => Vivaldi == true),
-            ("Installing Vivaldi", async () => vivaldiVersion = FileVersionInfo.GetVersionInfo(Environment.ExpandEnvironmentVariables(@"C:\Program Files\Vivaldi\Application\vivaldi.exe")).ProductVersion, () => Vivaldi == true),
-            ("Cleaning up Vivaldi files", async () => await (await ApplicationData.Current.TemporaryFolder.GetFileAsync("Vivaldi.x64.exe")).DeleteAsync(), () => Vivaldi == true),
-
-            // pin vivaldi to the taskbar
-            ("Pinning Vivaldi to the taskbar", async () => await ProcessActions.RunPowerShellScript("taskbarpin.ps1", @"-Type Link -Path ""C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Vivaldi.lnk"""), () => Vivaldi == true),
-
-            // install ublock origin extension
             ("Installing uBlock Origin Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\BraveSoftware\Brave\ExtensionInstallForcelist", "cjpalhdlnbpafiamejdnhcphjbkeiagm"), () => Brave == true && uBlock == true),
 
             // install privacy badger extension
@@ -445,34 +398,16 @@ public static class BrowsersStage
             // install 1password extension
             ("Installing 1Password Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\BraveSoftware\Brave\ExtensionInstallForcelist", "aeblfdkhhhdcdjpifhhbdiojplfjncoa"), () => Brave == true && OnePassword == true),
 
-            // remove vivaldi shortcut from the desktop
-            ("Removing Vivaldi shortcut from the desktop", async () => File.Delete(@"C:\Users\Public\Desktop\Vivaldi.lnk"), () => Vivaldi == true),
+            // download vivaldi
+            ("Downloading Vivaldi", async () => await DownloadHelper.Download("https://vivaldi.com/download/Vivaldi.x64.exe", ApplicationData.Current.TemporaryFolder.Path, "Vivaldi.x64.exe", reporter ?? new InstallPageReporter()), () => Vivaldi == true),
 
-            // disable vivaldi services
-            ("Disabling Vivaldi services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Active Setup\Installed Components\AutorunsDisabled\{9C142C0C-124C-4467-B117-EBCC62801D7B}", "", "Vivaldi", RegistryValueKind.String), () => Vivaldi == true),
-            ("Disabling Vivaldi services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Active Setup\Installed Components\AutorunsDisabled\{9C142C0C-124C-4467-B117-EBCC62801D7B}", "Localized Name", "Vivaldi", RegistryValueKind.String), () => Vivaldi == true),
-            ("Disabling Vivaldi services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, $@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Active Setup\Installed Components\AutorunsDisabled\{{9C142C0C-124C-4467-B117-EBCC62801D7B}}", "StubPath", $@"""C:\Program Files\Vivaldi\Application\{vivaldiVersion}\Installer\chrmstp.exe"" --configure-user-settings --verbose-logging --system-level --vivaldi-install-dir=""C:\Program Files\Vivaldi\""", RegistryValueKind.String), () => Vivaldi == true),
-            ("Disabling Vivaldi services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Active Setup\Installed Components\AutorunsDisabled\{9C142C0C-124C-4467-B117-EBCC62801D7B}", "Version", "43,0,0,0", RegistryValueKind.String), () => Vivaldi == true),
-            ("Disabling Vivaldi services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Active Setup\Installed Components\AutorunsDisabled\{9C142C0C-124C-4467-B117-EBCC62801D7B}", "IsInstalled", 1, RegistryValueKind.DWord), () => Vivaldi == true),
-            ("Disabling Vivaldi services", async () => RegistryHelper.DeleteKey(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Active Setup\Installed Components\{9C142C0C-124C-4467-B117-EBCC62801D7B}"), () => Vivaldi == true),
+            // install vivaldi
+            ("Installing Vivaldi", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(ApplicationData.Current.TemporaryFolder.Path, "Vivaldi.x64.exe"), Arguments = "--vivaldi-silent --do-not-launch-chrome --system-level", WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => Vivaldi == true),
+            ("Installing Vivaldi", async () => vivaldiVersion = FileVersionInfo.GetVersionInfo(Environment.ExpandEnvironmentVariables(@"C:\Program Files\Vivaldi\Application\vivaldi.exe")).ProductVersion, () => Vivaldi == true),
+            ("Cleaning up Vivaldi files", async () => await (await ApplicationData.Current.TemporaryFolder.GetFileAsync("Vivaldi.x64.exe")).DeleteAsync(), () => Vivaldi == true),
 
-            // download arc dependency
-            ("Downloading Arc Dependency", async () => await DownloadHelper.Download("https://releases.arc.net/windows/dependencies/x64/Microsoft.VCLibs.x64.14.00.Desktop.14.0.33728.0.appx", ApplicationData.Current.TemporaryFolder.Path, "Microsoft.VCLibs.x64.14.00.Desktop.14.0.33728.0.appx", reporter ?? new InstallPageReporter()), () => Arc == true),
-
-            // install arc dependency
-            ("Installing Arc Dependency", async () => await Process.Start(new ProcessStartInfo { FileName = "powershell", Arguments = @$"-Command ""Add-AppxPackage -Path {Path.Combine(ApplicationData.Current.TemporaryFolder.Path, "Microsoft.VCLibs.x64.14.00.Desktop.14.0.33728.0.appx")}""", UseShellExecute = false, CreateNoWindow = true })!.WaitForExitAsync(), () => Arc == true),
-            ("Cleaning up Arc Dependency files", async () => await (await ApplicationData.Current.TemporaryFolder.GetFileAsync("Microsoft.VCLibs.x64.14.00.Desktop.14.0.33728.0.appx")).DeleteAsync(), () => Arc == true),
-
-            // download arc
-            ("Downloading Arc", async () => await DownloadHelper.Download("https://releases.arc.net/windows/prod/1.72.0.296/Arc.x64.msix", ApplicationData.Current.TemporaryFolder.Path, "Arc.x64.msix", reporter ?? new InstallPageReporter()), () => Arc == true),
-
-            // install arc
-            ("Installing Arc", async () => await new PackageManager().AddPackageAsync(new Uri(Path.Combine(ApplicationData.Current.TemporaryFolder.Path, "Arc.x64.msix")), null, DeploymentOptions.None), () => Arc == true),
-            ("Installing Arc", async () => arcVersion = StoreHelper.GetVersion("TheBrowserCompany.Arc_ttt1ap7aakyb4"), () => Arc == true),
-            ("Cleaning up Arc files", async () => await (await ApplicationData.Current.TemporaryFolder.GetFileAsync("Arc.x64.msix")).DeleteAsync(), () => Arc == true),
-
-            // pin arc to the taskbar
-            ("Pinning Arc to the taskbar", async () => await ProcessActions.RunPowerShellScript("taskbarpin.ps1", @"-Type UWA -Path TheBrowserCompany.Arc_ttt1ap7aakyb4!Arc"), () => Arc == true),
+            // pin vivaldi to the taskbar
+            ("Pinning Vivaldi to the taskbar", async () => await ProcessActions.RunPowerShellScript("taskbarpin.ps1", @"-Type Link -Path ""C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Vivaldi.lnk"""), () => Vivaldi == true),
 
             // install ublock origin extension
             ("Installing uBlock Origin Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Vivaldi\ExtensionInstallForcelist", "cjpalhdlnbpafiamejdnhcphjbkeiagm"), () => Vivaldi == true && uBlock == true),
@@ -513,19 +448,34 @@ public static class BrowsersStage
             // install 1password extension
             ("Installing 1Password Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Vivaldi\ExtensionInstallForcelist", "aeblfdkhhhdcdjpifhhbdiojplfjncoa"), () => Vivaldi == true && OnePassword == true),
 
-            // log in to arc
-            ("Please log in to your Arc account (Close to continue)", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(@"C:\Program Files\WindowsApps\TheBrowserCompany.Arc_" + arcVersion + @"_x64__ttt1ap7aakyb4", "Arc.exe"), WindowStyle = ProcessWindowStyle.Maximized })!.WaitForExitAsync(), () => Arc == true),
+            // remove vivaldi shortcut from the desktop
+            ("Removing Vivaldi shortcut from the desktop", async () => File.Delete(@"C:\Users\Public\Desktop\Vivaldi.lnk"), () => Vivaldi == true),
 
-            // download comet
-            ("Downloading Comet", async () => await DownloadHelper.Download("https://www.perplexity.ai/rest/browser/download?platform=win_x64&channel=stable", ApplicationData.Current.TemporaryFolder.Path, "Comet.exe", reporter ?? new InstallPageReporter()), () => Comet == true),
+            // disable vivaldi services
+            ("Disabling Vivaldi services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Active Setup\Installed Components\AutorunsDisabled\{9C142C0C-124C-4467-B117-EBCC62801D7B}", "", "Vivaldi", RegistryValueKind.String), () => Vivaldi == true),
+            ("Disabling Vivaldi services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Active Setup\Installed Components\AutorunsDisabled\{9C142C0C-124C-4467-B117-EBCC62801D7B}", "Localized Name", "Vivaldi", RegistryValueKind.String), () => Vivaldi == true),
+            ("Disabling Vivaldi services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, $@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Active Setup\Installed Components\AutorunsDisabled\{{9C142C0C-124C-4467-B117-EBCC62801D7B}}", "StubPath", $@"""C:\Program Files\Vivaldi\Application\{vivaldiVersion}\Installer\chrmstp.exe"" --configure-user-settings --verbose-logging --system-level --vivaldi-install-dir=""C:\Program Files\Vivaldi\""", RegistryValueKind.String), () => Vivaldi == true),
+            ("Disabling Vivaldi services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Active Setup\Installed Components\AutorunsDisabled\{9C142C0C-124C-4467-B117-EBCC62801D7B}", "Version", "43,0,0,0", RegistryValueKind.String), () => Vivaldi == true),
+            ("Disabling Vivaldi services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Active Setup\Installed Components\AutorunsDisabled\{9C142C0C-124C-4467-B117-EBCC62801D7B}", "IsInstalled", 1, RegistryValueKind.DWord), () => Vivaldi == true),
+            ("Disabling Vivaldi services", async () => RegistryHelper.DeleteKey(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Active Setup\Installed Components\{9C142C0C-124C-4467-B117-EBCC62801D7B}"), () => Vivaldi == true),
 
-            // install comet
-            ("Installing Comet", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(ApplicationData.Current.TemporaryFolder.Path, "Comet.exe"), Arguments = "-silent --do-not-launch-chrome --system-level", WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => Comet == true),
-            ("Installing Comet", async () => cometVersion = FileVersionInfo.GetVersionInfo(Environment.ExpandEnvironmentVariables(@"C:\Program Files\Perplexity\Comet\Application\comet.exe")).ProductVersion, () => Comet == true),
-            ("Cleaning up Comet files", async () => await (await ApplicationData.Current.TemporaryFolder.GetFileAsync("Comet.exe")).DeleteAsync(), () => Comet == true),
+            // download arc dependency
+            ("Downloading Arc Dependency", async () => await DownloadHelper.Download("https://releases.arc.net/windows/dependencies/x64/Microsoft.VCLibs.x64.14.00.Desktop.14.0.33728.0.appx", ApplicationData.Current.TemporaryFolder.Path, "Microsoft.VCLibs.x64.14.00.Desktop.14.0.33728.0.appx", reporter ?? new InstallPageReporter()), () => Arc == true),
 
-            // pin comet to the taskbar
-            ("Pinning Comet to the taskbar", async () => await ProcessActions.RunPowerShellScript("taskbarpin.ps1", @"-Type Link -Path ""C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Comet.lnk"""), () => Comet == true),
+            // install arc dependency
+            ("Installing Arc Dependency", async () => await Process.Start(new ProcessStartInfo { FileName = "powershell", Arguments = @$"-Command ""Add-AppxPackage -Path {Path.Combine(ApplicationData.Current.TemporaryFolder.Path, "Microsoft.VCLibs.x64.14.00.Desktop.14.0.33728.0.appx")}""", UseShellExecute = false, CreateNoWindow = true })!.WaitForExitAsync(), () => Arc == true),
+            ("Cleaning up Arc Dependency files", async () => await (await ApplicationData.Current.TemporaryFolder.GetFileAsync("Microsoft.VCLibs.x64.14.00.Desktop.14.0.33728.0.appx")).DeleteAsync(), () => Arc == true),
+
+            // download arc
+            ("Downloading Arc", async () => await DownloadHelper.Download("https://releases.arc.net/windows/prod/1.72.0.296/Arc.x64.msix", ApplicationData.Current.TemporaryFolder.Path, "Arc.x64.msix", reporter ?? new InstallPageReporter()), () => Arc == true),
+
+            // install arc
+            ("Installing Arc", async () => await new PackageManager().AddPackageAsync(new Uri(Path.Combine(ApplicationData.Current.TemporaryFolder.Path, "Arc.x64.msix")), null, DeploymentOptions.None), () => Arc == true),
+            ("Installing Arc", async () => arcVersion = StoreHelper.GetVersion("TheBrowserCompany.Arc_ttt1ap7aakyb4"), () => Arc == true),
+            ("Cleaning up Arc files", async () => await (await ApplicationData.Current.TemporaryFolder.GetFileAsync("Arc.x64.msix")).DeleteAsync(), () => Arc == true),
+
+            // pin arc to the taskbar
+            ("Pinning Arc to the taskbar", async () => await ProcessActions.RunPowerShellScript("taskbarpin.ps1", @"-Type UWA -Path TheBrowserCompany.Arc_ttt1ap7aakyb4!Arc"), () => Arc == true),
 
             // install ublock origin extension
             ("Installing uBlock Origin Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "cjpalhdlnbpafiamejdnhcphjbkeiagm"), () => Arc == true && uBlock == true),
@@ -566,40 +516,19 @@ public static class BrowsersStage
             // install 1password extension
             ("Installing 1Password Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "aeblfdkhhhdcdjpifhhbdiojplfjncoa"), () => Arc == true && OnePassword == true),
 
-            // remove comet shortcut from the desktop
-            ("Removing Comet shortcut from the desktop", async () => File.Delete(@"C:\Users\Public\Desktop\Comet.lnk"), () => Comet == true),
+            // log in to arc
+            ("Please log in to your Arc account (Close to continue)", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(@"C:\Program Files\WindowsApps\TheBrowserCompany.Arc_" + arcVersion + @"_x64__ttt1ap7aakyb4", "Arc.exe"), WindowStyle = ProcessWindowStyle.Maximized })!.WaitForExitAsync(), () => Arc == true),
 
-            // disable comet services
-            ("Disabling Comet services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Active Setup\Installed Components\AutorunsDisabled\{1F7C13D9-45E8-47E9-A2B5-6B2EF21B91F4}", "", "Comet", RegistryValueKind.String), () => Comet == true),
-            ("Disabling Comet services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Active Setup\Installed Components\AutorunsDisabled\{1F7C13D9-45E8-47E9-A2B5-6B2EF21B91F4}", "Localized Name", "Comet", RegistryValueKind.String), () => Comet == true),
-            ("Disabling Comet services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, $@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Active Setup\Installed Components\AutorunsDisabled\{{1F7C13D9-45E8-47E9-A2B5-6B2EF21B91F4}}", "StubPath", $@"""C:\Program Files\Perplexity\Comet\Application\{cometVersion}\Installer\chrmstp.exe"" --configure-user-settings --verbose-logging --system-level", RegistryValueKind.String), () => Comet == true),
-            ("Disabling Comet services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Active Setup\Installed Components\AutorunsDisabled\{1F7C13D9-45E8-47E9-A2B5-6B2EF21B91F4}", "Version", "43,0,0,0", RegistryValueKind.String), () => Comet == true),
-            ("Disabling Comet services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Active Setup\Installed Components\AutorunsDisabled\{1F7C13D9-45E8-47E9-A2B5-6B2EF21B91F4}", "IsInstalled", 1, RegistryValueKind.DWord), () => Comet == true),
-            ("Disabling Comet services", async () => RegistryHelper.DeleteKey(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Active Setup\Installed Components\{1F7C13D9-45E8-47E9-A2B5-6B2EF21B91F4}"), () => Comet == true),
+            // download comet
+            ("Downloading Comet", async () => await DownloadHelper.Download("https://www.perplexity.ai/rest/browser/download?platform=win_x64&channel=stable", ApplicationData.Current.TemporaryFolder.Path, "Comet.exe", reporter ?? new InstallPageReporter()), () => Comet == true),
 
-            // download firefox
-            ("Downloading Firefox", async () => firefoxVersion = JsonDocument.Parse(await ProcessActions.httpClient.GetStringAsync("https://product-details.mozilla.org/1.0/firefox_versions.json")).RootElement.GetProperty("LATEST_FIREFOX_VERSION").GetString(), () => Firefox == true),
-            ("Downloading Firefox", async () => await DownloadHelper.Download($"https://releases.mozilla.org/pub/firefox/releases/{firefoxVersion}/win64/en-US/Firefox%20Setup%20{firefoxVersion}.exe", ApplicationData.Current.TemporaryFolder.Path, "FirefoxSetup.exe", reporter ?? new InstallPageReporter()), () => Firefox == true),
+            // install comet
+            ("Installing Comet", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(ApplicationData.Current.TemporaryFolder.Path, "Comet.exe"), Arguments = "-silent --do-not-launch-chrome --system-level", WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => Comet == true),
+            ("Installing Comet", async () => cometVersion = FileVersionInfo.GetVersionInfo(Environment.ExpandEnvironmentVariables(@"C:\Program Files\Perplexity\Comet\Application\comet.exe")).ProductVersion, () => Comet == true),
+            ("Cleaning up Comet files", async () => await (await ApplicationData.Current.TemporaryFolder.GetFileAsync("Comet.exe")).DeleteAsync(), () => Comet == true),
 
-            // install firefox
-            ("Installing Firefox", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(ApplicationData.Current.TemporaryFolder.Path, "FirefoxSetup.exe"), Arguments = "/S /MaintenanceService=false /DesktopShortcut=false /StartMenuShortcut=true", WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => Firefox == true),
-            ("Cleaning up Firefox files", async () => await (await ApplicationData.Current.TemporaryFolder.GetFileAsync("FirefoxSetup.exe")).DeleteAsync(), () => Firefox == true),
-
-            // pin firefox to the taskbar
-            ("Pinning Firefox to the taskbar", async () => await ProcessActions.RunPowerShellScript("taskbarpin.ps1", @"-Type Link -Path ""C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Firefox.lnk"""), () => Firefox == true),
-
-            // disable firefox startup entry
-            ("Disabling Firefox startup entry", async () => TaskSchedulerHelper.Toggle(@"\Mozilla\Firefox Default Browser Agent 308046B0AF4A39CB", false), () => Firefox == true),
-            ("Disabling Firefox startup entry", async () => TaskSchedulerHelper.Toggle(@"\Mozilla\Firefox Background Update", false), () => Firefox == true),
-
-            // optimize firefox settings
-            ("Optimizing Firefox settings", async () => Directory.CreateDirectory(@"C:\Program Files\Mozilla Firefox\distribution"), () => Firefox == true),
-            ("Optimizing Firefox settings", async () => File.WriteAllText(Path.Combine(@"C:\Program Files\Mozilla Firefox", "defaults", "pref", "autoconfig.js"), "pref(\"general.config.filename\", \"firefox.cfg\");\npref(\"general.config.obscure_value\", 0);"), () => Firefox == true),
-            ("Optimizing Firefox settings", async () => File.WriteAllText(Path.Combine(@"C:\Program Files\Mozilla Firefox", "firefox.cfg"), "defaultPref(\"app.shield.optoutstudies.enabled\", false);\ndefaultPref(\"browser.search.serpEventTelemetryCategorization.enabled\", false);\ndefaultPref(\"dom.security.unexpected_system_load_telemetry_enabled\", false);\ndefaultPref(\"identity.fxaccounts.telemetry.clientAssociationPing.enabled\", false);\ndefaultPref(\"network.trr.confirmation_telemetry_enabled\", false);\ndefaultPref(\"nimbus.telemetry.targetingContextEnabled\", false);\ndefaultPref(\"reader.parse-on-load.enabled\", false);\ndefaultPref(\"telemetry.fog.init_on_shutdown\", false);\ndefaultPref(\"default-browser-agent.enabled\", false);\ndefaultPref(\"widget.windows.mica\", true);\ndefaultPref(\"widget.windows.mica.popups\", 1);\ndefaultPref(\"widget.windows.mica.toplevel-backdrop\", 0);"), () => Firefox == true),
-            ("Optimizing Firefox settings", async () => File.WriteAllText(Path.Combine(@"C:\Program Files\Mozilla Firefox", "distribution", "policies.json"), "{\r\n  \"policies\": {}\r\n}"), () => Firefox == true),
-
-            // download arkenfox user.js
-            ("Downloading Arkenfox user.js", async () => await DownloadHelper.Download("https://raw.githubusercontent.com/arkenfox/user.js/refs/heads/master/user.js", @"C:\Program Files\Mozilla Firefox", "user.js", reporter ?? new InstallPageReporter()), () => Firefox == true),
+            // pin comet to the taskbar
+            ("Pinning Comet to the taskbar", async () => await ProcessActions.RunPowerShellScript("taskbarpin.ps1", @"-Type Link -Path ""C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Comet.lnk"""), () => Comet == true),
 
             // install ublock origin extension
             ("Installing uBlock Origin Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "cjpalhdlnbpafiamejdnhcphjbkeiagm"), () => Comet == true && uBlock == true),
@@ -639,7 +568,77 @@ public static class BrowsersStage
 
             // install 1password extension
             ("Installing 1Password Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "aeblfdkhhhdcdjpifhhbdiojplfjncoa"), () => Comet == true && OnePassword == true),
-            ("Installing 1Password Extension", async () => await Task.Delay(500), () => Firefox == true && OnePassword == true),
+
+            // remove comet shortcut from the desktop
+            ("Removing Comet shortcut from the desktop", async () => File.Delete(@"C:\Users\Public\Desktop\Comet.lnk"), () => Comet == true),
+
+            // disable comet services
+            ("Disabling Comet services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Active Setup\Installed Components\AutorunsDisabled\{1F7C13D9-45E8-47E9-A2B5-6B2EF21B91F4}", "", "Comet", RegistryValueKind.String), () => Comet == true),
+            ("Disabling Comet services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Active Setup\Installed Components\AutorunsDisabled\{1F7C13D9-45E8-47E9-A2B5-6B2EF21B91F4}", "Localized Name", "Comet", RegistryValueKind.String), () => Comet == true),
+            ("Disabling Comet services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, $@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Active Setup\Installed Components\AutorunsDisabled\{{1F7C13D9-45E8-47E9-A2B5-6B2EF21B91F4}}", "StubPath", $@"""C:\Program Files\Perplexity\Comet\Application\{cometVersion}\Installer\chrmstp.exe"" --configure-user-settings --verbose-logging --system-level", RegistryValueKind.String), () => Comet == true),
+            ("Disabling Comet services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Active Setup\Installed Components\AutorunsDisabled\{1F7C13D9-45E8-47E9-A2B5-6B2EF21B91F4}", "Version", "43,0,0,0", RegistryValueKind.String), () => Comet == true),
+            ("Disabling Comet services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Active Setup\Installed Components\AutorunsDisabled\{1F7C13D9-45E8-47E9-A2B5-6B2EF21B91F4}", "IsInstalled", 1, RegistryValueKind.DWord), () => Comet == true),
+            ("Disabling Comet services", async () => RegistryHelper.DeleteKey(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Active Setup\Installed Components\{1F7C13D9-45E8-47E9-A2B5-6B2EF21B91F4}"), () => Comet == true),
+
+            // download firefox
+            ("Downloading Firefox", async () => firefoxVersion = JsonDocument.Parse(await ProcessActions.httpClient.GetStringAsync("https://product-details.mozilla.org/1.0/firefox_versions.json")).RootElement.GetProperty("LATEST_FIREFOX_VERSION").GetString(), () => Firefox == true),
+            ("Downloading Firefox", async () => await DownloadHelper.Download($"https://releases.mozilla.org/pub/firefox/releases/{firefoxVersion}/win64/en-US/Firefox%20Setup%20{firefoxVersion}.exe", ApplicationData.Current.TemporaryFolder.Path, "FirefoxSetup.exe", reporter ?? new InstallPageReporter()), () => Firefox == true),
+
+            // install firefox
+            ("Installing Firefox", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(ApplicationData.Current.TemporaryFolder.Path, "FirefoxSetup.exe"), Arguments = "/S /MaintenanceService=false /DesktopShortcut=false /StartMenuShortcut=true", WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => Firefox == true),
+            ("Cleaning up Firefox files", async () => await (await ApplicationData.Current.TemporaryFolder.GetFileAsync("FirefoxSetup.exe")).DeleteAsync(), () => Firefox == true),
+
+            // pin firefox to the taskbar
+            ("Pinning Firefox to the taskbar", async () => await ProcessActions.RunPowerShellScript("taskbarpin.ps1", @"-Type Link -Path ""C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Firefox.lnk"""), () => Firefox == true),
+
+            // disable firefox startup entry
+            ("Disabling Firefox startup entry", async () => TaskSchedulerHelper.Toggle(@"\Mozilla\Firefox Default Browser Agent 308046B0AF4A39CB", false), () => Firefox == true),
+            ("Disabling Firefox startup entry", async () => TaskSchedulerHelper.Toggle(@"\Mozilla\Firefox Background Update", false), () => Firefox == true),
+
+            // optimize firefox settings
+            ("Optimizing Firefox settings", async () => Directory.CreateDirectory(@"C:\Program Files\Mozilla Firefox\distribution"), () => Firefox == true),
+            ("Optimizing Firefox settings", async () => File.WriteAllText(Path.Combine(@"C:\Program Files\Mozilla Firefox", "defaults", "pref", "autoconfig.js"), "pref(\"general.config.filename\", \"firefox.cfg\");\npref(\"general.config.obscure_value\", 0);"), () => Firefox == true),
+            ("Optimizing Firefox settings", async () => File.WriteAllText(Path.Combine(@"C:\Program Files\Mozilla Firefox", "firefox.cfg"), "defaultPref(\"app.shield.optoutstudies.enabled\", false);\ndefaultPref(\"browser.search.serpEventTelemetryCategorization.enabled\", false);\ndefaultPref(\"dom.security.unexpected_system_load_telemetry_enabled\", false);\ndefaultPref(\"identity.fxaccounts.telemetry.clientAssociationPing.enabled\", false);\ndefaultPref(\"network.trr.confirmation_telemetry_enabled\", false);\ndefaultPref(\"nimbus.telemetry.targetingContextEnabled\", false);\ndefaultPref(\"reader.parse-on-load.enabled\", false);\ndefaultPref(\"telemetry.fog.init_on_shutdown\", false);\ndefaultPref(\"default-browser-agent.enabled\", false);\ndefaultPref(\"widget.windows.mica\", true);\ndefaultPref(\"widget.windows.mica.popups\", 1);\ndefaultPref(\"widget.windows.mica.toplevel-backdrop\", 0);"), () => Firefox == true),
+            ("Optimizing Firefox settings", async () => File.WriteAllText(Path.Combine(@"C:\Program Files\Mozilla Firefox", "distribution", "policies.json"), "{\r\n  \"policies\": {}\r\n}"), () => Firefox == true),
+
+            // download arkenfox user.js
+            ("Downloading Arkenfox user.js", async () => await DownloadHelper.Download("https://raw.githubusercontent.com/arkenfox/user.js/refs/heads/master/user.js", @"C:\Program Files\Mozilla Firefox", "user.js", reporter ?? new InstallPageReporter()), () => Firefox == true),
+
+            // install ublock origin extension
+            ("Installing uBlock Origin Extension", async () => UpdatePolicies(@"C:\Program Files\Mozilla Firefox\distribution\policies.json", "https://addons.mozilla.org/firefox/downloads/latest/ublock-origin"), () => Firefox == true && uBlock == true),
+
+            // install privacy badger extension
+            ("Installing Privacy Badger Extension", async () => UpdatePolicies(@"C:\Program Files\Mozilla Firefox\distribution\policies.json", "https://addons.mozilla.org/firefox/downloads/latest/privacy-badger17"), () => Firefox == true && PrivacyBadger == true),
+
+            // install decentraleyes extension
+            ("Installing Decentraleyes Extension", async () => UpdatePolicies(@"C:\Program Files\Mozilla Firefox\distribution\policies.json", "https://addons.mozilla.org/firefox/downloads/latest/decentraleyes"), () => Firefox == true && Decentraleyes == true),
+
+            // install i still don't care about cookies extension
+            ("Installing I still don't care about cookies Extension", async () => UpdatePolicies(@"C:\Program Files\Mozilla Firefox\distribution\policies.json", "https://addons.mozilla.org/firefox/downloads/latest/istilldontcareaboutcookies"), () => Firefox == true && Cookies == true),
+
+            // install violentmonkey extension
+            ("Installing Violentmonkey Extension", async () => UpdatePolicies(@"C:\Program Files\Mozilla Firefox\distribution\policies.json", "https://addons.mozilla.org/firefox/downloads/latest/violentmonkey"), () => Firefox == true && Violentmonkey == true),
+
+            // install tampermonkey extension
+            ("Installing Tampermonkey Extension", async () => UpdatePolicies(@"C:\Program Files\Mozilla Firefox\distribution\policies.json", "https://addons.mozilla.org/firefox/downloads/latest/tampermonkey"), () => Firefox == true && Tampermonkey == true),
+
+            // install sponsorblock extension
+            ("Installing SponsorBlock Extension", async () => UpdatePolicies(@"C:\Program Files\Mozilla Firefox\distribution\policies.json", "https://addons.mozilla.org/firefox/downloads/latest/sponsorblock"), () => Firefox == true && SponsorBlock == true),
+
+            // install return youtube dislike extension
+            ("Installing Return YouTube Dislike Extension", async () => UpdatePolicies(@"C:\Program Files\Mozilla Firefox\distribution\policies.json", "https://addons.mozilla.org/firefox/downloads/latest/return-youtube-dislikes"), () => Firefox == true && ReturnYouTubeDislike == true),
+
+            // install dark reader extension
+            ("Installing Dark Reader Extension", async () => UpdatePolicies(@"C:\Program Files\Mozilla Firefox\distribution\policies.json", "https://addons.mozilla.org/firefox/downloads/latest/darkreader"), () => Firefox == true && DarkReader == true),
+
+            // install icloud passwords extension
+            ("Installing iCloud Passwords Extension", async () => UpdatePolicies(@"C:\Program Files\Mozilla Firefox\distribution\policies.json", "https://addons.mozilla.org/firefox/downloads/latest/icloud-passwords"), () => Firefox == true && iCloud == true),
+
+            // install bitwarden extension
+            ("Installing Bitwarden Extension", async () => UpdatePolicies(@"C:\Program Files\Mozilla Firefox\distribution\policies.json", "https://addons.mozilla.org/firefox/downloads/latest/bitwarden-password-manager"), () => Firefox == true && Bitwarden == true),
+
+            // install 1password extension
+            ("Installing 1Password Extension", async () => UpdatePolicies(@"C:\Program Files\Mozilla Firefox\distribution\policies.json", "https://addons.mozilla.org/firefox/downloads/latest/1password-x-password-manager"), () => Firefox == true && OnePassword == true),
 
             // download zen
             ("Downloading Zen", async () => await DownloadHelper.Download("https://github.com/zen-browser/desktop/releases/latest/download/zen.installer.exe", ApplicationData.Current.TemporaryFolder.Path, "zen.installer.exe", reporter ?? new InstallPageReporter()), () => Zen == true),
@@ -653,6 +652,7 @@ public static class BrowsersStage
 
             // disable zen startup entry
             ("Disabling Zen startup entry", async () => TaskSchedulerHelper.Toggle(@"\Mozilla\Zen Default Browser Agent F0DC299D809B9700", false), () => Zen == true),
+            ("Disabling Zen startup entry", async () => TaskSchedulerHelper.Toggle(@"\Mozilla\Zen Background Update", false), () => Zen == true),
 
             // optimize zen settings
             ("Optimizing Zen settings", async () => Directory.CreateDirectory(@"C:\Program Files\Zen Browser\distribution"), () => Zen == true),
@@ -664,54 +664,40 @@ public static class BrowsersStage
             ("Downloading Arkenfox user.js", async () => await DownloadHelper.Download("https://raw.githubusercontent.com/arkenfox/user.js/refs/heads/master/user.js", @"C:\Program Files\Zen Browser", "user.js", reporter ?? new InstallPageReporter()), () => Zen == true),
 
             // install ublock origin extension
-            ("Installing uBlock Origin Extension", async () => UpdatePolicies(@"C:\Program Files\Mozilla Firefox\distribution\policies.json", "https://addons.mozilla.org/firefox/downloads/latest/ublock-origin"), () => Firefox == true && uBlock == true),
-            ("Installing uBlock Origin Extension", async () => await Task.Delay(500), () => Firefox == true && uBlock == true),
+            ("Installing uBlock Origin Extension", async () => UpdatePolicies(@"C:\Program Files\Zen Browser\distribution\policies.json", "https://addons.mozilla.org/firefox/downloads/latest/ublock-origin"), () => Zen == true && uBlock == true),
 
             // install privacy badger extension
-            ("Installing Privacy Badger Extension", async () => UpdatePolicies(@"C:\Program Files\Mozilla Firefox\distribution\policies.json", "https://addons.mozilla.org/firefox/downloads/latest/privacy-badger17"), () => Firefox == true && PrivacyBadger == true),
-            ("Installing Privacy Badger Extension", async () => await Task.Delay(500), () => Firefox == true && PrivacyBadger == true),
+            ("Installing Privacy Badger Extension", async () => UpdatePolicies(@"C:\Program Files\Zen Browser\distribution\policies.json", "https://addons.mozilla.org/firefox/downloads/latest/privacy-badger17"), () => Zen == true && PrivacyBadger == true),
 
             // install decentraleyes extension
-            ("Installing Decentraleyes Extension", async () => UpdatePolicies(@"C:\Program Files\Mozilla Firefox\distribution\policies.json", "https://addons.mozilla.org/firefox/downloads/latest/decentraleyes"), () => Firefox == true && Decentraleyes == true),
-            ("Installing Decentraleyes Extension", async () => await Task.Delay(500), () => Firefox == true && Decentraleyes == true),
+            ("Installing Decentraleyes Extension", async () => UpdatePolicies(@"C:\Program Files\Zen Browser\distribution\policies.json", "https://addons.mozilla.org/firefox/downloads/latest/decentraleyes"), () => Zen == true && Decentraleyes == true),
 
             // install i still don't care about cookies extension
-            ("Installing I still don't care about cookies Extension", async () => UpdatePolicies(@"C:\Program Files\Mozilla Firefox\distribution\policies.json", "https://addons.mozilla.org/firefox/downloads/latest/istilldontcareaboutcookies"), () => Firefox == true && Cookies == true),
-            ("Installing I still don't care about cookies Extension", async () => await Task.Delay(500), () => Firefox == true && Cookies == true),
+            ("Installing I still don't care about cookies Extension", async () => UpdatePolicies(@"C:\Program Files\Zen Browser\distribution\policies.json", "https://addons.mozilla.org/firefox/downloads/latest/istilldontcareaboutcookies"), () => Zen == true && Cookies == true),
 
             // install violentmonkey extension
-            ("Installing Violentmonkey Extension", async () => UpdatePolicies(@"C:\Program Files\Mozilla Firefox\distribution\policies.json", "https://addons.mozilla.org/firefox/downloads/latest/violentmonkey"), () => Firefox == true && Violentmonkey == true),
-            ("Installing Violentmonkey Extension", async () => await Task.Delay(500), () => Firefox == true && Violentmonkey == true),
+            ("Installing Violentmonkey Extension", async () => UpdatePolicies(@"C:\Program Files\Zen Browser\distribution\policies.json", "https://addons.mozilla.org/firefox/downloads/latest/violentmonkey"), () => Zen == true && Violentmonkey == true),
 
             // install tampermonkey extension
-            ("Installing Tampermonkey Extension", async () => UpdatePolicies(@"C:\Program Files\Mozilla Firefox\distribution\policies.json", "https://addons.mozilla.org/firefox/downloads/latest/tampermonkey"), () => Firefox == true && Tampermonkey == true),
-            ("Installing Tampermonkey Extension", async () => await Task.Delay(500), () => Firefox == true && Tampermonkey == true),
+            ("Installing Tampermonkey Extension", async () => UpdatePolicies(@"C:\Program Files\Zen Browser\distribution\policies.json", "https://addons.mozilla.org/firefox/downloads/latest/tampermonkey"), () => Zen == true && Tampermonkey == true),
 
             // install sponsorblock extension
-            ("Installing SponsorBlock Extension", async () => UpdatePolicies(@"C:\Program Files\Mozilla Firefox\distribution\policies.json", "https://addons.mozilla.org/firefox/downloads/latest/sponsorblock"), () => Firefox == true && SponsorBlock == true),
-            ("Installing SponsorBlock Extension", async () => await Task.Delay(500), () => Firefox == true && SponsorBlock == true),
+            ("Installing SponsorBlock Extension", async () => UpdatePolicies(@"C:\Program Files\Zen Browser\distribution\policies.json", "https://addons.mozilla.org/firefox/downloads/latest/sponsorblock"), () => Zen == true && SponsorBlock == true),
 
             // install return youtube dislike extension
-            ("Installing Return YouTube Dislike Extension", async () => UpdatePolicies(@"C:\Program Files\Mozilla Firefox\distribution\policies.json", "https://addons.mozilla.org/firefox/downloads/latest/return-youtube-dislikes"), () => Firefox == true && ReturnYouTubeDislike == true),
-            ("Installing Return YouTube Dislike Extension", async () => await Task.Delay(500), () => Firefox == true && ReturnYouTubeDislike == true),
+            ("Installing Return YouTube Dislike Extension", async () => UpdatePolicies(@"C:\Program Files\Zen Browser\distribution\policies.json", "https://addons.mozilla.org/firefox/downloads/latest/return-youtube-dislikes"), () => Zen == true && ReturnYouTubeDislike == true),
 
             // install dark reader extension
-            ("Installing Dark Reader Extension", async () => UpdatePolicies(@"C:\Program Files\Mozilla Firefox\distribution\policies.json", "https://addons.mozilla.org/firefox/downloads/latest/darkreader"), () => Firefox == true && DarkReader == true),
-            ("Installing Dark Reader Extension", async () => await Task.Delay(500), () => Firefox == true && DarkReader == true),
+            ("Installing Dark Reader Extension", async () => UpdatePolicies(@"C:\Program Files\Zen Browser\distribution\policies.json", "https://addons.mozilla.org/firefox/downloads/latest/darkreader"), () => Zen == true && DarkReader == true),
 
             // install icloud passwords extension
-            ("Installing iCloud Passwords Extension", async () => UpdatePolicies(@"C:\Program Files\Mozilla Firefox\distribution\policies.json", "https://addons.mozilla.org/firefox/downloads/latest/icloud-passwords"), () => Firefox == true && iCloud == true),
-            ("Installing iCloud Passwords Extension", async () => await Task.Delay(500), () => Firefox == true && iCloud == true),
+            ("Installing iCloud Passwords Extension", async () => UpdatePolicies(@"C:\Program Files\Zen Browser\distribution\policies.json", "https://addons.mozilla.org/firefox/downloads/latest/icloud-passwords"), () => Zen == true && iCloud == true),
 
             // install bitwarden extension
-            ("Installing Bitwarden Extension", async () => UpdatePolicies(@"C:\Program Files\Mozilla Firefox\distribution\policies.json", "https://addons.mozilla.org/firefox/downloads/latest/bitwarden-password-manager"), () => Firefox == true && Bitwarden == true),
-            ("Installing Bitwarden Extension", async () => await Task.Delay(500), () => Firefox == true && Bitwarden == true),
+            ("Installing Bitwarden Extension", async () => UpdatePolicies(@"C:\Program Files\Zen Browser\distribution\policies.json", "https://addons.mozilla.org/firefox/downloads/latest/bitwarden-password-manager"), () => Zen == true && Bitwarden == true),
 
             // install 1password extension
-            ("Installing 1Password Extension", async () => UpdatePolicies(@"C:\Program Files\Mozilla Firefox\distribution\policies.json", "https://addons.mozilla.org/firefox/downloads/latest/1password-x-password-manager"), () => Firefox == true && OnePassword == true),
-            ("Installing 1Password Extension", async () => await Task.Delay(500), () => Firefox == true && OnePassword == true),
-            ("Installing 1Password Extension", async () => await Task.Delay(500), () => Firefox == true && OnePassword == true),
-            ("Installing 1Password Extension", async () => await Task.Delay(500), () => Zen == true && OnePassword == true),
+            ("Installing 1Password Extension", async () => UpdatePolicies(@"C:\Program Files\Zen Browser\distribution\policies.json", "https://addons.mozilla.org/firefox/downloads/latest/1password-x-password-manager"), () => Zen == true && OnePassword == true),
         };
 
         if (selection != null)

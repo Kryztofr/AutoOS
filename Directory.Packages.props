@@ -11,6 +11,7 @@
     <PackageVersion Include="Microsoft.Windows.CsWinRT" Version="2.3.0-prerelease.251115.2" />
     <PackageVersion Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.28000.1839" />
     <PackageVersion Include="Microsoft.WindowsAppSDK" Version="2.0.250930001-experimental1" />
+    <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageVersion Include="nucs.JsonSettings" Version="2.0.2" />
     <PackageVersion Include="nucs.JsonSettings.AutoSaveGenerator" Version="2.0.4" />
     <PackageVersion Include="System.ServiceProcess.ServiceController" Version="11.0.0-preview.3.26207.106" />

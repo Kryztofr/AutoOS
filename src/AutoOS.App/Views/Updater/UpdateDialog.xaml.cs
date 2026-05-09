@@ -94,7 +94,7 @@ public sealed partial class UpdateDialog : UserControl
             }
 
             StatusText.Text = title + "...";
-            CurrentTitle = title;
+            CurrentTitle = title + "...";
             currentGroup.Add(action);
             previousTitle = title;
         }

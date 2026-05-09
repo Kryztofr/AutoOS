@@ -89,5 +89,7 @@ public static partial class DownloadHelper
         {
             throw new FileNotFoundException($"Download failed: The file '{finalFileName}' could not be found.");
         }
+        
+        reporter?.Report(progress: 100, isIndeterminate: true);
     }
 }
