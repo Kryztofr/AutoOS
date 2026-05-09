@@ -432,4 +432,4 @@ bcdedit /set "{default}" description "AutoOS"
 bcdedit /set "{default}" bootmenupolicy legacy
 bcdedit /timeout 6
 Write-Host "`n===== AutoOS Deployment Completed Successfully! ====="
-Write-Host "Open the installation guide on your phone and continue with Step 6."
+Write-Host "Open the installation guide on your phone and continue with Step 4."

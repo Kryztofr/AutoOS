@@ -8,8 +8,8 @@ public class InstallPageReporter : IStatusReporter
 {
     private readonly SynchronizationContext _uiContext;
 
-    private string _capturedTitle;
-    private bool _titleHasBeenCaptured;
+    private string _capturedTitle = string.Empty;
+    private string _lastSetTitle;
 
     public InstallPageReporter()
     {
@@ -22,14 +22,18 @@ public class InstallPageReporter : IStatusReporter
         {
             if (InstallPage.Info != null)
             {
-                if (!_titleHasBeenCaptured)
+                string currentTitle = InstallPage.Info.Title ?? string.Empty;
+
+                if (_lastSetTitle == null || currentTitle != _lastSetTitle)
                 {
-                    _capturedTitle = InstallPage.Info.Title ?? string.Empty;
-                    _titleHasBeenCaptured = true;
+                    _capturedTitle = currentTitle;
                 }
 
                 if (!string.IsNullOrEmpty(message))
-                    InstallPage.Info.Title = string.IsNullOrEmpty(_capturedTitle) ? message : $"{_capturedTitle} ({message})";
+                {
+                    _lastSetTitle = string.IsNullOrEmpty(_capturedTitle) ? message : $"{_capturedTitle} ({message})";
+                    InstallPage.Info.Title = _lastSetTitle;
+                }
                 
                 if (progress.HasValue)
                     InstallPage.ProgressRingControl.Value = progress.Value;

@@ -1,7 +1,5 @@
-﻿using AutoOS.Core.Helpers.Monitor.Models;
-using AutoOS.Core.Helpers.Monitor;
+﻿using AutoOS.Core.Helpers.Monitor;
 using AutoOS.Core.Helpers.Registry;
-using AutoOS.Core.Helpers.Services;
 using Microsoft.Win32;
 using System.Diagnostics;
 using System.Text.Json;

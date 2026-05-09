@@ -53,26 +53,24 @@ namespace AutoOS.Views.Settings
                 Application.Current.Exit();
             }
 
-            if (ubr >= 8313 && (Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Windhawk\Engine\Mods\windows-11-start-menu-styler\Settings", "theme", null) as string) == "SideBySide2")
+            if (ubr >= 8313 && (Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Windhawk\Engine\Mods\windows-11-start-menu-styler", "Version", null) as string) == "1.4.1")
             {
-                RegistryHelper.DeleteKey(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Windhawk\Engine\Mods\windows-11-start-menu-styler\Settings");
-                RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_LOCAL_MACHINE\SOFTWARE\Windhawk\Engine\Mods\windows-11-start-menu-styler\Settings", "webContentStyles[0].styles[0]", "display: none !important", RegistryValueKind.String);
-                RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_LOCAL_MACHINE\SOFTWARE\Windhawk\Engine\Mods\windows-11-start-menu-styler\Settings", "webContentStyles[0].target", "#temporaryMessages", RegistryValueKind.String);
-                RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_LOCAL_MACHINE\SOFTWARE\Windhawk\Engine\Mods\windows-11-start-menu-styler", "Disabled", 0, RegistryValueKind.DWord);
-                RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\FeatureManagement\Overrides\8\3036241548", "EnabledState", 2, RegistryValueKind.DWord);
-                RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Start", "AllAppsViewMode", 1, RegistryValueKind.DWord);
-                
+                RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_LOCAL_MACHINE\SOFTWARE\Windhawk\Engine\Mods\windows-11-start-menu-styler\Settings", "disableNewStartMenuLayout", "disableNewLayoutKeepPhoneLink", RegistryValueKind.String);
+                RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\FeatureManagement\Overrides\8\3036241548", "EnabledState", "1", RegistryValueKind.DWord);
+                RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\FeatureManagement\Overrides\8\3036241548", "EnabledStateOptions", "0", RegistryValueKind.DWord);
+                RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\FeatureManagement\Overrides\8\3036241548", "Variant", "0", RegistryValueKind.DWord);
+                RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\FeatureManagement\Overrides\8\3036241548", "VariantPayload", "0", RegistryValueKind.DWord);
+                RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\FeatureManagement\Overrides\8\3036241548", "VariantPayloadKind", "0", RegistryValueKind.DWord);
                 var restartDialog = new ContentDialog
                 {
-                    Title = "Restart Required",
-                    Content = "A restart is required to apply the Windows Start Menu changes.",
-                    PrimaryButtonText = "Restart",
+                    Title = "Update Windhawk Mod",
+                    Content = "Open Windhawk and update the Windows Start Menu Styler Mod.",
+                    PrimaryButtonText = "Done",
                     DefaultButton = ContentDialogButton.Primary,
                     XamlRoot = XamlRoot
                 };
 
                 await restartDialog.ShowAsync();
-                Process.Start(new ProcessStartInfo("shutdown", "/r /t 0") { CreateNoWindow = true });
                 return;
             }
 

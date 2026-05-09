@@ -41,10 +41,10 @@ $PSDefaultParameterValues['Invoke-WebRequest:UseBasicParsing'] = $true
 Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force 
 irm https://raw.githubusercontent.com/tinodin/AutoOS/master/deploy/deploy.ps1 | iex
 ```
-Then select the **ISO** file you downloaded in Step 1 and your **drivers folder** you created in Step 2.
-If you get any errors during the script leave a message in my discord server.
+Then select the **ISO** file you downloaded in Step 1 and your **drivers folder** you created in Step 2.<br/>
+If you get any errors during the script leave a message in my [Discord Server](https://discord.gg/bZU4dMMWpg).
 
-### Step 4: Restarting into the new Windows 
+### Step 4: Restarting into AutoOS
 Once the script finished, restart your PC and boot into the `default option` by pressing `Enter`.<br/>
 
 > [!WARNING]  
@@ -53,7 +53,7 @@ Once the script finished, restart your PC and boot into the `default option` by 
 
 ### Step 5: AutoOS Installer
 Once the OOBE has finished, wait for AutoOS Installer to open up.<br/>
-Carefully look through every tab and select your preferences and apps. <br/>
+Carefully look through every tab and select your preferences and apps.<br/>
 
 > [!TIP]  
 > Select the Discord app and do not use Discord in the Browser. It uses the same or less RAM and less CPU Usage.<br/>
