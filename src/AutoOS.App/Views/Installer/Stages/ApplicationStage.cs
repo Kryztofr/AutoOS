@@ -1,4 +1,4 @@
-using AutoOS.Common;
+﻿using AutoOS.Common;
 using AutoOS.Core.Common;
 using AutoOS.Core.Helpers.Download;
 using AutoOS.Core.Helpers.Extract;
@@ -12,8 +12,8 @@ using AutoOS.Views.Installer.Actions;
 using Microsoft.Win32;
 using System.Diagnostics;
 using System.Text.Json.Nodes;
-using System.Xml.Linq;
 using System.Text.RegularExpressions;
+using System.Xml.Linq;
 using Windows.Storage;
 
 namespace AutoOS.Views.Installer.Stages;

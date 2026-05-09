@@ -17,13 +17,6 @@
           "HideItem": true
         },
         {
-          "UniqueId": "AutoOS.Views.Settings.ApplicationsPage",
-          "Title": "Applications",
-          "Subtitle": "Applications",
-          "ImagePath": "ms-appx:///Assets/Fluent/Applications.png",
-          "HideItem": true
-        },
-        {
           "UniqueId": "AutoOS.Views.Settings.SoundPage",
           "Title": "Sound",
           "Subtitle": "Sound",
@@ -105,6 +98,20 @@
           "Title": "Windows Update",
           "Subtitle": "Windows Update",
           "ImagePath": "ms-appx:///Assets/Fluent/Update.png",
+          "HideItem": true
+        },
+        {
+          "UniqueId": "AutoOS.Views.Settings.BrowsersPage",
+          "Title": "Browsers",
+          "Subtitle": "Browsers",
+          "ImagePath": "ms-appx:///Assets/Fluent/Browsers.png",
+          "HideItem": true
+        },
+        {
+          "UniqueId": "AutoOS.Views.Settings.ApplicationsPage",
+          "Title": "Applications",
+          "Subtitle": "Applications",
+          "ImagePath": "ms-appx:///Assets/Fluent/Applications.png",
           "HideItem": true
         },
         {

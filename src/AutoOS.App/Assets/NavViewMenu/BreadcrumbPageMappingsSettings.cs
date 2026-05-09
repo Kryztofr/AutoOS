@@ -7,7 +7,6 @@ public partial class BreadcrumbPageMappingsSettings
     public static Dictionary<Type, BreadcrumbPageConfig> PageDictionary { get; } = new()
     {
         { typeof(Views.Settings.HomeLandingPage), new BreadcrumbPageConfig { PageTitle = null, IsHeaderVisible = false, ClearNavigation = false } },
-		{ typeof(Views.Settings.ApplicationsPage), new BreadcrumbPageConfig { PageTitle = null, IsHeaderVisible = false, ClearNavigation = false } },
 		{ typeof(Views.Settings.SoundPage), new BreadcrumbPageConfig { PageTitle = null, IsHeaderVisible = false, ClearNavigation = false } },
         { typeof(Views.Settings.DisplayPage), new BreadcrumbPageConfig { PageTitle = null, IsHeaderVisible = false, ClearNavigation = false } },
         { typeof(Views.Settings.GraphicsPage), new BreadcrumbPageConfig { PageTitle = null, IsHeaderVisible = false, ClearNavigation = false } },
@@ -20,6 +19,8 @@ public partial class BreadcrumbPageMappingsSettings
         { typeof(Views.Settings.DiskCleanupPage), new BreadcrumbPageConfig { PageTitle = null, IsHeaderVisible = false, ClearNavigation = false } },
         { typeof(Views.Settings.SecurityPage), new BreadcrumbPageConfig { PageTitle = null, IsHeaderVisible = false, ClearNavigation = false } },
         { typeof(Views.Settings.UpdatePage), new BreadcrumbPageConfig { PageTitle = null, IsHeaderVisible = false, ClearNavigation = false } },
-        { typeof(Views.Settings.GamesPage), new BreadcrumbPageConfig { PageTitle = null, IsHeaderVisible = false, ClearNavigation = false } }
+		{ typeof(Views.Settings.BrowsersPage), new BreadcrumbPageConfig { PageTitle = null, IsHeaderVisible = false, ClearNavigation = false } },
+		{ typeof(Views.Settings.ApplicationsPage), new BreadcrumbPageConfig { PageTitle = null, IsHeaderVisible = false, ClearNavigation = false } },
+		{ typeof(Views.Settings.GamesPage), new BreadcrumbPageConfig { PageTitle = null, IsHeaderVisible = false, ClearNavigation = false } }
     };
 }

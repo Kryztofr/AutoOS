@@ -1,4 +1,5 @@
 using AutoOS.Common;
+using AutoOS.Core.Common;
 using AutoOS.Core.Helpers.Download;
 using AutoOS.Core.Helpers.Registry;
 using AutoOS.Core.Helpers.Services;
@@ -14,30 +15,59 @@ using Windows.Storage;
 
 namespace AutoOS.Views.Installer.Stages;
 
+public class BrowserSelection
+{
+	public bool Chrome { get; set; }
+	public bool Thorium { get; set; }
+	public bool Helium { get; set; }
+	public bool Brave { get; set; }
+	public bool Vivaldi { get; set; }
+	public bool Arc { get; set; }
+	public bool Comet { get; set; }
+	public bool Firefox { get; set; }
+	public bool Zen { get; set; }
+	public bool uBlock { get; set; }
+	public bool SponsorBlock { get; set; }
+	public bool ReturnYouTubeDislike { get; set; }
+	public bool Cookies { get; set; }
+	public bool DarkReader { get; set; }
+	public bool Violentmonkey { get; set; }
+	public bool Tampermonkey { get; set; }
+	public bool Shazam { get; set; }
+	public bool iCloud { get; set; }
+	public bool Bitwarden { get; set; }
+	public bool OnePassword { get; set; }
+}
+
 public static class BrowsersStage
 {
-    public static List<(string Title, Func<Task> Action, Func<bool> Condition)> GetActions()
+    public static List<(string Title, Func<Task> Action, Func<bool> Condition)> GetActions(IStatusReporter reporter = null, BrowserSelection selection = null)
     {
-        bool? Chrome = PreparingStage.Chrome;
-        bool? Thorium = PreparingStage.Thorium;
-        bool? Helium = PreparingStage.Helium;
-        bool? Brave = PreparingStage.Brave;
-        bool? Vivaldi = PreparingStage.Vivaldi;
-        bool? Arc = PreparingStage.Arc;
-        bool? Comet = PreparingStage.Comet;
-        bool? Firefox = PreparingStage.Firefox;
-        bool? Zen = PreparingStage.Zen;
-        bool? uBlock = PreparingStage.uBlock;
-        bool? SponsorBlock = PreparingStage.SponsorBlock;
-        bool? ReturnYouTubeDislike = PreparingStage.ReturnYouTubeDislike;
-        bool? Cookies = PreparingStage.Cookies;
-        bool? DarkReader = PreparingStage.DarkReader;
-        bool? Violentmonkey = PreparingStage.Violentmonkey;
-        bool? Tampermonkey = PreparingStage.Tampermonkey;
-        bool? Shazam = PreparingStage.Shazam;
-        bool? iCloud = PreparingStage.iCloud;
-        bool? Bitwarden = PreparingStage.Bitwarden;
-        bool? OnePassword = PreparingStage.OnePassword;
+        if (reporter == null && selection == null)
+        {
+            reporter = new InstallPageReporter();
+        }
+
+        bool? Chrome = selection?.Chrome ?? PreparingStage.Chrome;
+        bool? Thorium = selection?.Thorium ?? PreparingStage.Thorium;
+        bool? Helium = selection?.Helium ?? PreparingStage.Helium;
+        bool? Brave = selection?.Brave ?? PreparingStage.Brave;
+        bool? Vivaldi = selection?.Vivaldi ?? PreparingStage.Vivaldi;
+        bool? Arc = selection?.Arc ?? PreparingStage.Arc;
+        bool? Comet = selection?.Comet ?? PreparingStage.Comet;
+        bool? Firefox = selection?.Firefox ?? PreparingStage.Firefox;
+        bool? Zen = selection?.Zen ?? PreparingStage.Zen;
+        bool? uBlock = selection?.uBlock ?? PreparingStage.uBlock;
+        bool? SponsorBlock = selection?.SponsorBlock ?? PreparingStage.SponsorBlock;
+        bool? ReturnYouTubeDislike = selection?.ReturnYouTubeDislike ?? PreparingStage.ReturnYouTubeDislike;
+        bool? Cookies = selection?.Cookies ?? PreparingStage.Cookies;
+        bool? DarkReader = selection?.DarkReader ?? PreparingStage.DarkReader;
+        bool? Violentmonkey = selection?.Violentmonkey ?? PreparingStage.Violentmonkey;
+        bool? Tampermonkey = selection?.Tampermonkey ?? PreparingStage.Tampermonkey;
+        bool? Shazam = selection?.Shazam ?? PreparingStage.Shazam;
+        bool? iCloud = selection?.iCloud ?? PreparingStage.iCloud;
+        bool? Bitwarden = selection?.Bitwarden ?? PreparingStage.Bitwarden;
+        bool? OnePassword = selection?.OnePassword ?? PreparingStage.OnePassword;
 
         string edgeVersion = "";
         string chromeVersion = "";
@@ -50,53 +80,53 @@ public static class BrowsersStage
         string cometVersion = "";
         string firefoxVersion = "";
 
-        return new List<(string Title, Func<Task> Action, Func<bool> Condition)>
+        var actions = new List<(string Title, Func<Task> Action, Func<bool> Condition)>
         {
             // optimize microsoft edge settings
-            (@"Enabling ""Configure Do Not Track"" policy", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge", "ConfigureDoNotTrack", 1, RegistryValueKind.DWord), null),
-            (@"Disabling ""Shopping in Microsoft Edge Enabled"" policy", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge", "EdgeShoppingAssistantEnabled", 0, RegistryValueKind.DWord), null),
-            (@"Disabling ""Allow Microsoft content on the new tab page"" policy", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge", "NewTabPageContentEnabled", 0, RegistryValueKind.DWord), null),
-            (@"Disbaling ""Allow user feedback"" policy", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge", "UserFeedbackAllowed", 0, RegistryValueKind.DWord), null),
-            (@"Disabling ""Create Desktop Shortcut upon install default"" policy", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\EdgeUpdate", "CreateDesktopShortcutDefault", 0, RegistryValueKind.DWord), null),
-            (@"Enabling ""Turn off tracking of app usage"" policy", async () => RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_CURRENT_USER\Software\Policies\Microsoft\Windows\EdgeUI", "DisableMFUTracking", 1, RegistryValueKind.DWord), null),
+            (@"Enabling ""Configure Do Not Track"" policy", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge", "ConfigureDoNotTrack", 1, RegistryValueKind.DWord), () => selection == null),
+            (@"Disabling ""Shopping in Microsoft Edge Enabled"" policy", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge", "EdgeShoppingAssistantEnabled", 0, RegistryValueKind.DWord), () => selection == null),
+            (@"Disabling ""Allow Microsoft content on the new tab page"" policy", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge", "NewTabPageContentEnabled", 0, RegistryValueKind.DWord), () => selection == null),
+            (@"Disbaling ""Allow user feedback"" policy", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge", "UserFeedbackAllowed", 0, RegistryValueKind.DWord), () => selection == null),
+            (@"Disabling ""Create Desktop Shortcut upon install default"" policy", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\EdgeUpdate", "CreateDesktopShortcutDefault", 0, RegistryValueKind.DWord), () => selection == null),
+            (@"Enabling ""Turn off tracking of app usage"" policy", async () => RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_CURRENT_USER\Software\Policies\Microsoft\Windows\EdgeUI", "DisableMFUTracking", 1, RegistryValueKind.DWord), () => selection == null),
 
             // disable microsoft edge services
-            ("Disabling Microsoft Edge services", async () => edgeVersion = FileVersionInfo.GetVersionInfo(Environment.ExpandEnvironmentVariables(@"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe")).ProductVersion, null),
-            ("Disabling Microsoft Edge services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Active Setup\Installed Components\AutorunsDisabled\{9459C573-B17A-45AE-9F64-1857B5D58CEE}", "", "Microsoft Edge", RegistryValueKind.String), null),
-            ("Disabling Microsoft Edge services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Active Setup\Installed Components\AutorunsDisabled\{9459C573-B17A-45AE-9F64-1857B5D58CEE}", "Localized Name", "Microsoft Edge", RegistryValueKind.String), null),
-            ("Disabling Microsoft Edge services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Active Setup\Installed Components\AutorunsDisabled\{9459C573-B17A-45AE-9F64-1857B5D58CEE}", "StubPath", $@"""C:\Program Files (x86)\Microsoft\Edge\Application\{edgeVersion}\Installer\setup.exe"" --configure-user-settings --verbose-logging --system-level --msedge --channel=stable", RegistryValueKind.String), null),
-            ("Disabling Microsoft Edge services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Active Setup\Installed Components\AutorunsDisabled\{9459C573-B17A-45AE-9F64-1857B5D58CEE}", "Version", "43,0,0,0", RegistryValueKind.String), null),
-            ("Disabling Microsoft Edge services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Active Setup\Installed Components\AutorunsDisabled\{9459C573-B17A-45AE-9F64-1857B5D58CEE}", "IsInstalled", 1, RegistryValueKind.DWord), null),
-            ("Disabling Microsoft Edge services", async () => RegistryHelper.DeleteKey(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Active Setup\Installed Components\{9459C573-B17A-45AE-9F64-1857B5D58CEE}"), null),
-            ("Disabling Microsoft Edge services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Active Setup\Installed Components\AutorunsDisabled\{89B4C1CD-B018-4511-B0A1-5476DBF70820}", "ComponentID", "DOTNETFRAMEWORKS", RegistryValueKind.String), null),
-            ("Disabling Microsoft Edge services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Active Setup\Installed Components\AutorunsDisabled\{89B4C1CD-B018-4511-B0A1-5476DBF70820}", "DontAsk", 2, RegistryValueKind.DWord), null),
-            ("Disabling Microsoft Edge services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Active Setup\Installed Components\AutorunsDisabled\{89B4C1CD-B018-4511-B0A1-5476DBF70820}", "Enabled", 0, RegistryValueKind.DWord), null),
-            ("Disabling Microsoft Edge services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Active Setup\Installed Components\AutorunsDisabled\{89B4C1CD-B018-4511-B0A1-5476DBF70820}", "IsInstalled", 1, RegistryValueKind.DWord), null),
-            ("Disabling Microsoft Edge services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Active Setup\Installed Components\AutorunsDisabled\{89B4C1CD-B018-4511-B0A1-5476DBF70820}", "StubPath", @"C:\Windows\System32\Rundll32.exe C:\Windows\System32\mscories.dll,Install", RegistryValueKind.String), null),
-            ("Disabling Microsoft Edge services", async () => RegistryHelper.DeleteKey(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Active Setup\Installed Components\{89B4C1CD-B018-4511-B0A1-5476DBF70820}"), null),
-            ("Disabling Microsoft Edge services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Microsoft\Active Setup\Installed Components\AutorunsDisabled\{89B4C1CD-B018-4511-B0A1-5476DBF70820}", "ComponentID", "DOTNETFRAMEWORKS", RegistryValueKind.String), null),
-            ("Disabling Microsoft Edge services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Microsoft\Active Setup\Installed Components\AutorunsDisabled\{89B4C1CD-B018-4511-B0A1-5476DBF70820}", "DontAsk", 2, RegistryValueKind.DWord), null),
-            ("Disabling Microsoft Edge services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Microsoft\Active Setup\Installed Components\AutorunsDisabled\{89B4C1CD-B018-4511-B0A1-5476DBF70820}", "Enabled", 0, RegistryValueKind.DWord), null),
-            ("Disabling Microsoft Edge services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Microsoft\Active Setup\Installed Components\AutorunsDisabled\{89B4C1CD-B018-4511-B0A1-5476DBF70820}", "IsInstalled", 1, RegistryValueKind.DWord), null),
-            ("Disabling Microsoft Edge services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Microsoft\Active Setup\Installed Components\AutorunsDisabled\{89B4C1CD-B018-4511-B0A1-5476DBF70820}", "StubPath", @"C:\Windows\SysWOW64\Rundll32.exe C:\Windows\SysWOW64\mscories.dll,Install", RegistryValueKind.String), null),
-            ("Disabling Microsoft Edge services", async () => RegistryHelper.DeleteKey(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Microsoft\Active Setup\Installed Components\{89B4C1CD-B018-4511-B0A1-5476DBF70820}"), null),
-            ("Disabling Microsoft Edge services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Browser Helper Objects\AutorunsDisabled\{1FD49718-1D00-4B19-AF5F-070AF6D5D54C}", "", "IEToEdge BHO", RegistryValueKind.String), null),
-            ("Disabling Microsoft Edge services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Browser Helper Objects\AutorunsDisabled\{1FD49718-1D00-4B19-AF5F-070AF6D5D54C}", "NoExplorer", 1, RegistryValueKind.String), null),
-            ("Disabling Microsoft Edge services", async () => RegistryHelper.DeleteKey(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Browser Helper Objects\{1FD49718-1D00-4B19-AF5F-070AF6D5D54C}"), null),
-            ("Disabling Microsoft Edge services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Explorer\Browser Helper Objects\AutorunsDisabled\{1FD49718-1D00-4B19-AF5F-070AF6D5D54C}", "", "IEToEdge BHO", RegistryValueKind.String), null),
-            ("Disabling Microsoft Edge services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Explorer\Browser Helper Objects\AutorunsDisabled\{1FD49718-1D00-4B19-AF5F-070AF6D5D54C}", "NoExplorer", 1, RegistryValueKind.String), null),
-            ("Disabling Microsoft Edge services", async () => RegistryHelper.DeleteKey(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Explorer\Browser Helper Objects\{1FD49718-1D00-4B19-AF5F-070AF6D5D54C}"), null),
-            ("Disabling Microsoft Edge services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\edgeupdate", "Start", 4, RegistryValueKind.DWord), null),
-            ("Disabling Microsoft Edge services", async () => ServicesHelper.StopService("edgeupdate"), null),
-            ("Disabling Microsoft Edge services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\edgeupdatem", "Start", 4, RegistryValueKind.DWord), null),
-            ("Disabling Microsoft Edge services", async () => ServicesHelper.StopService("edgeupdatem"), null),
-            ("Disabling Microsoft Edge services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\MicrosoftEdgeElevationService", "Start", 4, RegistryValueKind.DWord), null),
-            ("Disabling Microsoft Edge services", async () => ServicesHelper.StopService("MicrosoftEdgeElevationService"), null),
-            ("Disabling Microsoft Edge services", async () => TaskSchedulerHelper.Toggle("MicrosoftEdgeUpdateTaskMachineCore", false), null),
-            ("Disabling Microsoft Edge services", async () => TaskSchedulerHelper.Toggle("MicrosoftEdgeUpdateTaskMachineUA", false), null),
+            ("Disabling Microsoft Edge services", async () => edgeVersion = FileVersionInfo.GetVersionInfo(Environment.ExpandEnvironmentVariables(@"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe")).ProductVersion, () => selection == null),
+            ("Disabling Microsoft Edge services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Active Setup\Installed Components\AutorunsDisabled\{9459C573-B17A-45AE-9F64-1857B5D58CEE}", "", "Microsoft Edge", RegistryValueKind.String), () => selection == null),
+            ("Disabling Microsoft Edge services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Active Setup\Installed Components\AutorunsDisabled\{9459C573-B17A-45AE-9F64-1857B5D58CEE}", "Localized Name", "Microsoft Edge", RegistryValueKind.String), () => selection == null),
+            ("Disabling Microsoft Edge services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Active Setup\Installed Components\AutorunsDisabled\{9459C573-B17A-45AE-9F64-1857B5D58CEE}", "StubPath", $@"""C:\Program Files (x86)\Microsoft\Edge\Application\{edgeVersion}\Installer\setup.exe"" --configure-user-settings --verbose-logging --system-level --msedge --channel=stable", RegistryValueKind.String), () => selection == null),
+            ("Disabling Microsoft Edge services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Active Setup\Installed Components\AutorunsDisabled\{9459C573-B17A-45AE-9F64-1857B5D58CEE}", "Version", "43,0,0,0", RegistryValueKind.String), () => selection == null),
+            ("Disabling Microsoft Edge services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Active Setup\Installed Components\AutorunsDisabled\{9459C573-B17A-45AE-9F64-1857B5D58CEE}", "IsInstalled", 1, RegistryValueKind.DWord), () => selection == null),
+            ("Disabling Microsoft Edge services", async () => RegistryHelper.DeleteKey(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Active Setup\Installed Components\{9459C573-B17A-45AE-9F64-1857B5D58CEE}"), () => selection == null),
+            ("Disabling Microsoft Edge services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Active Setup\Installed Components\AutorunsDisabled\{89B4C1CD-B018-4511-B0A1-5476DBF70820}", "ComponentID", "DOTNETFRAMEWORKS", RegistryValueKind.String), () => selection == null),
+            ("Disabling Microsoft Edge services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Active Setup\Installed Components\AutorunsDisabled\{89B4C1CD-B018-4511-B0A1-5476DBF70820}", "DontAsk", 2, RegistryValueKind.DWord), () => selection == null),
+            ("Disabling Microsoft Edge services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Active Setup\Installed Components\AutorunsDisabled\{89B4C1CD-B018-4511-B0A1-5476DBF70820}", "Enabled", 0, RegistryValueKind.DWord), () => selection == null),
+            ("Disabling Microsoft Edge services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Active Setup\Installed Components\AutorunsDisabled\{89B4C1CD-B018-4511-B0A1-5476DBF70820}", "IsInstalled", 1, RegistryValueKind.DWord), () => selection == null),
+            ("Disabling Microsoft Edge services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Active Setup\Installed Components\AutorunsDisabled\{89B4C1CD-B018-4511-B0A1-5476DBF70820}", "StubPath", @"C:\Windows\System32\Rundll32.exe C:\Windows\System32\mscories.dll,Install", RegistryValueKind.String), () => selection == null),
+            ("Disabling Microsoft Edge services", async () => RegistryHelper.DeleteKey(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Active Setup\Installed Components\{89B4C1CD-B018-4511-B0A1-5476DBF70820}"), () => selection == null),
+            ("Disabling Microsoft Edge services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Microsoft\Active Setup\Installed Components\AutorunsDisabled\{89B4C1CD-B018-4511-B0A1-5476DBF70820}", "ComponentID", "DOTNETFRAMEWORKS", RegistryValueKind.String), () => selection == null),
+            ("Disabling Microsoft Edge services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Microsoft\Active Setup\Installed Components\AutorunsDisabled\{89B4C1CD-B018-4511-B0A1-5476DBF70820}", "DontAsk", 2, RegistryValueKind.DWord), () => selection == null),
+            ("Disabling Microsoft Edge services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Microsoft\Active Setup\Installed Components\AutorunsDisabled\{89B4C1CD-B018-4511-B0A1-5476DBF70820}", "Enabled", 0, RegistryValueKind.DWord), () => selection == null),
+            ("Disabling Microsoft Edge services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Microsoft\Active Setup\Installed Components\AutorunsDisabled\{89B4C1CD-B018-4511-B0A1-5476DBF70820}", "IsInstalled", 1, RegistryValueKind.DWord), () => selection == null),
+            ("Disabling Microsoft Edge services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Microsoft\Active Setup\Installed Components\AutorunsDisabled\{89B4C1CD-B018-4511-B0A1-5476DBF70820}", "StubPath", @"C:\Windows\SysWOW64\Rundll32.exe C:\Windows\SysWOW64\mscories.dll,Install", RegistryValueKind.String), () => selection == null),
+            ("Disabling Microsoft Edge services", async () => RegistryHelper.DeleteKey(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Microsoft\Active Setup\Installed Components\{89B4C1CD-B018-4511-B0A1-5476DBF70820}"), () => selection == null),
+            ("Disabling Microsoft Edge services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Browser Helper Objects\AutorunsDisabled\{1FD49718-1D00-4B19-AF5F-070AF6D5D54C}", "", "IEToEdge BHO", RegistryValueKind.String), () => selection == null),
+            ("Disabling Microsoft Edge services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Browser Helper Objects\AutorunsDisabled\{1FD49718-1D00-4B19-AF5F-070AF6D5D54C}", "NoExplorer", 1, RegistryValueKind.String), () => selection == null),
+            ("Disabling Microsoft Edge services", async () => RegistryHelper.DeleteKey(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Browser Helper Objects\{1FD49718-1D00-4B19-AF5F-070AF6D5D54C}"), () => selection == null),
+            ("Disabling Microsoft Edge services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Explorer\Browser Helper Objects\AutorunsDisabled\{1FD49718-1D00-4B19-AF5F-070AF6D5D54C}", "", "IEToEdge BHO", RegistryValueKind.String), () => selection == null),
+            ("Disabling Microsoft Edge services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Explorer\Browser Helper Objects\AutorunsDisabled\{1FD49718-1D00-4B19-AF5F-070AF6D5D54C}", "NoExplorer", 1, RegistryValueKind.String), () => selection == null),
+            ("Disabling Microsoft Edge services", async () => RegistryHelper.DeleteKey(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Explorer\Browser Helper Objects\{1FD49718-1D00-4B19-AF5F-070AF6D5D54C}"), () => selection == null),
+            ("Disabling Microsoft Edge services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\edgeupdate", "Start", 4, RegistryValueKind.DWord), () => selection == null),
+            ("Disabling Microsoft Edge services", async () => ServicesHelper.StopService("edgeupdate"), () => selection == null),
+            ("Disabling Microsoft Edge services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\edgeupdatem", "Start", 4, RegistryValueKind.DWord), () => selection == null),
+            ("Disabling Microsoft Edge services", async () => ServicesHelper.StopService("edgeupdatem"), () => selection == null),
+            ("Disabling Microsoft Edge services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\MicrosoftEdgeElevationService", "Start", 4, RegistryValueKind.DWord), () => selection == null),
+            ("Disabling Microsoft Edge services", async () => ServicesHelper.StopService("MicrosoftEdgeElevationService"), () => selection == null),
+            ("Disabling Microsoft Edge services", async () => TaskSchedulerHelper.Toggle("MicrosoftEdgeUpdateTaskMachineCore", false), () => selection == null),
+            ("Disabling Microsoft Edge services", async () => TaskSchedulerHelper.Toggle("MicrosoftEdgeUpdateTaskMachineUA", false), () => selection == null),
 
             // download google chrome
-            ("Downloading Google Chrome", async () => await DownloadHelper.Download("http://dl.google.com/chrome/install/375.126/chrome_installer.exe", ApplicationData.Current.TemporaryFolder.Path, "ChromeSetup.exe", new InstallPageReporter()), () => Chrome == true),
+            ("Downloading Google Chrome", async () => await DownloadHelper.Download("http://dl.google.com/chrome/install/375.126/chrome_installer.exe", ApplicationData.Current.TemporaryFolder.Path, "ChromeSetup.exe", reporter ?? new InstallPageReporter()), () => Chrome == true),
 
             // install google chrome
             ("Installing Google Chrome", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(ApplicationData.Current.TemporaryFolder.Path, "ChromeSetup.exe"), Arguments = "--silent --install --system-level --do-not-launch-chrome", WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => Chrome == true),
@@ -162,7 +192,7 @@ public static class BrowsersStage
             ("Disabling Google Chrome services", async () => TaskSchedulerHelper.Toggle("GoogleUpdaterTaskSystem", false), () => Chrome == true),
 
             // download thorium
-            ("Downloading Thorium", async () => await DownloadHelper.Download("https://github.com/Alex313031/Thorium-Win/releases/latest/download/thorium_SSE4_mini_installer.exe", ApplicationData.Current.TemporaryFolder.Path, "ThoriumSetup.exe", new InstallPageReporter()), () => Thorium == true),
+            ("Downloading Thorium", async () => await DownloadHelper.Download("https://github.com/Alex313031/Thorium-Win/releases/latest/download/thorium_SSE4_mini_installer.exe", ApplicationData.Current.TemporaryFolder.Path, "ThoriumSetup.exe", reporter ?? new InstallPageReporter()), () => Thorium == true),
 
             // install thorium
             ("Installing Thorium", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(ApplicationData.Current.TemporaryFolder.Path, "ThoriumSetup.exe"), Arguments = "--silent --install --system-level --do-not-launch-chrome", WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => Thorium == true),
@@ -217,7 +247,7 @@ public static class BrowsersStage
             ("Removing Thorium shortcut from the desktop", async () => File.Delete(@"C:\Users\Public\Desktop\Thorium.lnk"), () => Thorium == true),
 
 			// download helium
-			("Downloading Helium", async () => await DownloadHelper.Download(JsonDocument.Parse(await new HttpClient { DefaultRequestHeaders = { { "User-Agent", "AutoOS" } } }.GetStringAsync("https://api.github.com/repos/imputnet/helium-windows/releases/latest")).RootElement.GetProperty("assets").EnumerateArray().First(a => a.GetProperty("name").GetString().Contains("_x64-installer.exe")).GetProperty("browser_download_url").GetString(), ApplicationData.Current.TemporaryFolder.Path, "helium_x64-installer.exe", new InstallPageReporter()), () => Helium == true),
+			("Downloading Helium", async () => await DownloadHelper.Download(JsonDocument.Parse(await new HttpClient { DefaultRequestHeaders = { { "User-Agent", "AutoOS" } } }.GetStringAsync("https://api.github.com/repos/imputnet/helium-windows/releases/latest")).RootElement.GetProperty("assets").EnumerateArray().First(a => a.GetProperty("name").GetString().Contains("_x64-installer.exe")).GetProperty("browser_download_url").GetString(), ApplicationData.Current.TemporaryFolder.Path, "helium_x64-installer.exe", reporter ?? new InstallPageReporter()), () => Helium == true),
 
             // install helium
             ("Installing Helium", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(ApplicationData.Current.TemporaryFolder.Path, "helium_x64-installer.exe"), Arguments = "/S /SYSTEM", WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => Helium == true),
@@ -277,7 +307,7 @@ public static class BrowsersStage
             ("Removing Helium shortcut from the desktop", async () => File.Delete(@"C:\Users\Public\Desktop\Helium.lnk"), () => Helium == true),
 
             // download brave
-            ("Downloading Brave", async () => await DownloadHelper.Download("https://github.com/brave/brave-browser/releases/latest/download/BraveBrowserStandaloneSetup.exe", ApplicationData.Current.TemporaryFolder.Path, "BraveBrowserStandaloneSetup.exe", new InstallPageReporter()), () => Brave == true),
+            ("Downloading Brave", async () => await DownloadHelper.Download("https://github.com/brave/brave-browser/releases/latest/download/BraveBrowserStandaloneSetup.exe", ApplicationData.Current.TemporaryFolder.Path, "BraveBrowserStandaloneSetup.exe", reporter ?? new InstallPageReporter()), () => Brave == true),
 
             // install brave
             ("Installing Brave", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(ApplicationData.Current.TemporaryFolder.Path, "BraveBrowserStandaloneSetup.exe"), Arguments = "/silent /install", WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => Brave == true),
@@ -344,7 +374,7 @@ public static class BrowsersStage
             ("Installing 1Password Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\BraveSoftware\Brave\ExtensionInstallForcelist", "aeblfdkhhhdcdjpifhhbdiojplfjncoa"), () => Brave == true && OnePassword == true),
 
             // download vivaldi
-            ("Downloading Vivaldi", async () => await DownloadHelper.Download("https://vivaldi.com/download/Vivaldi.x64.exe", ApplicationData.Current.TemporaryFolder.Path, "Vivaldi.x64.exe", new InstallPageReporter()), () => Vivaldi == true),
+            ("Downloading Vivaldi", async () => await DownloadHelper.Download("https://vivaldi.com/download/Vivaldi.x64.exe", ApplicationData.Current.TemporaryFolder.Path, "Vivaldi.x64.exe", reporter ?? new InstallPageReporter()), () => Vivaldi == true),
 
             // install vivaldi
             ("Installing Vivaldi", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(ApplicationData.Current.TemporaryFolder.Path, "Vivaldi.x64.exe"), Arguments = "--vivaldi-silent --do-not-launch-chrome --system-level", WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => Vivaldi == true),
@@ -399,14 +429,14 @@ public static class BrowsersStage
             ("Disabling Vivaldi services", async () => RegistryHelper.DeleteKey(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Active Setup\Installed Components\{9C142C0C-124C-4467-B117-EBCC62801D7B}"), () => Vivaldi == true),
 
             // download arc dependency
-            ("Downloading Arc Dependency", async () => await DownloadHelper.Download("https://releases.arc.net/windows/dependencies/x64/Microsoft.VCLibs.x64.14.00.Desktop.14.0.33728.0.appx", ApplicationData.Current.TemporaryFolder.Path, "Microsoft.VCLibs.x64.14.00.Desktop.14.0.33728.0.appx", new InstallPageReporter()), () => Arc == true),
+            ("Downloading Arc Dependency", async () => await DownloadHelper.Download("https://releases.arc.net/windows/dependencies/x64/Microsoft.VCLibs.x64.14.00.Desktop.14.0.33728.0.appx", ApplicationData.Current.TemporaryFolder.Path, "Microsoft.VCLibs.x64.14.00.Desktop.14.0.33728.0.appx", reporter ?? new InstallPageReporter()), () => Arc == true),
 
             // install arc dependency
             ("Installing Arc Dependency", async () => await Process.Start(new ProcessStartInfo { FileName = "powershell", Arguments = @$"-Command ""Add-AppxPackage -Path {Path.Combine(ApplicationData.Current.TemporaryFolder.Path, "Microsoft.VCLibs.x64.14.00.Desktop.14.0.33728.0.appx")}""", UseShellExecute = false, CreateNoWindow = true })!.WaitForExitAsync(), () => Arc == true),
             ("Cleaning up Arc Dependency files", async () => await (await ApplicationData.Current.TemporaryFolder.GetFileAsync("Microsoft.VCLibs.x64.14.00.Desktop.14.0.33728.0.appx")).DeleteAsync(), () => Arc == true),
 
             // download arc
-            ("Downloading Arc", async () => await DownloadHelper.Download("https://releases.arc.net/windows/prod/1.72.0.296/Arc.x64.msix", ApplicationData.Current.TemporaryFolder.Path, "Arc.x64.msix", new InstallPageReporter()), () => Arc == true),
+            ("Downloading Arc", async () => await DownloadHelper.Download("https://releases.arc.net/windows/prod/1.72.0.296/Arc.x64.msix", ApplicationData.Current.TemporaryFolder.Path, "Arc.x64.msix", reporter ?? new InstallPageReporter()), () => Arc == true),
 
             // install arc
             ("Installing Arc", async () => await new PackageManager().AddPackageAsync(new Uri(Path.Combine(ApplicationData.Current.TemporaryFolder.Path, "Arc.x64.msix")), null, DeploymentOptions.None), () => Arc == true),
@@ -453,7 +483,7 @@ public static class BrowsersStage
             ("Please log in to your Arc account (Close to continue)", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(@"C:\Program Files\WindowsApps\TheBrowserCompany.Arc_" + arcVersion + @"_x64__ttt1ap7aakyb4", "Arc.exe"), WindowStyle = ProcessWindowStyle.Maximized })!.WaitForExitAsync(), () => Arc == true),
 
             // download comet
-            ("Downloading Comet", async () => await DownloadHelper.Download("https://www.perplexity.ai/rest/browser/download?platform=win_x64&channel=stable", ApplicationData.Current.TemporaryFolder.Path, "Comet.exe", new InstallPageReporter()), () => Comet == true),
+            ("Downloading Comet", async () => await DownloadHelper.Download("https://www.perplexity.ai/rest/browser/download?platform=win_x64&channel=stable", ApplicationData.Current.TemporaryFolder.Path, "Comet.exe", reporter ?? new InstallPageReporter()), () => Comet == true),
 
             // install comet
             ("Installing Comet", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(ApplicationData.Current.TemporaryFolder.Path, "Comet.exe"), Arguments = "-silent --do-not-launch-chrome --system-level", WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => Comet == true),
@@ -509,7 +539,7 @@ public static class BrowsersStage
 
             // download firefox
             ("Downloading Firefox", async () => firefoxVersion = JsonDocument.Parse(await ProcessActions.httpClient.GetStringAsync("https://product-details.mozilla.org/1.0/firefox_versions.json")).RootElement.GetProperty("LATEST_FIREFOX_VERSION").GetString(), () => Firefox == true),
-            ("Downloading Firefox", async () => await DownloadHelper.Download($"https://releases.mozilla.org/pub/firefox/releases/{firefoxVersion}/win64/en-US/Firefox%20Setup%20{firefoxVersion}.exe", ApplicationData.Current.TemporaryFolder.Path, "FirefoxSetup.exe", new InstallPageReporter()), () => Firefox == true),
+            ("Downloading Firefox", async () => await DownloadHelper.Download($"https://releases.mozilla.org/pub/firefox/releases/{firefoxVersion}/win64/en-US/Firefox%20Setup%20{firefoxVersion}.exe", ApplicationData.Current.TemporaryFolder.Path, "FirefoxSetup.exe", reporter ?? new InstallPageReporter()), () => Firefox == true),
 
             // install firefox
             ("Installing Firefox", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(ApplicationData.Current.TemporaryFolder.Path, "FirefoxSetup.exe"), Arguments = "/S /MaintenanceService=false /DesktopShortcut=false /StartMenuShortcut=true", WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => Firefox == true),
@@ -529,7 +559,7 @@ public static class BrowsersStage
             ("Optimizing Firefox settings", async () => File.WriteAllText(Path.Combine(@"C:\Program Files\Mozilla Firefox", "distribution", "policies.json"), "{\r\n  \"policies\": {}\r\n}"), () => Firefox == true),
 
             // download arkenfox user.js
-            ("Downloading Arkenfox user.js", async () => await DownloadHelper.Download("https://raw.githubusercontent.com/arkenfox/user.js/refs/heads/master/user.js", @"C:\Program Files\Mozilla Firefox", "user.js", new InstallPageReporter()), () => Firefox == true),
+            ("Downloading Arkenfox user.js", async () => await DownloadHelper.Download("https://raw.githubusercontent.com/arkenfox/user.js/refs/heads/master/user.js", @"C:\Program Files\Mozilla Firefox", "user.js", reporter ?? new InstallPageReporter()), () => Firefox == true),
 
             // install ublock origin extension
             ("Installing uBlock Origin Extension", async () => UpdatePolicies(@"C:\Program Files\Mozilla Firefox\distribution\policies.json", "https://addons.mozilla.org/firefox/downloads/latest/ublock-origin"), () => Firefox == true && uBlock == true),
@@ -572,7 +602,7 @@ public static class BrowsersStage
             ("Installing 1Password Extension", async () => await Task.Delay(500), () => Firefox == true && OnePassword == true),
 
             // download zen
-            ("Downloading Zen", async () => await DownloadHelper.Download("https://github.com/zen-browser/desktop/releases/latest/download/zen.installer.exe", ApplicationData.Current.TemporaryFolder.Path, "zen.installer.exe", new InstallPageReporter()), () => Zen == true),
+            ("Downloading Zen", async () => await DownloadHelper.Download("https://github.com/zen-browser/desktop/releases/latest/download/zen.installer.exe", ApplicationData.Current.TemporaryFolder.Path, "zen.installer.exe", reporter ?? new InstallPageReporter()), () => Zen == true),
 
             // install zen
             ("Installing Zen", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(ApplicationData.Current.TemporaryFolder.Path, "zen.installer.exe"), Arguments = "/S /MaintenanceService=false /DesktopShortcut=false /StartMenuShortcut=true", WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => Zen == true),
@@ -591,7 +621,7 @@ public static class BrowsersStage
             ("Optimizing Zen settings", async () => File.WriteAllText(Path.Combine(@"C:\Program Files\Zen Browser", "distribution", "policies.json"), "{\r\n  \"policies\": {}\r\n}"), () => Zen == true),
 
             // download arkenfox user.js
-            ("Downloading Arkenfox user.js", async () => await DownloadHelper.Download("https://raw.githubusercontent.com/arkenfox/user.js/refs/heads/master/user.js", @"C:\Program Files\Zen Browser", "user.js", new InstallPageReporter()), () => Zen == true),
+            ("Downloading Arkenfox user.js", async () => await DownloadHelper.Download("https://raw.githubusercontent.com/arkenfox/user.js/refs/heads/master/user.js", @"C:\Program Files\Zen Browser", "user.js", reporter ?? new InstallPageReporter()), () => Zen == true),
 
             // install ublock origin extension
             ("Installing uBlock Origin Extension", async () => UpdatePolicies(@"C:\Program Files\Zen Browser\distribution\policies.json", "https://addons.mozilla.org/firefox/downloads/latest/ublock-origin"), () => Zen == true && uBlock == true),
@@ -633,6 +663,13 @@ public static class BrowsersStage
             ("Installing 1Password Extension", async () => UpdatePolicies(@"C:\Program Files\Zen Browser\distribution\policies.json", "https://addons.mozilla.org/firefox/downloads/latest/1password-x-password-manager"), () => Zen == true && OnePassword == true),
             ("Installing 1Password Extension", async () => await Task.Delay(500), () => Zen == true && OnePassword == true),
         };
+
+        if (selection != null)
+        {
+            return actions.Where(action => action.Condition != null && action.Condition.Invoke()).ToList();
+        }
+
+        return actions;
     }
 
     private static void UpdatePolicies(string policiesPath, string extensionUrl)
@@ -706,5 +743,4 @@ public static class BrowsersStage
         return Task.CompletedTask;
     }
 }
-
 

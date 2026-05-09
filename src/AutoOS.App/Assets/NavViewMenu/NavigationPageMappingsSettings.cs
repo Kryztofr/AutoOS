@@ -4,7 +4,6 @@ public partial class NavigationPageMappingsSettings
     public static Dictionary<string, Type> PageDictionary { get; } = new Dictionary<string, Type>
     {
         {"AutoOS.Views.Settings.HomeLandingPage", typeof(AutoOS.Views.Settings.HomeLandingPage)},
-		{"AutoOS.Views.Settings.ApplicationsPage", typeof(AutoOS.Views.Settings.ApplicationsPage)},
 		{"AutoOS.Views.Settings.SoundPage", typeof(AutoOS.Views.Settings.SoundPage)},
         {"AutoOS.Views.Settings.DisplayPage", typeof(AutoOS.Views.Settings.DisplayPage)},
         {"AutoOS.Views.Settings.GraphicsPage", typeof(AutoOS.Views.Settings.GraphicsPage)},
@@ -17,6 +16,8 @@ public partial class NavigationPageMappingsSettings
         {"AutoOS.Views.Settings.DiskCleanupPage", typeof(AutoOS.Views.Settings.DiskCleanupPage)},
         {"AutoOS.Views.Settings.SecurityPage", typeof(AutoOS.Views.Settings.SecurityPage)},
         {"AutoOS.Views.Settings.UpdatePage", typeof(AutoOS.Views.Settings.UpdatePage)},
-        {"AutoOS.Views.Settings.GamesPage", typeof(AutoOS.Views.Settings.GamesPage)}
+		{"AutoOS.Views.Settings.BrowsersPage", typeof(AutoOS.Views.Settings.BrowsersPage)},
+		{"AutoOS.Views.Settings.ApplicationsPage", typeof(AutoOS.Views.Settings.ApplicationsPage)},
+		{"AutoOS.Views.Settings.GamesPage", typeof(AutoOS.Views.Settings.GamesPage)}
     };
 }
