@@ -1,13 +1,11 @@
 ﻿using AutoOS.Core.Helpers.Logging;
 using AutoOS.Core.Helpers.OS;
 using AutoOS.Core.Helpers.Registry;
-using AutoOS.Views.Installer.Actions;
 using AutoOS.Views.Installer.Stages;
 using AutoOS.Views.Updater.Stages;
 using AutoOS.Views.Updater;
 using CommunityToolkit.WinUI.Controls;
 using Microsoft.Win32;
-using System.Diagnostics;
 using System.Net.Http.Headers;
 using System.Text.Json;
 using Windows.Storage;
@@ -55,6 +53,7 @@ namespace AutoOS.Views.Settings
 
             if (ubr >= 8313 && (Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Windhawk\Engine\Mods\windows-11-start-menu-styler", "Version", null) as string) == "1.4.1")
             {
+                RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_LOCAL_MACHINE\SOFTWARE\Windhawk\Engine\Mods\windows-11-start-menu-styler\Settings", "theme", "SideBySide2", RegistryValueKind.String);
                 RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_LOCAL_MACHINE\SOFTWARE\Windhawk\Engine\Mods\windows-11-start-menu-styler\Settings", "disableNewStartMenuLayout", "disableNewLayoutKeepPhoneLink", RegistryValueKind.String);
                 RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\FeatureManagement\Overrides\8\3036241548", "EnabledState", "1", RegistryValueKind.DWord);
                 RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\FeatureManagement\Overrides\8\3036241548", "EnabledStateOptions", "0", RegistryValueKind.DWord);
