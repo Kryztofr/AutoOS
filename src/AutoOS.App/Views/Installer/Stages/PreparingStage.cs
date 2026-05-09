@@ -35,12 +35,14 @@ public static class PreparingStage
     public static bool Firefox;
     public static bool Zen;
     public static bool uBlock;
-    public static bool SponsorBlock;
-    public static bool ReturnYouTubeDislike;
+    public static bool PrivacyBadger;
+    public static bool Decentraleyes;
     public static bool Cookies;
-    public static bool DarkReader;
     public static bool Violentmonkey;
     public static bool Tampermonkey;
+    public static bool SponsorBlock;
+    public static bool ReturnYouTubeDislike;
+    public static bool DarkReader;
     public static bool Shazam;
     public static bool iCloud;
     public static bool Bitwarden;
@@ -160,12 +162,14 @@ public static class PreparingStage
             Zen = (localSettings.Values["Browsers"]?.ToString().Contains("Zen") ?? false);
 
             uBlock = (localSettings.Values["Extensions"]?.ToString().Contains("uBlock Origin") ?? false);
-            SponsorBlock = (localSettings.Values["Extensions"]?.ToString().Contains("SponsorBlock") ?? false);
-            ReturnYouTubeDislike = (localSettings.Values["Extensions"]?.ToString().Contains("Return YouTube Dislike") ?? false);
+            PrivacyBadger = (localSettings.Values["Extensions"]?.ToString().Contains("Privacy Badger") ?? false);
+            Decentraleyes = (localSettings.Values["Extensions"]?.ToString().Contains("Decentraleyes") ?? false);
             Cookies = (localSettings.Values["Extensions"]?.ToString().Contains("I still don't care about cookies") ?? false);
-            DarkReader = (localSettings.Values["Extensions"]?.ToString().Contains("Dark Reader") ?? false);
             Violentmonkey = (localSettings.Values["Extensions"]?.ToString().Contains("Violentmonkey") ?? false);
             Tampermonkey = (localSettings.Values["Extensions"]?.ToString().Contains("Tampermonkey") ?? false);
+            SponsorBlock = (localSettings.Values["Extensions"]?.ToString().Contains("SponsorBlock") ?? false);
+            ReturnYouTubeDislike = (localSettings.Values["Extensions"]?.ToString().Contains("Return YouTube Dislike") ?? false);
+            DarkReader = (localSettings.Values["Extensions"]?.ToString().Contains("Dark Reader") ?? false);
             Shazam = (localSettings.Values["Extensions"]?.ToString().Contains("Shazam") ?? false);
             iCloud = (localSettings.Values["Extensions"]?.ToString().Contains("iCloud Passwords") ?? false);
             Bitwarden = (localSettings.Values["Extensions"]?.ToString().Contains("Bitwarden") ?? false);

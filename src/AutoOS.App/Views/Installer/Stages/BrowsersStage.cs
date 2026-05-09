@@ -27,12 +27,14 @@ public class BrowserSelection
 	public bool Firefox { get; set; }
 	public bool Zen { get; set; }
 	public bool uBlock { get; set; }
-	public bool SponsorBlock { get; set; }
-	public bool ReturnYouTubeDislike { get; set; }
+	public bool PrivacyBadger { get; set; }
+	public bool Decentraleyes { get; set; }
 	public bool Cookies { get; set; }
-	public bool DarkReader { get; set; }
 	public bool Violentmonkey { get; set; }
 	public bool Tampermonkey { get; set; }
+	public bool SponsorBlock { get; set; }
+	public bool ReturnYouTubeDislike { get; set; }
+	public bool DarkReader { get; set; }
 	public bool Shazam { get; set; }
 	public bool iCloud { get; set; }
 	public bool Bitwarden { get; set; }
@@ -58,12 +60,14 @@ public static class BrowsersStage
         bool? Firefox = selection?.Firefox ?? PreparingStage.Firefox;
         bool? Zen = selection?.Zen ?? PreparingStage.Zen;
         bool? uBlock = selection?.uBlock ?? PreparingStage.uBlock;
-        bool? SponsorBlock = selection?.SponsorBlock ?? PreparingStage.SponsorBlock;
-        bool? ReturnYouTubeDislike = selection?.ReturnYouTubeDislike ?? PreparingStage.ReturnYouTubeDislike;
+        bool? PrivacyBadger = selection?.PrivacyBadger ?? PreparingStage.PrivacyBadger;
+        bool? Decentraleyes = selection?.Decentraleyes ?? PreparingStage.Decentraleyes;
         bool? Cookies = selection?.Cookies ?? PreparingStage.Cookies;
-        bool? DarkReader = selection?.DarkReader ?? PreparingStage.DarkReader;
         bool? Violentmonkey = selection?.Violentmonkey ?? PreparingStage.Violentmonkey;
         bool? Tampermonkey = selection?.Tampermonkey ?? PreparingStage.Tampermonkey;
+        bool? SponsorBlock = selection?.SponsorBlock ?? PreparingStage.SponsorBlock;
+        bool? ReturnYouTubeDislike = selection?.ReturnYouTubeDislike ?? PreparingStage.ReturnYouTubeDislike;
+        bool? DarkReader = selection?.DarkReader ?? PreparingStage.DarkReader;
         bool? Shazam = selection?.Shazam ?? PreparingStage.Shazam;
         bool? iCloud = selection?.iCloud ?? PreparingStage.iCloud;
         bool? Bitwarden = selection?.Bitwarden ?? PreparingStage.Bitwarden;
@@ -140,24 +144,30 @@ public static class BrowsersStage
             // install ublock origin extension
             ("Installing uBlock Origin Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Google\Chrome\ExtensionInstallForcelist", "cjpalhdlnbpafiamejdnhcphjbkeiagm"), () => Chrome == true && uBlock == true),
 
-            // install sponsorblock extension
-            ("Installing SponsorBlock Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Google\Chrome\ExtensionInstallForcelist", "mnjggcdmjocbbbhaepdhchncahnbgone"), () => Chrome == true && SponsorBlock == true),
+            // install privacy badger extension
+            ("Installing Privacy Badger Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Google\Chrome\ExtensionInstallForcelist", "pkehgijcmpdhfbdbbnkijodmdjhbjlgp"), () => Chrome == true && PrivacyBadger == true),
 
-            // install return youtube dislike extension
-            ("Installing ReturnYouTubeDislike Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Google\Chrome\ExtensionInstallForcelist", "gebbhagfogifgggkldgodflihgfeippi"), () => Chrome == true && ReturnYouTubeDislike == true),
+            // install decentraleyes extension
+            ("Installing Decentraleyes Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Google\Chrome\ExtensionInstallForcelist", "ldpochfccmkkmhdbclfhpagapcfdljkj"), () => Chrome == true && Decentraleyes == true),
 
-            // install i still dont care about cookies extension
+            // install i still don't care about cookies extension
             ("Installing I still don't care about cookies Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Google\Chrome\ExtensionInstallForcelist", "edibdbjcniadpccecjdfdjjppcpchdlm"), () => Chrome == true && Cookies == true),
 
-            // install dark reader extension
-            ("Installing Dark Reader Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Google\Chrome\ExtensionInstallForcelist", "eimadpbcbfnmbkopoojfekhnkhdbieeh"), () => Chrome == true && DarkReader == true),
-            
             // install violentmonkey extension
             ("Installing Violentmonkey Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Google\Chrome\ExtensionInstallForcelist", "jinjaccalgkegednnccohejagnlnfdag"), () => Chrome == true && Violentmonkey == true),
 
             // install tampermonkey extension
             ("Installing Tampermonkey Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Google\Chrome\ExtensionInstallForcelist", "dhdgffkkebhmkfjojejmpbldmpobfkfo"), () => Chrome == true && Tampermonkey == true),
 
+            // install sponsorblock extension
+            ("Installing SponsorBlock Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Google\Chrome\ExtensionInstallForcelist", "mnjggcdmjocbbbhaepdhchncahnbgone"), () => Chrome == true && SponsorBlock == true),
+
+            // install return youtube dislike extension
+            ("Installing Return YouTube Dislike Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Google\Chrome\ExtensionInstallForcelist", "gebbhagfogifgggkldgodflihgfeippi"), () => Chrome == true && ReturnYouTubeDislike == true),
+
+            // install dark reader extension
+            ("Installing Dark Reader Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Google\Chrome\ExtensionInstallForcelist", "eimadpbcbfnmbkopoojfekhnkhdbieeh"), () => Chrome == true && DarkReader == true),
+            
             // install shazam extension
             ("Installing Shazam Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Google\Chrome\ExtensionInstallForcelist", "mmioliijnhnoblpgimnlajmefafdfilb"), () => Chrome == true && Shazam == true),
 
@@ -268,37 +278,43 @@ public static class BrowsersStage
             ("Pinning Helium to the taskbar", async () => await ProcessActions.RunPowerShellScript("taskbarpin.ps1", @"-Type Link -Path ""C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Helium.lnk"""), () => Helium == true),
 
             // install ublock origin extension
-            ("Installing uBlock Origin Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Helium\ExtensionInstallForcelist", "cjpalhdlnbpafiamejdnhcphjbkeiagm"), () => Helium == true && uBlock == true),
+            ("Installing uBlock Origin Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "cjpalhdlnbpafiamejdnhcphjbkeiagm"), () => Thorium == true && uBlock == true),
 
-            // install sponsorblock extension
-            ("Installing SponsorBlock Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Helium\ExtensionInstallForcelist", "mnjggcdmjocbbbhaepdhchncahnbgone"), () => Helium == true && SponsorBlock == true),
+            // install privacy badger extension
+            ("Installing Privacy Badger Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "pkehgijcmpdhfbdbbnkijodmdjhbjlgp"), () => Thorium == true && PrivacyBadger == true),
 
-            // install return youtube dislike extension
-            ("Installing ReturnYouTubeDislike Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Helium\ExtensionInstallForcelist", "gebbhagfogifgggkldgodflihgfeippi"), () => Helium == true && ReturnYouTubeDislike == true),
+            // install decentraleyes extension
+            ("Installing Decentraleyes Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "ldpochfccmkkmhdbclfhpagapcfdljkj"), () => Thorium == true && Decentraleyes == true),
 
-            // install i still dont care about cookies extension
-            ("Installing I still don't care about cookies Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Helium\ExtensionInstallForcelist", "edibdbjcniadpccecjdfdjjppcpchdlm"), () => Helium == true && Cookies == true),
+            // install i still don't care about cookies extension
+            ("Installing I still don't care about cookies Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "edibdbjcniadpccecjdfdjjppcpchdlm"), () => Thorium == true && Cookies == true),
 
-            // install dark reader extension
-            ("Installing Dark Reader Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Helium\ExtensionInstallForcelist", "eimadpbcbfnmbkopoojfekhnkhdbieeh"), () => Helium == true && DarkReader == true),
-            
             // install violentmonkey extension
-            ("Installing Violentmonkey Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Helium\ExtensionInstallForcelist", "jinjaccalgkegednnccohejagnlnfdag"), () => Helium == true && Violentmonkey == true),
+            ("Installing Violentmonkey Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "jinjaccalgkegednnccohejagnlnfdag"), () => Thorium == true && Violentmonkey == true),
 
             // install tampermonkey extension
-            ("Installing Tampermonkey Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Helium\ExtensionInstallForcelist", "dhdgffkkebhmkfjojejmpbldmpobfkfo"), () => Helium == true && Tampermonkey == true),
+            ("Installing Tampermonkey Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "dhdgffkkebhmkfjojejmpbldmpobfkfo"), () => Thorium == true && Tampermonkey == true),
 
+            // install sponsorblock extension
+            ("Installing SponsorBlock Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "mnjggcdmjocbbbhaepdhchncahnbgone"), () => Thorium == true && SponsorBlock == true),
+
+            // install return youtube dislike extension
+            ("Installing Return YouTube Dislike Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "gebbhagfogifgggkldgodflihgfeippi"), () => Thorium == true && ReturnYouTubeDislike == true),
+
+            // install dark reader extension
+            ("Installing Dark Reader Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "eimadpbcbfnmbkopoojfekhnkhdbieeh"), () => Thorium == true && DarkReader == true),
+            
             // install shazam extension
-            ("Installing Shazam Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Helium\ExtensionInstallForcelist", "mmioliijnhnoblpgimnlajmefafdfilb"), () => Helium == true && Shazam == true),
+            ("Installing Shazam Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "mmioliijnhnoblpgimnlajmefafdfilb"), () => Thorium == true && Shazam == true),
 
             // install icloud passwords extension
-            ("Installing iCloud Passwords Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Helium\ExtensionInstallForcelist", "pejdijmoenmkgeppbflobdenhhabjlaj"), () => Helium == true && iCloud == true),
+            ("Installing iCloud Passwords Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "pejdijmoenmkgeppbflobdenhhabjlaj"), () => Thorium == true && iCloud == true),
 
             // install bitwarden extension
-            ("Installing Bitwarden Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Helium\ExtensionInstallForcelist", "nngceckbapebfimnlniiiahkandclblb"), () => Helium == true && Bitwarden == true),
+            ("Installing Bitwarden Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "nngceckbapebfimnlniiiahkandclblb"), () => Thorium == true && Bitwarden == true),
 
             // install 1password extension
-            ("Installing 1Password Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Helium\ExtensionInstallForcelist", "aeblfdkhhhdcdjpifhhbdiojplfjncoa"), () => Helium == true && OnePassword == true),
+            ("Installing 1Password Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "aeblfdkhhhdcdjpifhhbdiojplfjncoa"), () => Thorium == true && OnePassword == true),
 
             // log in to helium
             ("Please log in to your Helium account (Close to continue)", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(@"C:\Program Files\imput\Helium\Application", "chrome.exe"), WindowStyle = ProcessWindowStyle.Maximized })!.WaitForExitAsync(), () => Helium == true),
@@ -341,37 +357,43 @@ public static class BrowsersStage
             ("Disabling Brave services", async () => TaskSchedulerHelper.Toggle("BraveSoftwareUpdateTaskMachine", false), () => Brave == true),
 
             // install ublock origin extension
-            ("Installing uBlock Origin Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\BraveSoftware\Brave\ExtensionInstallForcelist", "cjpalhdlnbpafiamejdnhcphjbkeiagm"), () => Brave == true && uBlock == true),
+            ("Installing uBlock Origin Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Helium\ExtensionInstallForcelist", "cjpalhdlnbpafiamejdnhcphjbkeiagm"), () => Helium == true && uBlock == true),
 
-            // install sponsorblock extension
-            ("Installing SponsorBlock Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\BraveSoftware\Brave\ExtensionInstallForcelist", "mnjggcdmjocbbbhaepdhchncahnbgone"), () => Brave == true && SponsorBlock == true),
+            // install privacy badger extension
+            ("Installing Privacy Badger Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Helium\ExtensionInstallForcelist", "pkehgijcmpdhfbdbbnkijodmdjhbjlgp"), () => Helium == true && PrivacyBadger == true),
 
-            // install return youtube dislike extension
-            ("Installing Return YouTube Dislike Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\BraveSoftware\Brave\ExtensionInstallForcelist", "gebbhagfogifgggkldgodflihgfeippi"), () => Brave == true && ReturnYouTubeDislike == true),
+            // install decentraleyes extension
+            ("Installing Decentraleyes Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Helium\ExtensionInstallForcelist", "ldpochfccmkkmhdbclfhpagapcfdljkj"), () => Helium == true && Decentraleyes == true),
 
-            // install i still dont care about cookies extension
-            ("Installing I still don't care about cookies Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\BraveSoftware\Brave\ExtensionInstallForcelist", "edibdbjcniadpccecjdfdjjppcpchdlm"), () => Brave == true && Cookies == true),
-
-            // install dark reader extension
-            ("Installing Dark Reader Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\BraveSoftware\Brave\ExtensionInstallForcelist", "eimadpbcbfnmbkopoojfekhnkhdbieeh"), () => Brave == true && DarkReader == true),
+            // install i still don't care about cookies extension
+            ("Installing I still don't care about cookies Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Helium\ExtensionInstallForcelist", "edibdbjcniadpccecjdfdjjppcpchdlm"), () => Helium == true && Cookies == true),
 
             // install violentmonkey extension
-            ("Installing Violentmonkey Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\BraveSoftware\Brave\ExtensionInstallForcelist", "jinjaccalgkegednnccohejagnlnfdag"), () => Brave == true && Violentmonkey == true),
+            ("Installing Violentmonkey Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Helium\ExtensionInstallForcelist", "jinjaccalgkegednnccohejagnlnfdag"), () => Helium == true && Violentmonkey == true),
 
             // install tampermonkey extension
-            ("Installing Tampermonkey Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\BraveSoftware\Brave\ExtensionInstallForcelist", "dhdgffkkebhmkfjojejmpbldmpobfkfo"), () => Brave == true && Tampermonkey == true),
+            ("Installing Tampermonkey Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Helium\ExtensionInstallForcelist", "dhdgffkkebhmkfjojejmpbldmpobfkfo"), () => Helium == true && Tampermonkey == true),
 
+            // install sponsorblock extension
+            ("Installing SponsorBlock Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Helium\ExtensionInstallForcelist", "mnjggcdmjocbbbhaepdhchncahnbgone"), () => Helium == true && SponsorBlock == true),
+
+            // install return youtube dislike extension
+            ("Installing Return YouTube Dislike Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Helium\ExtensionInstallForcelist", "gebbhagfogifgggkldgodflihgfeippi"), () => Helium == true && ReturnYouTubeDislike == true),
+
+            // install dark reader extension
+            ("Installing Dark Reader Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Helium\ExtensionInstallForcelist", "eimadpbcbfnmbkopoojfekhnkhdbieeh"), () => Helium == true && DarkReader == true),
+            
             // install shazam extension
-            ("Installing Shazam Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\BraveSoftware\Brave\ExtensionInstallForcelist", "mmioliijnhnoblpgimnlajmefafdfilb"), () => Brave == true && Shazam == true),
+            ("Installing Shazam Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Helium\ExtensionInstallForcelist", "mmioliijnhnoblpgimnlajmefafdfilb"), () => Helium == true && Shazam == true),
 
             // install icloud passwords extension
-            ("Installing iCloud Passwords Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\BraveSoftware\Brave\ExtensionInstallForcelist", "pejdijmoenmkgeppbflobdenhhabjlaj"), () => Brave == true && iCloud == true),
+            ("Installing iCloud Passwords Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Helium\ExtensionInstallForcelist", "pejdijmoenmkgeppbflobdenhhabjlaj"), () => Helium == true && iCloud == true),
 
             // install bitwarden extension
-            ("Installing Bitwarden Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\BraveSoftware\Brave\ExtensionInstallForcelist", "nngceckbapebfimnlniiiahkandclblb"), () => Brave == true && Bitwarden == true),
+            ("Installing Bitwarden Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Helium\ExtensionInstallForcelist", "nngceckbapebfimnlniiiahkandclblb"), () => Helium == true && Bitwarden == true),
 
             // install 1password extension
-            ("Installing 1Password Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\BraveSoftware\Brave\ExtensionInstallForcelist", "aeblfdkhhhdcdjpifhhbdiojplfjncoa"), () => Brave == true && OnePassword == true),
+            ("Installing 1Password Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Helium\ExtensionInstallForcelist", "aeblfdkhhhdcdjpifhhbdiojplfjncoa"), () => Helium == true && OnePassword == true),
 
             // download vivaldi
             ("Downloading Vivaldi", async () => await DownloadHelper.Download("https://vivaldi.com/download/Vivaldi.x64.exe", ApplicationData.Current.TemporaryFolder.Path, "Vivaldi.x64.exe", reporter ?? new InstallPageReporter()), () => Vivaldi == true),
@@ -385,37 +407,43 @@ public static class BrowsersStage
             ("Pinning Vivaldi to the taskbar", async () => await ProcessActions.RunPowerShellScript("taskbarpin.ps1", @"-Type Link -Path ""C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Vivaldi.lnk"""), () => Vivaldi == true),
 
             // install ublock origin extension
-            ("Installing uBlock Origin Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Vivaldi\ExtensionInstallForcelist", "cjpalhdlnbpafiamejdnhcphjbkeiagm"), () => Vivaldi == true && uBlock == true),
+            ("Installing uBlock Origin Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\BraveSoftware\Brave\ExtensionInstallForcelist", "cjpalhdlnbpafiamejdnhcphjbkeiagm"), () => Brave == true && uBlock == true),
 
-            // install sponsorblock extension
-            ("Installing SponsorBlock Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Vivaldi\ExtensionInstallForcelist", "mnjggcdmjocbbbhaepdhchncahnbgone"), () => Vivaldi == true && SponsorBlock == true),
+            // install privacy badger extension
+            ("Installing Privacy Badger Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\BraveSoftware\Brave\ExtensionInstallForcelist", "pkehgijcmpdhfbdbbnkijodmdjhbjlgp"), () => Brave == true && PrivacyBadger == true),
 
-            // install return youtube dislike extension
-            ("Installing ReturnYouTubeDislike Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Vivaldi\ExtensionInstallForcelist", "gebbhagfogifgggkldgodflihgfeippi"), () => Vivaldi == true && ReturnYouTubeDislike == true),
+            // install decentraleyes extension
+            ("Installing Decentraleyes Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\BraveSoftware\Brave\ExtensionInstallForcelist", "ldpochfccmkkmhdbclfhpagapcfdljkj"), () => Brave == true && Decentraleyes == true),
 
-            // install i still dont care about cookies extension
-            ("Installing I still don't care about cookies Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Vivaldi\ExtensionInstallForcelist", "edibdbjcniadpccecjdfdjjppcpchdlm"), () => Vivaldi == true && Cookies == true),
+            // install i still don't care about cookies extension
+            ("Installing I still don't care about cookies Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\BraveSoftware\Brave\ExtensionInstallForcelist", "edibdbjcniadpccecjdfdjjppcpchdlm"), () => Brave == true && Cookies == true),
 
-            // install dark reader extension
-            ("Installing Dark Reader Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Vivaldi\ExtensionInstallForcelist", "eimadpbcbfnmbkopoojfekhnkhdbieeh"), () => Vivaldi == true && DarkReader == true),
-            
             // install violentmonkey extension
-            ("Installing Violentmonkey Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Vivaldi\ExtensionInstallForcelist", "jinjaccalgkegednnccohejagnlnfdag"), () => Vivaldi == true && Violentmonkey == true),
+            ("Installing Violentmonkey Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\BraveSoftware\Brave\ExtensionInstallForcelist", "jinjaccalgkegednnccohejagnlnfdag"), () => Brave == true && Violentmonkey == true),
 
             // install tampermonkey extension
-            ("Installing Tampermonkey Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Vivaldi\ExtensionInstallForcelist", "dhdgffkkebhmkfjojejmpbldmpobfkfo"), () => Vivaldi == true && Tampermonkey == true),
+            ("Installing Tampermonkey Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\BraveSoftware\Brave\ExtensionInstallForcelist", "dhdgffkkebhmkfjojejmpbldmpobfkfo"), () => Brave == true && Tampermonkey == true),
 
+            // install sponsorblock extension
+            ("Installing SponsorBlock Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\BraveSoftware\Brave\ExtensionInstallForcelist", "mnjggcdmjocbbbhaepdhchncahnbgone"), () => Brave == true && SponsorBlock == true),
+
+            // install return youtube dislike extension
+            ("Installing Return YouTube Dislike Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\BraveSoftware\Brave\ExtensionInstallForcelist", "gebbhagfogifgggkldgodflihgfeippi"), () => Brave == true && ReturnYouTubeDislike == true),
+
+            // install dark reader extension
+            ("Installing Dark Reader Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\BraveSoftware\Brave\ExtensionInstallForcelist", "eimadpbcbfnmbkopoojfekhnkhdbieeh"), () => Brave == true && DarkReader == true),
+            
             // install shazam extension
-            ("Installing Shazam Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Vivaldi\ExtensionInstallForcelist", "mmioliijnhnoblpgimnlajmefafdfilb"), () => Vivaldi == true && Shazam == true),
+            ("Installing Shazam Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\BraveSoftware\Brave\ExtensionInstallForcelist", "mmioliijnhnoblpgimnlajmefafdfilb"), () => Brave == true && Shazam == true),
 
             // install icloud passwords extension
-            ("Installing iCloud Passwords Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Vivaldi\ExtensionInstallForcelist", "pejdijmoenmkgeppbflobdenhhabjlaj"), () => Vivaldi == true && iCloud == true),
+            ("Installing iCloud Passwords Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\BraveSoftware\Brave\ExtensionInstallForcelist", "pejdijmoenmkgeppbflobdenhhabjlaj"), () => Brave == true && iCloud == true),
 
             // install bitwarden extension
-            ("Installing Bitwarden Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Vivaldi\ExtensionInstallForcelist", "nngceckbapebfimnlniiiahkandclblb"), () => Vivaldi == true && Bitwarden == true),
+            ("Installing Bitwarden Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\BraveSoftware\Brave\ExtensionInstallForcelist", "nngceckbapebfimnlniiiahkandclblb"), () => Brave == true && Bitwarden == true),
 
             // install 1password extension
-            ("Installing 1Password Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Vivaldi\ExtensionInstallForcelist", "aeblfdkhhhdcdjpifhhbdiojplfjncoa"), () => Vivaldi == true && OnePassword == true),
+            ("Installing 1Password Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\BraveSoftware\Brave\ExtensionInstallForcelist", "aeblfdkhhhdcdjpifhhbdiojplfjncoa"), () => Brave == true && OnePassword == true),
 
             // remove vivaldi shortcut from the desktop
             ("Removing Vivaldi shortcut from the desktop", async () => File.Delete(@"C:\Users\Public\Desktop\Vivaldi.lnk"), () => Vivaldi == true),
@@ -447,37 +475,43 @@ public static class BrowsersStage
             ("Pinning Arc to the taskbar", async () => await ProcessActions.RunPowerShellScript("taskbarpin.ps1", @"-Type UWA -Path TheBrowserCompany.Arc_ttt1ap7aakyb4!Arc"), () => Arc == true),
 
             // install ublock origin extension
-            ("Installing uBlock Origin Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "cjpalhdlnbpafiamejdnhcphjbkeiagm"), () => Arc == true && uBlock == true),
+            ("Installing uBlock Origin Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Vivaldi\ExtensionInstallForcelist", "cjpalhdlnbpafiamejdnhcphjbkeiagm"), () => Vivaldi == true && uBlock == true),
 
-            // install sponsorblock extension
-            ("Installing SponsorBlock Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "mnjggcdmjocbbbhaepdhchncahnbgone"), () => Arc == true && SponsorBlock == true),
+            // install privacy badger extension
+            ("Installing Privacy Badger Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Vivaldi\ExtensionInstallForcelist", "pkehgijcmpdhfbdbbnkijodmdjhbjlgp"), () => Vivaldi == true && PrivacyBadger == true),
 
-            // install return youtube dislike extension
-            ("Installing ReturnYouTubeDislike Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "gebbhagfogifgggkldgodflihgfeippi"), () => Arc == true && ReturnYouTubeDislike == true),
+            // install decentraleyes extension
+            ("Installing Decentraleyes Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Vivaldi\ExtensionInstallForcelist", "ldpochfccmkkmhdbclfhpagapcfdljkj"), () => Vivaldi == true && Decentraleyes == true),
 
-            // install i still dont care about cookies extension
-            ("Installing I still don't care about cookies Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "edibdbjcniadpccecjdfdjjppcpchdlm"), () => Arc == true && Cookies == true),
+            // install i still don't care about cookies extension
+            ("Installing I still don't care about cookies Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Vivaldi\ExtensionInstallForcelist", "edibdbjcniadpccecjdfdjjppcpchdlm"), () => Vivaldi == true && Cookies == true),
 
-            // install dark reader extension
-            ("Installing Dark Reader Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "eimadpbcbfnmbkopoojfekhnkhdbieeh"), () => Arc == true && DarkReader == true),
-            
             // install violentmonkey extension
-            ("Installing Violentmonkey Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "jinjaccalgkegednnccohejagnlnfdag"), () => Arc == true && Violentmonkey == true),
+            ("Installing Violentmonkey Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Vivaldi\ExtensionInstallForcelist", "jinjaccalgkegednnccohejagnlnfdag"), () => Vivaldi == true && Violentmonkey == true),
 
             // install tampermonkey extension
-            ("Installing Tampermonkey Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "dhdgffkkebhmkfjojejmpbldmpobfkfo"), () => Arc == true && Tampermonkey == true),
+            ("Installing Tampermonkey Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Vivaldi\ExtensionInstallForcelist", "dhdgffkkebhmkfjojejmpbldmpobfkfo"), () => Vivaldi == true && Tampermonkey == true),
 
+            // install sponsorblock extension
+            ("Installing SponsorBlock Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Vivaldi\ExtensionInstallForcelist", "mnjggcdmjocbbbhaepdhchncahnbgone"), () => Vivaldi == true && SponsorBlock == true),
+
+            // install return youtube dislike extension
+            ("Installing Return YouTube Dislike Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Vivaldi\ExtensionInstallForcelist", "gebbhagfogifgggkldgodflihgfeippi"), () => Vivaldi == true && ReturnYouTubeDislike == true),
+
+            // install dark reader extension
+            ("Installing Dark Reader Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Vivaldi\ExtensionInstallForcelist", "eimadpbcbfnmbkopoojfekhnkhdbieeh"), () => Vivaldi == true && DarkReader == true),
+            
             // install shazam extension
-            ("Installing Shazam Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "mmioliijnhnoblpgimnlajmefafdfilb"), () => Arc == true && Shazam == true),
+            ("Installing Shazam Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Vivaldi\ExtensionInstallForcelist", "mmioliijnhnoblpgimnlajmefafdfilb"), () => Vivaldi == true && Shazam == true),
 
             // install icloud passwords extension
-            ("Installing iCloud Passwords Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "pejdijmoenmkgeppbflobdenhhabjlaj"), () => Arc == true && iCloud == true),
+            ("Installing iCloud Passwords Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Vivaldi\ExtensionInstallForcelist", "pejdijmoenmkgeppbflobdenhhabjlaj"), () => Vivaldi == true && iCloud == true),
 
             // install bitwarden extension
-            ("Installing Bitwarden Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "nngceckbapebfimnlniiiahkandclblb"), () => Arc == true && Bitwarden == true),
+            ("Installing Bitwarden Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Vivaldi\ExtensionInstallForcelist", "nngceckbapebfimnlniiiahkandclblb"), () => Vivaldi == true && Bitwarden == true),
 
             // install 1password extension
-            ("Installing 1Password Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "aeblfdkhhhdcdjpifhhbdiojplfjncoa"), () => Arc == true && OnePassword == true),
+            ("Installing 1Password Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Vivaldi\ExtensionInstallForcelist", "aeblfdkhhhdcdjpifhhbdiojplfjncoa"), () => Vivaldi == true && OnePassword == true),
 
             // log in to arc
             ("Please log in to your Arc account (Close to continue)", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(@"C:\Program Files\WindowsApps\TheBrowserCompany.Arc_" + arcVersion + @"_x64__ttt1ap7aakyb4", "Arc.exe"), WindowStyle = ProcessWindowStyle.Maximized })!.WaitForExitAsync(), () => Arc == true),
@@ -494,37 +528,43 @@ public static class BrowsersStage
             ("Pinning Comet to the taskbar", async () => await ProcessActions.RunPowerShellScript("taskbarpin.ps1", @"-Type Link -Path ""C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Comet.lnk"""), () => Comet == true),
 
             // install ublock origin extension
-            ("Installing uBlock Origin Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "cjpalhdlnbpafiamejdnhcphjbkeiagm"), () => Comet == true && uBlock == true),
+            ("Installing uBlock Origin Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "cjpalhdlnbpafiamejdnhcphjbkeiagm"), () => Arc == true && uBlock == true),
 
-            // install sponsorblock extension
-            ("Installing SponsorBlock Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "mnjggcdmjocbbbhaepdhchncahnbgone"), () => Comet == true && SponsorBlock == true),
+            // install privacy badger extension
+            ("Installing Privacy Badger Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "pkehgijcmpdhfbdbbnkijodmdjhbjlgp"), () => Arc == true && PrivacyBadger == true),
 
-            // install return youtube dislike extension
-            ("Installing ReturnYouTubeDislike Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "gebbhagfogifgggkldgodflihgfeippi"), () => Comet == true && ReturnYouTubeDislike == true),
+            // install decentraleyes extension
+            ("Installing Decentraleyes Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "ldpochfccmkkmhdbclfhpagapcfdljkj"), () => Arc == true && Decentraleyes == true),
 
-            // install i still dont care about cookies extension
-            ("Installing I still don't care about cookies Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "edibdbjcniadpccecjdfdjjppcpchdlm"), () => Comet == true && Cookies == true),
+            // install i still don't care about cookies extension
+            ("Installing I still don't care about cookies Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "edibdbjcniadpccecjdfdjjppcpchdlm"), () => Arc == true && Cookies == true),
 
-            // install dark reader extension
-            ("Installing Dark Reader Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "eimadpbcbfnmbkopoojfekhnkhdbieeh"), () => Comet == true && DarkReader == true),
-            
             // install violentmonkey extension
-            ("Installing Violentmonkey Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "jinjaccalgkegednnccohejagnlnfdag"), () => Comet == true && Violentmonkey == true),
+            ("Installing Violentmonkey Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "jinjaccalgkegednnccohejagnlnfdag"), () => Arc == true && Violentmonkey == true),
 
             // install tampermonkey extension
-            ("Installing Tampermonkey Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "dhdgffkkebhmkfjojejmpbldmpobfkfo"), () => Comet == true && Tampermonkey == true),
+            ("Installing Tampermonkey Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "dhdgffkkebhmkfjojejmpbldmpobfkfo"), () => Arc == true && Tampermonkey == true),
 
+            // install sponsorblock extension
+            ("Installing SponsorBlock Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "mnjggcdmjocbbbhaepdhchncahnbgone"), () => Arc == true && SponsorBlock == true),
+
+            // install return youtube dislike extension
+            ("Installing Return YouTube Dislike Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "gebbhagfogifgggkldgodflihgfeippi"), () => Arc == true && ReturnYouTubeDislike == true),
+
+            // install dark reader extension
+            ("Installing Dark Reader Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "eimadpbcbfnmbkopoojfekhnkhdbieeh"), () => Arc == true && DarkReader == true),
+            
             // install shazam extension
-            ("Installing Shazam Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "mmioliijnhnoblpgimnlajmefafdfilb"), () => Comet == true && Shazam == true),
+            ("Installing Shazam Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "mmioliijnhnoblpgimnlajmefafdfilb"), () => Arc == true && Shazam == true),
 
             // install icloud passwords extension
-            ("Installing iCloud Passwords Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "pejdijmoenmkgeppbflobdenhhabjlaj"), () => Comet == true && iCloud == true),
+            ("Installing iCloud Passwords Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "pejdijmoenmkgeppbflobdenhhabjlaj"), () => Arc == true && iCloud == true),
 
             // install bitwarden extension
-            ("Installing Bitwarden Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "nngceckbapebfimnlniiiahkandclblb"), () => Comet == true && Bitwarden == true),
+            ("Installing Bitwarden Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "nngceckbapebfimnlniiiahkandclblb"), () => Arc == true && Bitwarden == true),
 
             // install 1password extension
-            ("Installing 1Password Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "aeblfdkhhhdcdjpifhhbdiojplfjncoa"), () => Comet == true && OnePassword == true),
+            ("Installing 1Password Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "aeblfdkhhhdcdjpifhhbdiojplfjncoa"), () => Arc == true && OnePassword == true),
 
             // remove comet shortcut from the desktop
             ("Removing Comet shortcut from the desktop", async () => File.Delete(@"C:\Users\Public\Desktop\Comet.lnk"), () => Comet == true),
@@ -562,43 +602,43 @@ public static class BrowsersStage
             ("Downloading Arkenfox user.js", async () => await DownloadHelper.Download("https://raw.githubusercontent.com/arkenfox/user.js/refs/heads/master/user.js", @"C:\Program Files\Mozilla Firefox", "user.js", reporter ?? new InstallPageReporter()), () => Firefox == true),
 
             // install ublock origin extension
-            ("Installing uBlock Origin Extension", async () => UpdatePolicies(@"C:\Program Files\Mozilla Firefox\distribution\policies.json", "https://addons.mozilla.org/firefox/downloads/latest/ublock-origin"), () => Firefox == true && uBlock == true),
-            ("Installing uBlock Origin Extension", async () => await Task.Delay(500), () => Firefox == true && uBlock == true),
+            ("Installing uBlock Origin Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "cjpalhdlnbpafiamejdnhcphjbkeiagm"), () => Comet == true && uBlock == true),
 
-            // install sponsorblock extension
-            ("Installing SponsorBlock Extension", async () => UpdatePolicies(@"C:\Program Files\Mozilla Firefox\distribution\policies.json", "https://addons.mozilla.org/firefox/downloads/latest/sponsorblock"), () => Firefox == true && SponsorBlock == true),
-            ("Installing SponsorBlock Extension", async () => await Task.Delay(500), () => Firefox == true && SponsorBlock == true),
+            // install privacy badger extension
+            ("Installing Privacy Badger Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "pkehgijcmpdhfbdbbnkijodmdjhbjlgp"), () => Comet == true && PrivacyBadger == true),
 
-            // install return youtube dislike extension
-            ("Installing Return YouTube Dislike Extension", async () => UpdatePolicies(@"C:\Program Files\Mozilla Firefox\distribution\policies.json", "https://addons.mozilla.org/firefox/downloads/latest/return-youtube-dislikes"), () => Firefox == true && ReturnYouTubeDislike == true),
-            ("Installing Return YouTube Dislike Extension", async () => await Task.Delay(500), () => Firefox == true && ReturnYouTubeDislike == true),
+            // install decentraleyes extension
+            ("Installing Decentraleyes Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "ldpochfccmkkmhdbclfhpagapcfdljkj"), () => Comet == true && Decentraleyes == true),
 
             // install i still don't care about cookies extension
-            ("Installing I still don't care about cookies Extension", async () => UpdatePolicies(@"C:\Program Files\Mozilla Firefox\distribution\policies.json", "https://addons.mozilla.org/firefox/downloads/latest/istilldontcareaboutcookies"), () => Firefox == true && Cookies == true),
-            ("Installing I still don't care about cookies Extension", async () => await Task.Delay(500), () => Firefox == true && Cookies == true),
-
-            // install dark reader extension
-            ("Installing Dark Reader Extension", async () => UpdatePolicies(@"C:\Program Files\Mozilla Firefox\distribution\policies.json", "https://addons.mozilla.org/firefox/downloads/latest/darkreader"), () => Firefox == true && DarkReader == true),
-            ("Installing Dark Reader Extension", async () => await Task.Delay(500), () => Firefox == true && DarkReader == true),
+            ("Installing I still don't care about cookies Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "edibdbjcniadpccecjdfdjjppcpchdlm"), () => Comet == true && Cookies == true),
 
             // install violentmonkey extension
-            ("Installing Violentmonkey Extension", async () => UpdatePolicies(@"C:\Program Files\Mozilla Firefox\distribution\policies.json", "https://addons.mozilla.org/firefox/downloads/latest/violentmonkey"), () => Firefox == true && Violentmonkey == true),
-            ("Installing Violentmonkey Extension", async () => await Task.Delay(500), () => Firefox == true && Violentmonkey == true),
+            ("Installing Violentmonkey Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "jinjaccalgkegednnccohejagnlnfdag"), () => Comet == true && Violentmonkey == true),
 
             // install tampermonkey extension
-            ("Installing Tampermonkey Extension", async () => UpdatePolicies(@"C:\Program Files\Mozilla Firefox\distribution\policies.json", "https://addons.mozilla.org/firefox/downloads/latest/tampermonkey"), () => Firefox == true && Tampermonkey == true),
-            ("Installing TampermonkeyExtension", async () => await Task.Delay(500), () => Firefox == true && Tampermonkey == true),
+            ("Installing Tampermonkey Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "dhdgffkkebhmkfjojejmpbldmpobfkfo"), () => Comet == true && Tampermonkey == true),
+
+            // install sponsorblock extension
+            ("Installing SponsorBlock Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "mnjggcdmjocbbbhaepdhchncahnbgone"), () => Comet == true && SponsorBlock == true),
+
+            // install return youtube dislike extension
+            ("Installing Return YouTube Dislike Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "gebbhagfogifgggkldgodflihgfeippi"), () => Comet == true && ReturnYouTubeDislike == true),
+
+            // install dark reader extension
+            ("Installing Dark Reader Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "eimadpbcbfnmbkopoojfekhnkhdbieeh"), () => Comet == true && DarkReader == true),
+            
+            // install shazam extension
+            ("Installing Shazam Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "mmioliijnhnoblpgimnlajmefafdfilb"), () => Comet == true && Shazam == true),
 
             // install icloud passwords extension
-            ("Installing iCloud Passwords Extension", async () => UpdatePolicies(@"C:\Program Files\Mozilla Firefox\distribution\policies.json", "https://addons.mozilla.org/firefox/downloads/latest/icloud-passwords"), () => Firefox == true && iCloud == true),
-            ("Installing iCloud Passwords Extension", async () => await Task.Delay(500), () => Firefox == true && iCloud == true),
+            ("Installing iCloud Passwords Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "pejdijmoenmkgeppbflobdenhhabjlaj"), () => Comet == true && iCloud == true),
 
             // install bitwarden extension
-            ("Installing Bitwarden Extension", async () => UpdatePolicies(@"C:\Program Files\Mozilla Firefox\distribution\policies.json", "https://addons.mozilla.org/firefox/downloads/latest/bitwarden-password-manager"), () => Firefox == true && Bitwarden == true),
-            ("Installing Bitwarden Extension", async () => await Task.Delay(500), () => Firefox == true && Bitwarden == true),
+            ("Installing Bitwarden Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "nngceckbapebfimnlniiiahkandclblb"), () => Comet == true && Bitwarden == true),
 
             // install 1password extension
-            ("Installing 1Password Extension", async () => UpdatePolicies(@"C:\Program Files\Mozilla Firefox\distribution\policies.json", "https://addons.mozilla.org/firefox/downloads/latest/1password-x-password-manager"), () => Firefox == true && OnePassword == true),
+            ("Installing 1Password Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "aeblfdkhhhdcdjpifhhbdiojplfjncoa"), () => Comet == true && OnePassword == true),
             ("Installing 1Password Extension", async () => await Task.Delay(500), () => Firefox == true && OnePassword == true),
 
             // download zen
@@ -624,43 +664,53 @@ public static class BrowsersStage
             ("Downloading Arkenfox user.js", async () => await DownloadHelper.Download("https://raw.githubusercontent.com/arkenfox/user.js/refs/heads/master/user.js", @"C:\Program Files\Zen Browser", "user.js", reporter ?? new InstallPageReporter()), () => Zen == true),
 
             // install ublock origin extension
-            ("Installing uBlock Origin Extension", async () => UpdatePolicies(@"C:\Program Files\Zen Browser\distribution\policies.json", "https://addons.mozilla.org/firefox/downloads/latest/ublock-origin"), () => Zen == true && uBlock == true),
-            ("Installing uBlock Origin Extension", async () => await Task.Delay(500), () => Zen == true && uBlock == true),
+            ("Installing uBlock Origin Extension", async () => UpdatePolicies(@"C:\Program Files\Mozilla Firefox\distribution\policies.json", "https://addons.mozilla.org/firefox/downloads/latest/ublock-origin"), () => Firefox == true && uBlock == true),
+            ("Installing uBlock Origin Extension", async () => await Task.Delay(500), () => Firefox == true && uBlock == true),
 
-            // install sponsorblock extension
-            ("Installing SponsorBlock Extension", async () => UpdatePolicies(@"C:\Program Files\Zen Browser\distribution\policies.json", "https://addons.mozilla.org/firefox/downloads/latest/sponsorblock"), () => Zen == true && SponsorBlock == true),
-            ("Installing SponsorBlock Extension", async () => await Task.Delay(500), () => Zen == true && SponsorBlock == true),
+            // install privacy badger extension
+            ("Installing Privacy Badger Extension", async () => UpdatePolicies(@"C:\Program Files\Mozilla Firefox\distribution\policies.json", "https://addons.mozilla.org/firefox/downloads/latest/privacy-badger17"), () => Firefox == true && PrivacyBadger == true),
+            ("Installing Privacy Badger Extension", async () => await Task.Delay(500), () => Firefox == true && PrivacyBadger == true),
 
-            // install return youtube dislike extension
-            ("Installing Return YouTube Dislike Extension", async () => UpdatePolicies(@"C:\Program Files\Zen Browser\distribution\policies.json", "https://addons.mozilla.org/firefox/downloads/latest/return-youtube-dislikes"), () => Zen == true && ReturnYouTubeDislike == true),
-            ("Installing Return YouTube Dislike Extension", async () => await Task.Delay(500), () => Zen == true && ReturnYouTubeDislike == true),
+            // install decentraleyes extension
+            ("Installing Decentraleyes Extension", async () => UpdatePolicies(@"C:\Program Files\Mozilla Firefox\distribution\policies.json", "https://addons.mozilla.org/firefox/downloads/latest/decentraleyes"), () => Firefox == true && Decentraleyes == true),
+            ("Installing Decentraleyes Extension", async () => await Task.Delay(500), () => Firefox == true && Decentraleyes == true),
 
             // install i still don't care about cookies extension
-            ("Installing I still don't care about cookies Extension", async () => UpdatePolicies(@"C:\Program Files\Zen Browser\distribution\policies.json", "https://addons.mozilla.org/firefox/downloads/latest/istilldontcareaboutcookies"), () => Zen == true && Cookies == true),
-            ("Installing I still don't care about cookies Extension", async () => await Task.Delay(500), () => Zen == true && Cookies == true),
-
-            // install dark reader extension
-            ("Installing Dark Reader Extension", async () => UpdatePolicies(@"C:\Program Files\Zen Browser\distribution\policies.json", "https://addons.mozilla.org/firefox/downloads/latest/darkreader"), () => Zen == true && DarkReader == true),
-            ("Installing Dark Reader Extension", async () => await Task.Delay(500), () => Zen == true && DarkReader == true),
+            ("Installing I still don't care about cookies Extension", async () => UpdatePolicies(@"C:\Program Files\Mozilla Firefox\distribution\policies.json", "https://addons.mozilla.org/firefox/downloads/latest/istilldontcareaboutcookies"), () => Firefox == true && Cookies == true),
+            ("Installing I still don't care about cookies Extension", async () => await Task.Delay(500), () => Firefox == true && Cookies == true),
 
             // install violentmonkey extension
-            ("Installing Violentmonkey Extension", async () => UpdatePolicies(@"C:\Program Files\Zen Browser\distribution\policies.json", "https://addons.mozilla.org/firefox/downloads/latest/violentmonkey"), () => Zen == true && Violentmonkey == true),
-            ("Installing Violentmonkey Extension", async () => await Task.Delay(500), () => Zen == true && Violentmonkey == true),
+            ("Installing Violentmonkey Extension", async () => UpdatePolicies(@"C:\Program Files\Mozilla Firefox\distribution\policies.json", "https://addons.mozilla.org/firefox/downloads/latest/violentmonkey"), () => Firefox == true && Violentmonkey == true),
+            ("Installing Violentmonkey Extension", async () => await Task.Delay(500), () => Firefox == true && Violentmonkey == true),
 
             // install tampermonkey extension
-            ("Installing Tampermonkey Extension", async () => UpdatePolicies(@"C:\Program Files\Zen Browser\distribution\policies.json", "https://addons.mozilla.org/firefox/downloads/latest/tampermonkey"), () => Zen == true && Tampermonkey == true),
-            ("Installing TampermonkeyExtension", async () => await Task.Delay(500), () => Zen == true && Tampermonkey == true),
+            ("Installing Tampermonkey Extension", async () => UpdatePolicies(@"C:\Program Files\Mozilla Firefox\distribution\policies.json", "https://addons.mozilla.org/firefox/downloads/latest/tampermonkey"), () => Firefox == true && Tampermonkey == true),
+            ("Installing Tampermonkey Extension", async () => await Task.Delay(500), () => Firefox == true && Tampermonkey == true),
+
+            // install sponsorblock extension
+            ("Installing SponsorBlock Extension", async () => UpdatePolicies(@"C:\Program Files\Mozilla Firefox\distribution\policies.json", "https://addons.mozilla.org/firefox/downloads/latest/sponsorblock"), () => Firefox == true && SponsorBlock == true),
+            ("Installing SponsorBlock Extension", async () => await Task.Delay(500), () => Firefox == true && SponsorBlock == true),
+
+            // install return youtube dislike extension
+            ("Installing Return YouTube Dislike Extension", async () => UpdatePolicies(@"C:\Program Files\Mozilla Firefox\distribution\policies.json", "https://addons.mozilla.org/firefox/downloads/latest/return-youtube-dislikes"), () => Firefox == true && ReturnYouTubeDislike == true),
+            ("Installing Return YouTube Dislike Extension", async () => await Task.Delay(500), () => Firefox == true && ReturnYouTubeDislike == true),
+
+            // install dark reader extension
+            ("Installing Dark Reader Extension", async () => UpdatePolicies(@"C:\Program Files\Mozilla Firefox\distribution\policies.json", "https://addons.mozilla.org/firefox/downloads/latest/darkreader"), () => Firefox == true && DarkReader == true),
+            ("Installing Dark Reader Extension", async () => await Task.Delay(500), () => Firefox == true && DarkReader == true),
 
             // install icloud passwords extension
-            ("Installing iCloud Passwords Extension", async () => UpdatePolicies(@"C:\Program Files\Zen Browser\distribution\policies.json", "https://addons.mozilla.org/firefox/downloads/latest/icloud-passwords"), () => Zen == true && iCloud == true),
-            ("Installing iCloud Passwords Extension", async () => await Task.Delay(500), () => Zen == true && iCloud == true),
+            ("Installing iCloud Passwords Extension", async () => UpdatePolicies(@"C:\Program Files\Mozilla Firefox\distribution\policies.json", "https://addons.mozilla.org/firefox/downloads/latest/icloud-passwords"), () => Firefox == true && iCloud == true),
+            ("Installing iCloud Passwords Extension", async () => await Task.Delay(500), () => Firefox == true && iCloud == true),
 
             // install bitwarden extension
-            ("Installing Bitwarden Extension", async () => UpdatePolicies(@"C:\Program Files\Zen Browser\distribution\policies.json", "https://addons.mozilla.org/firefox/downloads/latest/bitwarden-password-manager"), () => Zen == true && Bitwarden == true),
-            ("Installing Bitwarden Extension", async () => await Task.Delay(500), () => Zen == true && Bitwarden == true),
+            ("Installing Bitwarden Extension", async () => UpdatePolicies(@"C:\Program Files\Mozilla Firefox\distribution\policies.json", "https://addons.mozilla.org/firefox/downloads/latest/bitwarden-password-manager"), () => Firefox == true && Bitwarden == true),
+            ("Installing Bitwarden Extension", async () => await Task.Delay(500), () => Firefox == true && Bitwarden == true),
 
             // install 1password extension
-            ("Installing 1Password Extension", async () => UpdatePolicies(@"C:\Program Files\Zen Browser\distribution\policies.json", "https://addons.mozilla.org/firefox/downloads/latest/1password-x-password-manager"), () => Zen == true && OnePassword == true),
+            ("Installing 1Password Extension", async () => UpdatePolicies(@"C:\Program Files\Mozilla Firefox\distribution\policies.json", "https://addons.mozilla.org/firefox/downloads/latest/1password-x-password-manager"), () => Firefox == true && OnePassword == true),
+            ("Installing 1Password Extension", async () => await Task.Delay(500), () => Firefox == true && OnePassword == true),
+            ("Installing 1Password Extension", async () => await Task.Delay(500), () => Firefox == true && OnePassword == true),
             ("Installing 1Password Extension", async () => await Task.Delay(500), () => Zen == true && OnePassword == true),
         };
 
