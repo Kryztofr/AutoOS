@@ -603,14 +603,32 @@ public partial class HeaderCarousel : ItemsControl
                 break;
         }
 
-        var results = await Task.WhenAll(tasks);
+        var exceptions = new List<Exception>();
+
+        try
+        {
+            await Task.WhenAll(tasks);
+        }
+        catch { }
 
         Items.Clear();
 
-        foreach (var list in results)
+        foreach (var task in tasks)
         {
-			AddGames(list);
-		}
+            if (task.Status == TaskStatus.RanToCompletion && task.Result != null)
+            {
+                AddGames(task.Result);
+            }
+            else if (task.IsFaulted && task.Exception != null)
+            {
+                exceptions.Add(task.Exception.InnerException ?? task.Exception);
+            }
+        }
+
+        foreach (var exception in exceptions)
+        {
+            DispatcherQueue.TryEnqueue(() => { throw exception; });
+        }
 
         // sort games
         LoadSortSettings();
@@ -2130,6 +2148,7 @@ public partial class HeaderCarousel : ItemsControl
                 "NgcCtnrSvc",
                 "NgcSvc",
                 "nsi",
+				"NVDisplay.ContainerLocalSystem",
                 "ProfSvc",
                 "StateRepository",
                 "TextInputManagementService",
@@ -2209,8 +2228,8 @@ public partial class HeaderCarousel : ItemsControl
                 "nsi",
                 "ProfSvc",
                 "StateRepository",
-                //"TextInputManagementService",
-                "TrustedInstaller",
+                "TextInputManagementService",
+				"TrustedInstaller",
                 "UdkUserSvc",
                 "UserManager",
                 "WFDSConMgrSvc",

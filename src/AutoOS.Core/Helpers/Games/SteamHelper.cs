@@ -342,15 +342,17 @@ public static partial class SteamHelper
                     //int totalPositive = reviewData.GetProperty("total_positive").GetInt32();
                     //int totalNegative = reviewData.GetProperty("total_negative").GetInt32();
 
+                    var data = gameData.GetProperty("data");
+
                     // skip if coming soon
-                    bool comingSoon = gameData.GetProperty("data").GetProperty("release_date").GetProperty("coming_soon").GetBoolean();
+                    bool comingSoon = data.TryGetProperty("release_date", out var releaseDateElem) && 
+                                      releaseDateElem.TryGetProperty("coming_soon", out var comingSoonElem) && 
+                                      comingSoonElem.GetBoolean();
                     if (comingSoon) continue;
 
                     // get age rating
                     string rating = null;
                     string descriptors = null;
-
-                    var data = gameData.GetProperty("data");
 
                     if (data.TryGetProperty("ratings", out var ratings) && ratings.ValueKind == JsonValueKind.Object && ratings.TryGetProperty(ratingKey.ToLowerInvariant(), out var ratingData))
                     {
@@ -368,7 +370,7 @@ public static partial class SteamHelper
                         }
                     }
 
-                    string dateStr = gameData.GetProperty("data").GetProperty("release_date").GetProperty("date").GetString();
+                    string dateStr = data.TryGetProperty("release_date", out var rd) && rd.TryGetProperty("date", out var rdDate) && rdDate.ValueKind == JsonValueKind.String ? rdDate.GetString() : null;
                     DateTimeOffset.TryParse(dateStr, out var releaseDate);
 
                     long? sizeBytes = long.TryParse(appManifestData["SizeOnDisk"]?.ToString(), out var result) ? result : null;
@@ -379,16 +381,15 @@ public static partial class SteamHelper
                         ImageUrl = $"https://cdn.steamstatic.com/steam/apps/{gameId}/library_600x900.jpg",
                         BackgroundImageUrl = $"https://cdn.steamstatic.com/steam/apps/{gameId}/library_hero.jpg",
                         Title = appManifestData["name"]?.ToString(),
-                        Developers = string.Join(", ", gameData.GetProperty("data").GetProperty("developers")
-                                                    .EnumerateArray().Select(d => d.GetString()).Where(s => !string.IsNullOrWhiteSpace(s))),
-                        Genres = [.. gameData.GetProperty("data").GetProperty("genres")
-                                        .EnumerateArray()
-                                        .Select(g => g.GetProperty("description").GetString())
-                                        .Where(s => !string.IsNullOrWhiteSpace(s))],
-                        Features = [.. gameData.GetProperty("data").GetProperty("categories")
-                                        .EnumerateArray()
-                                        .Select(c => c.GetProperty("description").GetString())
-                                        .Where(s => !string.IsNullOrWhiteSpace(s))],
+                        Developers = data.TryGetProperty("developers", out var devs) && devs.ValueKind == JsonValueKind.Array
+                            ? string.Join(", ", devs.EnumerateArray().Select(d => d.GetString()).Where(s => !string.IsNullOrWhiteSpace(s)))
+                            : "Unknown",
+                        Genres = data.TryGetProperty("genres", out var genres) && genres.ValueKind == JsonValueKind.Array
+                            ? [.. genres.EnumerateArray().Select(g => g.GetProperty("description").GetString()).Where(s => !string.IsNullOrWhiteSpace(s))]
+                            : [],
+                        Features = data.TryGetProperty("categories", out var cats) && cats.ValueKind == JsonValueKind.Array
+                            ? [.. cats.EnumerateArray().Select(c => c.GetProperty("description").GetString()).Where(s => !string.IsNullOrWhiteSpace(s))]
+                            : [],
                             //Rating = totalPositive + totalNegative > 0
                             //            ? Math.Round(5.0 * totalPositive / (totalPositive + totalNegative), 1)
                             //            : 0.0,
@@ -397,8 +398,8 @@ public static partial class SteamHelper
                         AgeRatingUrl = !string.IsNullOrEmpty(rating) ? $"{ratingBaseUrl}{rating.ToLowerInvariant()}.png" : null,
                         AgeRatingTitle = !string.IsNullOrEmpty(rating) ? (ratingTitles.TryGetValue(rating.ToLowerInvariant(), out var title) ? title : rating) : null,
                         AgeRatingDescription = !string.IsNullOrEmpty(descriptors) ? descriptors : null,
-                        Description = gameData.GetProperty("data").GetProperty("short_description").GetString(),
-                        Screenshots = gameData.GetProperty("data").TryGetProperty("screenshots", out var screenshots)
+                        Description = data.TryGetProperty("short_description", out var shortDesc) && shortDesc.ValueKind == JsonValueKind.String ? shortDesc.GetString() : "",
+                        Screenshots = data.TryGetProperty("screenshots", out var screenshots) && screenshots.ValueKind == JsonValueKind.Array
                             ? [.. screenshots.EnumerateArray()
                                 .Select(s => s.GetProperty("path_thumbnail").GetString())
                                 .Where(s => !string.IsNullOrWhiteSpace(s))]
