@@ -338,7 +338,7 @@ public static class ApplicationStage
             ("Installing Autoruns", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Autoruns", "DisplayIcon", Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Autoruns", "Autoruns64.exe"), RegistryValueKind.String), () => selection == null),
             ("Installing Autoruns", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Autoruns", "Publisher", "Sysinternals", RegistryValueKind.String), () => selection == null),
             ("Installing Autoruns", async () => await Task.Delay(500), () => selection == null),
-            ("Cleaning up Autoruns files", async () => await (await ApplicationData.Current.TemporaryFolder.GetFileAsync("Autoruns.zip")).DeleteAsync(), () => selection == null),
+            //("Cleaning up Autoruns files", async () => await (await ApplicationData.Current.TemporaryFolder.GetFileAsync("Autoruns.zip")).DeleteAsync(), () => selection == null),
 
             // download process explorer
             ("Downloading Process Explorer", async () => await DownloadHelper.Download("https://www.dl.dropboxusercontent.com/scl/fi/a8l16rp3cpcvkkryavix1/procexp64.exe?rlkey=5fec8mcmkfcxlum9a95o1xn3t&st=mjkrpc1f&dl=0", ApplicationData.Current.TemporaryFolder.Path, "procexp64.exe", reporter: reporter), () => selection == null),

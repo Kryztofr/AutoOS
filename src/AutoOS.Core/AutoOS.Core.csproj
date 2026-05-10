@@ -14,11 +14,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Downloader" />
-    <PackageReference Include="ValveKeyValue" />
-    <PackageReference Include="System.ServiceProcess.ServiceController" />
-    <PackageReference Include="Microsoft.Windows.CsWin32" />
     <PackageReference Include="DevWinUI" />
+    <PackageReference Include="Downloader" />
+    <PackageReference Include="Microsoft.Windows.CsWin32" />
+    <PackageReference Include="System.ServiceProcess.ServiceController" />
+    <PackageReference Include="ValveKeyValue" />
   </ItemGroup>
 
   <ItemGroup>

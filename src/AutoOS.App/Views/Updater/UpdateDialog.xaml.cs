@@ -11,6 +11,8 @@ public sealed partial class UpdateDialog : UserControl
     public UpdateDialog()
     {
         InitializeComponent();
+        CurrentGroupStart = 0;
+        CurrentGroupTarget = 100;
     }
 
     public string CurrentTitle { get; set; }

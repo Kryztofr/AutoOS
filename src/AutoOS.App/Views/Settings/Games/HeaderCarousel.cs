@@ -2085,6 +2085,7 @@ public partial class HeaderCarousel : ItemsControl
                 "LsaIso",
                 "mobsync",
                 "NgcIso",
+				"NVDisplay.Container",
                 "RiotClientServices",
                 "RiotClientCrashHandler",
                 "rundll32",
