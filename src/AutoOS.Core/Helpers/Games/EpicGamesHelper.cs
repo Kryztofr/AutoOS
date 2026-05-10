@@ -717,7 +717,7 @@ public static partial class EpicGamesHelper
     {
         var games = new List<GameModel>();
 
-        if (File.Exists(EpicGamesPath) && Directory.Exists(EpicGamesManifestDir))
+		if (File.Exists(EpicGamesPath) && (Directory.Exists(EpicGamesManifestDir) || Directory.Exists(EpicGamesThirdPartyManifestDir)))
         {
             // get access token
             string AccessToken = await UpdateEpicGamesToken(ActiveEpicGamesAccountPath);
@@ -1045,7 +1045,7 @@ public static partial class EpicGamesHelper
                 }
                 catch (Exception ex)
                 {
-                    System.Diagnostics.Debug.WriteLine($"Failed to load game: {itemJson?["DisplayName"]?.ToString()}: {ex}");
+                    Debug.WriteLine($"Failed to load game: {itemJson?["DisplayName"]?.ToString()}: {ex}");
                 }
             });
         }
