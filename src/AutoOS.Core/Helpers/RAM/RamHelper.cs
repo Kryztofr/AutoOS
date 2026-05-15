@@ -1,4 +1,4 @@
-﻿using AutoOS.Core.Helpers.RAM.Models;
+using AutoOS.Core.Helpers.RAM.Models;
 using System.Runtime.InteropServices;
 using Windows.Win32.System.SystemInformation;
 using Windows.Win32;
@@ -40,13 +40,16 @@ namespace AutoOS.Core.Helpers.RAM
 
                 if (type == 17 && offset + length <= buffer.Length)
                 {
-                    int speed = BitConverter.ToUInt16(buffer, offset + 0x20);
+                    int speed = 0;
+                    if (length >= 0x22) speed = BitConverter.ToUInt16(buffer, offset + 0x20);
+                    if (speed == 0 && length >= 0x17) speed = BitConverter.ToUInt16(buffer, offset + 0x15);
+
                     if (length >= 0x58)
                     {
                         int extSpeed = BitConverter.ToInt32(buffer, offset + 0x54);
                         if (extSpeed > 0) speed = extSpeed;
                     }
-                    if (speed == 0) speed = BitConverter.ToUInt16(buffer, offset + 0x15);
+                    
                     if (speed > info.MaxSpeedMHz) info.MaxSpeedMHz = speed;
 
                     byte memType = buffer[offset + 0x12];
