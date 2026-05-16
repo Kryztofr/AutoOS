@@ -4,7 +4,6 @@ using AutoOS.Core.Helpers.Registry;
 using Microsoft.Win32;
 using System.Diagnostics;
 using System.Text.Json;
-using Windows.Storage;
 
 namespace AutoOS.Views.Installer.Stages;
 

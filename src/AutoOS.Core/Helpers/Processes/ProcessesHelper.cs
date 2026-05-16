@@ -1,4 +1,4 @@
-﻿using Microsoft.Win32.SafeHandles;
+using Microsoft.Win32.SafeHandles;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -97,4 +97,30 @@ public static partial class ProcessesHelper
             }
         }
     }
+
+	[LibraryImport("ntdll.dll")]
+	private static partial int NtSuspendProcess(IntPtr ProcessHandle);
+
+	[LibraryImport("ntdll.dll")]
+	private static partial int NtResumeProcess(IntPtr ProcessHandle);
+
+	public static unsafe void SuspendProcess(int pid)
+	{
+		HANDLE handle = PInvoke.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_SUSPEND_RESUME, false, (uint)pid);
+		if ((IntPtr)handle.Value != IntPtr.Zero)
+		{
+			_ = NtSuspendProcess((IntPtr)handle.Value);
+			PInvoke.CloseHandle(handle);
+		}
+	}
+
+	public static unsafe void ResumeProcess(int pid)
+	{
+		HANDLE handle = PInvoke.OpenProcess(PROCESS_ACCESS_RIGHTS.PROCESS_SUSPEND_RESUME, false, (uint)pid);
+		if ((IntPtr)handle.Value != IntPtr.Zero)
+		{
+			_ = NtResumeProcess((IntPtr)handle.Value);
+			PInvoke.CloseHandle(handle);
+		}
+	}
 }
