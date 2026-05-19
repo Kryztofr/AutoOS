@@ -1945,106 +1945,106 @@ public partial class HeaderCarousel : ItemsControl
         var catalogItemId = tile.CatalogItemId;
         var artifactId = tile.ArtifactId;
 
-        if (launcher == "Epic Games")
-        {
-            string exchangeCode = await EpicGamesHelper.Exchange();
-            var (accountId, displayName, _, _) = EpicGamesHelper.GetAccountData(EpicGamesHelper.ActiveEpicGamesAccountPath);
+            if (launcher == "Epic Games")
+            {
+                string exchangeCode = await EpicGamesHelper.Exchange();
+                var (accountId, displayName, _, _) = EpicGamesHelper.GetAccountData(EpicGamesHelper.ActiveEpicGamesAccountPath);
 
-            var startInfo = new ProcessStartInfo
-            {
-                FileName = Path.Combine(installLocation, launchExecutable),
-                Arguments = $@"{launchCommand} -AUTH_LOGIN=unused -AUTH_PASSWORD={exchangeCode} -AUTH_TYPE=exchangeCode -epicenv=Prod -EpicPortal -epicapp={appName} -epicusername={displayName} -epicuserid={accountId} -epiclocale=en -epicsandboxid={catalogNamespace}",
-                WorkingDirectory = Path.GetDirectoryName(Path.Combine(installLocation, launchExecutable)),
-                UseShellExecute = false
-            };
-
-            Process.Start(startInfo);
-        }
-        else if (launcher == "UbisoftConnect")
-        {
-            Process.Start(new ProcessStartInfo($"uplay://launch/{gameId}/0") { UseShellExecute = true });
-        }
-        else if (launcher == "The EA App" || launcher == "Origin")
-        {
-            string exchangeCode = await EpicGamesHelper.Exchange();
-            var (accountId, displayName, _, _) = EpicGamesHelper.GetAccountData(EpicGamesHelper.ActiveEpicGamesAccountPath);
-
-            var startInfo = new ProcessStartInfo
-            {
-                FileName = @"C:\Program Files\Electronic Arts\EA Desktop\EA Desktop\Link2EA.exe",
-                Arguments = $@"""link2ea://launchgame/{appName}?AUTH_PASSWORD={exchangeCode}&AUTH_TYPE=exchangeCode&epicusername={Uri.EscapeDataString(displayName)}&epicuserid={accountId}&epiclocale=en&platform=epic"" """" """" """" """" """" """" """" """"",
-                WorkingDirectory = @"C:\Program Files\Electronic Arts\EA Desktop\EA Desktop",
-                UseShellExecute = false
-            };
-            Process.Start(startInfo);
-        }
-        else if (launcher == "Steam")
-        {
-            if (ulong.TryParse(gameId, out ulong id) && id > (ulong)int.MaxValue)
-            {
-				Process.Start(new ProcessStartInfo
-				{
-					FileName = SteamHelper.SteamPath,
-					Arguments = $"-silent steam://rungameid/{gameId} "
-				});
-			}
-            else
-            {
-                Process.Start(new ProcessStartInfo
+                var startInfo = new ProcessStartInfo
                 {
-                    FileName = SteamHelper.SteamPath,
-                    Arguments = $"-applaunch {gameId} -silent"
-                });
+                    FileName = Path.Combine(installLocation, launchExecutable),
+                    Arguments = $@"{launchCommand} -AUTH_LOGIN=unused -AUTH_PASSWORD={exchangeCode} -AUTH_TYPE=exchangeCode -epicenv=Prod -EpicPortal -epicapp={appName} -epicusername={displayName} -epicuserid={accountId} -epiclocale=en -epicsandboxid={catalogNamespace}",
+                    WorkingDirectory = Path.GetDirectoryName(Path.Combine(installLocation, launchExecutable)),
+                    UseShellExecute = false
+                };
+
+                Process.Start(startInfo);
+            }
+            else if (launcher == "UbisoftConnect")
+            {
+                Process.Start(new ProcessStartInfo($"uplay://launch/{gameId}/0") { UseShellExecute = true });
+            }
+            else if (launcher == "The EA App" || launcher == "Origin")
+            {
+                string exchangeCode = await EpicGamesHelper.Exchange();
+                var (accountId, displayName, _, _) = EpicGamesHelper.GetAccountData(EpicGamesHelper.ActiveEpicGamesAccountPath);
+
+                var startInfo = new ProcessStartInfo
+                {
+                    FileName = @"C:\Program Files\Electronic Arts\EA Desktop\EA Desktop\Link2EA.exe",
+                    Arguments = $@"""link2ea://launchgame/{appName}?AUTH_PASSWORD={exchangeCode}&AUTH_TYPE=exchangeCode&epicusername={Uri.EscapeDataString(displayName)}&epicuserid={accountId}&epiclocale=en&platform=epic"" """" """" """" """" """" """" """" """"",
+                    WorkingDirectory = @"C:\Program Files\Electronic Arts\EA Desktop\EA Desktop",
+                    UseShellExecute = false
+                };
+                Process.Start(startInfo);
+            }
+            else if (launcher == "Steam")
+            {
+                if (ulong.TryParse(gameId, out ulong id) && id > (ulong)int.MaxValue)
+                {
+                    Process.Start(new ProcessStartInfo
+                    {
+                        FileName = SteamHelper.SteamPath,
+                        Arguments = $"-silent steam://rungameid/{gameId} "
+                    });
+                }
+                else
+                {
+                    Process.Start(new ProcessStartInfo
+                    {
+                        FileName = SteamHelper.SteamPath,
+                        Arguments = $"-applaunch {gameId} -silent"
+                    });
+                }
+            }
+            else if (launcher == "Eden")
+            {
+                var startInfo = new ProcessStartInfo
+                {
+                    FileName = launcherLocation,
+                    Arguments = $@"-f -g ""{gameLocation}""",
+                    CreateNoWindow = true,
+                };
+
+                Process.Start(startInfo);
+            }
+            else if (launcher == "Citron")
+            {
+                var startInfo = new ProcessStartInfo
+                {
+                    FileName = launcherLocation,
+                    Arguments = $@"-f -g ""{gameLocation}""",
+                    CreateNoWindow = true,
+                };
+
+                Process.Start(startInfo);
+            }
+            else if (launcher == "Ryujinx")
+            {
+                var startInfo = new ProcessStartInfo
+                {
+                    FileName = launcherLocation,
+                    Arguments = $@"-r ""{dataLocation}"" -fullscreen ""{gameLocation}""",
+                    CreateNoWindow = true,
+                };
+
+                Process.Start(startInfo);
+            }
+
+            localSettings.Values[$"LastPlayed_{tile.Title}"] = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+
+            if (selectedTile != null)
+            {
+                int idx = Items.IndexOf(selectedTile);
+                if (idx >= 0)
+                    (ContainerFromIndex(idx) as Control)?.Focus(FocusState.Programmatic);
+            }
+
+            if (currentSortKey == "Recently played")
+            {
+                LoadSortSettings();
             }
         }
-        else if (launcher == "Eden")
-        {
-            var startInfo = new ProcessStartInfo
-            {
-                FileName = launcherLocation,
-                Arguments = $@"-f -g ""{gameLocation}""",
-                CreateNoWindow = true,
-            };
-
-            Process.Start(startInfo);
-        }
-        else if (launcher == "Citron")
-        {
-            var startInfo = new ProcessStartInfo
-            {
-                FileName = launcherLocation,
-                Arguments = $@"-f -g ""{gameLocation}""",
-                CreateNoWindow = true,
-            };
-
-            Process.Start(startInfo);
-        }
-        else if (launcher == "Ryujinx")
-        {
-            var startInfo = new ProcessStartInfo
-            {
-                FileName = launcherLocation,
-                Arguments = $@"-r ""{dataLocation}"" -fullscreen ""{gameLocation}""",
-                CreateNoWindow = true,
-            };
-
-            Process.Start(startInfo);
-        }
-
-        localSettings.Values[$"LastPlayed_{tile.Title}"] = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-
-        if (selectedTile != null)
-        {
-            int idx = Items.IndexOf(selectedTile);
-            if (idx >= 0)
-                (ContainerFromIndex(idx) as Control)?.Focus(FocusState.Programmatic);
-        }
-
-        if (currentSortKey == "Recently played")
-        {
-            LoadSortSettings();
-        }
-    }
 
     private async void Update_Click(object sender, RoutedEventArgs e)
     {

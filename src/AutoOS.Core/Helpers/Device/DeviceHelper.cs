@@ -351,19 +351,19 @@ public static partial class DeviceHelper
                 changed = true;
             }
 
-            if (device.DevicePolicy != devicePolicy || device.DevicePriority != devicePriority || device.AssignmentSetOverride != assignmentSetOverride)
+            if (device.DevicePolicy != devicePolicy || device.DevicePriority != devicePriority || device.AssignmentSetOverride != ((devicePolicy == 4) ? assignmentSetOverride : 0))
             {
-                SetAffinityPolicy(device.PnpDeviceId, devicePolicy, devicePriority, assignmentSetOverride);
+                SetAffinityPolicy(device.PnpDeviceId, devicePolicy, devicePriority, (devicePolicy == 4) ? assignmentSetOverride : 0);
                 device.DevicePolicy = devicePolicy;
                 device.DevicePriority = devicePriority;
-                device.AssignmentSetOverride = assignmentSetOverride;
+                device.AssignmentSetOverride = (devicePolicy == 4) ? assignmentSetOverride : 0;
                 changed = true;
             }
 
             if (changed)
             {
-                if (deviceType == DeviceType.NIC && device.DriverType == NicDriverType.NDIS && assignmentSetOverride != 0)
-                    SetRSS(device, assignmentSetOverride);
+                if (deviceType == DeviceType.NIC && device.DriverType == NicDriverType.NDIS && ((devicePolicy == 4) ? assignmentSetOverride : 0) != 0)
+                    SetRSS(device, (devicePolicy == 4) ? assignmentSetOverride : 0);
 
                 result.ChangedDevices.Add(device);
                 result.AppliedSettings[device.PnpDeviceId] = device;

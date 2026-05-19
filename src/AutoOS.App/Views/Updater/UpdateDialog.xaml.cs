@@ -1,4 +1,12 @@
-using Downloader;
+using System;
+using System.Diagnostics;
+using System.IO;
+using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
+using AutoOS.Core.Common;
+using AutoOS.Core.Helpers.Download;
+using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 
 namespace AutoOS.Views.Updater;
@@ -127,47 +135,62 @@ public sealed partial class UpdateDialog : UserControl
         SetStatus(displayTitle + "...");
 
         var uiContext = SynchronizationContext.Current;
+        var reporter = new UpdateStatusReporter(uiContext, StatusText, ProgressBar, displayTitle, startValue, targetValue);
 
-        var download = DownloadBuilder.New()
-            .WithUrl(url)
-            .WithDirectory(path)
-            .WithFileName(file)
-            .WithConfiguration(new DownloadConfiguration())
-            .Build();
+        await DownloadHelper.Download(url, path, file, reporter);
 
-        double speedMB = 0.0;
-        double receivedMB = 0.0;
-        double totalMB = 0.0;
-        double percentage = 0.0;
-        DateTime lastLoggedTime = DateTime.MinValue;
-
-        download.DownloadProgressChanged += (sender, e) =>
+        uiContext?.Post(_ =>
         {
-            if ((DateTime.Now - lastLoggedTime).TotalMilliseconds < 50) return;
-            lastLoggedTime = DateTime.Now;
+            ProgressBar.Value = targetValue;
+        }, null);
+    }
 
-            speedMB = e.BytesPerSecondSpeed / (1024.0 * 1024.0);
-            receivedMB = e.ReceivedBytesSize / (1024.0 * 1024.0);
-            totalMB = e.TotalBytesToReceive / (1024.0 * 1024.0);
-            percentage = e.ProgressPercentage;
+    private class UpdateStatusReporter : IStatusReporter
+    {
+        private readonly SynchronizationContext _uiContext;
+        private readonly TextBlock _statusText;
+        private readonly ProgressBar _progressBar;
+        private readonly string _displayTitle;
+        private readonly double _startValue;
+        private readonly double _targetValue;
 
-            uiContext?.Post(_ =>
-            {
-                StatusText.Text = $"{displayTitle} ({speedMB:F1} MB/s - {receivedMB:F2} MB of {totalMB:F2} MB)";
-                ProgressBar.IsIndeterminate = false;
-                ProgressBar.Value = startValue + (percentage / 100.0 * (targetValue - startValue));
-            }, null);
-        };
-
-        download.DownloadFileCompleted += (sender, e) =>
+        public UpdateStatusReporter(SynchronizationContext uiContext, TextBlock statusText, ProgressBar progressBar, string displayTitle, double startValue, double targetValue)
         {
-            uiContext?.Post(_ =>
-            {
-                StatusText.Text = $"{displayTitle} ({speedMB:F1} MB/s - {totalMB:F2} MB of {totalMB:F2} MB)";
-                ProgressBar.Value = targetValue;
-            }, null);
-        };
+            _uiContext = uiContext;
+            _statusText = statusText;
+            _progressBar = progressBar;
+            _displayTitle = displayTitle;
+            _startValue = startValue;
+            _targetValue = targetValue;
+        }
 
-        await download.StartAsync();
+        public void Report(string message = null, double? progress = null, bool? isIndeterminate = null)
+        {
+            _uiContext?.Post(_ =>
+            {
+                if (message != null)
+                {
+                    _statusText.Text = $"{_displayTitle} ({message})";
+                }
+                else
+                {
+                    _statusText.Text = $"{_displayTitle}...";
+                }
+
+                if (isIndeterminate == true)
+                {
+                    _progressBar.IsIndeterminate = true;
+                }
+                else
+                {
+                    _progressBar.IsIndeterminate = false;
+                }
+
+                if (progress.HasValue)
+                {
+                    _progressBar.Value = _startValue + (progress.Value / 100.0 * (_targetValue - _startValue));
+                }
+            }, null);
+        }
     }
 }

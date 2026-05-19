@@ -1,7 +1,10 @@
 using AutoOS.Core.Common;
-using Downloader;
-using System.Net;
+using System;
+using System.Diagnostics;
+using System.IO;
+using System.Net.Http;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace AutoOS.Core.Helpers.Download;
 
@@ -11,6 +14,11 @@ public static partial class DownloadHelper
 
     public static async Task Download(string url, string path, string file = null, IStatusReporter reporter = null)
     {
+        if (!string.IsNullOrWhiteSpace(path))
+        {
+            Directory.CreateDirectory(path);
+        }
+
         if (url.Contains("raw.githubusercontent.com", StringComparison.OrdinalIgnoreCase))
         {
             string destination = string.IsNullOrWhiteSpace(file) ? path : Path.Combine(path, file);
@@ -19,77 +27,65 @@ public static partial class DownloadHelper
             return;
         }
 
-        DownloadConfiguration config = new();
+        string finalFileName = !string.IsNullOrEmpty(file) ? Path.Combine(path, file) : null;
+        if (finalFileName == null)
+        {
+            throw new ArgumentNullException(nameof(file), "File name must be specified.");
+        }
+
+        using var request = new HttpRequestMessage(HttpMethod.Get, url);
+        
         if (url.Contains("www2.ati.com", StringComparison.OrdinalIgnoreCase))
         {
-            config.RequestConfiguration = new RequestConfiguration
-            {
-                Headers = new WebHeaderCollection
-                {
-                    { "Referer", "http://support.amd.com" },
-                    { "Accept", "*/*" },
-                    { "User-Agent", "AMD Catalyst Install Manager/0.0" },
-                    { "Cache-Control", "no-cache" },
-                    { "Connection", "Keep-Alive" }
-                }
-            };
+            request.Headers.Referrer = new Uri("http://support.amd.com");
+            request.Headers.Add("Accept", "*/*");
+            request.Headers.UserAgent.ParseAdd("AMD Catalyst Install Manager/0.0");
+            request.Headers.Add("Cache-Control", "no-cache");
+            request.Headers.Connection.Add("Keep-Alive");
+        }
+        else
+        {
+            request.Headers.UserAgent.ParseAdd("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
         }
 
-        var downloadBuilder = DownloadBuilder.New()
-            .WithUrl(url)
-            .WithDirectory(path)
-            .WithFileName(file)
-            .WithConfiguration(config);
+        using var response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+        response.EnsureSuccessStatusCode();
 
-        var download = downloadBuilder.Build();
+        var totalBytes = response.Content.Headers.ContentLength ?? -1L;
+        using var contentStream = await response.Content.ReadAsStreamAsync();
+        using var fileStream = new FileStream(finalFileName, FileMode.Create, FileAccess.Write, FileShare.None, 8192, true);
 
+        var buffer = new byte[8192];
+        long totalReadBytes = 0;
+        int readBytes;
+        var stopwatch = Stopwatch.StartNew();
         DateTime lastLoggedTime = DateTime.MinValue;
-        double lastSpeedMB = 0;
-        double totalSizeMB = 0;
 
-        download.DownloadProgressChanged += (sender, e) =>
+        while ((readBytes = await contentStream.ReadAsync(buffer, 0, buffer.Length)) > 0)
         {
-            if ((DateTime.Now - lastLoggedTime).TotalMilliseconds < 100) return;
-            lastLoggedTime = DateTime.Now;
+            await fileStream.WriteAsync(buffer, 0, readBytes);
+            totalReadBytes += readBytes;
 
-            lastSpeedMB = e.BytesPerSecondSpeed / (1024.0 * 1024.0);
-            double receivedMB = e.ReceivedBytesSize / (1024.0 * 1024.0);
-            totalSizeMB = e.TotalBytesToReceive / (1024.0 * 1024.0);
-            double percentage = e.ProgressPercentage;
-
-            reporter?.Report($"{lastSpeedMB:F1} MB/s - {receivedMB:F2} MB of {totalSizeMB:F2} MB", percentage, false);
-        };
-
-        download.DownloadFileCompleted += (sender, e) =>
-        {
-            reporter?.Report($"{lastSpeedMB:F1} MB/s - {totalSizeMB:F2} MB of {totalSizeMB:F2} MB", 100, false);
-        };
-
-        await download.StartAsync();
-
-        string finalFileName = download.Package?.FileName ?? (!string.IsNullOrEmpty(file) ? Path.Combine(path, file) : null);
-        string downloadFile = finalFileName + ".download";
-        
-        int retries = 0;
-        while (!File.Exists(finalFileName) && retries < 50)
-        {
-            if (File.Exists(downloadFile))
+            if ((DateTime.Now - lastLoggedTime).TotalMilliseconds >= 100)
             {
-                try 
-				{ 
-					File.Move(downloadFile, finalFileName); 
-					break; 
-				} catch { }
+                lastLoggedTime = DateTime.Now;
+                if (totalBytes > 0)
+                {
+                    double percentage = (double)totalReadBytes / totalBytes * 100;
+                    double speedMB = (totalReadBytes / (1024.0 * 1024.0)) / stopwatch.Elapsed.TotalSeconds;
+                    double receivedMB = totalReadBytes / (1024.0 * 1024.0);
+                    double totalSizeMB = totalBytes / (1024.0 * 1024.0);
+
+                    reporter?.Report($"{speedMB:F1} MB/s - {receivedMB:F2} MB of {totalSizeMB:F2} MB", percentage, false);
+                }
+                else
+                {
+                    double receivedMB = totalReadBytes / (1024.0 * 1024.0);
+                    reporter?.Report($"{receivedMB:F2} MB downloaded", 0, true);
+                }
             }
-            await Task.Delay(100);
-            retries++;
         }
 
-        if (!File.Exists(finalFileName))
-        {
-            throw new FileNotFoundException($"Download failed: The file '{finalFileName}' could not be found.");
-        }
-        
         reporter?.Report(progress: 100, isIndeterminate: true);
     }
 }
