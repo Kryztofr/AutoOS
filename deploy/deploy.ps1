@@ -224,7 +224,8 @@ $restartRequired = $false
 $services = @(
     @{ Path = "HKLM:\SYSTEM\CurrentControlSet\Services\cdrom"; Name = "Start"; Value = 1 },
     @{ Path = "HKLM:\SYSTEM\CurrentControlSet\Services\spaceport"; Name = "Start"; Value = 0 },
-    @{ Path = "HKLM:\SYSTEM\CurrentControlSet\Services\vdrvroot"; Name = "Start"; Value = 0 }
+    @{ Path = "HKLM:\SYSTEM\CurrentControlSet\Services\vdrvroot"; Name = "Start"; Value = 0 },
+    @{ Path = "HKLM:\SYSTEM\CurrentControlSet\Services\vds"; Name = "Start"; Value = 3 }
 )
 
 foreach ($service in $services) {
@@ -392,7 +393,7 @@ New-Item -Path $MountDirectory -ItemType Directory -Force | Out-Null
 $Images = Get-WindowsImage -ImagePath $TempWim
 foreach ($Image in $Images) {
     try {
-        Mount-WindowsImage -Path $MountDirectory -ImagePath $TempWim -Name $Image.ImageName | Out-Null
+        Mount-WindowsImage -Path $MountDirectory -ImagePath $TempWim -Name $Image.ImageName -ErrorAction Stop | Out-Null
         Write-Host "Stripping 8.3 filenames..."
         [TrustedInstaller]::Spawn(
             "cmd /c fsutil 8dot3name strip /f /s `"$MountDirectory`""
