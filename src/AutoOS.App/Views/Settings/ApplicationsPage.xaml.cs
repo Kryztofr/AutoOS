@@ -1,4 +1,4 @@
-﻿using AutoOS.Common;
+using AutoOS.Common;
 using AutoOS.Views.Installer.Stages;
 using AutoOS.Views.Updater;
 using System.Collections.ObjectModel;
@@ -53,6 +53,7 @@ public sealed partial class ApplicationsPage : Page
         {
             new() { Text = "Visual Studio", ImageSource = "ms-appx:///Assets/Fluent/VisualStudio.png", IsInstalled = Directory.Exists(@"C:\Program Files\Microsoft Visual Studio") },
             new() { Text = "Visual Studio Code", ImageSource = "ms-appx:///Assets/Fluent/VisualStudioCode.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs", "Microsoft VS Code", "Code.exe")) },
+            new() { Text = "Antigravity", ImageSource = "ms-appx:///Assets/Fluent/Antigravity.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs", "Antigravity", "Antigravity.exe")) },
             new() { Text = "Git", ImageSource = "ms-appx:///Assets/Fluent/Git.png", IsInstalled = File.Exists(@"C:\Program Files\Git\bin\git.exe") },
             new() { Text = "Python", ImageSource = "ms-appx:///Assets/Fluent/Python.png", IsInstalled = File.Exists(@"C:\Windows\py.exe") },
             new() { Text = "Node.js", ImageSource = "ms-appx:///Assets/Fluent/Nodejs.png", IsInstalled = File.Exists(@"C:\Program Files\nodejs\node.exe") },
@@ -121,6 +122,7 @@ public sealed partial class ApplicationsPage : Page
         var selectedDev = selectedDevItems.Select(item => item.Text).ToList();
         selection.VisualStudio = selectedDev.Contains("Visual Studio");
         selection.VisualStudioCode = selectedDev.Contains("Visual Studio Code");
+        selection.Antigravity = selectedDev.Contains("Antigravity");
         selection.Git = selectedDev.Contains("Git");
         selection.Python = selectedDev.Contains("Python");
         selection.Nodejs = selectedDev.Contains("Node.js");

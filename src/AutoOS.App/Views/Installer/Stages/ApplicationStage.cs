@@ -1,4 +1,4 @@
-﻿using AutoOS.Common;
+using AutoOS.Common;
 using AutoOS.Core.Common;
 using AutoOS.Core.Helpers.Download;
 using AutoOS.Core.Helpers.Extract;
@@ -49,6 +49,7 @@ public class ApplicationSelection
     public bool OneDrive { get; set; }
     public bool VisualStudio { get; set; }
     public bool VisualStudioCode { get; set; }
+    public bool Antigravity { get; set; }
     public bool Git { get; set; }
     public bool Python { get; set; }
     public bool Nodejs { get; set; }
@@ -104,6 +105,7 @@ public static class ApplicationStage
 
         bool VisualStudio = selection?.VisualStudio ?? PreparingStage.VisualStudio;
         bool VisualStudioCode = selection?.VisualStudioCode ?? PreparingStage.VisualStudioCode;
+        bool Antigravity = selection?.Antigravity ?? PreparingStage.Antigravity;
         bool Git = selection?.Git ?? PreparingStage.Git;
         bool Python = selection?.Python ?? PreparingStage.Python;
         bool Nodejs = selection?.Nodejs ?? PreparingStage.Nodejs;
@@ -468,6 +470,16 @@ public static class ApplicationStage
 
             // pin visual studio code to the taskbar
             ("Pinning Visual Studio Code to the taskbar", async () => await ProcessActions.RunPowerShellScript("taskbarpin.ps1", $@"-Type Link -Path ""{Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), @"Microsoft\Windows\Start Menu\Programs\Visual Studio Code\Visual Studio Code.lnk")}"""), () => VisualStudioCode == true),
+
+            // download antigravity
+            ("Downloading Antigravity", async () => await DownloadHelper.Download("https://edgedl.me.gvt1.com/edgedl/release2/j0qc3/antigravity/stable/1.23.2-4781536860569600/windows-x64/Antigravity.exe", ApplicationData.Current.TemporaryFolder.Path, "Antigravity.exe", reporter: reporter), () => Antigravity == true),
+
+            // install antigravity
+            ("Installing Antigravity", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(ApplicationData.Current.TemporaryFolder.Path, "Antigravity.exe"), Arguments = "/VERYSILENT /NORESTART /MERGETASKS=!runcode" , WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => Antigravity == true),
+            ("Cleaning up Antigravity files", async () => await (await ApplicationData.Current.TemporaryFolder.GetFileAsync("Antigravity.exe")).DeleteAsync(), () => Antigravity == true),
+
+            // pin antigravity to the taskbar
+            ("Pinning Antigravity to the taskbar", async () => await ProcessActions.RunPowerShellScript("taskbarpin.ps1", $@"-Type Link -Path ""{Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), @"Microsoft\Windows\Start Menu\Programs\Antigravity\Antigravity.lnk")}"""), () => Antigravity == true),
 
             // download git
             ("Downloading Git", async () => await DownloadHelper.Download("https://github.com/git-for-windows/git/releases/download/v2.53.0.windows.1/Git-2.53.0-64-bit.exe", ApplicationData.Current.TemporaryFolder.Path, "Git64-bit.exe", reporter: reporter), () => Git == true),

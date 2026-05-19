@@ -13,19 +13,26 @@
                          HeaderText="AutoOS Settings"
                          JsonNavigationService="{x:Bind local:App.Current.NavService}">
         <dev:MainLandingPage.HeaderContent>
-            <StackPanel Margin="0,25,0,0"
-                        Orientation="Horizontal"
+            <StackPanel Orientation="Horizontal"
                         Spacing="12">
-                <dev:HeaderTile Title="Getting started"
-                                Description="Get started with AutoOS."
-                                Link="https://github.com/tinodin/AutoOS">
+                <dev:HeaderTile Title="Get started with AutoOS"
+                                Description="Instructions on what to do after installing AutoOS."
+                                Link="https://github.com/tinodin/AutoOS/blob/master/docs/INSTALL.md#what-to-do-after-the-installation-is-finished">
                     <dev:HeaderTile.Source>
                         <Image Source="/Assets/AppIcon.png" />
                     </dev:HeaderTile.Source>
                 </dev:HeaderTile>
-                <dev:HeaderTile Title="AutoOS on GitHub"
-                                Description="Explore the AutoOS source code and repository."
-                                Link="https://github.com/tinodin/AutoOS">
+
+                <dev:HeaderTile Title="Join the Discord server"
+                                Description="Join the community to report issues, get support or suggest new features."
+                                Link="https://discord.gg/bZU4dMMWpg">
+                    <dev:HeaderTile.Source>
+                        <Image Source="/Assets/Fluent/Discord.png" />
+                    </dev:HeaderTile.Source>
+                </dev:HeaderTile>
+                <dev:HeaderTile Title="Contribute to AutoOS"
+                                Description="Contribute to become a part of the AutoOS project."
+                                Link="https://github.com/tinodin/AutoOS/blob/master/docs/CONTRIBUTING.md">
                     <dev:HeaderTile.Source>
                         <Viewbox>
                             <PathIcon Data="{StaticResource GitHubIconPath}"
@@ -33,15 +40,8 @@
                         </Viewbox>
                     </dev:HeaderTile.Source>
                 </dev:HeaderTile>
-                <dev:HeaderTile Title="Discord"
-                                Description="Join the community and get the latest updates."
-                                Link="https://discord.gg/bZU4dMMWpg">
-                    <dev:HeaderTile.Source>
-                        <Image Source="/Assets/Fluent/Discord.png" />
-                    </dev:HeaderTile.Source>
-                </dev:HeaderTile>
-                <dev:HeaderTile Title="Donate"
-                                Description="Leave a sign of appreciation of my work."
+                <dev:HeaderTile Title="Donate via PayPal"
+                                Description="Donate if you appreciate the time and effort I put into this project."
                                 Link="https://www.paypal.com/donate?hosted_button_id=W3YRLW35QEZWS">
                     <dev:HeaderTile.Source>
                         <Image Source="/Assets/Fluent/PayPal.png" />

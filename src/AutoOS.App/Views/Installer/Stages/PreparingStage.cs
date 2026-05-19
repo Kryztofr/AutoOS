@@ -56,6 +56,7 @@ public static class PreparingStage
     public static bool OneDrive;
     public static bool VisualStudio;
     public static bool VisualStudioCode;
+    public static bool Antigravity;
     public static bool Git;
     public static bool Python;
     public static bool Nodejs;
@@ -185,6 +186,7 @@ public static class PreparingStage
 
             VisualStudio = (localSettings.Values["Development"]?.ToString().Contains("Visual Studio") ?? false);
             VisualStudioCode = (localSettings.Values["Development"]?.ToString().Contains("Visual Studio Code") ?? false);
+            Antigravity = (localSettings.Values["Development"]?.ToString().Contains("Antigravity") ?? false);
             Git = (localSettings.Values["Development"]?.ToString().Contains("Git") ?? false);
             Python = (localSettings.Values["Development"]?.ToString().Contains("Python") ?? false);
             Nodejs = (localSettings.Values["Development"]?.ToString().Contains("Node.js") ?? false);
