@@ -2380,9 +2380,9 @@ public partial class HeaderCarousel : ItemsControl
             if (Title == "Fall Guys") offlineExecutable = "FallGuys_client";
 
             StartGameWatcher(() =>
-                (!string.IsNullOrEmpty(offlineExecutable) && Process.GetProcessesByName(Path.GetFileNameWithoutExtension(offlineExecutable)).Length > 0) ||
-                (!string.IsNullOrEmpty(onlineExecutable) && Process.GetProcessesByName(Path.GetFileNameWithoutExtension(onlineExecutable)).Length > 0) ||
-                (ProcessNames?.Any(process => !string.IsNullOrEmpty(process) && Process.GetProcessesByName(Path.GetFileNameWithoutExtension(process)).Length > 0) ?? false)
+                (!string.IsNullOrEmpty(offlineExecutable) && Process.GetProcesses().Any(p => p.ProcessName.Contains(offlineExecutable, StringComparison.OrdinalIgnoreCase))) ||
+                (!string.IsNullOrEmpty(onlineExecutable) && Process.GetProcesses().Any(p => p.ProcessName.Contains(onlineExecutable, StringComparison.OrdinalIgnoreCase))) ||
+                (ProcessNames?.Any(process => !string.IsNullOrEmpty(process) && Process.GetProcesses().Any(p => p.ProcessName.Contains(process, StringComparison.OrdinalIgnoreCase))) ?? false)
             );
         }
         else if (Launcher == "UbisoftConnect")
