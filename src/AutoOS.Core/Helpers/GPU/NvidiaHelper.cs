@@ -104,7 +104,7 @@ namespace AutoOS.Core.Helpers.GPU
 
 		public static async Task StripDriver()
 		{
-			foreach (var directory in Directory.GetDirectories(Path.Combine(ApplicationData.Current.TemporaryFolder.Path, "NVIDIA", "driver")))
+			foreach (var directory in Directory.GetDirectories(Path.Combine(Path.GetTempPath(), "NVIDIA", "driver")))
 			{
 				string folderName = Path.GetFileName(directory);
 
@@ -114,7 +114,7 @@ namespace AutoOS.Core.Helpers.GPU
 				}
 			}
 
-			string setupCfgPath = Path.Combine(Path.Combine(ApplicationData.Current.TemporaryFolder.Path, "NVIDIA", "driver"), "setup.cfg");
+			string setupCfgPath = Path.Combine(Path.Combine(Path.GetTempPath(), "NVIDIA", "driver"), "setup.cfg");
 
 			if (File.Exists(setupCfgPath))
 			{
@@ -124,7 +124,7 @@ namespace AutoOS.Core.Helpers.GPU
 				await File.WriteAllLinesAsync(setupCfgPath, newLines);
 			}
 
-			string presentationsCfgPath = Path.Combine(Path.Combine(ApplicationData.Current.TemporaryFolder.Path, "NVIDIA", "driver"), "NVI2", "presentations.cfg");
+			string presentationsCfgPath = Path.Combine(Path.Combine(Path.GetTempPath(), "NVIDIA", "driver"), "NVI2", "presentations.cfg");
 
 			if (File.Exists(presentationsCfgPath))
 			{
@@ -151,19 +151,19 @@ namespace AutoOS.Core.Helpers.GPU
 			var actions = new List<(string Title, Func<Task> Action, Func<bool> Condition)>
 			{
                 // download nvidia driver
-                ($@"Downloading NVIDIA driver {newestVersion}", async () => await DownloadHelper.Download(newestDownloadUrl, Path.Combine(ApplicationData.Current.TemporaryFolder.Path, "NVIDIA"), "driver.exe", reporter), null),
+                ($@"Downloading NVIDIA driver {newestVersion}", async () => await DownloadHelper.Download(newestDownloadUrl, Path.Combine(Path.GetTempPath(), "NVIDIA"), "driver.exe", reporter), null),
 
                 // extract nvidia driver
-                ($@"Extracting NVIDIA driver {newestVersion}", async () => await ExtractHelper.Extract(Path.Combine(ApplicationData.Current.TemporaryFolder.Path, "NVIDIA", "driver.exe"), Path.Combine(ApplicationData.Current.TemporaryFolder.Path, "NVIDIA", "driver")), null),
+                ($@"Extracting NVIDIA driver {newestVersion}", async () => await ExtractHelper.Extract(Path.Combine(Path.GetTempPath(), "NVIDIA", "driver.exe"), Path.Combine(Path.GetTempPath(), "NVIDIA", "driver")), null),
 
                 // strip nvidia driver
                 ($@"Stripping NVIDIA driver {newestVersion}", async () => await NvidiaHelper.StripDriver(), null),
 
                 // update/install nvidia driver
-                (gpu.IsInstalled ? $"Updating to NVIDIA driver {newestVersion}" : $"Installing NVIDIA driver {newestVersion}", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(ApplicationData.Current.TemporaryFolder.Path, "NVIDIA", "driver", "setup.exe"), Arguments = $"/s{(gpu.IsInstalled ? " /clean" : "")}", CreateNoWindow = true })!.WaitForExitAsync(), null),
+                (gpu.IsInstalled ? $"Updating to NVIDIA driver {newestVersion}" : $"Installing NVIDIA driver {newestVersion}", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "NVIDIA", "driver", "setup.exe"), Arguments = $"/s{(gpu.IsInstalled ? " /clean" : "")}", CreateNoWindow = true })!.WaitForExitAsync(), null),
 				(gpu.IsInstalled ? $"Updating to NVIDIA driver {newestVersion}" : $"Installing NVIDIA driver {newestVersion}", async () => await Task.Delay(3000), null),
 				(gpu.IsInstalled ? $"Updating to NVIDIA driver {newestVersion}" : $"Installing NVIDIA driver {newestVersion}", async () => GpuHelper.RefreshGpu(gpu), null),
-				("Cleaning up NVIDIA files", async () => await (await ApplicationData.Current.TemporaryFolder.GetFolderAsync("NVIDIA")).DeleteAsync(), null)
+				("Cleaning up NVIDIA files", async () => Directory.Delete(Path.Combine(Path.GetTempPath(), "NVIDIA"), true), null)
 			};
 
 			return actions;

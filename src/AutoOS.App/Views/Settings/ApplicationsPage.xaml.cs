@@ -93,7 +93,7 @@ public sealed partial class ApplicationsPage : Page
             new() { Text = "Minecraft Launcher", ImageSource = "ms-appx:///Assets/Fluent/MinecraftLauncher.png", IsInstalled = File.Exists(@"C:\Program Files (x86)\Minecraft Launcher\MinecraftLauncher.exe") },
             new() { Text = "Rockstar Games Launcher", ImageSource = "ms-appx:///Assets/Fluent/RockstarGamesLauncher.png", IsInstalled = File.Exists(@"C:\Program Files\Rockstar Games\Launcher\Launcher.exe") },
             new() { Text = "FiveM", ImageSource = "ms-appx:///Assets/Fluent/FiveM.jpg", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "FiveM", "FiveM.exe")) },
-            new() { Text = "FACEIT", ImageSource = "ms-appx:///Assets/Fluent/FACEIT.png", IsInstalled = File.Exists(@"C:\Program Files\FACEIT\FACEIT.exe") }
+            new() { Text = "FACEIT", ImageSource = "ms-appx:///Assets/Fluent/FACEIT.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "FACEIT", "FACEIT.exe")) }
         };
         foreach (var item in launchersList.Where(item => !item.IsInstalled))
             launchersItems.Add(item);

@@ -1,6 +1,5 @@
 using System.Security.Cryptography.X509Certificates;
 using Windows.Management.Deployment;
-using Windows.Storage;
 using Windows.Win32;
 
 namespace AutoOS.Views.Updater.Stages;
@@ -9,16 +8,17 @@ public static class PackageStage
 {
     public static async Task PackageActions(string downloadUrl, UpdateDialog dialog)
     {
-        StorageFolder tempFolder = await ApplicationData.Current.TemporaryFolder.CreateFolderAsync("AutoOS Updater", CreationCollisionOption.OpenIfExists);
-        StorageFile tempFile = await tempFolder.CreateFileAsync("AutoOS.msix", CreationCollisionOption.ReplaceExisting);
+        string tempFolderPath = Path.Combine(Path.GetTempPath(), "AutoOS Updater");
+        Directory.CreateDirectory(tempFolderPath);
+        string tempFilePath = Path.Combine(tempFolderPath, "AutoOS.msix");
+        string cerFilePath = Path.Combine(tempFolderPath, "AutoOS.cer");
 
-        StorageFile cerFile = await tempFolder.CreateFileAsync("AutoOS.cer", CreationCollisionOption.ReplaceExisting);
-        await dialog.Download(downloadUrl.Replace("AutoOS.msix", "AutoOS.cer"), tempFolder.Path, "AutoOS.cer", "Downloading Certificate...", 0, 25);
+        await dialog.Download(downloadUrl.Replace("AutoOS.msix", "AutoOS.cer"), tempFolderPath, "AutoOS.cer", "Downloading Certificate...", 0, 25);
         dialog.SetStatus("Installing Certificate...");
         using (X509Store store = new(StoreName.Root, StoreLocation.LocalMachine))
         {
             store.Open(OpenFlags.ReadWrite);
-            var cert = X509CertificateLoader.LoadCertificateFromFile(cerFile.Path);
+            var cert = X509CertificateLoader.LoadCertificateFromFile(cerFilePath);
             foreach (var oldCert in store.Certificates.Find(X509FindType.FindBySubjectDistinguishedName, cert.Subject, false))
             {
                 if (oldCert.Thumbprint != cert.Thumbprint)
@@ -28,14 +28,14 @@ public static class PackageStage
         }
 
         dialog.SetProgress(50);
-        await dialog.Download(downloadUrl, tempFolder.Path, "AutoOS.msix", "Downloading Update...", 50, 75);
+        await dialog.Download(downloadUrl, tempFolderPath, "AutoOS.msix", "Downloading Update...", 50, 75);
         double startValue = 75;
         double weight = 25;
 
         dialog.SetStatus("Installing Update...");
         PInvoke.RegisterApplicationRestart(null, 0);
-        var pm = new PackageManager();
-        var deploymentOperation = pm.AddPackageAsync(new Uri(tempFile.Path), null, DeploymentOptions.ForceApplicationShutdown);
+        var packageManager = new PackageManager();
+        var deploymentOperation = packageManager.AddPackageAsync(new Uri(tempFilePath), null, DeploymentOptions.ForceApplicationShutdown);
         deploymentOperation.Progress = (info, progress) =>
         {
             _ = dialog.DispatcherQueue.TryEnqueue(() =>

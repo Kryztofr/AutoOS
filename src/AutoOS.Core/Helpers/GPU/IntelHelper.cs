@@ -136,27 +136,27 @@ namespace AutoOS.Core.Helpers.GPU
             var actions = new List<(string Title, Func<Task> Action, Func<bool> Condition)>
             {
                 // download intel driver
-                ($@"Downloading INTEL driver {newestVersion}", async () => await DownloadHelper.Download(newestDownloadUrl, Path.Combine(ApplicationData.Current.TemporaryFolder.Path, "INTEL"), "driver.zip", reporter), () => Intel_3rd == true || Intel_4th_5th == true || Intel_6th == true),
+                ($@"Downloading INTEL driver {newestVersion}", async () => await DownloadHelper.Download(newestDownloadUrl, Path.Combine(Path.GetTempPath(), "INTEL"), "driver.zip", reporter), () => Intel_3rd == true || Intel_4th_5th == true || Intel_6th == true),
 
                  // extract intel driver
-                ($@"Extracting INTEL driver {newestVersion}", async () => await ExtractHelper.Extract(Path.Combine(ApplicationData.Current.TemporaryFolder.Path, "INTEL", "driver.zip"), Path.Combine(ApplicationData.Current.TemporaryFolder.Path, "INTEL", "driver")), () => Intel_3rd == true || Intel_4th_5th == true || Intel_6th == true),
+                ($@"Extracting INTEL driver {newestVersion}", async () => await ExtractHelper.Extract(Path.Combine(Path.GetTempPath(), "INTEL", "driver.zip"), Path.Combine(Path.GetTempPath(), "INTEL", "driver")), () => Intel_3rd == true || Intel_4th_5th == true || Intel_6th == true),
 
                 // download intel driver
-                ($@"Downloading INTEL driver {newestVersion}", async () => await DownloadHelper.Download(newestDownloadUrl, Path.Combine(ApplicationData.Current.TemporaryFolder.Path, "INTEL"), "driver.exe", reporter), () => Intel_3rd == false && Intel_4th_5th == false && Intel_6th == false),
+                ($@"Downloading INTEL driver {newestVersion}", async () => await DownloadHelper.Download(newestDownloadUrl, Path.Combine(Path.GetTempPath(), "INTEL"), "driver.exe", reporter), () => Intel_3rd == false && Intel_4th_5th == false && Intel_6th == false),
 
                 // extract intel driver
-                ($@"Extracting INTEL driver {newestVersion}", async () => await ExtractHelper.Extract(Path.Combine(ApplicationData.Current.TemporaryFolder.Path, "INTEL", "driver.exe"), Path.Combine(ApplicationData.Current.TemporaryFolder.Path, "INTEL", "driver")), () => Intel_3rd == false && Intel_4th_5th == false && Intel_6th == false),
+                ($@"Extracting INTEL driver {newestVersion}", async () => await ExtractHelper.Extract(Path.Combine(Path.GetTempPath(), "INTEL", "driver.exe"), Path.Combine(Path.GetTempPath(), "INTEL", "driver")), () => Intel_3rd == false && Intel_4th_5th == false && Intel_6th == false),
 
                 // stripping intel driver
-                ($@"Stripping INTEL driver {newestVersion}", async () => File.Delete(Path.Combine(ApplicationData.Current.TemporaryFolder.Path, "INTEL", "driver", "Resources", "Extras", "Intel-Driver-and-Support-Assistant-Installer.exe")), () => Intel_11th_14th || Intel_Arc),
-                ($@"Stripping INTEL driver {newestVersion}", async () => { foreach (var file in Directory.GetFiles(Path.Combine(ApplicationData.Current.TemporaryFolder.Path, "INTEL", "driver", "Resources", "Extras"))) if (DcaFileRegex().IsMatch(Path.GetFileName(file))) File.Delete(file); }, () => Intel_11th_14th || Intel_Arc),
+                ($@"Stripping INTEL driver {newestVersion}", async () => File.Delete(Path.Combine(Path.GetTempPath(), "INTEL", "driver", "Resources", "Extras", "Intel-Driver-and-Support-Assistant-Installer.exe")), () => Intel_11th_14th || Intel_Arc),
+                ($@"Stripping INTEL driver {newestVersion}", async () => { foreach (var file in Directory.GetFiles(Path.Combine(Path.GetTempPath(), "INTEL", "driver", "Resources", "Extras"))) if (DcaFileRegex().IsMatch(Path.GetFileName(file))) File.Delete(file); }, () => Intel_11th_14th || Intel_Arc),
 
                 // update/install intel driver
-                (gpu.IsInstalled ?  $"Updating to INTEL driver {newestVersion}" : $"Installing INTEL driver {newestVersion}", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(ApplicationData.Current.TemporaryFolder.Path, "INTEL", "driver", "igxpin.exe"), Arguments = "-s", UseShellExecute = false, CreateNoWindow = true })!.WaitForExitAsync(), () => Intel_3rd == true || Intel_4th_5th == true || Intel_6th == true),
-                (gpu.IsInstalled ?  $"Updating to INTEL driver {newestVersion}" : $"Installing INTEL driver {newestVersion}", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(ApplicationData.Current.TemporaryFolder.Path, "INTEL", "driver", "Installer.exe"), Arguments = "/silent", UseShellExecute = false, CreateNoWindow = true })!.WaitForExitAsync(), () => Intel_3rd == false && Intel_4th_5th == false && Intel_6th == false),
+                (gpu.IsInstalled ?  $"Updating to INTEL driver {newestVersion}" : $"Installing INTEL driver {newestVersion}", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "INTEL", "driver", "igxpin.exe"), Arguments = "-s", UseShellExecute = false, CreateNoWindow = true })!.WaitForExitAsync(), () => Intel_3rd == true || Intel_4th_5th == true || Intel_6th == true),
+                (gpu.IsInstalled ?  $"Updating to INTEL driver {newestVersion}" : $"Installing INTEL driver {newestVersion}", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "INTEL", "driver", "Installer.exe"), Arguments = "/silent", UseShellExecute = false, CreateNoWindow = true })!.WaitForExitAsync(), () => Intel_3rd == false && Intel_4th_5th == false && Intel_6th == false),
                 (gpu.IsInstalled ?  $"Updating to INTEL driver {newestVersion}" : $"Installing INTEL driver {newestVersion}", async () => await Task.Delay(3000), null),
                 (gpu.IsInstalled ? $"Updating to INTEL driver {newestVersion}" : $"Installing INTEL driver {newestVersion}", async () => GpuHelper.RefreshGpu(gpu), null),
-                ("Cleaning up INTEL files", async () => await (await ApplicationData.Current.TemporaryFolder.GetFolderAsync("INTEL")).DeleteAsync(), null)
+                ("Cleaning up INTEL files", async () => Directory.Delete(Path.Combine(Path.GetTempPath(), "INTEL"), true), null)
             };
 
             return actions;

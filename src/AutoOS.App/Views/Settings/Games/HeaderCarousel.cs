@@ -2033,16 +2033,18 @@ public partial class HeaderCarousel : ItemsControl
 
             localSettings.Values[$"LastPlayed_{tile.Title}"] = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
 
-            if (selectedTile != null)
-            {
-                int idx = Items.IndexOf(selectedTile);
-                if (idx >= 0)
-                    (ContainerFromIndex(idx) as Control)?.Focus(FocusState.Programmatic);
-            }
-
-            if (currentSortKey == "Recently played")
+            if (currentSortKey.Equals("Recently Played", StringComparison.OrdinalIgnoreCase))
             {
                 LoadSortSettings();
+            }
+            else
+            {
+                if (selectedTile != null)
+                {
+                    int idx = Items.IndexOf(selectedTile);
+                    if (idx >= 0)
+                        (ContainerFromIndex(idx) as Control)?.Focus(FocusState.Programmatic);
+                }
             }
         }
 

@@ -8,7 +8,6 @@ using System.Text;
 using System.Xml.Linq;
 using Windows.ApplicationModel.Store.Preview.InstallControl;
 using Windows.Management.Deployment;
-using Windows.Storage;
 
 namespace AutoOS.Core.Helpers.Store;
 
@@ -48,8 +47,9 @@ public static partial class StoreHelper
             return;
         }
 
-        var workspace = await ApplicationData.Current.TemporaryFolder.CreateFolderAsync("StoreHelper", CreationCollisionOption.OpenIfExists);
-        var folder = await workspace.CreateFolderAsync(identifier, CreationCollisionOption.OpenIfExists);
+        var workspacePath = Path.Combine(Path.GetTempPath(), "StoreHelper");
+        var folderPath = Path.Combine(workspacePath, identifier);
+        Directory.CreateDirectory(folderPath);
 
         try
         {
@@ -59,7 +59,7 @@ public static partial class StoreHelper
             var main = files.First();
             Debug.WriteLine($"[StoreHelper] Selected Package: {main.Name}");
 
-            await DownloadHelper.Download(main.ResourceUri, folder.Path, reporter: reporter);
+            await DownloadHelper.Download(main.ResourceUri, folderPath, reporter: reporter);
         }
         catch (Exception ex)
         {
@@ -69,15 +69,12 @@ public static partial class StoreHelper
 
     public static async Task Install(string identifier)
     {
-        StorageFolder workspace;
-        StorageFolder folder;
-
-        workspace = await ApplicationData.Current.TemporaryFolder.GetFolderAsync("StoreHelper");
-        folder = await workspace.GetFolderAsync(identifier);
+        var workspacePath = Path.Combine(Path.GetTempPath(), "StoreHelper");
+        var folderPath = Path.Combine(workspacePath, identifier);
 
         try
         {
-            var allFiles = Directory.GetFiles(folder.Path, "*.*", SearchOption.TopDirectoryOnly)
+            var allFiles = Directory.GetFiles(folderPath, "*.*", SearchOption.TopDirectoryOnly)
                 .Where(f => f.EndsWith(".appx", StringComparison.OrdinalIgnoreCase) ||
                             f.EndsWith(".appxbundle", StringComparison.OrdinalIgnoreCase) ||
                             f.EndsWith(".msix", StringComparison.OrdinalIgnoreCase) ||
@@ -105,36 +102,23 @@ public static partial class StoreHelper
         }
         finally
         {
-            try
-            {
-                await folder.DeleteAsync();
-            }
-            catch { }
+            Directory.Delete(folderPath, true);
         }
     }
 
     public static async Task Remove(string packageFamilyName)
     {
-        try
-        {
-            await KillProcesses(packageFamilyName);
-            var manager = new PackageManager();
+		var manager = new PackageManager();
 
-            foreach (var package in manager.FindPackagesForUser(string.Empty, packageFamilyName))
-            {
-                await manager.RemovePackageAsync(package.Id.FullName);
-            }
-        }
-        catch { }
+		foreach (var package in manager.FindPackagesForUser(string.Empty, packageFamilyName))
+		{
+			await manager.RemovePackageAsync(package.Id.FullName, RemovalOptions.RemoveForAllUsers);
+		}
     }
 
     public static async Task Deprovision(string packageFamilyName)
     {
-        try
-        {
-            await new PackageManager().DeprovisionPackageForAllUsersAsync(packageFamilyName);
-        }
-        catch { }
+        await new PackageManager().DeprovisionPackageForAllUsersAsync(packageFamilyName);
     }
 
     public static async Task<List<AppInstallItem>> CheckForUpdates()
@@ -161,8 +145,6 @@ public static partial class StoreHelper
         reporter?.Report(isIndeterminate: true, progress: 0);
 
         var installManager = new AppInstallManager();
-
-        await KillProcesses(identifier);
 
         var tcs = new TaskCompletionSource<bool>();
 
@@ -212,16 +194,12 @@ public static partial class StoreHelper
 
     public static string GetVersion(string packageFamilyName)
     {
-        try
+        var manager = new PackageManager();
+        foreach (var package in manager.FindPackagesForUser(string.Empty, packageFamilyName))
         {
-            var manager = new PackageManager();
-            foreach (var package in manager.FindPackagesForUser(string.Empty, packageFamilyName))
-            {
-                var version = package.Id.Version;
-                return $"{version.Major}.{version.Minor}.{version.Build}.{version.Revision}";
-            }
+            var version = package.Id.Version;
+            return $"{version.Major}.{version.Minor}.{version.Build}.{version.Revision}";
         }
-        catch { }
         return string.Empty;
     }
 
@@ -428,42 +406,6 @@ public static partial class StoreHelper
             return string.Empty;
         }
         return await res.Content.ReadAsStringAsync();
-    }
-
-    private static async Task KillProcesses(string packageFamilyName)
-    {
-        try
-        {
-            var manager = new PackageManager();
-            var package = manager.FindPackagesForUser(string.Empty, packageFamilyName).FirstOrDefault();
-            if (package == null) return;
-
-            string manifestPath = Path.Combine(package.InstalledLocation.Path, "AppxManifest.xml");
-            if (!File.Exists(manifestPath)) return;
-
-            var doc = XDocument.Load(manifestPath);
-            var ns = doc.Root.Name.Namespace;
-            var applications = doc.Descendants(ns + "Application");
-
-            foreach (var app in applications)
-            {
-                var exe = app.Attribute("Executable")?.Value;
-                if (!string.IsNullOrEmpty(exe))
-                {
-                    var processName = Path.GetFileNameWithoutExtension(exe);
-                    foreach (var process in Process.GetProcessesByName(processName))
-                    {
-                        try
-                        {
-                            process.Kill();
-                            await process.WaitForExitAsync().WaitAsync(TimeSpan.FromSeconds(5));
-                        }
-                        catch { }
-                    }
-                }
-            }
-        }
-        catch { }
     }
 }
 

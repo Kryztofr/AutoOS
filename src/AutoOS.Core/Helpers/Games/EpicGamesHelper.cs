@@ -674,44 +674,13 @@ public static partial class EpicGamesHelper
             }
         }
 
-        // launch epic games to get new token
+        // launch epic games launcher
         Process.Start(new ProcessStartInfo(EpicGamesPath) { WindowStyle = ProcessWindowStyle.Hidden });
 
-        // wait for token to get used
-        while (true)
-        {
-            await Task.Delay(100);
-
-            if (!ValidateData(ActiveEpicGamesAccountPath))
-            {
-                await UpdateInvalidEpicGamesToken();
-                return;
-            }
-
-            if (GetAccountData(ActiveEpicGamesAccountPath).TokenUseCount == 1)
-                break;
-        }
-
-        // wait for new token
-        while (true)
-        {
-            await Task.Delay(100);
-
-            if (!ValidateData(ActiveEpicGamesAccountPath))
-            {
-                await UpdateInvalidEpicGamesToken();
-                return;
-            }
-
-            if (GetAccountData(ActiveEpicGamesAccountPath).TokenUseCount == 0)
-                break;
-        }
+        await Task.Delay(4000);
 
         // close epic games launcher
         CloseEpicGames();
-
-        // update the backed up config
-        File.Copy(ActiveEpicGamesAccountPath, Path.Combine(EpicGamesAccountDir, GetAccountData(ActiveEpicGamesAccountPath).AccountId, "GameUserSettings.ini"), true);
     }
 
     public static async Task<List<GameModel>> GetGames()

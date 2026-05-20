@@ -1,15 +1,10 @@
-using AutoOS.Common;
 using AutoOS.Core.Helpers.Device.Models;
 using AutoOS.Core.Helpers.Device;
 using AutoOS.Core.Helpers.Download;
 using AutoOS.Core.Helpers.Extract;
 using AutoOS.Core.Helpers.Registry;
-using AutoOS.Core.Helpers.Sound.Models;
-using AutoOS.Core.Helpers.Sound;
-using AutoOS.Views.Installer.Actions;
 using Microsoft.Win32;
 using System.Diagnostics;
-using Windows.Storage;
 
 namespace AutoOS.Views.Installer.Stages;
 
@@ -55,13 +50,13 @@ public static class AudioStage
             ("Disabling Multimedia Class Scheduler Service (MMCSS)", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\MMCSS", "Start", 4, RegistryValueKind.DWord), () => NetAdapterCx == true),
 
             // download dolby ac-3 feature on demand
-            ("Downloading Dolby AC-3 Feature on Demand", async () => await DownloadHelper.Download("https://www.dl.dropboxusercontent.com/scl/fi/g7qcrrpxt3o3gudzk1icg/Dolby-AC-3-FoD.zip?rlkey=i9koe4r0cu0nemf1f4j7pm026&st=bhgsaiec&dl=0", ApplicationData.Current.TemporaryFolder.Path, "Dolby-AC-3-FoD.zip"), null),
+            ("Downloading Dolby AC-3 Feature on Demand", async () => await DownloadHelper.Download("https://www.dl.dropboxusercontent.com/scl/fi/g7qcrrpxt3o3gudzk1icg/Dolby-AC-3-FoD.zip?rlkey=i9koe4r0cu0nemf1f4j7pm026&st=bhgsaiec&dl=0", Path.GetTempPath(), "Dolby-AC-3-FoD.zip"), null),
 
             // install dolby ac-3 feature on demand
-            ("Installing Dolby AC-3 Feature on Demand", async () => await ExtractHelper.Extract(Path.Combine(ApplicationData.Current.TemporaryFolder.Path, "Dolby-AC-3-FoD.zip"), Path.Combine(ApplicationData.Current.TemporaryFolder.Path, "Dolby-AC-3-FoD")), null),
-            ("Installing Dolby AC-3 Feature on Demand", async () => await Process.Start(new ProcessStartInfo { FileName = "dism.exe", Arguments = $@"/online /Add-Package /PackagePath:""{Path.Combine(ApplicationData.Current.TemporaryFolder.Path, @"Dolby-AC-3-FoD\update.mum")}"" /norestart", UseShellExecute = false, CreateNoWindow = true })!.WaitForExitAsync(), null),
-            ("Cleaning up Dolby AC-3 Feature on Demand files", async () => await (await ApplicationData.Current.TemporaryFolder.GetFileAsync("Dolby-AC-3-FoD.zip")).DeleteAsync(), null),
-            ("Cleaning up Dolby AC-3 Feature on Demand files", async () => await (await ApplicationData.Current.TemporaryFolder.GetFolderAsync("Dolby-AC-3-FoD")).DeleteAsync(), null)
+            ("Installing Dolby AC-3 Feature on Demand", async () => await ExtractHelper.Extract(Path.Combine(Path.GetTempPath(), "Dolby-AC-3-FoD.zip"), Path.Combine(Path.GetTempPath(), "Dolby-AC-3-FoD")), null),
+            ("Installing Dolby AC-3 Feature on Demand", async () => await Process.Start(new ProcessStartInfo { FileName = "dism.exe", Arguments = $@"/online /Add-Package /PackagePath:""{Path.Combine(Path.GetTempPath(), @"Dolby-AC-3-FoD\update.mum")}"" /norestart", UseShellExecute = false, CreateNoWindow = true })!.WaitForExitAsync(), null),
+            ("Cleaning up Dolby AC-3 Feature on Demand files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "Dolby-AC-3-FoD.zip")), null),
+            ("Cleaning up Dolby AC-3 Feature on Demand files", async () => Directory.Delete(Path.Combine(Path.GetTempPath(), "Dolby-AC-3-FoD"), true), null)
         };
     }
 }

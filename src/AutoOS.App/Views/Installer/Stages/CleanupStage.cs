@@ -24,7 +24,7 @@ public static class CleanupStage
             ("Cleaning temp directories", async () => await RegistryHelper.RunAs(RegistryHelper.Identity.TrustedInstaller, async () => ProcessActions.CleanDirectory(@"C:\Windows\System32\winevt\Logs")), null),
             ("Cleaning temp directories", async () => await RegistryHelper.RunAs(RegistryHelper.Identity.TrustedInstaller, async () => ProcessActions.CleanDirectory(@"C:\Windows\SystemTemp")), null),
             ("Cleaning temp directories", async () => await RegistryHelper.RunAs(RegistryHelper.Identity.TrustedInstaller, async () => ProcessActions.CleanDirectory(@"C:\Windows\Temp")), null),
-            ("Cleaning temp directories", async () => ProcessActions.CleanDirectory(ApplicationData.Current.TemporaryFolder.Path), null),
+            ("Cleaning temp directories", async () => ProcessActions.CleanDirectory(Path.GetTempPath()), null),
             ("Cleaning temp directories", async () => File.Delete(@"C:\DumpStack.log"), null),
 
             // run disk cleanup

@@ -10,7 +10,6 @@ public static partial class IgdbHelper
 
     public static async Task<Dictionary<string, string>> SearchCovers(string name)
     {
-        System.Diagnostics.Debug.WriteLine($"[IgdbHelper] Searching for: {name}");
         string Clean(string input) => Regex.Replace(input.ToLowerInvariant(), @"\s+", ".");
         string GetSearchBucket(string input)
         {

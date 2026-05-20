@@ -57,12 +57,12 @@ public static class AppxStage
 
         foreach (var package in packagesToRemove)
         {
-            actions.Add(($"Uninstalling {package}", async () => await StoreHelper.Remove(package), null));
             actions.Add(($"Deprovisioning {package}", async () => await StoreHelper.Deprovision(package), null));
-        }
+			actions.Add(($"Uninstalling {package}", async () => await StoreHelper.Remove(package), null));
+		}
 
-        // add update actions
-        var packagesToUpdate = new List<string>
+		// add update actions
+		var packagesToUpdate = new List<string>
         {
             "Microsoft.StorePurchaseApp_8wekyb3d8bbwe",
             "Microsoft.WindowsStore_8wekyb3d8bbwe",
