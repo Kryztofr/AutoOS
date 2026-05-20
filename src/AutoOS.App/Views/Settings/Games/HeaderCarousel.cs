@@ -2380,10 +2380,12 @@ public partial class HeaderCarousel : ItemsControl
             if (Title == "Fall Guys") offlineExecutable = "FallGuys_client";
 
             StartGameWatcher(() =>
-                (!string.IsNullOrEmpty(offlineExecutable) && Process.GetProcesses().Any(p => p.ProcessName.Contains(offlineExecutable, StringComparison.OrdinalIgnoreCase))) ||
-                (!string.IsNullOrEmpty(onlineExecutable) && Process.GetProcesses().Any(p => p.ProcessName.Contains(onlineExecutable, StringComparison.OrdinalIgnoreCase))) ||
-                (ProcessNames?.Any(process => !string.IsNullOrEmpty(process) && Process.GetProcesses().Any(p => p.ProcessName.Contains(process, StringComparison.OrdinalIgnoreCase))) ?? false)
-            );
+            {
+                var running = Process.GetProcesses();
+                return (!string.IsNullOrEmpty(offlineExecutable) && running.Any(p => p.ProcessName.Contains(Path.GetFileNameWithoutExtension(offlineExecutable), StringComparison.OrdinalIgnoreCase))) ||
+                       (!string.IsNullOrEmpty(onlineExecutable) && running.Any(p => p.ProcessName.Contains(Path.GetFileNameWithoutExtension(onlineExecutable), StringComparison.OrdinalIgnoreCase))) ||
+                       (ProcessNames?.Any(process => !string.IsNullOrEmpty(process) && running.Any(p => p.ProcessName.Contains(Path.GetFileNameWithoutExtension(process), StringComparison.OrdinalIgnoreCase))) ?? false);
+            });
         }
         else if (Launcher == "UbisoftConnect")
         {
@@ -2397,9 +2399,10 @@ public partial class HeaderCarousel : ItemsControl
         {
             StartGameWatcher(() =>
             {
+                var running = Process.GetProcesses();
                 if (ProcessNames != null && ProcessNames.Any())
                 {
-                    if (ProcessNames.Any(name => Process.GetProcessesByName(name).Length > 0))
+                    if (ProcessNames.Any(name => running.Any(p => p.ProcessName.Contains(Path.GetFileNameWithoutExtension(name), StringComparison.OrdinalIgnoreCase))))
                         return true;
                 }
 
