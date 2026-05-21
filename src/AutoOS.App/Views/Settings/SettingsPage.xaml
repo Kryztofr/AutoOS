@@ -62,16 +62,7 @@
                         </dev:SettingsExpander.Items>
                     </dev:SettingsExpander>
                 </dev:SimpleSettingsGroup>
-                <dev:SimpleSettingsGroup Header="Updates">
-                    <dev:SettingsCard Description="Get early access to new features and bug fixes. These versions are for testing and may be less stable than final releases."
-                                      Header="Pre-release Updates"
-                                      HeaderIcon="{dev:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},
-                                                                Glyph=&#xE895;}">
-                        <ToggleSwitch x:Name="IncludePrerelease"
-                                      Toggled="IncludePrerelease_Toggled" />
-                    </dev:SettingsCard>
-                </dev:SimpleSettingsGroup>
-                <dev:SimpleSettingsGroup Header="Windowing">
+                <dev:SimpleSettingsGroup Header="Window">
                     <dev:SettingsCard Description="Enable to hide the AutoOS Startup window."
                                       Header="Hide AutoOS Startup"
                                       HeaderIcon="{dev:FontIcon FontFamily={StaticResource SymbolThemeFontFamily},

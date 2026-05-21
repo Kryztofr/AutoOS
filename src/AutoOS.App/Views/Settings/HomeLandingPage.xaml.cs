@@ -154,8 +154,6 @@ namespace AutoOS.Views.Settings
 
             try
             {
-                bool includePrereleases = localSettings.Values["IncludePrerelease"] as bool? ?? false;
-
                 var json = await httpClient.GetStringAsync("https://api.github.com/repos/tinodin/AutoOS/releases");
                 using var releasesDoc = JsonDocument.Parse(json);
 
@@ -166,12 +164,10 @@ namespace AutoOS.Views.Settings
                         return new
                         {
                             Version = Version.Parse(tag.TrimStart('v')),
-                            IsPrerelease = release.GetProperty("prerelease").GetBoolean(),
                             Json = release
                         };
                     })
                     .Where(x => x.Version.CompareTo(currentVersion) > 0)
-                    .Where(x => includePrereleases || (!x.IsPrerelease && x.Version.Revision <= 0))
                     .OrderBy(x => x.Version)
                     .ToList();
 
