@@ -231,11 +231,58 @@ public static partial class SteamHelper
 		await Task.Delay(1000);
 	}
 
+	public static (Dictionary<string, string> PlaytimeData, HashSet<string> OwnedAppIds) GetPlaytime()
+	{
+		var playtimeData = new Dictionary<string, string>();
+		var ownedAppIds = new HashSet<string>();
+		if (!Directory.Exists(SteamUserDataDir)) return (playtimeData, ownedAppIds);
+
+		string steam64Id = GetSteam64ID();
+		if (!ulong.TryParse(steam64Id, out var steam64IdNum)) return (playtimeData, ownedAppIds);
+		const ulong steam64IdBase = 76561197960265728;
+		ulong folderId = steam64IdNum - steam64IdBase;
+		string folderName = folderId.ToString();
+
+		string localConfigPath = Path.Combine(SteamUserDataDir, folderName, "config", "localconfig.vdf");
+		if (!File.Exists(localConfigPath)) return (playtimeData, ownedAppIds);
+
+		try
+		{
+			var options = new KVSerializerOptions { HasEscapeSequences = true };
+			var kv = KVSerializer.Create(KVSerializationFormat.KeyValues1Text).Deserialize(File.OpenRead(localConfigPath), options);
+			var software = kv.Root["Software"];
+			var valve = software["Valve"];
+			var steam = valve["Steam"];
+			var apps = steam["Apps"];
+
+			foreach (var app in apps.Children)
+			{
+				string gameId = app.Key;
+				ownedAppIds.Add(gameId);
+
+				var playtimeNode = app.Value.Children.FirstOrDefault(c => c.Key == "Playtime");
+				string playtimeValue = playtimeNode.Value?.ToString();
+				if (!string.IsNullOrEmpty(playtimeValue) && int.TryParse(playtimeValue, out var playtimeMinutes))
+				{
+					var ts = TimeSpan.FromMinutes(playtimeMinutes);
+					string formattedTime = ts.TotalHours >= 1 ? $"{(int)ts.TotalHours}h {ts.Minutes}m" : $"{ts.Minutes}m";
+					playtimeData[gameId] = formattedTime;
+				}
+			}
+		}
+		catch
+		{ }
+
+		return (playtimeData, ownedAppIds);
+	}
+
 	public static async Task<List<GameModel>> GetGames()
 	{
 		var games = new ConcurrentBag<GameModel>();
 
 		if (!File.Exists(SteamPath) || !File.Exists(SteamLibraryPath)) return [];
+
+		var (playtimeData, ownedAppIds) = GetPlaytime();
 
 		// read libraryfolders.vdf
 		var libraryFolderData = KVSerializer.Create(KVSerializationFormat.KeyValues1Text).Deserialize(File.OpenRead(SteamLibraryPath));
@@ -259,6 +306,9 @@ public static partial class SteamHelper
 				// skip steam tools
 				if (gameId == "228980") continue;
 
+				// skip not owned games 
+				if (!ownedAppIds.Contains(gameId)) continue;
+
 				try
 				{
 					// read game manifest
@@ -268,16 +318,19 @@ public static partial class SteamHelper
 					var appManifestData = KVSerializer.Create(KVSerializationFormat.KeyValues1Text).Deserialize(File.OpenRead(manifestPath));
 					long? sizeBytes = long.TryParse(appManifestData["SizeOnDisk"]?.ToString(), out var result) ? result : null;
 
+					// get playtime
+					string playtimeStr = playtimeData.TryGetValue(gameId, out var pt) ? pt : "0m";
+
 					var game = new GameModel
 					{
 						Launcher = "Steam",
-						PlayTime = "0m",
+						PlayTime = playtimeStr,
 						InstallLocation = Path.Combine(steamAppsDir, "common", appManifestData["installdir"]?.ToString()).Replace("/", "\\"),
 						Size = sizeBytes.HasValue
 							? (sizeBytes.Value >= 1024d * 1024d * 1024d
 								? $"{sizeBytes.Value / (1024d * 1024d * 1024d):F1} GB"
 								: $"{sizeBytes.Value / (1024d * 1024d):F2} MB")
-							: "Unknown",
+								: "Unknown",
 						Version = appManifestData["buildid"]?.ToString(),
 						GameID = gameId,
 					};
@@ -316,45 +369,47 @@ public static partial class SteamHelper
 
 		var shortcutList = new List<(string appName, string exe, string startDir, string longId, long sizeBytes)>();
 
-		foreach (var userDir in Directory.GetDirectories(SteamUserDataDir))
+		string steam64Id = GetSteam64ID();
+		if (string.IsNullOrEmpty(steam64Id)) return [];
+
+		if (!ulong.TryParse(steam64Id, out var steam64IdNum)) return [];
+		const ulong steam64IdBase = 76561197960265728;
+		ulong folderId = steam64IdNum - steam64IdBase;
+		string folderName = folderId.ToString();
+
+		string shortcutsPath = Path.Combine(SteamUserDataDir, folderName, "config", "shortcuts.vdf");
+		if (!File.Exists(shortcutsPath)) return [];
+
+		using var stream = File.OpenRead(shortcutsPath);
+		var kv = KVSerializer.Create(KVSerializationFormat.KeyValues1Binary).Deserialize(stream);
+
+		foreach (var shortcut in kv.Root.Children)
 		{
-			string shortcutsPath = Path.Combine(userDir, "config", "shortcuts.vdf");
-			if (!File.Exists(shortcutsPath))
+			var shortcutData = shortcut.Value;
+			string appName = shortcutData.Children.FirstOrDefault(children => string.Equals(children.Key, "AppName", StringComparison.OrdinalIgnoreCase)).Value?.ToString();
+			string exe = shortcutData.Children.FirstOrDefault(children => string.Equals(children.Key, "Exe", StringComparison.OrdinalIgnoreCase)).Value?.ToString()?.Replace("\"", "");
+			string startDir = shortcutData.Children.FirstOrDefault(children => string.Equals(children.Key, "StartDir", StringComparison.OrdinalIgnoreCase)).Value?.ToString()?.Replace("\"", "")?.TrimEnd('\\', '/');
+			var appidValue = shortcutData.Children.FirstOrDefault(children => string.Equals(children.Key, "appid", StringComparison.OrdinalIgnoreCase)).Value;
+
+			if (string.IsNullOrEmpty(appName)) continue;
+
+			long appid = 0;
+			if (appidValue != null && long.TryParse(appidValue.ToString(), out var id))
 			{
-				continue;
+				appid = id;
 			}
 
-			using var stream = File.OpenRead(shortcutsPath);
-			var kv = KVSerializer.Create(KVSerializationFormat.KeyValues1Binary).Deserialize(stream);
+			ulong longIdValue = ((ulong)(uint)appid << 32) | 0x02000000;
+			string longId = longIdValue.ToString();
+			string gameDir = !string.IsNullOrEmpty(startDir) && Directory.Exists(startDir) ? startDir : (!string.IsNullOrEmpty(exe) ? Path.GetDirectoryName(exe) : null);
 
-			foreach (var shortcut in kv.Root.Children)
+			long sizeBytes = 0;
+			if (!string.IsNullOrEmpty(gameDir) && Directory.Exists(gameDir))
 			{
-				var shortcutData = shortcut.Value;
-				string appName = shortcutData.Children.FirstOrDefault(children => string.Equals(children.Key, "AppName", StringComparison.OrdinalIgnoreCase)).Value?.ToString();
-				string exe = shortcutData.Children.FirstOrDefault(children => string.Equals(children.Key, "Exe", StringComparison.OrdinalIgnoreCase)).Value?.ToString()?.Replace("\"", "");
-				string startDir = shortcutData.Children.FirstOrDefault(children => string.Equals(children.Key, "StartDir", StringComparison.OrdinalIgnoreCase)).Value?.ToString()?.Replace("\"", "")?.TrimEnd('\\', '/');
-				var appidValue = shortcutData.Children.FirstOrDefault(children => string.Equals(children.Key, "appid", StringComparison.OrdinalIgnoreCase)).Value;
-
-				if (string.IsNullOrEmpty(appName)) continue;
-
-				long appid = 0;
-				if (appidValue != null && long.TryParse(appidValue.ToString(), out var id))
-				{
-					appid = id;
-				}
-
-				ulong longIdValue = ((ulong)(uint)appid << 32) | 0x02000000;
-				string longId = longIdValue.ToString();
-				string gameDir = !string.IsNullOrEmpty(startDir) && Directory.Exists(startDir) ? startDir : (!string.IsNullOrEmpty(exe) ? Path.GetDirectoryName(exe) : null);
-
-				long sizeBytes = 0;
-				if (!string.IsNullOrEmpty(gameDir) && Directory.Exists(gameDir))
-				{
-					sizeBytes = new DirectoryInfo(gameDir).EnumerateFiles("*", SearchOption.AllDirectories).Sum(file => file.Length);
-				}
-
-				shortcutList.Add((appName, exe, startDir, longId, sizeBytes));
+				sizeBytes = new DirectoryInfo(gameDir).EnumerateFiles("*", SearchOption.AllDirectories).Sum(file => file.Length);
 			}
+
+			shortcutList.Add((appName, exe, startDir, longId, sizeBytes));
 		}
 
 		await Parallel.ForEachAsync(shortcutList, new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount * 2 }, async (shortcutItem, cancellationToken) =>
