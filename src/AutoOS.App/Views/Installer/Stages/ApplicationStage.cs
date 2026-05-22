@@ -92,6 +92,8 @@ public static class ApplicationStage
         bool Steam = selection?.Steam ?? PreparingStage.Steam;
         bool SteamGames = selection != null ? false : PreparingStage.SteamGames;
         bool RiotClient = selection?.RiotClient ?? PreparingStage.RiotClient;
+        bool RiotClientAccount = selection != null ? false : PreparingStage.RiotClientAccount;
+        bool RiotClientGames = selection != null ? false : PreparingStage.RiotClientAccount;
         bool UbisoftConnect = selection?.UbisoftConnect ?? PreparingStage.UbisoftConnect;
         bool EA = selection?.EA ?? PreparingStage.EA;
         bool BattleNet = selection?.BattleNet ?? PreparingStage.BattleNet;
@@ -313,7 +315,7 @@ public static class ApplicationStage
             // ("Installing Autoruns", async () => await ExtractHelper.Extract(Path.Combine(Path.GetTempPath(), "Autoruns.zip"), Path.Combine(Path.GetTempPath(), "Autoruns")), () => selection == null),
             // ("Installing Autoruns", async () => Directory.Move(Path.Combine(Path.GetTempPath(), "Autoruns"), Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Autoruns")), () => selection == null),
             ("Installing Autoruns", async () => Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Autoruns")), () => selection == null),
-            ("Installing Autoruns", async () => File.Copy(Path.Combine(Path.GetTempPath(), "Autoruns64.exe"), Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Autoruns", "Autoruns64.exe"), true), () => selection == null),
+            ("Installing Autoruns", async () => File.Move(Path.Combine(Path.GetTempPath(), "Autoruns64.exe"), Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Autoruns", "Autoruns64.exe"), true), () => selection == null),
             ("Installing Autoruns", async () => await ProcessActions.RunPowerShell(@"$Shell = New-Object -ComObject WScript.Shell; $Shortcut = $Shell.CreateShortcut([System.IO.Path]::Combine($env:ProgramData, 'Microsoft\Windows\Start Menu\Programs\Autoruns.lnk')); $Shortcut.TargetPath = [System.IO.Path]::Combine($env:ProgramFiles, 'Autoruns\Autoruns64.exe'); $Shortcut.Save()"), () => selection == null),
             ("Installing Autoruns", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Autoruns", "DisplayName", "Autoruns", RegistryValueKind.String), () => selection == null),
             ("Installing Autoruns", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Autoruns", "UninstallString", $@"cmd /c rd /s /q ""{Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Autoruns")}"" & del ""{Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), @"Microsoft\Windows\Start Menu\Programs\Autoruns.lnk")}"" & reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Autoruns"" /f", RegistryValueKind.String), () => selection == null),
@@ -434,7 +436,7 @@ public static class ApplicationStage
             ("Importing Epic Games Launcher Account", async () => await EpicGamesHelper.ImportAccount(), () => EpicGames == true && EpicGamesAccount == true),
 
             // import epic games launcher games
-            ("Importing Epic Games Launcher Games", async () => await EpicGamesHelper.RunImportEpicGamesLauncherGames(), () => EpicGames == true && EpicGamesGames == true),
+            ("Importing Epic Games Launcher Games", async () => await EpicGamesHelper.ImportGames(), () => EpicGames == true && EpicGamesGames == true),
             ("Importing Epic Games Launcher Games", async () => Fortnite = File.Exists(@"C:\ProgramData\Epic\UnrealEngineLauncher\LauncherInstalled.dat") && (JsonNode.Parse(await File.ReadAllTextAsync(@"C:\ProgramData\Epic\UnrealEngineLauncher\LauncherInstalled.dat"))?["InstallationList"] is JsonArray installations) && installations.Any(entry => entry?["AppName"]?.ToString() == "Fortnite") , () => EpicGames == true && EpicGamesGames == true),
             ("Importing Epic Games Launcher Games", async () => Valorant = File.Exists(@"C:\ProgramData\Epic\UnrealEngineLauncher\LauncherInstalled.dat") && (JsonNode.Parse(await File.ReadAllTextAsync(@"C:\ProgramData\Epic\UnrealEngineLauncher\LauncherInstalled.dat"))?["InstallationList"] is JsonArray installations) && installations.Any(entry => entry?["AppName"]?.ToString() == "602eb4abc8764c87b7f2607a1ef8c18e") , () => EpicGames == true && EpicGamesGames == true),
             ("Importing Epic Games Launcher Games", async () => await Task.Delay(1000), () => EpicGames == true && EpicGamesGames == true),
@@ -477,16 +479,24 @@ public static class ApplicationStage
 
             // install riot client
             ("Installing Riot Client", async () => await ExtractHelper.Extract(Path.Combine(Path.GetTempPath(), "Riot Games.zip"), @"C:\"), () => RiotClient == true),
+            ("Installing Riot Client", async () => { Process.Start(new ProcessStartInfo { FileName = @"C:\Riot Games\Riot Client\RiotClientServices.exe", WindowStyle = ProcessWindowStyle.Maximized }); while (Process.GetProcessesByName("RiotClientCrashHandler").Length == 0 || Process.GetProcessesByName("Riot Client").Length == 0) await Task.Delay(500); }, () => RiotClient == true),
+            ("Installing Riot Client", async () => { foreach (Process process in Process.GetProcessesByName("Riot Client")) { process.Kill(); process.WaitForExit(); }}, () => RiotClient == true),
             ("Cleaning up Riot Client files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "Riot Games.zip")), () => RiotClient == true),
 
-            // log in to riot client
-            ("Please log in to your Riot account (Close to continue)", async () => { Process.Start(new ProcessStartInfo { FileName = @"C:\Riot Games\Riot Client\RiotClientServices.exe", WindowStyle = ProcessWindowStyle.Maximized }); while (Process.GetProcessesByName("RiotClientCrashHandler").Length == 0 || Process.GetProcessesByName("Riot Client").Length == 0) await Task.Delay(500); while (Process.GetProcessesByName("Riot Client").Length > 0) await Task.Delay(500); }, () => RiotClient == true),
+            // import riot client account
+            ("Importing Riot Client Account", async () => await RiotHelper.ImportAccount(), () => RiotClient == true && RiotClientAccount == true),
 
-            // disable riot client startup entry
-            ("Disabling Riot Client startup entry", async () => RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run", "RiotClient", new byte[] { 0x01 }, RegistryValueKind.Binary), () => RiotClient == true),
+			// import riot client games
+            ("Importing Riot Client Games", async () => await RiotHelper.ImportGames(), () => RiotClient == true && RiotClientGames == true),
+
+            // log in to riot client
+            ("Please log in to your Riot account (Close to continue)", async () => { Process.Start(new ProcessStartInfo { FileName = @"C:\Riot Games\Riot Client\RiotClientServices.exe", WindowStyle = ProcessWindowStyle.Maximized }); while (Process.GetProcessesByName("RiotClientCrashHandler").Length == 0 || Process.GetProcessesByName("Riot Client").Length == 0) await Task.Delay(500); while (Process.GetProcessesByName("Riot Client").Length > 0) await Task.Delay(500); }, () => RiotClient == true && RiotClientAccount == false),
 
             // optimize riot client settings
             ("Optimizing Riot Client settings", async () => { var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), @"Riot Games\Riot Client\Config\RiotClientSettings.yaml"); await File.WriteAllTextAsync(path, Regex.Replace((await File.ReadAllTextAsync(path)).Replace("install:", "install:\n    hardware-acceleration: false"), @"(hardware-acceleration|launch_on_computer_set_by_default|enable_run_in_background_set_by_player|enable_launch_on_computer_start_set_by_player):.*", "$1: false")); }, () => RiotClient == true),
+
+            // disable riot client startup entry
+            ("Disabling Riot Client startup entry", async () => RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run", "RiotClient", new byte[] { 0x01 }, RegistryValueKind.Binary), () => RiotClient == true),
 
 			// download vanguard
 			("Downloading Vanguard", async () => await DownloadHelper.Download("https://www.dl.dropboxusercontent.com/scl/fi/emynbdc0oimyqtgh8ormc/setup.exe?rlkey=o4yii06fxauvaurqcdsgn8hna&st=3r4gvxt8&dl=0", Path.GetTempPath(), "setup.exe", new InstallPageReporter()), () => RiotClient == true),
@@ -836,8 +846,10 @@ public static class ApplicationStage
 			("Cleaning up Logitech G HUB files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "lghub_installer.exe")), () => LogitechGHub == true),
 
 			// disable logitech g hub services
-			("Disabling Logitech G HUB services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\LGHUBUpdaterService", "Start", 4, RegistryValueKind.DWord), () => LogitechGHub == true),
-			("Disabling Logitech G HUB services", async () => ServicesHelper.StopService("LGHUBUpdaterService"), () => LogitechGHub == true),
+			// ("Disabling Logitech G HUB services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\LGHUBUpdaterService", "Start", 4, RegistryValueKind.DWord), () => LogitechGHub == true),
+			// ("Disabling Logitech G HUB services", async () => ServicesHelper.StopService("LGHUBUpdaterService"), () => LogitechGHub == true),
+            // ("Disabling Logitech G HUB services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\logi_lamparray_service", "Start", 4, RegistryValueKind.DWord), () => LogitechGHub == true),
+			// ("Disabling Logitech G HUB services", async () => ServicesHelper.StopService("logi_lamparray_service"), () => LogitechGHub == true),
 
 			// disable logitech g hub startup entry
             ("Disabling Logitech G HUB startup entry", async () => RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run", "LGHUB", new byte[] { 0x01 }, RegistryValueKind.Binary), () => LogitechGHub == true),
@@ -861,6 +873,7 @@ public static class ApplicationStage
             // install wootility
             ("Installing Wootility", async () => await ExtractHelper.Extract(Path.Combine(Path.GetTempPath(), "WootilitySetup.exe"), Path.Combine(Path.GetTempPath(), "WootilitySetup")), () => Wootility == true),
             ("Installing Wootility", async () => await ExtractHelper.Extract(Path.Combine(Path.GetTempPath(), "WootilitySetup", "$PLUGINSDIR", "app-64.7z"), Path.Combine(Path.GetTempPath(), "WootilitySetup", "app-64")), () => Wootility == true),
+            ("Installing Wootility", async () => Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs")), () => Wootility == true),
             ("Installing Wootility", async () => Directory.Move(Path.Combine(Path.GetTempPath(), "WootilitySetup", "app-64"), Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs", "wootility")), () => Wootility == true),
             ("Installing Wootility", async () => File.Move(Path.Combine(Path.GetTempPath(), "WootilitySetup", "$R0", "Uninstall Wootility.exe"), Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs", "wootility", "Uninstall Wootility.exe"), true), () => Wootility == true),
             ("Installing Wootility", async () => File.Move(Path.Combine(Path.GetTempPath(), "WootilitySetup", "$R0", "wooting_analog_sdk.msi"), Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs", "wootility", "wooting_analog_sdk.msi"), true), () => Wootility == true),
@@ -890,9 +903,9 @@ public static class ApplicationStage
             ("Installing SteelSeries GG", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "SteelSeriesGGSetup.exe"), Arguments = "/S" , WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => SteelSeriesGG == true),
             ("Cleaning up SteelSeries GG files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "SteelSeriesGGSetup.exe")), () => SteelSeriesGG == true),
 
-			// disable steelseries gg services
-			("Disabling SteelSeries GG services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\SteelSeriesGGUpdateServiceProxy", "Start", 4, RegistryValueKind.DWord), () => SteelSeriesGG == true),
-			("Disabling SteelSeries GG services", async () => ServicesHelper.StopService("SteelSeriesGGUpdateServiceProxy"), () => SteelSeriesGG == true),
+			// disable steelseries gg service
+			("Disabling SteelSeries GG service", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\SteelSeriesGGUpdateServiceProxy", "Start", 4, RegistryValueKind.DWord), () => SteelSeriesGG == true),
+			("Disabling SteelSeries GG service", async () => ServicesHelper.StopService("SteelSeriesGGUpdateServiceProxy"), () => SteelSeriesGG == true),
 
             // disable steelseries gg startup entry
             ("Disabling SteelSeries GG startup entry", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run", "SteelSeriesGG", new byte[] { 0x01 }, RegistryValueKind.Binary), () => SteelSeriesGG == true),
@@ -914,6 +927,7 @@ public static class ApplicationStage
             ("Cleaning up Razer Synapse files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "RazerAppEngineSetup.exe")), () => RazerSynapse == true),
             ("Cleaning up Razer Synapse files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "RazerSynapse4-Web.exe")), () => RazerSynapse == true),
             ("Cleaning up Razer Synapse files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "Razer.zip")), () => RazerSynapse == true),
+            ("Cleaning up Razer Synapse files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "leveldb.zip")), () => RazerSynapse == true),
 
 			// disable razer synapse services
             ("Disabling Razer Synapse services", async () => File.Move(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), @"Razer\Razer Services\GMS3\GameManagerService3.exe"), Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), @"Razer\Razer Services\GMS3\GameManagerService3.exe.bak")), () => RazerSynapse == true),
@@ -934,8 +948,12 @@ public static class ApplicationStage
             ("Installing Corsair iCUE", async () => { while (Process.GetProcessesByName("icue-installer").Length >= 1) await Task.Delay(500); }, () => CorsairICue == true),
             ("Cleaning up Corsair iCUE files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "Install iCUE.exe")), () => CorsairICue == true),
 
+			// disable corsair icue services
+			("Disabling Corsair iCUE services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\CorsairService", "Start", 4, RegistryValueKind.DWord), () => CorsairICue == true),
+			("Disabling Corsair iCUE services", async () => ServicesHelper.StopService("CorsairService"), () => CorsairICue == true),
+
 			// disable corsair icue startup entry
-            ("Disabling Corsair iCUE startup entry", async () => RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run", "Corsair iCUE5 Software", new byte[] { 0x01 }, RegistryValueKind.Binary), () => CorsairICue == true),
+            ("Disabling Corsair iCUE startup entry", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run", "Corsair iCUE5 Software", new byte[] { 0x01 }, RegistryValueKind.Binary), () => CorsairICue == true),
 
             // download visual studio
             ("Downloading Visual Studio", async () => await DownloadHelper.Download("https://aka.ms/vs/stable/vs_community.exe", Path.GetTempPath(), "vs_Community.exe", reporter: reporter), () => VisualStudio == true),

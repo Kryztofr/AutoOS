@@ -9,7 +9,7 @@
       mc:Ignorable="d">
     <dev:MainLandingPage HeaderImage="{ThemeResource HeaderCover}"
                          HeaderImageHeight="400"
-                         HeaderSubtitleText="{x:Bind WASDKVersion}"
+                         HeaderSubtitleText="Windows App SDK 2.0"
                          HeaderText="AutoOS Installer"
                          JsonNavigationService="{x:Bind local:App.Current.NavService}">
         <dev:MainLandingPage.HeaderContent>

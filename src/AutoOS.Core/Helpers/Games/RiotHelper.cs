@@ -1,0 +1,139 @@
+using AutoOS.Core.Common;
+using System.Text.RegularExpressions;
+
+public static partial class RiotHelper
+{
+    [GeneratedRegex(@"riot-login[\s\S]*?name:\s""ssid""[\s\S]*?value:\s""([^""]+)""")]
+    public static partial Regex SsidRegex();
+
+    [GeneratedRegex(@"product_install_full_path:\s*""([^""]+)""")]
+	public static partial Regex ProductInstallFullPathRegex();
+
+    public static readonly string RiotGamesPrivateSettingsPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + @"\Riot Games\Riot Client\Data\RiotGamesPrivateSettings.yaml";
+    public static readonly string RiotGamesMetadataPath = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) + @"\Riot Games\Metadata";
+
+    public static async Task ImportAccount(IStatusReporter reporter = null)
+    {
+        // get all configs from other drives
+        var foundFiles = DriveInfo.GetDrives()
+            .Where(d => d.DriveType == DriveType.Fixed && d.Name != @"C:\")
+            .SelectMany(d =>
+            {
+                string usersPath = Path.Combine(d.Name, "Users");
+                if (!Directory.Exists(usersPath)) return [];
+
+                return Directory.GetDirectories(usersPath)
+                    .Select(userDir => Path.Combine(userDir, "AppData", "Local", "Riot Games", "Riot Client", "Data", "RiotGamesPrivateSettings.yaml"))
+                    .Where(File.Exists);
+            })
+            .Select(path => new FileInfo(path))
+            .ToList();
+
+        string newestFilePath = null;
+
+        // check if files are valid
+        foreach (var file in foundFiles)
+        {
+            string fileContent = File.ReadAllText(file.FullName);
+            Match ssidMatch = SsidRegex().Match(fileContent);
+
+            if (!ssidMatch.Success || string.IsNullOrWhiteSpace(ssidMatch.Groups[1].Value))
+                continue;
+
+            // use the latest one
+            if (newestFilePath == null || file.LastWriteTime > new FileInfo(newestFilePath).LastWriteTime)
+            {
+                newestFilePath = file.FullName;
+
+                // create destination directory
+                Directory.CreateDirectory(Path.GetDirectoryName(RiotGamesPrivateSettingsPath)!);
+
+                // copy the file
+                File.Copy(newestFilePath, RiotGamesPrivateSettingsPath, true);
+
+                reporter?.Report("Successfully imported Riot Games account...");
+
+                await Task.Delay(1000);
+
+                return;
+            }
+        }
+    }
+
+    public static async Task ImportGames(IStatusReporter reporter = null)
+    {
+        // get all metadata folders from other drives
+        var foundFolders = DriveInfo.GetDrives()
+            .Where(d => d.DriveType == DriveType.Fixed && d.Name != @"C:\")
+            .Select(d => Path.Combine(d.Name, "ProgramData", "Riot Games", "Metadata"))
+            .Where(Directory.Exists)
+            .Select(path => new DirectoryInfo(path))
+            .OrderByDescending(d => d.LastWriteTime)
+            .ToList();
+
+        if (foundFolders.Count == 0)
+            return;
+
+        DirectoryInfo newestFolder = foundFolders.First();
+
+        // create destination directory
+        Directory.CreateDirectory(RiotGamesMetadataPath);
+
+        // copy the whole folder
+        foreach (var directory in Directory.GetDirectories(newestFolder.FullName, "*", SearchOption.AllDirectories))
+        {
+            string subDirPath = directory.Replace(newestFolder.FullName, RiotGamesMetadataPath);
+            Directory.CreateDirectory(subDirPath);
+        }
+
+        foreach (var file in Directory.GetFiles(newestFolder.FullName, "*.*", SearchOption.AllDirectories))
+        {
+            string destFilePath = file.Replace(newestFolder.FullName, RiotGamesMetadataPath);
+            File.Copy(file, destFilePath, true);
+        }
+
+        // process each subfolder to update paths
+        foreach (var subFolder in Directory.GetDirectories(RiotGamesMetadataPath))
+        {
+            string folderName = new DirectoryInfo(subFolder).Name;
+            string settingsFile = Path.Combine(subFolder, $"{folderName}.product_settings.yaml");
+
+            if (!File.Exists(settingsFile))
+                continue;
+
+            string fileContent = await File.ReadAllTextAsync(settingsFile);
+            Match pathMatch = ProductInstallFullPathRegex().Match(fileContent);
+
+            if (!pathMatch.Success || string.IsNullOrWhiteSpace(pathMatch.Groups[1].Value))
+                continue;
+
+            string originalPath = pathMatch.Groups[1].Value;
+            string originalDrive = Path.GetPathRoot(originalPath) ?? "";
+            string relativePath = originalPath[originalDrive.Length..];
+
+            string newPath = null;
+
+            // check other drives for the path
+            foreach (var drive in DriveInfo.GetDrives().Where(d => d.DriveType == DriveType.Fixed && d.Name != @"C:\"))
+            {
+                string testPath = Path.Combine(drive.Name, relativePath);
+                if (Directory.Exists(testPath))
+                {
+                    newPath = testPath.Replace('\\', '/');
+                    break;
+                }
+            }
+
+            if (newPath != null)
+            {
+                // update the path in the file
+                fileContent = ProductInstallFullPathRegex().Replace(fileContent, $"product_install_full_path: \"{newPath}\"");
+                await File.WriteAllTextAsync(settingsFile, fileContent);
+            }
+        }
+
+        reporter?.Report("Successfully imported Riot Client Games...");
+
+        await Task.Delay(1000);
+    }
+}

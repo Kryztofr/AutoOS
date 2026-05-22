@@ -14,7 +14,7 @@ using WinRT.Interop;
 
 namespace AutoOS.Views.Installer.Stages;
 
-public static class PreparingStage
+public static partial class PreparingStage
 {
     public static IntPtr WindowHandle { get; private set; }
 
@@ -57,6 +57,8 @@ public static class PreparingStage
     public static bool Steam;
     public static bool SteamGames;
     public static bool RiotClient;
+    public static bool RiotClientAccount;
+    public static bool RiotClientGames;
     public static bool EA;
     public static bool UbisoftConnect;
     public static bool BattleNet;
@@ -330,7 +332,50 @@ public static class PreparingStage
                 })
                 .FirstOrDefault(false);
 
-            var nics = DeviceHelper.GetDevices(DeviceType.NIC);
+			RiotClientAccount = DriveInfo.GetDrives()
+				.Where(d => d.DriveType == DriveType.Fixed && d.Name != @"C:\")
+				.SelectMany(d =>
+				{
+					string usersPath = Path.Combine(d.Name, "Users");
+					if (!Directory.Exists(usersPath)) return [];
+
+					return Directory.GetDirectories(usersPath)
+						.Select(userDir => Path.Combine(userDir, "AppData", "Local", "Riot Games", "Riot Client", "Data", "RiotGamesPrivateSettings.yaml"))
+						.Where(File.Exists);
+				})
+				.Any(file =>
+				{
+					string fileContent = File.ReadAllText(file);
+					Match ssidMatch = RiotHelper.SsidRegex().Match(fileContent);
+
+					return ssidMatch.Success && !string.IsNullOrWhiteSpace(ssidMatch.Groups[1].Value);
+				});
+
+			RiotClientGames = DriveInfo.GetDrives()
+				.Where(d => d.DriveType == DriveType.Fixed && d.Name != @"C:\")
+				.SelectMany(d =>
+				{
+					string metadataPath = Path.Combine(d.Name, "ProgramData", "Riot Games", "Metadata");
+					if (!Directory.Exists(metadataPath)) return [];
+
+					return Directory.GetDirectories(metadataPath)
+						.Select(subFolder =>
+						{
+							string folderName = new DirectoryInfo(subFolder).Name;
+							string settingsFile = Path.Combine(subFolder, $"{folderName}.product_settings.yaml");
+
+							if (!File.Exists(settingsFile))
+								return false;
+
+							string fileContent = File.ReadAllText(settingsFile);
+							Match pathMatch = RiotHelper.ProductInstallFullPathRegex().Match(fileContent);
+
+							return pathMatch.Success && !string.IsNullOrWhiteSpace(pathMatch.Groups[1].Value);
+						});
+				})
+				.Any(hasGame => hasGame);
+
+			var nics = DeviceHelper.GetDevices(DeviceType.NIC);
             Wifi = nics.Any(device => device.NicType == NicDeviceType.WiFi);
             TxIntDelay = nics.Any(device => Registry.LocalMachine.OpenSubKey(device.RegistryPath).GetValue("TxIntDelay") != null);
             NetAdapterCx = nics.Any(device => device.IsActive && device.DriverType == NicDriverType.NetAdapterCx);

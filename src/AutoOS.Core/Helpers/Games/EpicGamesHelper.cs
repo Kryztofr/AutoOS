@@ -545,7 +545,7 @@ public static partial class EpicGamesHelper
         await Task.Delay(1000);
     }
 
-    public static async Task RunImportEpicGamesLauncherGames()
+    public static async Task ImportGames()
     {
         // get all install lists from other drives
         var foundFiles = DriveInfo.GetDrives()
