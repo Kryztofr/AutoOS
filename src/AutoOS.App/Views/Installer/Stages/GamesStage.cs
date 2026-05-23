@@ -1,4 +1,5 @@
 ﻿using AutoOS.Core.Helpers.Download;
+using AutoOS.Core.Helpers.Games;
 using AutoOS.Core.Helpers.Monitor;
 using AutoOS.Core.Helpers.Registry;
 using Microsoft.Win32;

@@ -24,6 +24,7 @@ public static partial class SteamHelper
 		public string AccountName { get; set; }
 		public bool MostRecent { get; set; }
 		public bool AllowAutoLogin { get; set; }
+		public string Steam64Id { get; set; }
 	}
 
 	public static List<SteamAccountInfo> GetSteamAccounts()
@@ -57,7 +58,8 @@ public static partial class SteamHelper
 				{
 					AccountName = accountName,
 					MostRecent = mostRecent,
-					AllowAutoLogin = allowAutoLogin
+					AllowAutoLogin = allowAutoLogin,
+					Steam64Id = steam64Id
 				};
 			})
 			.Where(x => x != null)

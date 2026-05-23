@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <RootNamespace>AutoOS.Core</RootNamespace>
     <AssemblyName>AutoOS.Core</AssemblyName>
@@ -16,8 +16,10 @@
   <ItemGroup>
     <PackageReference Include="DevWinUI" />
 	<PackageReference Include="Downloader" />
-    <PackageReference Include="Microsoft.Windows.CsWin32" />
-    <PackageReference Include="System.ServiceProcess.ServiceController" />
+	<PackageReference Include="IronLeveldb" />
+	<PackageReference Include="LevelDB.Standard" />
+	<PackageReference Include="Microsoft.Windows.CsWin32" />
+	<PackageReference Include="System.ServiceProcess.ServiceController" />
     <PackageReference Include="ValveKeyValue" />
   </ItemGroup>
 

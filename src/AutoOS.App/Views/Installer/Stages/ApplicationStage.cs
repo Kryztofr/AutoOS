@@ -1,5 +1,6 @@
 using AutoOS.Common;
 using AutoOS.Core.Common;
+using AutoOS.Core.Helpers.Database;
 using AutoOS.Core.Helpers.Download;
 using AutoOS.Core.Helpers.Extract;
 using AutoOS.Core.Helpers.Games;
@@ -84,6 +85,7 @@ public static class ApplicationStage
         bool AlwaysShowTrayIcons = selection != null ? true : PreparingStage.AlwaysShowTrayIcons;
 
         bool Discord = selection?.Discord ?? PreparingStage.Discord;
+        bool DiscordAccount = selection != null ? false : PreparingStage.DiscordAccount;
         bool WhatsApp = selection?.WhatsApp ?? PreparingStage.WhatsApp;
 
         bool EpicGames = selection?.EpicGames ?? PreparingStage.EpicGames;
@@ -376,27 +378,39 @@ public static class ApplicationStage
             // disable discord startup entry
             ("Disabling Discord startup entry", async () => RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run", "Discord", new byte[] { 0x01 }, RegistryValueKind.Binary), () => Discord == true),
 
-            // optimize discord settings
-            ("Optimizing Discord settings", async () => await File.WriteAllTextAsync(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Discord", "settings.json"), "{\n  \"enableHardwareAcceleration\": false,\n  \"OPEN_ON_STARTUP\": false,\n  \"MINIMIZE_TO_TRAY\": false,\n  \"debugLogging\": false,\n  \"openasar\": {\n    \"setup\": true,\n    \"noTrack\": false\n  }\n}"), () => Discord == true),
+            // import discord account
+            ("Importing Discord Account", async () => await DiscordHelper.ImportAccount(reporter), () => Discord == true && DiscordAccount == true),
 
-            // log in to discord
-            ("Please log in to your Discord account (Close to continue)", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Discord", "app-" + discordVersion, "Discord.exe"), WindowStyle = ProcessWindowStyle.Maximized }) !.WaitForExitAsync(), () => Discord == true),
-
-            // remove discord desktop shortcut 
-            ("Removing Discord desktop shortcut", async () => File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "Discord.lnk")), () => Discord == true),
+			// optimize discord settings
+            ("Optimizing Discord settings", async () => await File.WriteAllTextAsync(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Discord", "settings.json"), "{\n  \"enableHardwareAcceleration\": false,\n  \"OPEN_ON_STARTUP\": false,\n  \"MINIMIZE_TO_TRAY\": false,\n  \"debugLogging\": false,\n  \"openasar\": {\n    \"setup\": true,\n    \"noTrack\": true\n  }\n}"), () => Discord == true),
 
             // download vencord
             ("Downloading Vencord", async () => await DownloadHelper.Download("https://github.com/Vencord/Installer/releases/latest/download/VencordInstallerCli.exe", Path.GetTempPath(), "VencordInstallerCli.exe", reporter: reporter), () => Discord == true),
 
             // install vencord
             ("Installing Vencord", async () => await Process.Start(new ProcessStartInfo { FileName = "cmd.exe", Arguments = $@"/c """"{Path.Combine(Path.GetTempPath(), "VencordInstallerCli.exe")}"" -install -install-openasar -branch auto""" , CreateNoWindow = true })!.WaitForExitAsync(), () => Discord == true),
-            ("Installing OpenAsar", async () => await Process.Start(new ProcessStartInfo { FileName = "cmd.exe", Arguments = $@"/c """"{Path.Combine(Path.GetTempPath(), "VencordInstallerCli.exe")}"" -install-openasar -branch auto""" , CreateNoWindow = true })!.WaitForExitAsync(), () => Discord == true),
-            ("Cleaning up Vencord files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "VencordInstallerCli.exe")), () => Discord == true),
+			("Installing OpenAsar", async () => await Process.Start(new ProcessStartInfo { FileName = "cmd.exe", Arguments = $@"/c """"{Path.Combine(Path.GetTempPath(), "VencordInstallerCli.exe")}"" -install-openasar -branch auto""" , CreateNoWindow = true })!.WaitForExitAsync(), () => Discord == true),
+			("Cleaning up Vencord files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "VencordInstallerCli.exe")), () => Discord == true),
 
             // import vencord settings
             ("Importing Vencord settings", async () => Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Vencord", "settings")), () => Discord == true),
-            ("Importing Vencord settings", async () => File.Copy(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Scripts", "settings.json"), Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Vencord", "settings", "settings.json"), true), () => Discord == true),
-            ("Importing Vencord settings", async () => await Task.Delay(500), () => Discord == true),
+			("Importing Vencord settings", async () => File.Copy(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Scripts", "settings.json"), Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Vencord", "settings", "settings.json"), true), () => Discord == true),
+			("Importing Vencord settings", async () => await Task.Delay(500), () => Discord == true),
+
+            // log in to discord
+            ("Please log in to your Discord account (Close to continue)", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Discord", "app-" + discordVersion, "Discord.exe"), WindowStyle = ProcessWindowStyle.Maximized }) !.WaitForExitAsync(), () => Discord == true && DiscordAccount == false),
+			
+			// set appearance to system
+            ("Setting appearance to system", async () => DiscordHelper.SetSystemAppearance(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "discord", "Local Storage", "leveldb")), () => Discord == true),
+
+            // disable game overlay
+            ("Disabling game overlay", async () => DiscordHelper.DisableGameOverlay(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "discord", "Local Storage", "leveldb")), () => Discord == true),
+
+			// disable clips
+			("Disabling clips", async () => DiscordHelper.DisableClips(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "discord", "Local Storage", "leveldb")), () => Discord == true),
+
+            // remove discord desktop shortcut 
+            ("Removing Discord desktop shortcut", async () => File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "Discord.lnk")), () => Discord == true),
 
             // download whatsapp
             ("Downloading WhatsApp", async () => await StoreHelper.Download("5319275A.WhatsAppDesktop_cv1g1gvanyjgm", reporter: reporter), () => WhatsApp == true),

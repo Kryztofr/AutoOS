@@ -16,7 +16,7 @@ namespace AutoOS.Views.Settings
     public sealed partial class HomeLandingPage : Page
     {
         private readonly ApplicationDataContainer localSettings = ApplicationData.Current.LocalSettings;
-		public string WASDKVersion { get; } = $"Windows App SDK {ReleaseInfo.Major}.{ReleaseInfo.Minor}";
+		//public string WASDKVersion { get; } = $"Windows App SDK {ReleaseInfo.Major}.{ReleaseInfo.Minor}";
 		private static readonly HttpClient httpClient = new()
         {
             DefaultRequestHeaders =

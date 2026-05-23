@@ -1,6 +1,8 @@
 using AutoOS.Core.Common;
 using System.Text.RegularExpressions;
 
+namespace AutoOS.Core.Helpers.Games;
+
 public static partial class RiotHelper
 {
     [GeneratedRegex(@"riot-login[\s\S]*?name:\s""ssid""[\s\S]*?value:\s""([^""]+)""")]

@@ -81,7 +81,7 @@ public static class StartupStage
             }
         }
 
-        double incrementPerTitle = groupedTitleCount > 0 ? 100 / (double)groupedTitleCount : 0;
+        int executedGroupsCount = 0;
 
         foreach (var (title, action, condition) in filteredActions)
         {
@@ -91,6 +91,7 @@ public static class StartupStage
                 {
                     try
                     {
+                        StartupWindow.Status.Text = previousTitle + "...";
                         await groupedAction();
                     }
                     catch (Exception ex)
@@ -105,12 +106,12 @@ public static class StartupStage
                     }
                 }
 
-                StartupWindow.Progress.Value += incrementPerTitle;
-                await Task.Delay(100);
+                executedGroupsCount++;
+                StartupWindow.Progress.Value = (executedGroupsCount * 100.0) / groupedTitleCount;
+                await Task.Delay(250);
                 currentGroup.Clear();
             }
 
-            StartupWindow.Status.Text = title + "...";
             currentGroup.Add(action);
             previousTitle = title;
         }
@@ -121,6 +122,7 @@ public static class StartupStage
             {
                 try
                 {
+                    StartupWindow.Status.Text = previousTitle + "...";
                     await groupedAction();
                 }
                 catch (Exception ex)
@@ -134,10 +136,12 @@ public static class StartupStage
                     StartupWindow.Progress.Foreground = (Brush)Application.Current.Resources["SystemFillColorCriticalBrush"];
                 }
             }
-            StartupWindow.Progress.Value += incrementPerTitle;
+            executedGroupsCount++;
+            StartupWindow.Progress.Value = (executedGroupsCount * 100.0) / groupedTitleCount;
         }
 
-        StartupWindow.Status.Text = "Done.";
+		await Task.Delay(500);
+		StartupWindow.Status.Text = "Done.";
         StartupWindow.Progress.Foreground = new SolidColorBrush((Windows.UI.Color)Application.Current.Resources["SystemFillColorSuccess"]);
         await Task.Delay(500);
         Application.Current.Exit();

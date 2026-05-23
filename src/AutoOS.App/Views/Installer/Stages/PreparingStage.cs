@@ -11,6 +11,7 @@ using System.Text.RegularExpressions;
 using ValveKeyValue;
 using Windows.Storage;
 using WinRT.Interop;
+using AutoOS.Core.Helpers.Games;
 
 namespace AutoOS.Views.Installer.Stages;
 
@@ -49,6 +50,7 @@ public static partial class PreparingStage
     public static bool OnePassword;
     
     public static bool Discord;
+    public static bool DiscordAccount;
     public static bool WhatsApp;
 
     public static bool EpicGames;
@@ -374,6 +376,23 @@ public static partial class PreparingStage
 						});
 				})
 				.Any(hasGame => hasGame);
+
+			DiscordAccount = DriveInfo.GetDrives()
+				.Where(d => d.DriveType == DriveType.Fixed && d.Name != @"C:\")
+				.SelectMany(d =>
+				{
+					string usersPath = Path.Combine(d.Name, "Users");
+					if (!Directory.Exists(usersPath)) return [];
+
+					return Directory.GetDirectories(usersPath)
+						.Select(userDir => Path.Combine(userDir, "AppData", "Roaming", "discord", "Local Storage", "leveldb"))
+						.Where(Directory.Exists);
+				})
+				.Any(leveldbPath =>
+				{
+					var accounts = AutoOS.Core.Helpers.Database.DiscordHelper.GetAccountData(leveldbPath);
+					return accounts != null && accounts.Count > 0;
+				});
 
 			var nics = DeviceHelper.GetDevices(DeviceType.NIC);
             Wifi = nics.Any(device => device.NicType == NicDeviceType.WiFi);

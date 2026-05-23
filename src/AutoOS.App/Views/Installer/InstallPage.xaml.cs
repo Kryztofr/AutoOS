@@ -1,4 +1,5 @@
 using AutoOS.Core.Helpers.Logging;
+using AutoOS.Core.Helpers.OS;
 using AutoOS.Views.Installer.Stages;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.Win32;
@@ -96,6 +97,8 @@ public sealed partial class InstallPage : Page
         Progress.Foreground = new SolidColorBrush((Windows.UI.Color)Application.Current.Resources["SystemFillColorSuccess"]);
         ProgressRingControl.Foreground = new SolidColorBrush((Windows.UI.Color)Application.Current.Resources["SystemFillColorSuccess"]);
         localSettings.Values["Version"] = ProcessInfoHelper.Version;
+        localSettings.Values["Install_Version"] = ProcessInfoHelper.Version;
+        localSettings.Values["Install_Build"] = OSHelper.GetWindowsVersionString();
         localSettings.Values["Install_End"] = DateTimeOffset.Now.ToString("O");
         Registry.SetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\AutoOS", "IsInstalled", 1, RegistryValueKind.DWord);
         Registry.SetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\Explorer", "LockedStartLayout", 0, RegistryValueKind.DWord);

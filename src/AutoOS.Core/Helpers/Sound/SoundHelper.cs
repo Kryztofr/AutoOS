@@ -642,6 +642,63 @@ public static partial class SoundHelper
         return null;
     }
 
+    public static unsafe DeviceInfo GetDefaultAudioDeviceInfo(EDataFlow flow)
+    {
+        PInvoke.CoInitializeEx(null, COINIT.COINIT_MULTITHREADED);
+
+        if (PInvoke.CoCreateInstance(typeof(MMDeviceEnumerator).GUID, null, CLSCTX.CLSCTX_ALL, typeof(IMMDeviceEnumerator).GUID, out void* pEnumerator).Value >= 0)
+        {
+            IMMDeviceEnumerator* enumerator = (IMMDeviceEnumerator*)pEnumerator;
+            IMMDevice* endpoint = null;
+
+            try
+            {
+                enumerator->GetDefaultAudioEndpoint(flow, ERole.eConsole, &endpoint);
+            }
+            catch { }
+
+            if (endpoint != null)
+            {
+                PWSTR id = default;
+                endpoint->GetId(&id);
+                string deviceId = id.ToString();
+
+                var device = new DeviceInfo
+                {
+                    FriendlyName = "Unknown",
+                    PnpDeviceId = deviceId,
+                    RegistryPath = deviceId
+                };
+
+                IPropertyStore* store = null;
+                endpoint->OpenPropertyStore((uint)STGM.STGM_READ, &store);
+                if (store != null)
+                {
+                    store->GetValue(PInvoke.PKEY_Device_FriendlyName, out PROPVARIANT prop);
+                    if (prop.Anonymous.Anonymous.vt == VARENUM.VT_LPWSTR)
+                    {
+                        string fullName = prop.Anonymous.Anonymous.Anonymous.pwszVal.ToString();
+                        device.FriendlyName = fullName;
+                    }
+                    PInvoke.PropVariantClear(&prop);
+                    store->Release();
+                }
+
+                device.IsInputDevice = flow == EDataFlow.eCapture;
+
+                PInvoke.CoTaskMemFree(id);
+                endpoint->Release();
+                enumerator->Release();
+
+                return device;
+            }
+
+            enumerator->Release();
+        }
+
+        return null;
+    }
+
     public static void ApplyAudioSettings(DeviceInfo device, BufferSizeOption option)
     {
         if (option == null) return;
