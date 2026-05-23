@@ -10,8 +10,9 @@ public static partial class DiscordHelper
     public static async Task ImportAccount(IStatusReporter reporter = null)
     {
         // get all leveldb folders from other drives
+        var systemDrive = Path.GetPathRoot(Environment.GetFolderPath(Environment.SpecialFolder.System));
         var foundFolders = DriveInfo.GetDrives()
-            .Where(d => d.DriveType == DriveType.Fixed && d.Name != @"C:\")
+            .Where(d => d.DriveType == DriveType.Fixed && d.Name != systemDrive)
             .SelectMany(d =>
             {
                 string usersPath = Path.Combine(d.Name, "Users");
@@ -83,7 +84,7 @@ public static partial class DiscordHelper
                         _ => $"{string.Join(", ", accountNames.Take(accountNames.Count - 1))}, and {accountNames.Last()}"
                     };
 
-                    reporter?.Report($"Successfully logged in as {accountsString}...");
+                    reporter?.SetTitle($"Successfully logged in as {accountsString}...");
 
                     await Task.Delay(1000);
 
@@ -103,9 +104,8 @@ public static partial class DiscordHelper
 
 	public static List<DiscordAccountInfo> GetAccountData(string databasePath)
 	{
-		JsonNode themeNode = null;
-		JsonNode userIdCacheNode = null;
-		string tempDatabasePath = databasePath + " - Copy";
+		JsonNode themeNode;
+		JsonNode userIdCacheNode;
 
 		try
 		{
@@ -114,6 +114,7 @@ public static partial class DiscordHelper
 		}
 		catch (IOException)
 		{
+			string tempDatabasePath = databasePath + " - Copy";
 			Directory.CreateDirectory(tempDatabasePath);
 
 			foreach (var file in Directory.GetFiles(databasePath))
@@ -123,9 +124,7 @@ public static partial class DiscordHelper
 
 			themeNode = DatabaseHelper.Read(tempDatabasePath, "_https://discord.com", "MultiAccountStore");
 			userIdCacheNode = DatabaseHelper.Read(tempDatabasePath, "_https://discord.com", "user_id_cache");
-		}
-		finally
-		{
+
 			Directory.Delete(tempDatabasePath, true);
 		}
 

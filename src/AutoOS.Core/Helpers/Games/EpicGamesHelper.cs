@@ -16,17 +16,17 @@ namespace AutoOS.Core.Helpers.Games;
 
 public static partial class EpicGamesHelper
 {
-    public static readonly string EpicGamesPath = File.Exists(@"C:\Program Files (x86)\Epic Games\Launcher\Portal\Binaries\Win64\EpicGamesLauncher.exe") ? @"C:\Program Files (x86)\Epic Games\Launcher\Portal\Binaries\Win64\EpicGamesLauncher.exe" : @"C:\Program Files\Epic Games\Launcher\Portal\Binaries\Win64\EpicGamesLauncher.exe";
+    public static readonly string EpicGamesPath = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "Epic Games", "Launcher", "Portal", "Binaries", "Win64", "EpicGamesLauncher.exe")) ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "Epic Games", "Launcher", "Portal", "Binaries", "Win64", "EpicGamesLauncher.exe") : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Epic Games", "Launcher", "Portal", "Binaries", "Win64", "EpicGamesLauncher.exe");
 
     public static readonly string ActiveEpicGamesAccountPath = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), @"EpicGamesLauncher\Saved\Config\WindowsEditor", "GameUserSettings.ini")) ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), @"EpicGamesLauncher\Saved\Config\WindowsEditor", "GameUserSettings.ini") : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), @"EpicGamesLauncher\Saved\Config\Windows", "GameUserSettings.ini");
 
     public static readonly string EpicGamesAccountDir = Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), @"EpicGamesLauncher\Saved\Config\WindowsEditor")) ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), @"EpicGamesLauncher\Saved\Config\WindowsEditor") : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), @"EpicGamesLauncher\Saved\Config\Windows");
 
-    public const string EpicGamesInstalledGamesPath = @"C:\ProgramData\Epic\UnrealEngineLauncher\LauncherInstalled.dat";
+    public static readonly string EpicGamesInstalledGamesPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Epic", "UnrealEngineLauncher", "LauncherInstalled.dat");
 
-    public const string EpicGamesManifestDir = @"C:\ProgramData\Epic\EpicGamesLauncher\Data\Manifests";
+    public static readonly string EpicGamesManifestDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Epic", "EpicGamesLauncher", "Data", "Manifests");
 
-    public const string EpicGamesThirdPartyManifestDir = @"C:\ProgramData\Epic\EpicGamesLauncher\Data\ThirPartyManagedApps";
+    public static readonly string EpicGamesThirdPartyManifestDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Epic", "EpicGamesLauncher", "Data", "ThirPartyManagedApps");
 
     private static readonly HttpClient httpClient = new();
     private static readonly HttpClient loginClient = new();
@@ -298,8 +298,8 @@ public static partial class EpicGamesHelper
 
         // decrypt it
         string decryptedFull = Decrypt(rememberMeData);
-        string decryptedJson = decryptedFull.Contains('\0') ? decryptedFull.Substring(0, decryptedFull.IndexOf('\0')) : decryptedFull;
-        string trailingData = decryptedFull.Contains('\0') ? decryptedFull.Substring(decryptedFull.IndexOf('\0')) : "";
+        string decryptedJson = decryptedFull.Contains('\0') ? decryptedFull[..decryptedFull.IndexOf('\0')] : decryptedFull;
+        string trailingData = decryptedFull.Contains('\0') ? decryptedFull[decryptedFull.IndexOf('\0')..] : "";
         JsonArray jsonArray = JsonNode.Parse(decryptedJson).AsArray();
 
         // get old refresh token
@@ -387,17 +387,14 @@ public static partial class EpicGamesHelper
             var formattedTime = ts.TotalHours >= 1 ? $"{(int)ts.TotalHours}h {ts.Minutes}m" : $"{ts.Minutes}m";
             onPlayTimeUpdated?.Invoke(artifactId, formattedTime);
         }
-        else
-        {
-            var error = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
-        }
     }
 
     public static async Task ImportAccount(IStatusReporter reporter = null)
     {
         // get all configs from other drives
+        var systemDrive = Path.GetPathRoot(Environment.GetFolderPath(Environment.SpecialFolder.System));
         var foundFiles = DriveInfo.GetDrives()
-            .Where(d => d.DriveType == DriveType.Fixed && d.Name != @"C:\")
+            .Where(d => d.DriveType == DriveType.Fixed && d.Name != systemDrive)
             .SelectMany(d =>
             {
                 string usersPath = Path.Combine(d.Name, "Users");
@@ -456,7 +453,7 @@ public static partial class EpicGamesHelper
                     // update the backed up config
                     File.Copy(file.FullName, Path.Combine(EpicGamesAccountDir, accountId, "GameUserSettings.ini"), true);
 
-                    reporter?.Report($"Succesfully logged in as {GetAccountData(ActiveEpicGamesAccountPath).DisplayName}...");
+                    reporter?.SetTitle($"Succesfully logged in as {GetAccountData(ActiveEpicGamesAccountPath).DisplayName}...");
 
                     await Task.Delay(1000);
 
@@ -487,7 +484,7 @@ public static partial class EpicGamesHelper
                     DisableMinimizeToTray(ActiveEpicGamesAccountPath);
                     DisableNotifications(ActiveEpicGamesAccountPath);
 
-                    reporter?.Report($"Succesfully logged in as {GetAccountData(ActiveEpicGamesAccountPath).DisplayName}...");
+                    reporter?.SetTitle($"Succesfully logged in as {GetAccountData(ActiveEpicGamesAccountPath).DisplayName}...");
                     break;
                 }
             }
@@ -508,7 +505,7 @@ public static partial class EpicGamesHelper
 
     public static async Task UpdateInvalidEpicGamesToken(IStatusReporter reporter = null)
     {
-        reporter?.Report("The refresh token is no longer valid. Please enter your password again...");
+        reporter?.SetTitle("The refresh token is no longer valid. Please enter your password again...");
 
         // close epic games launcher
         CloseEpicGames();
@@ -540,7 +537,7 @@ public static partial class EpicGamesHelper
         DisableMinimizeToTray(ActiveEpicGamesAccountPath);
         DisableNotifications(ActiveEpicGamesAccountPath);
 
-        reporter?.Report($"Succesfully logged in as {GetAccountData(ActiveEpicGamesAccountPath).DisplayName}...");
+        reporter?.SetTitle($"Succesfully logged in as {GetAccountData(ActiveEpicGamesAccountPath).DisplayName}...");
 
         await Task.Delay(1000);
     }
@@ -548,8 +545,9 @@ public static partial class EpicGamesHelper
     public static async Task ImportGames()
     {
         // get all install lists from other drives
+        var systemDrive = Path.GetPathRoot(Environment.GetFolderPath(Environment.SpecialFolder.System));
         var foundFiles = DriveInfo.GetDrives()
-            .Where(d => d.DriveType == DriveType.Fixed && d.Name != @"C:\")
+            .Where(d => d.DriveType == DriveType.Fixed && d.Name != systemDrive)
             .Select(d => Path.Combine(d.Name, "ProgramData", "Epic", "UnrealEngineLauncher", "LauncherInstalled.dat"))
             .Where(File.Exists)
             .Select(path => new FileInfo(path))
@@ -589,7 +587,7 @@ public static partial class EpicGamesHelper
                 string originalDrive = Path.GetPathRoot(originalPath) ?? "";
                 string relativePath = originalPath[originalDrive.Length..];
 
-                foreach (var drive in DriveInfo.GetDrives().Where(d => d.DriveType == DriveType.Fixed && d.Name != @"C:\"))
+                foreach (var drive in DriveInfo.GetDrives().Where(d => d.DriveType == DriveType.Fixed && d.Name != systemDrive))
                 {
                     string testPath = Path.Combine(drive.Name, relativePath);
                     if (Directory.Exists(testPath))
@@ -632,11 +630,11 @@ public static partial class EpicGamesHelper
             {
                 string originalInstallLocation = itemObj["InstallLocation"]!.ToString().Replace('\\', '/');
                 string originalDrive = Path.GetPathRoot(originalInstallLocation)?.Replace('\\', '/') ?? "";
-                string relativePath = originalInstallLocation.Substring(originalDrive.Length);
+                string relativePath = originalInstallLocation[originalDrive.Length..];
 
                 string newInstallLocation = null;
 
-                foreach (var drive in DriveInfo.GetDrives().Where(d => d.DriveType == DriveType.Fixed && d.Name != @"C:\"))
+                foreach (var drive in DriveInfo.GetDrives().Where(d => d.DriveType == DriveType.Fixed && d.Name != systemDrive))
                 {
                     string testPath = Path.Combine(drive.Name, relativePath);
                     if (Directory.Exists(testPath))

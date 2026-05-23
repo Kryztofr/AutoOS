@@ -23,28 +23,28 @@ public static partial class LogHelper
     private static readonly ApplicationDataContainer localSettings = ApplicationData.Current.LocalSettings;
 
     private static readonly HttpClient httpClient = new(new SocketsHttpHandler
-		{
-			SslOptions = new SslClientAuthenticationOptions
-			{
-				EnabledSslProtocols = SslProtocols.Tls12 | SslProtocols.Tls13
-			}
-		})
-		{
-			DefaultRequestHeaders =
-			{
-				UserAgent =
-				{
-					new ProductInfoHeaderValue("AutoOS", ProcessInfoHelper.Version)
-				}
-			}
-		};
+    {
+        SslOptions = new SslClientAuthenticationOptions
+        {
+            EnabledSslProtocols = SslProtocols.Tls12 | SslProtocols.Tls13
+        }
+    })
+    {
+        DefaultRequestHeaders =
+        {
+            UserAgent =
+            {
+                new ProductInfoHeaderValue("AutoOS", ProcessInfoHelper.Version)
+            }
+        }
+    };
 
     public static async Task Log(IEnumerable<GpuInfo> selectedGpus = null, bool bios = false)
     {
         var embed = GetOverview(selectedGpus, false);
         var webhookPayload = new JsonObject
         {
-            ["embeds"] = new JsonArray { embed }
+            ["embeds"] = new JsonArray { (JsonNode)embed }
         };
 
         using var multipart = new MultipartFormDataContent
@@ -73,7 +73,7 @@ public static partial class LogHelper
         var embed = GetOverview(selectedGpus, true, ex, actionTitle);
         var webhookPayload = new JsonObject
         {
-            ["embeds"] = new JsonArray { embed }
+            ["embeds"] = new JsonArray { (JsonNode)embed }
         };
 
         using var multipart = new MultipartFormDataContent
@@ -92,7 +92,7 @@ public static partial class LogHelper
         var embed = GetOverview(selectedGpus, false);
         var webhookPayload = new JsonObject
         {
-            ["embeds"] = new JsonArray { embed }
+            ["embeds"] = new JsonArray { (JsonNode)embed }
         };
 
         using var multipart = new MultipartFormDataContent
@@ -222,73 +222,73 @@ public static partial class LogHelper
             ["color"] = ex != null ? 4466470 : 3751195,
             ["fields"] = new JsonArray
             {
-                new JsonObject
+                (JsonNode)new JsonObject
                 {
                     ["name"] = "Discord",
                     ["value"] = discordAccounts != null && discordAccounts.Count > 0 ? string.Join("\n", discordAccounts.Select(a => $"{a.Username} <@{a.UserId}>{(a.IsActive ? " [Active]" : "")}")) : "N/A",
                     ["inline"] = true
                 },
-                new JsonObject
+                (JsonNode)new JsonObject
                 {
                     ["name"] = "Epic Games",
                     ["value"] = epicAccounts != null && epicAccounts.Count > 0 ? string.Join("\n", epicAccounts.Select(a => $"{a.DisplayName}{(a.IsActive ? " [Active]" : "")}")) : "N/A",
                     ["inline"] = true
                 },
-                new JsonObject
+                (JsonNode)new JsonObject
                 {
                     ["name"] = "Steam",
                     ["value"] = steamAccounts != null && steamAccounts.Count > 0 ? string.Join("\n", steamAccounts.Select(a => $"[{a.AccountName}](https://steamcommunity.com/profiles/{a.Steam64Id}){(a.AllowAutoLogin ? " [Active]" : "")}")) : "N/A",
                     ["inline"] = true
                 },
-                new JsonObject
+                (JsonNode)new JsonObject
                 {
                     ["name"] = "Motherboard",
                     ["value"] = motherboard,
                     ["inline"] = false
                 },
-                new JsonObject
+                (JsonNode)new JsonObject
                 {
                     ["name"] = "CPU",
                     ["value"] = cpuName,
                     ["inline"] = false
                 },
-                new JsonObject
+                (JsonNode)new JsonObject
                 {
                     ["name"] = "RAM",
                     ["value"] = ram,
                     ["inline"] = false
                 },
-                new JsonObject
+                (JsonNode)new JsonObject
                 {
                     ["name"] = "GPUs",
                     ["value"] = gpus,
                     ["inline"] = false
                 },
-                new JsonObject
+                (JsonNode)new JsonObject
                 {
                     ["name"] = "Displays",
                     ["value"] = monitors,
                     ["inline"] = false
                 },
-                new JsonObject
+                (JsonNode)new JsonObject
                 {
                     ["name"] = "NICs",
                     ["value"] = nics,
                     ["inline"] = false
                 },
-                new JsonObject
+                (JsonNode)new JsonObject
                 {
                     ["name"] = "Audio Devices",
                     ["value"] = audioInfo,
                     ["inline"] = false
                 },
-                new JsonObject
+                (JsonNode)new JsonObject
                 {
                     ["name"] = "OS Build",
                     ["value"] = OSHelper.GetWindowsVersionString(),
                     ["inline"] = true
                 },
-                new JsonObject
+                (JsonNode)new JsonObject
                 {
                     ["name"] = "Installation Details",
                     ["value"] = $"Start: {localSettings.Values["Install_Start"]?.ToString() ?? "N/A"}\nEnd: {localSettings.Values["Install_End"]?.ToString() ?? "N/A"}\nVersion: {localSettings.Values["Install_Version"]?.ToString() ?? "N/A"}\nBuild: {localSettings.Values["Install_Build"]?.ToString() ?? "N/A"}",
@@ -336,7 +336,7 @@ public static partial class LogHelper
                 ["inline"] = false
             };
 
-            ((JsonArray)embed["fields"]).Insert(10, errorField);
+            ((JsonArray)embed["fields"]).Insert(10, (JsonNode)errorField);
         }
 
         return embed;

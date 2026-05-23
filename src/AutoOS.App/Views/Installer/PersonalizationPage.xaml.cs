@@ -100,7 +100,7 @@ public sealed partial class PersonalizationPage : Page
     {
         Themes.ItemsSource = new List<ThemeItem>
         {
-            new() { LightTheme = @"C:\Windows\Web\Wallpaper\Windows\img0.jpg", DarkTheme = @"C:\Windows\Web\Wallpaper\Windows\img19.jpg" }
+            new() { LightTheme = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "Web", "Wallpaper", "Windows", "img0.jpg"), DarkTheme = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "Web", "Wallpaper", "Windows", "img19.jpg") }
         };
     }
 
@@ -109,7 +109,7 @@ public sealed partial class PersonalizationPage : Page
         using var key = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Themes");
         string currentTheme = key?.GetValue("CurrentTheme") as string ?? string.Empty;
 
-        if (currentTheme == @"C:\Windows\resources\Themes\aero.theme" || currentTheme == @"C:\Windows\resources\Themes\dark.theme")
+        if (currentTheme == Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "resources", "Themes", "aero.theme") || currentTheme == Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "resources", "Themes", "dark.theme"))
         {
             Themes.SelectedIndex = 0;
         }
@@ -138,9 +138,9 @@ public sealed partial class PersonalizationPage : Page
         bool currentlyLight = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize")?.GetValue("SystemUsesLightTheme") is int value && value != 0;
 
         if (shouldBeLight && !currentlyLight)
-            await ApplyTheme(@"C:\Windows\Resources\Themes\aero.theme");
+            await ApplyTheme(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "Resources", "Themes", "aero.theme"));
         else if (!shouldBeLight && currentlyLight)
-            await ApplyTheme(@"C:\Windows\Resources\Themes\dark.theme");
+            await ApplyTheme(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "Resources", "Themes", "dark.theme"));
     }
 
     private async Task GetSchedule()
@@ -211,9 +211,9 @@ public sealed partial class PersonalizationPage : Page
         UpdateTimeCardsVisibility();
 
         if (selected == "Always Light")
-            await ApplyTheme(@"C:\Windows\Resources\Themes\aero.theme");
+            await ApplyTheme(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "Resources", "Themes", "aero.theme"));
         else if (selected == "Always Dark")
-            await ApplyTheme(@"C:\Windows\Resources\Themes\dark.theme");
+            await ApplyTheme(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "Resources", "Themes", "dark.theme"));
         else
             await GetSchedule();
     }

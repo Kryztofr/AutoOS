@@ -1971,9 +1971,9 @@ public partial class HeaderCarousel : ItemsControl
 
                 var startInfo = new ProcessStartInfo
                 {
-                    FileName = @"C:\Program Files\Electronic Arts\EA Desktop\EA Desktop\Link2EA.exe",
+                    FileName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Electronic Arts", "EA Desktop", "EA Desktop", "Link2EA.exe"),
                     Arguments = $@"""link2ea://launchgame/{appName}?AUTH_PASSWORD={exchangeCode}&AUTH_TYPE=exchangeCode&epicusername={Uri.EscapeDataString(displayName)}&epicuserid={accountId}&epiclocale=en&platform=epic"" """" """" """" """" """" """" """" """"",
-                    WorkingDirectory = @"C:\Program Files\Electronic Arts\EA Desktop\EA Desktop",
+                    WorkingDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Electronic Arts", "EA Desktop", "EA Desktop"),
                     UseShellExecute = false
                 };
                 Process.Start(startInfo);
@@ -2278,7 +2278,7 @@ public partial class HeaderCarousel : ItemsControl
             ProcessesHelper.ResumeProcess(ServicesHelper.GetServicePid("TextInputManagementService"));
 			Process.Start("ctfmon.exe");
 
-            string filePath = @"C:\Program Files\Everything 1.5a\Everything.exe";
+            string filePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Everything 1.5a", "Everything.exe");
 
             if (File.Exists(filePath))
             {

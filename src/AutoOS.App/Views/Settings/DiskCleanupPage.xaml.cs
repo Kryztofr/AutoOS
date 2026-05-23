@@ -93,22 +93,22 @@ public sealed partial class DiskCleanupPage : Page
 
         RegistryHelper.RunAs(RegistryHelper.Identity.TrustedInstaller, () =>
         {
-            ProcessActions.CleanDirectory(@"C:\Windows\Logs");
-            ProcessActions.CleanDirectory(@"C:\Windows\Panther");
-            ProcessActions.CleanDirectory(@"C:\Windows\SoftwareDistribution");
-            ProcessActions.CleanDirectory(@"C:\Windows\System32\LogFiles");
-            ProcessActions.CleanDirectory(@"C:\Windows\System32\SleepStudy");
-            ProcessActions.CleanDirectory(@"C:\Windows\System32\sru");
-            ProcessActions.CleanDirectory(@"C:\Windows\System32\WDI");
-            ProcessActions.CleanDirectory(@"C:\Windows\System32\winevt\Logs");
-            ProcessActions.CleanDirectory(@"C:\Windows\SystemTemp");
-            ProcessActions.CleanDirectory(@"C:\Windows\Temp");
+            ProcessActions.CleanDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "Logs"));
+            ProcessActions.CleanDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "Panther"));
+            ProcessActions.CleanDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "SoftwareDistribution"));
+            ProcessActions.CleanDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System), "LogFiles"));
+            ProcessActions.CleanDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System), "SleepStudy"));
+            ProcessActions.CleanDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System), "sru"));
+            ProcessActions.CleanDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System), "WDI"));
+            ProcessActions.CleanDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System), "winevt", "Logs"));
+            ProcessActions.CleanDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "SystemTemp"));
+            ProcessActions.CleanDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "Temp"));
             ProcessActions.CleanDirectory(Path.GetTempPath());
-            File.Delete(@"C:\DumpStack.log");
+            File.Delete(Path.Combine(Path.GetPathRoot(Environment.GetFolderPath(Environment.SpecialFolder.System)), "DumpStack.log"));
         });
 
         // run disk cleanup
-        await Process.Start(new ProcessStartInfo { FileName = @"C:\Windows\System32\cleanmgr.exe", Arguments = "/sagerun:0", UseShellExecute = false, CreateNoWindow = true })!.WaitForExitAsync();
+        await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System), "cleanmgr.exe"), Arguments = "/sagerun:0", UseShellExecute = false, CreateNoWindow = true })!.WaitForExitAsync();
 
         CleanDisks.IsChecked = false;
 

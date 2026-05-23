@@ -1,5 +1,6 @@
 using AutoOS.Core.Helpers.CPU.Models;
 using AutoOS.Core.Helpers.CPU;
+using AutoOS.Core.Helpers.Database;
 using AutoOS.Core.Helpers.Device.Models;
 using AutoOS.Core.Helpers.Device;
 using AutoOS.Core.Helpers.GPU.Models;
@@ -279,9 +280,10 @@ public static partial class PreparingStage
             var (pCores, _) = CpuHelper.GroupCpuSetsByEfficiencyClass(cpuSetsInfo);
             PCores = pCores.Count;
             HyperThreading = cpuSetsInfo.HyperThreading;
+            var systemDrive = Path.GetPathRoot(Environment.GetFolderPath(Environment.SpecialFolder.System));
 
             EpicGamesAccount = DriveInfo.GetDrives()
-                .Where(d => d.DriveType == DriveType.Fixed && d.Name != @"C:\")
+                .Where(d => d.DriveType == DriveType.Fixed && d.Name != systemDrive)
                 .SelectMany(d =>
                 {
                     string usersPath = Path.Combine(d.Name, "Users");
@@ -305,7 +307,7 @@ public static partial class PreparingStage
                 });
 
             EpicGamesGames = DriveInfo.GetDrives()
-                .Where(d => d.DriveType == DriveType.Fixed && d.Name != @"C:\")
+                .Where(d => d.DriveType == DriveType.Fixed && d.Name != systemDrive)
                 .Select(d => Path.Combine(d.Name, "ProgramData", "Epic", "UnrealEngineLauncher", "LauncherInstalled.dat"))
                 .Where(File.Exists)
                 .Select(path => new FileInfo(path))
@@ -321,7 +323,7 @@ public static partial class PreparingStage
                 .FirstOrDefault(false);
 
             SteamGames = DriveInfo.GetDrives()
-                .Where(d => d.DriveType == DriveType.Fixed && d.Name != @"C:\")
+                .Where(d => d.DriveType == DriveType.Fixed && d.Name != systemDrive)
                 .Select(d => Path.Combine(d.Name, "Program Files (x86)", "Steam", "steamapps", "libraryfolders.vdf"))
                 .Where(File.Exists)
                 .Select(path => new FileInfo(path))
@@ -335,7 +337,7 @@ public static partial class PreparingStage
                 .FirstOrDefault(false);
 
 			RiotClientAccount = DriveInfo.GetDrives()
-				.Where(d => d.DriveType == DriveType.Fixed && d.Name != @"C:\")
+				.Where(d => d.DriveType == DriveType.Fixed && d.Name != systemDrive)
 				.SelectMany(d =>
 				{
 					string usersPath = Path.Combine(d.Name, "Users");
@@ -354,7 +356,7 @@ public static partial class PreparingStage
 				});
 
 			RiotClientGames = DriveInfo.GetDrives()
-				.Where(d => d.DriveType == DriveType.Fixed && d.Name != @"C:\")
+				.Where(d => d.DriveType == DriveType.Fixed && d.Name != systemDrive)
 				.SelectMany(d =>
 				{
 					string metadataPath = Path.Combine(d.Name, "ProgramData", "Riot Games", "Metadata");
@@ -378,7 +380,7 @@ public static partial class PreparingStage
 				.Any(hasGame => hasGame);
 
 			DiscordAccount = DriveInfo.GetDrives()
-				.Where(d => d.DriveType == DriveType.Fixed && d.Name != @"C:\")
+				.Where(d => d.DriveType == DriveType.Fixed && d.Name != systemDrive)
 				.SelectMany(d =>
 				{
 					string usersPath = Path.Combine(d.Name, "Users");
@@ -390,7 +392,7 @@ public static partial class PreparingStage
 				})
 				.Any(leveldbPath =>
 				{
-					var accounts = AutoOS.Core.Helpers.Database.DiscordHelper.GetAccountData(leveldbPath);
+					var accounts = DiscordHelper.GetAccountData(leveldbPath);
 					return accounts != null && accounts.Count > 0;
 				});
 

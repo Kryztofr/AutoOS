@@ -17,8 +17,9 @@ public static partial class RiotHelper
     public static async Task ImportAccount(IStatusReporter reporter = null)
     {
         // get all configs from other drives
+        var systemDrive = Path.GetPathRoot(Environment.GetFolderPath(Environment.SpecialFolder.System));
         var foundFiles = DriveInfo.GetDrives()
-            .Where(d => d.DriveType == DriveType.Fixed && d.Name != @"C:\")
+            .Where(d => d.DriveType == DriveType.Fixed && d.Name != systemDrive)
             .SelectMany(d =>
             {
                 string usersPath = Path.Combine(d.Name, "Users");
@@ -53,7 +54,7 @@ public static partial class RiotHelper
                 // copy the file
                 File.Copy(newestFilePath, RiotGamesPrivateSettingsPath, true);
 
-                reporter?.Report("Successfully imported Riot Games account...");
+                reporter?.SetTitle("Successfully imported Riot Games account...");
 
                 await Task.Delay(1000);
 
@@ -65,8 +66,9 @@ public static partial class RiotHelper
     public static async Task ImportGames(IStatusReporter reporter = null)
     {
         // get all metadata folders from other drives
+        var systemDrive = Path.GetPathRoot(Environment.GetFolderPath(Environment.SpecialFolder.System));
         var foundFolders = DriveInfo.GetDrives()
-            .Where(d => d.DriveType == DriveType.Fixed && d.Name != @"C:\")
+            .Where(d => d.DriveType == DriveType.Fixed && d.Name != systemDrive)
             .Select(d => Path.Combine(d.Name, "ProgramData", "Riot Games", "Metadata"))
             .Where(Directory.Exists)
             .Select(path => new DirectoryInfo(path))
@@ -116,7 +118,7 @@ public static partial class RiotHelper
             string newPath = null;
 
             // check other drives for the path
-            foreach (var drive in DriveInfo.GetDrives().Where(d => d.DriveType == DriveType.Fixed && d.Name != @"C:\"))
+            foreach (var drive in DriveInfo.GetDrives().Where(d => d.DriveType == DriveType.Fixed && d.Name != systemDrive))
             {
                 string testPath = Path.Combine(drive.Name, relativePath);
                 if (Directory.Exists(testPath))
@@ -134,7 +136,7 @@ public static partial class RiotHelper
             }
         }
 
-        reporter?.Report("Successfully imported Riot Client Games...");
+        reporter?.SetTitle("Successfully imported Riot Client Games...");
 
         await Task.Delay(1000);
     }

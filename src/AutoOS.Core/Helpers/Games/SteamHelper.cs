@@ -10,7 +10,7 @@ namespace AutoOS.Core.Helpers.Games;
 
 public static partial class SteamHelper
 {
-	public static readonly string SteamDir = (Microsoft.Win32.Registry.LocalMachine.OpenSubKey(@"Software\Valve\Steam")?.GetValue("InstallPath") as string ?? @"C:\Program Files (x86)\Steam").Replace('/', '\\');
+	public static readonly string SteamDir = (Microsoft.Win32.Registry.LocalMachine.OpenSubKey(@"Software\Valve\Steam")?.GetValue("InstallPath") as string ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "Steam")).Replace('/', '\\');
 	public static readonly string SteamPath = Path.Combine(SteamDir, "steam.exe");
 	public static readonly string SteamLibraryPath = Path.Combine(SteamDir, @"steamapps\libraryfolders.vdf");
 	public static readonly string SteamLibraryCacheDir = Path.Combine(SteamDir, @"appcache\librarycache");
@@ -114,7 +114,7 @@ public static partial class SteamHelper
 
 					var kv = KVSerializer.Create(KVSerializationFormat.KeyValues1Text).Deserialize(new MemoryStream(Encoding.UTF8.GetBytes(File.ReadAllText(SteamLoginUsersPath))), options);
 
-					reporter?.Report($"Successfully logged in as {kv.Root.Children.Select(children => children.Value["AccountName"]?.ToString()).FirstOrDefault(name => !string.IsNullOrEmpty(name))}...");
+					reporter?.SetTitle($"Successfully logged in as {kv.Root.Children.Select(children => children.Value["AccountName"]?.ToString()).FirstOrDefault(name => !string.IsNullOrEmpty(name))}...");
 					break;
 				}
 
@@ -190,8 +190,10 @@ public static partial class SteamHelper
 				resolvedPath = string.Concat(sourceDrive, pathValue.AsSpan(2));
 			}
 
-			var entry = new KVObject();
-			entry["path"] = new KVObject(resolvedPath);
+			var entry = new KVObject
+			{
+				["path"] = new KVObject(resolvedPath)
+			};
 
 			foreach (var child in folderChildren)
 			{
@@ -202,16 +204,20 @@ public static partial class SteamHelper
 			sourceEntries.Add(entry);
 		}
 
-		var currentDriveEntry = new KVObject();
-		currentDriveEntry["path"] = new KVObject(SteamDir);
-		currentDriveEntry["label"] = new KVObject("");
-		currentDriveEntry["totalsize"] = new KVObject("0");
-		currentDriveEntry["update_clean_bytes_tally"] = new KVObject("0");
-		currentDriveEntry["time_last_update_verified"] = new KVObject("0");
-		currentDriveEntry["apps"] = new KVObject();
+		var currentDriveEntry = new KVObject
+		{
+			["path"] = new KVObject(SteamDir),
+			["label"] = new KVObject(""),
+			["totalsize"] = new KVObject("0"),
+			["update_clean_bytes_tally"] = new KVObject("0"),
+			["time_last_update_verified"] = new KVObject("0"),
+			["apps"] = []
+		};
 
-		var rootObj = new KVObject();
-		rootObj["0"] = currentDriveEntry;
+		var rootObj = new KVObject
+		{
+			["0"] = currentDriveEntry
+		};
 
 		int nextIndex = 1;
 		foreach (var entry in sourceEntries)

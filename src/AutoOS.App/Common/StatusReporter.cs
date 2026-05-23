@@ -23,13 +23,21 @@ public class InstallPageReporter : IStatusReporter
                 {
                     InstallPage.Info.Title = $"{InstallPage.CurrentTitle} ({message})";
                 }
-                
+
                 if (progress.HasValue)
                     InstallPage.ProgressRingControl.Value = progress.Value;
-                
+
                 if (isIndeterminate.HasValue)
                     InstallPage.ProgressRingControl.IsIndeterminate = isIndeterminate.Value;
             }
+        }, null);
+    }
+
+    public void SetTitle(string title)
+    {
+        _uiContext?.Post(_ =>
+        {
+			InstallPage.Info?.Title = title;
         }, null);
     }
 }
@@ -45,11 +53,13 @@ public class ProgressButtonReporter(ProgressButton progressButton) : IStatusRepo
         {
             if (progress.HasValue)
                 _progressButton.Progress = progress.Value;
-            
+
             if (isIndeterminate.HasValue)
                 _progressButton.IsIndeterminate = isIndeterminate.Value;
         }, null);
     }
+
+    public void SetTitle(string title){   }
 }
 
 public class UpdateDialogReporter(UpdateDialog updateDialog) : IStatusReporter
@@ -69,6 +79,14 @@ public class UpdateDialogReporter(UpdateDialog updateDialog) : IStatusReporter
             if (progress.HasValue)
                 _updateDialog.SetProgress(progress.Value);
 
+        }, null);
+    }
+
+    public void SetTitle(string title)
+    {
+        _uiContext?.Post(_ =>
+        {
+            _updateDialog.SetStatus(title);
         }, null);
     }
 }

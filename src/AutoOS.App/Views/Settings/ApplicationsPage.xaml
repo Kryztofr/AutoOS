@@ -215,7 +215,7 @@
                     </dev:Card.Content>
                 </dev:Card>
                 <dev:Card Title="Development"
-                          Margin="0,0,0,36"
+                          Margin="0,0,0,8"
                           Padding="24,24,24,12"
                           Visibility="{x:Bind GetVisibility(developmentItems.Count), Mode=OneWay}">
                     <dev:Card.Content>

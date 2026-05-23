@@ -57,4 +57,21 @@ public static partial class DatabaseHelper
 		database.Put(finalKeyBytes, finalValueBytes);
 		return true;
 	}
+
+    public static bool Delete(string databasePath, string domain, string keyName)
+    {
+        byte[] prefixBytes = Encoding.UTF8.GetBytes(domain);
+        byte[] separatorBytes = [0x00, 0x01];
+        byte[] keyNameBytes = Encoding.UTF8.GetBytes(keyName);
+        byte[] finalKeyBytes = new byte[prefixBytes.Length + separatorBytes.Length + keyNameBytes.Length];
+
+        Buffer.BlockCopy(prefixBytes, 0, finalKeyBytes, 0, prefixBytes.Length);
+        Buffer.BlockCopy(separatorBytes, 0, finalKeyBytes, prefixBytes.Length, separatorBytes.Length);
+        Buffer.BlockCopy(keyNameBytes, 0, finalKeyBytes, prefixBytes.Length + separatorBytes.Length, keyNameBytes.Length);
+
+        var options = new Options { CreateIfMissing = false };
+        using var database = new DB(options, databasePath);
+        database.Delete(finalKeyBytes);
+        return true;
+    }
 }

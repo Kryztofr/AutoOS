@@ -14,18 +14,18 @@ public static class CleanupStage
         {
             // clean temp directories
             ("Cleaning temp directories", async () => await Task.WhenAll(Process.GetProcessesByName("TiWorker").Select(async process => { process.Kill(); await process.WaitForExitAsync(); })), null),
-            ("Cleaning temp directories", async () => await RegistryHelper.RunAs(RegistryHelper.Identity.TrustedInstaller, async () => ProcessActions.CleanDirectory(@"C:\Windows\Logs")), null),
-            ("Cleaning temp directories", async () => await RegistryHelper.RunAs(RegistryHelper.Identity.TrustedInstaller, async () => ProcessActions.CleanDirectory(@"C:\Windows\Panther")), null),
-            ("Cleaning temp directories", async () => await RegistryHelper.RunAs(RegistryHelper.Identity.TrustedInstaller, async () => ProcessActions.CleanDirectory(@"C:\Windows\SoftwareDistribution")), null),
-            ("Cleaning temp directories", async () => await RegistryHelper.RunAs(RegistryHelper.Identity.TrustedInstaller, async () => ProcessActions.CleanDirectory(@"C:\Windows\System32\LogFiles")), null),
-            ("Cleaning temp directories", async () => await RegistryHelper.RunAs(RegistryHelper.Identity.TrustedInstaller, async () => ProcessActions.CleanDirectory(@"C:\Windows\System32\SleepStudy")), null),
-            ("Cleaning temp directories", async () => await RegistryHelper.RunAs(RegistryHelper.Identity.TrustedInstaller, async () => ProcessActions.CleanDirectory(@"C:\Windows\System32\sru")), null),
-            ("Cleaning temp directories", async () => await RegistryHelper.RunAs(RegistryHelper.Identity.TrustedInstaller, async () => ProcessActions.CleanDirectory(@"C:\Windows\System32\WDI")), null),
-            ("Cleaning temp directories", async () => await RegistryHelper.RunAs(RegistryHelper.Identity.TrustedInstaller, async () => ProcessActions.CleanDirectory(@"C:\Windows\System32\winevt\Logs")), null),
-            ("Cleaning temp directories", async () => await RegistryHelper.RunAs(RegistryHelper.Identity.TrustedInstaller, async () => ProcessActions.CleanDirectory(@"C:\Windows\SystemTemp")), null),
-            ("Cleaning temp directories", async () => await RegistryHelper.RunAs(RegistryHelper.Identity.TrustedInstaller, async () => ProcessActions.CleanDirectory(@"C:\Windows\Temp")), null),
+            ("Cleaning temp directories", async () => await RegistryHelper.RunAs(RegistryHelper.Identity.TrustedInstaller, async () => ProcessActions.CleanDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "Logs"))), null),
+            ("Cleaning temp directories", async () => await RegistryHelper.RunAs(RegistryHelper.Identity.TrustedInstaller, async () => ProcessActions.CleanDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "Panther"))), null),
+            ("Cleaning temp directories", async () => await RegistryHelper.RunAs(RegistryHelper.Identity.TrustedInstaller, async () => ProcessActions.CleanDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "SoftwareDistribution"))), null),
+            ("Cleaning temp directories", async () => await RegistryHelper.RunAs(RegistryHelper.Identity.TrustedInstaller, async () => ProcessActions.CleanDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System), "LogFiles"))), null),
+            ("Cleaning temp directories", async () => await RegistryHelper.RunAs(RegistryHelper.Identity.TrustedInstaller, async () => ProcessActions.CleanDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System), "SleepStudy"))), null),
+            ("Cleaning temp directories", async () => await RegistryHelper.RunAs(RegistryHelper.Identity.TrustedInstaller, async () => ProcessActions.CleanDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System), "sru"))), null),
+            ("Cleaning temp directories", async () => await RegistryHelper.RunAs(RegistryHelper.Identity.TrustedInstaller, async () => ProcessActions.CleanDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System), "WDI"))), null),
+            ("Cleaning temp directories", async () => await RegistryHelper.RunAs(RegistryHelper.Identity.TrustedInstaller, async () => ProcessActions.CleanDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System), "winevt", "Logs"))), null),
+            ("Cleaning temp directories", async () => await RegistryHelper.RunAs(RegistryHelper.Identity.TrustedInstaller, async () => ProcessActions.CleanDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "SystemTemp"))), null),
+            ("Cleaning temp directories", async () => await RegistryHelper.RunAs(RegistryHelper.Identity.TrustedInstaller, async () => ProcessActions.CleanDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "Temp"))), null),
             ("Cleaning temp directories", async () => ProcessActions.CleanDirectory(Path.GetTempPath()), null),
-            ("Cleaning temp directories", async () => File.Delete(@"C:\DumpStack.log"), null),
+            ("Cleaning temp directories", async () => File.Delete(Path.Combine(Path.GetPathRoot(Environment.GetFolderPath(Environment.SpecialFolder.System)), "DumpStack.log")), null),
 
             // run disk cleanup
             ("Running disk cleanup", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VolumeCaches\Active Setup Temp Folders", "StateFlags0000", 2, RegistryValueKind.DWord), null),
@@ -55,11 +55,11 @@ public static class CleanupStage
             ("Running disk cleanup", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VolumeCaches\Windows ESD installation files", "StateFlags0000", 2, RegistryValueKind.DWord), null),
             ("Running disk cleanup", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VolumeCaches\Windows Reset Log Files", "StateFlags0000", 2, RegistryValueKind.DWord), null),
             ("Running disk cleanup", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VolumeCaches\Windows Upgrade Log Files", "StateFlags0000", 2, RegistryValueKind.DWord), null),
-            ("Running disk cleanup", async () => await Process.Start(new ProcessStartInfo { FileName = @"C:\Windows\System32\cleanmgr.exe", Arguments = "/sagerun:0", UseShellExecute = false, CreateNoWindow = true })!.WaitForExitAsync(), null),
+            ("Running disk cleanup", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System), "cleanmgr.exe"), Arguments = "/sagerun:0", UseShellExecute = false, CreateNoWindow = true })!.WaitForExitAsync(), null),
         
 			// enable system restore
-			("Enabling system restore", async () => await ProcessActions.RunPowerShell(@"Enable-ComputerRestore -Drive 'C:\'"), null),
-			("Enabling system restore", async () => await Process.Start(new ProcessStartInfo { FileName = @"C:\Windows\System32\vssadmin.exe", Arguments = "resize shadowstorage /for=C: /on=C: /maxsize=10%", UseShellExecute = false, CreateNoWindow = true })!.WaitForExitAsync(), null),
+			("Enabling system restore", async () => await ProcessActions.RunPowerShell($"Enable-ComputerRestore -Drive '{Path.GetPathRoot(Environment.GetFolderPath(Environment.SpecialFolder.System))}'"), null),
+			("Enabling system restore", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System), "vssadmin.exe"), Arguments = $"resize shadowstorage /for={Path.GetPathRoot(Environment.GetFolderPath(Environment.SpecialFolder.System)).TrimEnd('\\')} /on={Path.GetPathRoot(Environment.GetFolderPath(Environment.SpecialFolder.System)).TrimEnd('\\')} /maxsize=10%", UseShellExecute = false, CreateNoWindow = true })!.WaitForExitAsync(), null),
 			("Enabling system restore", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SystemRestore", "SystemRestorePointCreationFrequency", 0, RegistryValueKind.DWord), null),
 
             // create a restore point

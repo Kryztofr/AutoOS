@@ -18,10 +18,10 @@ public static class AppxStage
             ("Uninstalling OneDrive", async () => await Task.WhenAll(Process.GetProcessesByName("UserOOBEBroker").Select(async process => { process.Kill(); await process.WaitForExitAsync(); })), null),
             ("Uninstalling OneDrive", async () => await Task.WhenAll(Process.GetProcessesByName("FileCoAuth").Select(async process => { process.Kill(); await process.WaitForExitAsync(); })), null),
             ("Uninstalling OneDrive", async () => await Task.WhenAll(Process.GetProcessesByName("OneDrivePatcher").Select(async process => { process.Kill(); await process.WaitForExitAsync(); })), null),
-            ("Uninstalling OneDrive", async () => await Process.Start(new ProcessStartInfo(@"C:\Windows\System32\OneDriveSetup.exe", "/uninstall") { CreateNoWindow = true })!.WaitForExitAsync(), null),
+            ("Uninstalling OneDrive", async () => await Process.Start(new ProcessStartInfo(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System), "OneDriveSetup.exe"), "/uninstall") { CreateNoWindow = true })!.WaitForExitAsync(), null),
             ("Uninstalling OneDrive", async () => await Task.Delay(2000), null),
             ("Uninstalling OneDrive", async () => RegistryHelper.DeleteKey(RegistryHelper.Identity.CurrentUser, @"HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Desktop\NameSpace\{018D5C66-4533-4307-9B53-224DE2ED1FE6}"), null),
-            ("Uninstalling OneDrive", async () => Directory.Delete(@"C:\ProgramData\Microsoft OneDrive", true), null),
+            ("Uninstalling OneDrive", async () => Directory.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Microsoft OneDrive"), true), null),
             ("Uninstalling OneDrive", async () => Directory.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), @"Microsoft\OneDrive"), true), null),
             ("Uninstalling OneDrive", async () => TaskSchedulerHelper.Unregister("OneDrive Startup Task"), null),
         };

@@ -138,26 +138,16 @@ public sealed partial class UpdateDialog : UserControl
         }, null);
     }
 
-    private class UpdateStatusReporter : IStatusReporter
+    private class UpdateStatusReporter(SynchronizationContext uiContext, TextBlock statusText, ProgressBar progressBar, string displayTitle, double startValue, double targetValue) : IStatusReporter
     {
-        private readonly SynchronizationContext _uiContext;
-        private readonly TextBlock _statusText;
-        private readonly ProgressBar _progressBar;
-        private readonly string _displayTitle;
-        private readonly double _startValue;
-        private readonly double _targetValue;
+        private readonly SynchronizationContext _uiContext = uiContext;
+        private readonly TextBlock _statusText = statusText;
+        private readonly ProgressBar _progressBar = progressBar;
+        private readonly string _displayTitle = displayTitle;
+        private readonly double _startValue = startValue;
+        private readonly double _targetValue = targetValue;
 
-        public UpdateStatusReporter(SynchronizationContext uiContext, TextBlock statusText, ProgressBar progressBar, string displayTitle, double startValue, double targetValue)
-        {
-            _uiContext = uiContext;
-            _statusText = statusText;
-            _progressBar = progressBar;
-            _displayTitle = displayTitle;
-            _startValue = startValue;
-            _targetValue = targetValue;
-        }
-
-        public void Report(string message = null, double? progress = null, bool? isIndeterminate = null)
+		public void Report(string message = null, double? progress = null, bool? isIndeterminate = null)
         {
             _uiContext?.Post(_ =>
             {
@@ -183,6 +173,14 @@ public sealed partial class UpdateDialog : UserControl
                 {
                     _progressBar.Value = _startValue + (progress.Value / 100.0 * (_targetValue - _startValue));
                 }
+            }, null);
+        }
+
+        public void SetTitle(string title)
+        {
+            _uiContext?.Post(_ =>
+            {
+                _statusText.Text = title;
             }, null);
         }
     }

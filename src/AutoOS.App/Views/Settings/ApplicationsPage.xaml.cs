@@ -50,14 +50,14 @@ public sealed partial class ApplicationsPage : Page
 
         var launchersList = new List<GridViewItem>
         {
-            new() { Text = "Epic Games", ImageSource = "ms-appx:///Assets/Fluent/EpicGames.png", IsInstalled = File.Exists(@"C:\Program Files\Epic Games\Launcher\Portal\Binaries\Win64\EpicGamesLauncher.exe") },
-            new() { Text = "Steam", ImageSource = "ms-appx:///Assets/Fluent/Steam.png", IsInstalled = File.Exists(@"C:\Program Files (x86)\Steam\steam.exe") },
-            new() { Text = "Riot Client", ImageSource = "ms-appx:///Assets/Fluent/RiotClient.png", IsInstalled = File.Exists(@"C:\Riot Games\Riot Client\RiotClientServices.exe") },
-            new() { Text = "Ubisoft Connect", ImageSource = "ms-appx:///Assets/Fluent/UbisoftConnect.png", IsInstalled = File.Exists(@"C:\Program Files (x86)\Ubisoft\Ubisoft Game Launcher\UbisoftConnect.exe") },
-            new() { Text = "EA", ImageSource = "ms-appx:///Assets/Fluent/EA.png", IsInstalled = File.Exists(@"C:\Program Files\Electronic Arts\EA Desktop\EA Desktop\EADesktop.exe") },
-            new() { Text = "Battle.Net", ImageSource = "ms-appx:///Assets/Fluent/BattleNet.png", IsInstalled = File.Exists(@"C:\Program Files (x86)\Battle.net\Battle.net.exe") },
-            new() { Text = "Minecraft Launcher", ImageSource = "ms-appx:///Assets/Fluent/MinecraftLauncher.png", IsInstalled = File.Exists(@"C:\Program Files (x86)\Minecraft Launcher\MinecraftLauncher.exe") },
-            new() { Text = "Rockstar Games Launcher", ImageSource = "ms-appx:///Assets/Fluent/RockstarGamesLauncher.png", IsInstalled = File.Exists(@"C:\Program Files\Rockstar Games\Launcher\Launcher.exe") },
+            new() { Text = "Epic Games", ImageSource = "ms-appx:///Assets/Fluent/EpicGames.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Epic Games", "Launcher", "Portal", "Binaries", "Win64", "EpicGamesLauncher.exe")) },
+            new() { Text = "Steam", ImageSource = "ms-appx:///Assets/Fluent/Steam.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "Steam", "steam.exe")) },
+            new() { Text = "Riot Client", ImageSource = "ms-appx:///Assets/Fluent/RiotClient.png", IsInstalled = File.Exists(Path.Combine(Path.GetPathRoot(Environment.GetFolderPath(Environment.SpecialFolder.System)), "Riot Games", "Riot Client", "RiotClientServices.exe")) },
+            new() { Text = "Ubisoft Connect", ImageSource = "ms-appx:///Assets/Fluent/UbisoftConnect.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "Ubisoft", "Ubisoft Game Launcher", "UbisoftConnect.exe")) },
+            new() { Text = "EA", ImageSource = "ms-appx:///Assets/Fluent/EA.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Electronic Arts", "EA Desktop", "EA Desktop", "EADesktop.exe")) },
+            new() { Text = "Battle.Net", ImageSource = "ms-appx:///Assets/Fluent/BattleNet.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "Battle.net", "Battle.net.exe")) },
+            new() { Text = "Minecraft Launcher", ImageSource = "ms-appx:///Assets/Fluent/MinecraftLauncher.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "Minecraft Launcher", "MinecraftLauncher.exe")) },
+            new() { Text = "Rockstar Games Launcher", ImageSource = "ms-appx:///Assets/Fluent/RockstarGamesLauncher.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Rockstar Games", "Launcher", "Launcher.exe")) },
             new() { Text = "FiveM", ImageSource = "ms-appx:///Assets/Fluent/FiveM.jpg", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "FiveM", "FiveM.exe")) },
             new() { Text = "FACEIT", ImageSource = "ms-appx:///Assets/Fluent/FACEIT.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "FACEIT", "FACEIT.exe")) }
         };
@@ -90,12 +90,12 @@ public sealed partial class ApplicationsPage : Page
 
         var devList = new List<GridViewItem>
         {
-            new() { Text = "Visual Studio", ImageSource = "ms-appx:///Assets/Fluent/VisualStudio.png", IsInstalled = Directory.Exists(@"C:\Program Files\Microsoft Visual Studio") },
+            new() { Text = "Visual Studio", ImageSource = "ms-appx:///Assets/Fluent/VisualStudio.png", IsInstalled = Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Microsoft Visual Studio")) },
             new() { Text = "Visual Studio Code", ImageSource = "ms-appx:///Assets/Fluent/VisualStudioCode.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs", "Microsoft VS Code", "Code.exe")) },
             new() { Text = "Antigravity", ImageSource = "ms-appx:///Assets/Fluent/Antigravity.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs", "Antigravity", "Antigravity.exe")) },
-            new() { Text = "Git", ImageSource = "ms-appx:///Assets/Fluent/Git.png", IsInstalled = File.Exists(@"C:\Program Files\Git\bin\git.exe") },
-            new() { Text = "Python", ImageSource = "ms-appx:///Assets/Fluent/Python.png", IsInstalled = File.Exists(@"C:\Windows\py.exe") },
-            new() { Text = "Node.js", ImageSource = "ms-appx:///Assets/Fluent/Nodejs.png", IsInstalled = File.Exists(@"C:\Program Files\nodejs\node.exe") },
+            new() { Text = "Git", ImageSource = "ms-appx:///Assets/Fluent/Git.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Git", "bin", "git.exe")) },
+            new() { Text = "Python", ImageSource = "ms-appx:///Assets/Fluent/Python.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System), "py.exe")) },
+            new() { Text = "Node.js", ImageSource = "ms-appx:///Assets/Fluent/Nodejs.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "nodejs", "node.exe")) },
             new() { Text = "Trello", ImageSource = "ms-appx:///Assets/Fluent/Trello.png", IsInstalled = Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Packages", "45273LiamForsyth.PawsforTrello_7pb5ddty8z1pa")) }
 		};
         foreach (var item in devList.Where(item => !item.IsInstalled))
@@ -103,12 +103,12 @@ public sealed partial class ApplicationsPage : Page
 
         var officeList = new List<GridViewItem>
         {
-            new() { Text = "Word", ImageSource = "ms-appx:///Assets/Fluent/Word.png", IsInstalled = File.Exists(@"C:\Program Files\Microsoft Office\root\Office16\WINWORD.EXE") },
-            new() { Text = "Excel", ImageSource = "ms-appx:///Assets/Fluent/Excel.png", IsInstalled = File.Exists(@"C:\Program Files\Microsoft Office\root\Office16\EXCEL.EXE") },
-            new() { Text = "PowerPoint", ImageSource = "ms-appx:///Assets/Fluent/Powerpoint.png", IsInstalled = File.Exists(@"C:\Program Files\Microsoft Office\root\Office16\POWERPNT.EXE") },
-            new() { Text = "OneNote", ImageSource = "ms-appx:///Assets/Fluent/OneNote.png", IsInstalled = File.Exists(@"C:\Program Files\Microsoft Office\root\Office16\ONENOTE.EXE") },
+            new() { Text = "Word", ImageSource = "ms-appx:///Assets/Fluent/Word.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Microsoft Office", "root", "Office16", "WINWORD.EXE")) },
+            new() { Text = "Excel", ImageSource = "ms-appx:///Assets/Fluent/Excel.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Microsoft Office", "root", "Office16", "EXCEL.EXE")) },
+            new() { Text = "PowerPoint", ImageSource = "ms-appx:///Assets/Fluent/Powerpoint.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Microsoft Office", "root", "Office16", "POWERPNT.EXE")) },
+            new() { Text = "OneNote", ImageSource = "ms-appx:///Assets/Fluent/OneNote.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Microsoft Office", "root", "Office16", "ONENOTE.EXE")) },
             new() { Text = "Teams", ImageSource = "ms-appx:///Assets/Fluent/Teams.png", IsInstalled = Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Microsoft", "Teams")) },
-            new() { Text = "Outlook", ImageSource = "ms-appx:///Assets/Fluent/Outlook.png", IsInstalled = File.Exists(@"C:\Program Files\Microsoft Office\root\Office16\OUTLOOK.EXE") },
+            new() { Text = "Outlook", ImageSource = "ms-appx:///Assets/Fluent/Outlook.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Microsoft Office", "root", "Office16", "OUTLOOK.EXE")) },
             new() { Text = "OneDrive", ImageSource = "ms-appx:///Assets/Fluent/OneDrive.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Microsoft", "OneDrive", "OneDrive.exe")) }
         };
         foreach (var item in officeList.Where(item => !item.IsInstalled))

@@ -74,21 +74,21 @@ public sealed partial class InstallPage : Page
         }
         currentStageCounter = 1;
         await RunStage("Configuring Powerplans...", PowerStage.GetActions(), 5);
-        await RunStage("Configuring Registry...", RegistryStage.GetActions(), 5);
-        await RunStage("Configuring Security...", await SecurityStage.GetActions(), 5);
-        await RunStage("Configuring Memory Management...", MemoryManagementStage.GetActions(), 5);
-        await RunStage("Configuring Windows Activation...", ActivationStage.GetActions(), 2);
-        await RunStage("Configuring Graphics Cards...", await GraphicsStage.GetActions(), 5);
-        await RunStage("Configuring Network Adapters...", NetworkStage.GetActions(), 5);
-        await RunStage("Configuring Audio Devices...", AudioStage.GetActions(), 5);
-        await RunStage("Configuring Affinities...", SchedulingStage.GetActions(), 5);
-        await RunStage("Configuring Devices...", DeviceStage.GetActions(), 5);
-        await RunStage("Configuring Scheduled Tasks...", ScheduledTasksStage.GetActions(), 5);
-        await RunStage("Configuring Optional Features...", OptionalFeatureStage.GetActions(), 5);
-        await RunStage("Configuring AppX Packages...", AppxStage.GetActions(), 10);
-        await RunStage("Configuring Runtimes...", RuntimesStage.GetActions(), 5);
-        await RunStage("Configuring Browsers...", BrowsersStage.GetActions(), 5);
-        await RunStage("Configuring Applications...", ApplicationStage.GetActions(), 15);
+		await RunStage("Configuring Registry...", RegistryStage.GetActions(), 5);
+		await RunStage("Configuring Security...", await SecurityStage.GetActions(), 5);
+		await RunStage("Configuring Memory Management...", MemoryManagementStage.GetActions(), 5);
+		await RunStage("Configuring Windows Activation...", ActivationStage.GetActions(), 2);
+		await RunStage("Configuring Graphics Cards...", await GraphicsStage.GetActions(), 5);
+		await RunStage("Configuring Network Adapters...", NetworkStage.GetActions(), 5);
+		await RunStage("Configuring Audio Devices...", AudioStage.GetActions(), 5);
+		await RunStage("Configuring Affinities...", SchedulingStage.GetActions(), 5);
+		await RunStage("Configuring Devices...", DeviceStage.GetActions(), 5);
+		await RunStage("Configuring Scheduled Tasks...", ScheduledTasksStage.GetActions(), 5);
+		await RunStage("Configuring Optional Features...", OptionalFeatureStage.GetActions(), 5);
+		await RunStage("Configuring AppX Packages...", AppxStage.GetActions(), 10);
+		await RunStage("Configuring Runtimes...", RuntimesStage.GetActions(), 5);
+		await RunStage("Configuring Browsers...", BrowsersStage.GetActions(), 5);
+		await RunStage("Configuring Applications...", ApplicationStage.GetActions(), 15);
         await RunStage("Configuring Games...", GamesStage.GetActions(), 2);
         await RunStage("Configuring Services and Drivers...", ServicesStage.GetActions(), 2);
         await RunStage("Cleaning up...", CleanupStage.GetActions(), 4);
@@ -192,19 +192,18 @@ public sealed partial class InstallPage : Page
                         ResumeButton.Visibility = Visibility.Visible;
 
                         var tcs = new TaskCompletionSource<bool>();
-                        RoutedEventHandler resumeHandler = null;
-                        resumeHandler = (sender, e) =>
-                        {
-                            ResumeButton.Click -= resumeHandler;
-                            Info.Severity = InfoBarSeverity.Informational;
-                            Progress.ClearValue(ProgressBar.ForegroundProperty);
+						void resumeHandler(object sender, RoutedEventArgs e)
+						{
+							ResumeButton.Click -= resumeHandler;
+							Info.Severity = InfoBarSeverity.Informational;
+							Progress.ClearValue(ProgressBar.ForegroundProperty);
 							TaskbarHelper.SetProgressState(windowHandle, TaskbarStates.Normal);
-                            ProgressRingControl.Visibility = Visibility.Visible;
-                            ResumeButton.Visibility = Visibility.Collapsed;
-                            tcs.TrySetResult(true);
-                        };
+							ProgressRingControl.Visibility = Visibility.Visible;
+							ResumeButton.Visibility = Visibility.Collapsed;
+							tcs.TrySetResult(true);
+						}
 
-                        ResumeButton.Click += resumeHandler;
+						ResumeButton.Click += resumeHandler;
                         await tcs.Task;
 
                         localSettings.Values["actionStage"] = stageIndex;
@@ -262,19 +261,18 @@ public sealed partial class InstallPage : Page
                     ResumeButton.Visibility = Visibility.Visible;
 
                     var tcs = new TaskCompletionSource<bool>();
-                    RoutedEventHandler resumeHandler = null;
-                    resumeHandler = (sender, e) =>
-                    {
-                        ResumeButton.Click -= resumeHandler;
-                        Info.Severity = InfoBarSeverity.Informational;
-                        Progress.ClearValue(ProgressBar.ForegroundProperty);
+					void resumeHandler(object sender, RoutedEventArgs e)
+					{
+						ResumeButton.Click -= resumeHandler;
+						Info.Severity = InfoBarSeverity.Informational;
+						Progress.ClearValue(ProgressBar.ForegroundProperty);
 						TaskbarHelper.SetProgressState(windowHandle, TaskbarStates.Normal);
-                        ProgressRingControl.Visibility = Visibility.Visible;
-                        ResumeButton.Visibility = Visibility.Collapsed;
-                        tcs.TrySetResult(true);
-                    };
+						ProgressRingControl.Visibility = Visibility.Visible;
+						ResumeButton.Visibility = Visibility.Collapsed;
+						tcs.TrySetResult(true);
+					}
 
-                    ResumeButton.Click += resumeHandler;
+					ResumeButton.Click += resumeHandler;
                     await tcs.Task;
 
                     localSettings.Values["actionStage"] = stageIndex;
