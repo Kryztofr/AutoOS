@@ -193,6 +193,12 @@ public static class ApplicationStage
             // install dolby vision extension
             ("Installing Dolby Vision Extension", async () => await StoreHelper.Install("DolbyLaboratories.DolbyVisionAccess_rz1tebttyb220"), () => selection == null),
 
+			// download gaming services
+            ("Downloading Gaming Services", async () => await StoreHelper.Download("Microsoft.GamingServices_8wekyb3d8bbwe", 0, reporter: reporter), () => selection == null),
+
+            // install gaming services
+            ("Installing Gaming Services", async () => await StoreHelper.Install("Microsoft.GamingServices_8wekyb3d8bbwe"), () => selection == null),
+
             // download movies & tv
             ("Downloading Movies & TV", async () => await StoreHelper.Download("Microsoft.ZuneVideo_8wekyb3d8bbwe", 2, reporter: reporter), () => selection == null),
 

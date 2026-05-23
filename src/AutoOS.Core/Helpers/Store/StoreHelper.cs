@@ -65,10 +65,6 @@ public static partial class StoreHelper
         {
             Debug.WriteLine($"[StoreHelper] Download failed: {ex.Message}");
         }
-        finally
-        {
-            Directory.Delete(folderPath, true);
-        }
     }
 
     public static async Task Install(string identifier)

