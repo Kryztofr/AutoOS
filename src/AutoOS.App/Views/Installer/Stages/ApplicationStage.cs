@@ -193,7 +193,7 @@ public static class ApplicationStage
             // install dolby vision extension
             ("Installing Dolby Vision Extension", async () => await StoreHelper.Install("DolbyLaboratories.DolbyVisionAccess_rz1tebttyb220"), () => selection == null),
 
-			// download gaming services
+            // download gaming services
             ("Downloading Gaming Services", async () => await StoreHelper.Download("Microsoft.GamingServices_8wekyb3d8bbwe", 0, reporter: reporter), () => selection == null),
 
             // install gaming services
@@ -401,7 +401,7 @@ public static class ApplicationStage
 			("Importing Vencord settings", async () => await Task.Delay(500), () => Discord == true),
 
             // import discord account
-            ("Importing Discord Account", async () => await DiscordHelper.ImportAccount(reporter), () => Discord == true && DiscordAccount == true),
+            //("Importing Discord Account", async () => await DiscordHelper.ImportAccount(reporter), () => Discord == true && DiscordAccount == true),
 
             // log in to discord
             ("Please log in to your Discord account (Close to continue)", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Discord", "app-" + discordVersion, "Discord.exe"), WindowStyle = ProcessWindowStyle.Maximized }) !.WaitForExitAsync(), () => Discord == true && DiscordAccount == false),

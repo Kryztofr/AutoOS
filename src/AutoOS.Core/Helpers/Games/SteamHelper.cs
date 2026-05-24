@@ -261,7 +261,8 @@ public static partial class SteamHelper
 			var software = kv.Root["Software"];
 			var valve = software["Valve"];
 			var steam = valve["Steam"];
-			var apps = steam["Apps"];
+			var appsChild = steam.Children.FirstOrDefault(c => string.Equals(c.Key, "apps", StringComparison.OrdinalIgnoreCase));
+			var apps = !appsChild.Equals(default(KeyValuePair<string, KVObject>)) ? appsChild.Value : steam["apps"];
 
 			foreach (var app in apps.Children)
 			{
