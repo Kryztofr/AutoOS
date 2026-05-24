@@ -53,11 +53,11 @@ public static partial class GamesStage
 
             // set "gpu preference" to "high performance" for valorant
             (@"Setting ""GPU Preference"" to ""High Performance"" for Valorant", async () => valorantPath = RiotHelper.ProductInstallFullPathRegex().Match(File.ReadAllText(RiotHelper.RiotGamesMetadataPath + @"\valorant.live\valorant.live.product_settings.yaml")).Groups[1].Value.Replace('/', '\\'), () => Valorant == true),
-			(@"Setting ""GPU Preference"" to ""High Performance"" for Valorant", async () => RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_CURRENT_USER\Software\Microsoft\DirectX\UserGpuPreferences", $@"{valorantPath}\VALORANT\Win64\ShooterGame\Binaries\Win64\VALORANT-Win64-Shipping.exe", "SwapEffectUpgradeEnable=1;GpuPreference=2;", RegistryValueKind.String), () => Valorant == true),
+			(@"Setting ""GPU Preference"" to ""High Performance"" for Valorant", async () => RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_CURRENT_USER\Software\Microsoft\DirectX\UserGpuPreferences", $@"{valorantPath}\live\ShooterGame\Binaries\Win64\VALORANT-Win64-Shipping.exe", "SwapEffectUpgradeEnable=1;GpuPreference=2;", RegistryValueKind.String), () => Valorant == true),
             (@"Setting ""GPU Preference"" to ""High Performance"" for Valorant", async () => await Task.Delay(1000), () => Valorant == true),
             
             // disable fullscreen optimizations for valorant
-            ("Disabling fullscreen optimizations for Valorant", async () => RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers", $@"{valorantPath}\VALORANT\Win64\ShooterGame\Binaries\Win64\VALORANT-Win64-Shipping.exe", "~ DISABLEDXMAXIMIZEDWINDOWEDMODE", RegistryValueKind.String), () => Valorant == true),
+            ("Disabling fullscreen optimizations for Valorant", async () => RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers", $@"{valorantPath}\live\ShooterGame\Binaries\Win64\VALORANT-Win64-Shipping.exe", "~ DISABLEDXMAXIMIZEDWINDOWEDMODE", RegistryValueKind.String), () => Valorant == true),
         };
 
         return actions;

@@ -6,7 +6,7 @@ using AutoOS.Views.Updater;
 using AutoOS.Views.Updater.Stages;
 using CommunityToolkit.WinUI.Controls;
 using Microsoft.Win32;
-using Microsoft.Windows.ApplicationModel.WindowsAppRuntime;
+//using Microsoft.Windows.ApplicationModel.WindowsAppRuntime;
 using System.Net.Http.Headers;
 using System.Text.Json;
 using Windows.Storage;
