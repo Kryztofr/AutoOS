@@ -1,5 +1,7 @@
 using AutoOS.Core.Helpers.Database;
 using System.Diagnostics;
+using Windows.Win32;
+using Windows.Win32.Foundation;
 
 namespace AutoOS.Views.Updater.Stages;
 
@@ -12,16 +14,10 @@ public static class UpdateStage
         var actions = new List<(string Title, Func<Task> Action, Func<bool> Condition)>
         {
             // close discord
-            ("Closing Discord", async () => { foreach (Process process in Process.GetProcessesByName("Discord")) { process.Kill(); process.WaitForExit(); }}, () => Discord == true),
-
-            // set appearance to system
-            ("Setting appearance to system", async () => DiscordHelper.SetSystemAppearance(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "discord", "Local Storage", "leveldb")), () => Discord == true),
-
-            // disable game overlay
-            ("Disabling game overlay", async () => DiscordHelper.DisableGameOverlay(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "discord", "Local Storage", "leveldb")), () => Discord == true),
-
-            // disable clips
-            ("Disabling clips", async () => DiscordHelper.DisableClips(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "discord", "Local Storage", "leveldb")), () => Discord == true),
+			("Closing Discord", async () => { foreach (Process process in Process.GetProcessesByName("Discord")) { if (process.MainWindowHandle != IntPtr.Zero) { PInvoke.PostMessage((HWND)process.MainWindowHandle, PInvoke.WM_CLOSE, default(WPARAM), default(LPARAM)); process.WaitForExit(); } } }, () => Discord == true),
+            
+			// apply midnight appearance for dark mode
+            ("Apply midnight appearance for dark mode", async () => DiscordHelper.SetSystemAppearance(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "discord", "Local Storage", "leveldb")), () => Discord == true)
         };
 
         return actions;
