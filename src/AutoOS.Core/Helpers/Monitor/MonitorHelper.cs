@@ -1,4 +1,4 @@
-﻿using AutoOS.Core.Helpers.Monitor.Models;
+using AutoOS.Core.Helpers.Monitor.Models;
 using System.Text;
 using Windows.Win32.Foundation;
 using Windows.Win32.Graphics.Gdi;

@@ -1,4 +1,4 @@
-﻿using AutoOS.Common;
+using AutoOS.Common;
 using AutoOS.Core.Helpers.Registry;
 using AutoOS.Core.Helpers.Scheduling;
 using Microsoft.Win32;

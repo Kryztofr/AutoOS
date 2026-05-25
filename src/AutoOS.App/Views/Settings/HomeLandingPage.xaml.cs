@@ -1,4 +1,4 @@
-﻿using AutoOS.Core.Helpers.Logging;
+using AutoOS.Core.Helpers.Logging;
 using AutoOS.Core.Helpers.OS;
 using AutoOS.Core.Helpers.Registry;
 using AutoOS.Views.Installer.Stages;
@@ -16,8 +16,8 @@ namespace AutoOS.Views.Settings
     public sealed partial class HomeLandingPage : Page
     {
         private readonly ApplicationDataContainer localSettings = ApplicationData.Current.LocalSettings;
-		//public string WASDKVersion { get; } = $"Windows App SDK {ReleaseInfo.Major}.{ReleaseInfo.Minor}";
-		private static readonly HttpClient httpClient = new()
+        //public string WASDKVersion { get; } = $"Windows App SDK {ReleaseInfo.Major}.{ReleaseInfo.Minor}";
+        private static readonly HttpClient httpClient = new()
         {
             DefaultRequestHeaders =
             {

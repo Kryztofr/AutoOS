@@ -1,4 +1,4 @@
-﻿using AutoOS.Core.Helpers.Logging;
+using AutoOS.Core.Helpers.Logging;
 using AutoOS.Core.Helpers.Picker;
 using AutoOS.Views.Installer.Actions;
 using AutoOS.Views.Installer.Stages;

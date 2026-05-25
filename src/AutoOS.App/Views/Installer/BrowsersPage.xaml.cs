@@ -41,20 +41,20 @@ public sealed partial class BrowsersPage : Page
 
         Extensions.ItemsSource = new List<GridViewItem>
         {
-			new() { Text = "uBlock Origin", ImageSource = "ms-appx:///Assets/Fluent/UBlockorigin.png" },
-			new() { Text = "Privacy Badger", ImageSource = "ms-appx:///Assets/Fluent/PrivacyBadger.png" },
-			new() { Text = "Decentraleyes", ImageSource = "ms-appx:///Assets/Fluent/Decentraleyes.png" },
-			new() { Text = "I still don't care about cookies", ImageSource = "ms-appx:///Assets/Fluent/IStillDontCareAboutCookies.png" },
-			new() { Text = "Violentmonkey", ImageSource = "ms-appx:///Assets/Fluent/Violentmonkey.png" },
-			new() { Text = "Tampermonkey", ImageSource = "ms-appx:///Assets/Fluent/Tampermonkey.png" },
-			new() { Text = "SponsorBlock", ImageSource = "ms-appx:///Assets/Fluent/Sponsorblock.png" },
-			new() { Text = "Return YouTube Dislike", ImageSource = "ms-appx:///Assets/Fluent/ReturnYouTubeDislike.png" },
-			new() { Text = "Dark Reader", ImageSource = "ms-appx:///Assets/Fluent/Darkreader.png" },
-			new() { Text = "Shazam", ImageSource = "ms-appx:///Assets/Fluent/Shazam.png" },
-			new() { Text = "iCloud Passwords", ImageSource = "ms-appx:///Assets/Fluent/IcloudPasswords.png" },
-			new() { Text = "Bitwarden", ImageSource = "ms-appx:///Assets/Fluent/Bitwarden.png" },
-			new() { Text = "1Password", ImageSource = "ms-appx:///Assets/Fluent/1Password.png" }
-		};
+            new() { Text = "uBlock Origin", ImageSource = "ms-appx:///Assets/Fluent/UBlockorigin.png" },
+            new() { Text = "Privacy Badger", ImageSource = "ms-appx:///Assets/Fluent/PrivacyBadger.png" },
+            new() { Text = "Decentraleyes", ImageSource = "ms-appx:///Assets/Fluent/Decentraleyes.png" },
+            new() { Text = "I still don't care about cookies", ImageSource = "ms-appx:///Assets/Fluent/IStillDontCareAboutCookies.png" },
+            new() { Text = "Violentmonkey", ImageSource = "ms-appx:///Assets/Fluent/Violentmonkey.png" },
+            new() { Text = "Tampermonkey", ImageSource = "ms-appx:///Assets/Fluent/Tampermonkey.png" },
+            new() { Text = "SponsorBlock", ImageSource = "ms-appx:///Assets/Fluent/Sponsorblock.png" },
+            new() { Text = "Return YouTube Dislike", ImageSource = "ms-appx:///Assets/Fluent/ReturnYouTubeDislike.png" },
+            new() { Text = "Dark Reader", ImageSource = "ms-appx:///Assets/Fluent/Darkreader.png" },
+            new() { Text = "Shazam", ImageSource = "ms-appx:///Assets/Fluent/Shazam.png" },
+            new() { Text = "iCloud Passwords", ImageSource = "ms-appx:///Assets/Fluent/IcloudPasswords.png" },
+            new() { Text = "Bitwarden", ImageSource = "ms-appx:///Assets/Fluent/Bitwarden.png" },
+            new() { Text = "1Password", ImageSource = "ms-appx:///Assets/Fluent/1Password.png" }
+        };
     }
 
     private void GetBrowsers()

@@ -27,7 +27,7 @@ public static class GraphicsStage
         InIHelper iniHelper = new(Path.Combine(Path.GetTempPath(), "obs-studio", "basic", "profiles", "Untitled", "basic.ini"));
         string obsVersion = "";
 
-		var actions = new List<(string Title, Func<Task> Action, Func<bool> Condition)>
+        var actions = new List<(string Title, Func<Task> Action, Func<bool> Condition)>
         {
             // system -> display -> graphics -> default graphics settings
             (@"Enabling ""Hardware-accelerated GPU scheduling"" (HAGS)", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\GraphicsDrivers", "HwSchMode", 2, RegistryValueKind.DWord), null),

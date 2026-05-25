@@ -57,8 +57,8 @@ public static partial class AmdHelper
                     if (sku?.ToString().Contains(deviceId, StringComparison.InvariantCultureIgnoreCase) != true)
                         continue;
 
-					newestVersion = string.Join(".", build["externalbuildversion"].ToString().Split('.').Take(3));
-					newestDownloadUrl = build["fullbuild"]?.ToString();
+                    newestVersion = string.Join(".", build["externalbuildversion"].ToString().Split('.').Take(3));
+                    newestDownloadUrl = build["fullbuild"]?.ToString();
                     break;
                 }
 

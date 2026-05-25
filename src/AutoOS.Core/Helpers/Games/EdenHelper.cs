@@ -62,10 +62,10 @@ public static partial class EdenHelper
 
                     // clean name for searching
                     if (string.IsNullOrWhiteSpace(name)) return;
-					string cleanName = CleanNameRegex().Replace(name.Replace('’', '\''), "");
+                    string cleanName = CleanNameRegex().Replace(name.Replace('’', '\''), "");
 
-					// get install location
-					string installLocation = edenEntry.GetProperty("file_path").GetString()?.Replace("/", "\\");
+                    // get install location
+                    string installLocation = edenEntry.GetProperty("file_path").GetString()?.Replace("/", "\\");
 
                     // get playtime
                     string playTime = "0m";

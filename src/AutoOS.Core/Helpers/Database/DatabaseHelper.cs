@@ -9,56 +9,75 @@ public static partial class DatabaseHelper
 {
     public static JsonNode Read(string databasePath, string domain, string keyName)
     {
+        if (string.IsNullOrEmpty(databasePath) || !Directory.Exists(databasePath))
+            return null;
+
         byte[] prefixBytes = Encoding.UTF8.GetBytes(domain);
         byte[] separatorBytes = [0x00, 0x01];
-		byte[] keyNameBytes = Encoding.UTF8.GetBytes(keyName);
-		byte[] finalKeyBytes = new byte[prefixBytes.Length + separatorBytes.Length + keyNameBytes.Length];
+        byte[] keyNameBytes = Encoding.UTF8.GetBytes(keyName);
+        byte[] finalKeyBytes = new byte[prefixBytes.Length + separatorBytes.Length + keyNameBytes.Length];
 
-		Buffer.BlockCopy(prefixBytes, 0, finalKeyBytes, 0, prefixBytes.Length);
-		Buffer.BlockCopy(separatorBytes, 0, finalKeyBytes, prefixBytes.Length, separatorBytes.Length);
-		Buffer.BlockCopy(keyNameBytes, 0, finalKeyBytes, prefixBytes.Length + separatorBytes.Length, keyNameBytes.Length);
+        Buffer.BlockCopy(prefixBytes, 0, finalKeyBytes, 0, prefixBytes.Length);
+        Buffer.BlockCopy(separatorBytes, 0, finalKeyBytes, prefixBytes.Length, separatorBytes.Length);
+        Buffer.BlockCopy(keyNameBytes, 0, finalKeyBytes, prefixBytes.Length + separatorBytes.Length, keyNameBytes.Length);
 
-		JsonNode result;
-		try
-		{
-			result = ReadFromDatabase(databasePath, finalKeyBytes);
-		}
-		catch (IOException)
-		{
-			string tempDatabasePath = databasePath + " - Copy";
-			Directory.CreateDirectory(tempDatabasePath);
+        JsonNode result = null;
+        try
+        {
+            result = ReadFromDatabase(databasePath, finalKeyBytes);
+        }
+        catch (IOException)
+        {
+            string tempDatabasePath = databasePath + " - Copy";
+            try
+            {
+                Directory.CreateDirectory(tempDatabasePath);
 
-			foreach (var file in Directory.GetFiles(databasePath))
-			{
-				File.Copy(file, Path.Combine(tempDatabasePath, Path.GetFileName(file)), true);
-			}
+                foreach (var file in Directory.GetFiles(databasePath))
+                {
+                    File.Copy(file, Path.Combine(tempDatabasePath, Path.GetFileName(file)), true);
+                }
 
-			result = ReadFromDatabase(tempDatabasePath, finalKeyBytes);
+                result = ReadFromDatabase(tempDatabasePath, finalKeyBytes);
+            }
+            catch
+            {
+                return null;
+            }
+            finally
+            {
+                if (Directory.Exists(tempDatabasePath))
+                {
+                    Directory.Delete(tempDatabasePath, true);
+                }
+            }
+        }
+        catch
+        {
+            return null;
+        }
 
-			Directory.Delete(tempDatabasePath, true);
-		}
-
-		return result;
+        return result;
     }
 
     private static JsonNode ReadFromDatabase(string databasePath, byte[] finalKeyBytes)
     {
-		using var database = IronLeveldbBuilder.BuildFromPath(databasePath);
-		IReadOnlyList<byte> valueBytes = database.Get(finalKeyBytes);
+        using var database = IronLeveldbBuilder.BuildFromPath(databasePath);
+        IReadOnlyList<byte> valueBytes = database.Get(finalKeyBytes);
 
-		if (valueBytes != null)
-		{
-			string value = Encoding.UTF8.GetString(valueBytes.ToArray());
+        if (valueBytes != null)
+        {
+            string value = Encoding.UTF8.GetString(valueBytes.ToArray());
 
-			if (value.Length > 0 && value[0] == '\x01')
-			{
-				value = value.Substring(1);
-			}
+            if (value.Length > 0 && value[0] == '\x01')
+            {
+                value = value.Substring(1);
+            }
 
-			return JsonNode.Parse(value);
-		}
+            return JsonNode.Parse(value);
+        }
 
-		return null;
+        return null;
     }
 
     public static bool Write(string databasePath, string domain, string keyName, JsonNode jsonContent)
@@ -78,10 +97,10 @@ public static partial class DatabaseHelper
         finalValueBytes[0] = 0x01;
         Buffer.BlockCopy(jsonBytes, 0, finalValueBytes, 1, jsonBytes.Length);
         var options = new Options { CreateIfMissing = false };
-		using var database = new DB(options, databasePath);
-		database.Put(finalKeyBytes, finalValueBytes);
-		return true;
-	}
+        using var database = new DB(options, databasePath);
+        database.Put(finalKeyBytes, finalValueBytes);
+        return true;
+    }
 
     public static bool Delete(string databasePath, string domain, string keyName)
     {

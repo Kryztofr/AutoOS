@@ -22,9 +22,9 @@ public sealed partial class BrowsersPage : Page
         extensionItems.CollectionChanged += (s, e) => Bindings.Update();
     }
 
-	public Visibility GetVisibility(int count) => count > 0 ? Visibility.Visible : Visibility.Collapsed;
+    public Visibility GetVisibility(int count) => count > 0 ? Visibility.Visible : Visibility.Collapsed;
 
-	private void GetItems()
+    private void GetItems()
     {
         var browsers = new List<GridViewItem>
         {
@@ -34,7 +34,7 @@ public sealed partial class BrowsersPage : Page
             new() { Text = "Brave", ImageSource = "ms-appx:///Assets/Fluent/Brave.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "BraveSoftware", "Brave-Browser", "Application", "brave.exe")) },
             new() { Text = "Vivaldi", ImageSource = "ms-appx:///Assets/Fluent/Vivaldi.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Vivaldi", "Application", "vivaldi.exe")) },
             new() { Text = "Arc", ImageSource = "ms-appx:///Assets/Fluent/Arc.png", IsInstalled = Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Packages", "TheBrowserCompany.Arc_ttt1ap7aakyb4")) },
-			new() { Text = "Comet", ImageSource = "ms-appx:///Assets/Fluent/Comet.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Perplexity", "Comet", "Application", "comet.exe")) },
+            new() { Text = "Comet", ImageSource = "ms-appx:///Assets/Fluent/Comet.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Perplexity", "Comet", "Application", "comet.exe")) },
             new() { Text = "Firefox", ImageSource = "ms-appx:///Assets/Fluent/Firefox.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Mozilla Firefox", "firefox.exe")) },
             new() { Text = "Zen", ImageSource = "ms-appx:///Assets/Fluent/Zen.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Zen Browser", "zen.exe")) }
         };
@@ -46,10 +46,10 @@ public sealed partial class BrowsersPage : Page
             new() { Text = "uBlock Origin", ImageSource = "ms-appx:///Assets/Fluent/UBlockorigin.png" },
             new() { Text = "Privacy Badger", ImageSource = "ms-appx:///Assets/Fluent/PrivacyBadger.png" },
             new() { Text = "Decentraleyes", ImageSource = "ms-appx:///Assets/Fluent/Decentraleyes.png" },
-			new() { Text = "I still don't care about cookies", ImageSource = "ms-appx:///Assets/Fluent/IStillDontCareAboutCookies.png" },
-			new() { Text = "Violentmonkey", ImageSource = "ms-appx:///Assets/Fluent/Violentmonkey.png" },
-			new() { Text = "Tampermonkey", ImageSource = "ms-appx:///Assets/Fluent/Tampermonkey.png" },
-			new() { Text = "SponsorBlock", ImageSource = "ms-appx:///Assets/Fluent/Sponsorblock.png" },
+            new() { Text = "I still don't care about cookies", ImageSource = "ms-appx:///Assets/Fluent/IStillDontCareAboutCookies.png" },
+            new() { Text = "Violentmonkey", ImageSource = "ms-appx:///Assets/Fluent/Violentmonkey.png" },
+            new() { Text = "Tampermonkey", ImageSource = "ms-appx:///Assets/Fluent/Tampermonkey.png" },
+            new() { Text = "SponsorBlock", ImageSource = "ms-appx:///Assets/Fluent/Sponsorblock.png" },
             new() { Text = "Return YouTube Dislike", ImageSource = "ms-appx:///Assets/Fluent/ReturnYouTubeDislike.png" },
             new() { Text = "Dark Reader", ImageSource = "ms-appx:///Assets/Fluent/Darkreader.png" },
             new() { Text = "Shazam", ImageSource = "ms-appx:///Assets/Fluent/Shazam.png" },

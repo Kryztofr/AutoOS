@@ -16,28 +16,28 @@ namespace AutoOS.Views.Installer.Stages;
 
 public class BrowserSelection
 {
-	public bool Chrome { get; set; }
-	public bool Thorium { get; set; }
-	public bool Helium { get; set; }
-	public bool Brave { get; set; }
-	public bool Vivaldi { get; set; }
-	public bool Arc { get; set; }
-	public bool Comet { get; set; }
-	public bool Firefox { get; set; }
-	public bool Zen { get; set; }
-	public bool uBlock { get; set; }
-	public bool PrivacyBadger { get; set; }
-	public bool Decentraleyes { get; set; }
-	public bool Cookies { get; set; }
-	public bool Violentmonkey { get; set; }
-	public bool Tampermonkey { get; set; }
-	public bool SponsorBlock { get; set; }
-	public bool ReturnYouTubeDislike { get; set; }
-	public bool DarkReader { get; set; }
-	public bool Shazam { get; set; }
-	public bool iCloud { get; set; }
-	public bool Bitwarden { get; set; }
-	public bool OnePassword { get; set; }
+    public bool Chrome { get; set; }
+    public bool Thorium { get; set; }
+    public bool Helium { get; set; }
+    public bool Brave { get; set; }
+    public bool Vivaldi { get; set; }
+    public bool Arc { get; set; }
+    public bool Comet { get; set; }
+    public bool Firefox { get; set; }
+    public bool Zen { get; set; }
+    public bool uBlock { get; set; }
+    public bool PrivacyBadger { get; set; }
+    public bool Decentraleyes { get; set; }
+    public bool Cookies { get; set; }
+    public bool Violentmonkey { get; set; }
+    public bool Tampermonkey { get; set; }
+    public bool SponsorBlock { get; set; }
+    public bool ReturnYouTubeDislike { get; set; }
+    public bool DarkReader { get; set; }
+    public bool Shazam { get; set; }
+    public bool iCloud { get; set; }
+    public bool Bitwarden { get; set; }
+    public bool OnePassword { get; set; }
 }
 
 public static class BrowsersStage
@@ -261,23 +261,23 @@ public static class BrowsersStage
             // remove thorium shortcut from the desktop
             ("Removing Thorium shortcut from the desktop", async () => File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonDesktopDirectory), "Thorium.lnk")), () => Thorium == true),
 
-			// download helium
-			("Downloading Helium", async () => await DownloadHelper.Download(JsonDocument.Parse(await new HttpClient { DefaultRequestHeaders = { { "User-Agent", "AutoOS" } } }.GetStringAsync("https://api.github.com/repos/imputnet/helium-windows/releases/latest")).RootElement.GetProperty("assets").EnumerateArray().First(a => a.GetProperty("name").GetString().Contains("_x64-installer.exe")).GetProperty("browser_download_url").GetString(), Path.GetTempPath(), "helium_x64-installer.exe", reporter ?? new InstallPageReporter()), () => Helium == true),
+            // download helium
+            ("Downloading Helium", async () => await DownloadHelper.Download(JsonDocument.Parse(await new HttpClient { DefaultRequestHeaders = { { "User-Agent", "AutoOS" } } }.GetStringAsync("https://api.github.com/repos/imputnet/helium-windows/releases/latest")).RootElement.GetProperty("assets").EnumerateArray().First(a => a.GetProperty("name").GetString().Contains("_x64-installer.exe")).GetProperty("browser_download_url").GetString(), Path.GetTempPath(), "helium_x64-installer.exe", reporter ?? new InstallPageReporter()), () => Helium == true),
 
             // install helium
             ("Installing Helium", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "helium_x64-installer.exe"), Arguments = "/S /SYSTEM", WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => Helium == true),
-			("Installing Helium", async () => heliumVersion = FileVersionInfo.GetVersionInfo(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "imput", "Helium", "Application", "chrome.exe")).ProductVersion, () => Helium == true),
-			("Cleaning up Helium files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "helium_x64-installer.exe")), () => Helium == true),
+            ("Installing Helium", async () => heliumVersion = FileVersionInfo.GetVersionInfo(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "imput", "Helium", "Application", "chrome.exe")).ProductVersion, () => Helium == true),
+            ("Cleaning up Helium files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "helium_x64-installer.exe")), () => Helium == true),
 
             // disable helium services
             ("Disabling Helium services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\HeliumElevationService", "Start", 4, RegistryValueKind.DWord), () => Helium == true),
             ("Disabling Helium services", async () => ServicesHelper.StopService("HeliumElevationService"), () => Helium == true),
             ("Disabling Helium services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Active Setup\Installed Components\AutorunsDisabled\{FB68A146-637A-48C2-A0C4-1565DE45FEBD}", "", "Helium", RegistryValueKind.String), () => Helium == true),
-			("Disabling Helium services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Active Setup\Installed Components\AutorunsDisabled\{FB68A146-637A-48C2-A0C4-1565DE45FEBD}", "Localized Name", "Helium", RegistryValueKind.String), () => Helium == true),
-			("Disabling Helium services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, $@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Active Setup\Installed Components\AutorunsDisabled\{{FB68A146-637A-48C2-A0C4-1565DE45FEBD}}", "StubPath", $@"""{Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Helium", "Application", heliumVersion, "Installer", "chrmstp.exe")}"" --configure-user-settings --verbose-logging --system-level", RegistryValueKind.String), () => Helium == true),
-			("Disabling Helium services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Active Setup\Installed Components\AutorunsDisabled\{FB68A146-637A-48C2-A0C4-1565DE45FEBD}", "Version", "43,0,0,0", RegistryValueKind.String), () => Helium == true),
-			("Disabling Helium services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Active Setup\Installed Components\AutorunsDisabled\{FB68A146-637A-48C2-A0C4-1565DE45FEBD}", "IsInstalled", 1, RegistryValueKind.DWord), () => Helium == true),
-			("Disabling Helium services", async () => RegistryHelper.DeleteKey(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Active Setup\Installed Components\{FB68A146-637A-48C2-A0C4-1565DE45FEBD}"), () => Helium == true),
+            ("Disabling Helium services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Active Setup\Installed Components\AutorunsDisabled\{FB68A146-637A-48C2-A0C4-1565DE45FEBD}", "Localized Name", "Helium", RegistryValueKind.String), () => Helium == true),
+            ("Disabling Helium services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, $@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Active Setup\Installed Components\AutorunsDisabled\{{FB68A146-637A-48C2-A0C4-1565DE45FEBD}}", "StubPath", $@"""{Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Helium", "Application", heliumVersion, "Installer", "chrmstp.exe")}"" --configure-user-settings --verbose-logging --system-level", RegistryValueKind.String), () => Helium == true),
+            ("Disabling Helium services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Active Setup\Installed Components\AutorunsDisabled\{FB68A146-637A-48C2-A0C4-1565DE45FEBD}", "Version", "43,0,0,0", RegistryValueKind.String), () => Helium == true),
+            ("Disabling Helium services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Active Setup\Installed Components\AutorunsDisabled\{FB68A146-637A-48C2-A0C4-1565DE45FEBD}", "IsInstalled", 1, RegistryValueKind.DWord), () => Helium == true),
+            ("Disabling Helium services", async () => RegistryHelper.DeleteKey(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Active Setup\Installed Components\{FB68A146-637A-48C2-A0C4-1565DE45FEBD}"), () => Helium == true),
 
             // pin helium to the taskbar
             ("Pinning Helium to the taskbar", async () => await ProcessActions.RunPowerShellScript("taskbarpin.ps1", $@"-Type Link -Path ""{Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Microsoft", "Windows", "Start Menu", "Programs", "Helium.lnk")}"""), () => Helium == true),

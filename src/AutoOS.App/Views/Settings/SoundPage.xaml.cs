@@ -1,4 +1,4 @@
-﻿using AutoOS.Core.Helpers.Device.Models;
+using AutoOS.Core.Helpers.Device.Models;
 using AutoOS.Core.Helpers.Device;
 using AutoOS.Core.Helpers.Sound.Models;
 using AutoOS.Core.Helpers.Sound;

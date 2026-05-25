@@ -9,8 +9,8 @@ namespace AutoOS.Views.Installer
     public sealed partial class HomeLandingPage : Page
     {
         private static readonly HttpClient httpClient = new();
-		//public string WASDKVersion { get; } = $"Windows App SDK {ReleaseInfo.Major}.{ReleaseInfo.Minor}";
-		public HomeLandingPage()
+        //public string WASDKVersion { get; } = $"Windows App SDK {ReleaseInfo.Major}.{ReleaseInfo.Minor}";
+        public HomeLandingPage()
         {
             InitializeComponent();
             Loaded += HomeLandingPage_Loaded;

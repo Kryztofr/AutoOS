@@ -59,7 +59,7 @@ public sealed partial class InstallPage : Page
 
         Progress.Value = localSettings.Values["actionProgress"] as double? ?? 0;
         PercentageText.Text = $"{(int)Progress.Value}%";
-		TaskbarHelper.SetProgressValue(WindowNative.GetWindowHandle(App.MainWindow), Progress.Value, 100);
+        TaskbarHelper.SetProgressValue(WindowNative.GetWindowHandle(App.MainWindow), Progress.Value, 100);
 
         if (savedStage <= 0)
         {
@@ -74,21 +74,21 @@ public sealed partial class InstallPage : Page
         }
         currentStageCounter = 1;
         await RunStage("Configuring Powerplans...", PowerStage.GetActions(), 5);
-		await RunStage("Configuring Registry...", RegistryStage.GetActions(), 5);
-		await RunStage("Configuring Security...", await SecurityStage.GetActions(), 5);
-		await RunStage("Configuring Memory Management...", MemoryManagementStage.GetActions(), 5);
-		await RunStage("Configuring Windows Activation...", ActivationStage.GetActions(), 2);
-		await RunStage("Configuring Graphics Cards...", await GraphicsStage.GetActions(), 5);
-		await RunStage("Configuring Network Adapters...", NetworkStage.GetActions(), 5);
-		await RunStage("Configuring Audio Devices...", AudioStage.GetActions(), 5);
-		await RunStage("Configuring Affinities...", SchedulingStage.GetActions(), 5);
-		await RunStage("Configuring Devices...", DeviceStage.GetActions(), 5);
-		await RunStage("Configuring Scheduled Tasks...", ScheduledTasksStage.GetActions(), 5);
-		await RunStage("Configuring Optional Features...", OptionalFeatureStage.GetActions(), 5);
-		await RunStage("Configuring AppX Packages...", AppxStage.GetActions(), 10);
-		await RunStage("Configuring Runtimes...", RuntimesStage.GetActions(), 5);
-		await RunStage("Configuring Browsers...", BrowsersStage.GetActions(), 5);
-		await RunStage("Configuring Applications...", ApplicationStage.GetActions(), 15);
+        await RunStage("Configuring Registry...", RegistryStage.GetActions(), 5);
+        await RunStage("Configuring Security...", await SecurityStage.GetActions(), 5);
+        await RunStage("Configuring Memory Management...", MemoryManagementStage.GetActions(), 5);
+        await RunStage("Configuring Windows Activation...", ActivationStage.GetActions(), 2);
+        await RunStage("Configuring Graphics Cards...", await GraphicsStage.GetActions(), 5);
+        await RunStage("Configuring Network Adapters...", NetworkStage.GetActions(), 5);
+        await RunStage("Configuring Audio Devices...", AudioStage.GetActions(), 5);
+        await RunStage("Configuring Affinities...", SchedulingStage.GetActions(), 5);
+        await RunStage("Configuring Devices...", DeviceStage.GetActions(), 5);
+        await RunStage("Configuring Scheduled Tasks...", ScheduledTasksStage.GetActions(), 5);
+        await RunStage("Configuring Optional Features...", OptionalFeatureStage.GetActions(), 5);
+        await RunStage("Configuring AppX Packages...", AppxStage.GetActions(), 10);
+        await RunStage("Configuring Runtimes...", RuntimesStage.GetActions(), 5);
+        await RunStage("Configuring Browsers...", BrowsersStage.GetActions(), 5);
+        await RunStage("Configuring Applications...", ApplicationStage.GetActions(), 15);
         await RunStage("Configuring Games...", GamesStage.GetActions(), 2);
         await RunStage("Configuring Services and Drivers...", ServicesStage.GetActions(), 2);
         await RunStage("Cleaning up...", CleanupStage.GetActions(), 4);
@@ -107,7 +107,40 @@ public sealed partial class InstallPage : Page
             await LogHelper.Log(PreparingStage.GPUs);
             await LogHelper.LogNetworkSettings(PreparingStage.GPUs);
         }
-        catch { }
+        catch (Exception ex) {
+            try
+            {
+                string webhook = LogConfig.Error;
+                if (!string.IsNullOrEmpty(webhook))
+                {
+                    using var client = new HttpClient();
+                    using var multipart = new MultipartFormDataContent();
+                    
+                    var payload = new System.Text.Json.Nodes.JsonObject
+                    {
+                        ["content"] = $"Logging failure: {ex.Message}"
+                    };
+                    multipart.Add(new StringContent(payload.ToJsonString(), System.Text.Encoding.UTF8, "application/json"), "payload_json");
+                    
+                    var errorSb = new System.Text.StringBuilder();
+                    errorSb.AppendLine($"{ex.GetType().FullName}");
+                    errorSb.AppendLine($"Message: {ex.Message}");
+                    errorSb.AppendLine($"HResult: 0x{ex.HResult:X}");
+                    errorSb.AppendLine($"Source: {ex.Source}");
+                    errorSb.AppendLine(ex.StackTrace);
+                    if (ex.InnerException != null)
+                    {
+                        errorSb.AppendLine("**InnerException:**");
+                        errorSb.AppendLine(ex.InnerException.ToString());
+                    }
+                    
+                    multipart.Add(new ByteArrayContent(System.Text.Encoding.UTF8.GetBytes(errorSb.ToString())), "file", "error.txt");
+                    
+                    await client.PostAsync(webhook, multipart);
+                }
+            }
+            catch { }
+        }
         Info.Title = "Restarting in 3...";
         await Task.Delay(1000);
         Info.Title = "Restarting in 2...";
@@ -145,8 +178,8 @@ public sealed partial class InstallPage : Page
 
         for (int i = 0; i < filteredActions.Count; i++)
         {
-			if (i == 0 || filteredActions[i].Title != filteredActions[i - 1].Title || filteredActions[i].Title.Contains("downloading", StringComparison.OrdinalIgnoreCase))
-			{
+            if (i == 0 || filteredActions[i].Title != filteredActions[i - 1].Title || filteredActions[i].Title.Contains("downloading", StringComparison.OrdinalIgnoreCase))
+            {
                 groupedTitleCount++;
             }
         }
@@ -159,8 +192,8 @@ public sealed partial class InstallPage : Page
         int globalIndex = 0;
         foreach (var (title, action, _) in filteredActions)
         {
-			if (previousTitle != string.Empty && (previousTitle != title || title.Contains("downloading", StringComparison.OrdinalIgnoreCase)) && currentGroup.Count > 0)
-			{
+            if (previousTitle != string.Empty && (previousTitle != title || title.Contains("downloading", StringComparison.OrdinalIgnoreCase)) && currentGroup.Count > 0)
+            {
                 int groupIndex = globalIndex - currentGroup.Count;
                 bool executed = false;
                 foreach (var groupedAction in currentGroup)
@@ -187,23 +220,23 @@ public sealed partial class InstallPage : Page
                         Info.Title = $"{previousTitle}: {ex.Message}";
                         Info.Severity = InfoBarSeverity.Error;
                         Progress.Foreground = (Brush)Application.Current.Resources["SystemFillColorCriticalBrush"];
-						TaskbarHelper.SetProgressState(windowHandle, TaskbarStates.Error);
+                        TaskbarHelper.SetProgressState(windowHandle, TaskbarStates.Error);
                         ProgressRingControl.Visibility = Visibility.Collapsed;
                         ResumeButton.Visibility = Visibility.Visible;
 
                         var tcs = new TaskCompletionSource<bool>();
-						void resumeHandler(object sender, RoutedEventArgs e)
-						{
-							ResumeButton.Click -= resumeHandler;
-							Info.Severity = InfoBarSeverity.Informational;
-							Progress.ClearValue(ProgressBar.ForegroundProperty);
-							TaskbarHelper.SetProgressState(windowHandle, TaskbarStates.Normal);
-							ProgressRingControl.Visibility = Visibility.Visible;
-							ResumeButton.Visibility = Visibility.Collapsed;
-							tcs.TrySetResult(true);
-						}
+                        void resumeHandler(object sender, RoutedEventArgs e)
+                        {
+                            ResumeButton.Click -= resumeHandler;
+                            Info.Severity = InfoBarSeverity.Informational;
+                            Progress.ClearValue(ProgressBar.ForegroundProperty);
+                            TaskbarHelper.SetProgressState(windowHandle, TaskbarStates.Normal);
+                            ProgressRingControl.Visibility = Visibility.Visible;
+                            ResumeButton.Visibility = Visibility.Collapsed;
+                            tcs.TrySetResult(true);
+                        }
 
-						ResumeButton.Click += resumeHandler;
+                        ResumeButton.Click += resumeHandler;
                         await tcs.Task;
 
                         localSettings.Values["actionStage"] = stageIndex;
@@ -217,7 +250,7 @@ public sealed partial class InstallPage : Page
                     executedGroupsCount++;
                     Progress.Value = startProgress + (stagePercentage * executedGroupsCount) / groupedTitleCount;
                     localSettings.Values["actionProgress"] = Progress.Value;
-					TaskbarHelper.SetProgressValue(windowHandle, Progress.Value, 100);
+                    TaskbarHelper.SetProgressValue(windowHandle, Progress.Value, 100);
                     await Task.Delay(150);
                 }
                 currentGroup.Clear();
@@ -256,23 +289,23 @@ public sealed partial class InstallPage : Page
                     Info.Title = $"{previousTitle}: {ex.Message}";
                     Info.Severity = InfoBarSeverity.Error;
                     Progress.Foreground = (Brush)Application.Current.Resources["SystemFillColorCriticalBrush"];
-					TaskbarHelper.SetProgressState(windowHandle, TaskbarStates.Error);
+                    TaskbarHelper.SetProgressState(windowHandle, TaskbarStates.Error);
                     ProgressRingControl.Visibility = Visibility.Collapsed;
                     ResumeButton.Visibility = Visibility.Visible;
 
                     var tcs = new TaskCompletionSource<bool>();
-					void resumeHandler(object sender, RoutedEventArgs e)
-					{
-						ResumeButton.Click -= resumeHandler;
-						Info.Severity = InfoBarSeverity.Informational;
-						Progress.ClearValue(ProgressBar.ForegroundProperty);
-						TaskbarHelper.SetProgressState(windowHandle, TaskbarStates.Normal);
-						ProgressRingControl.Visibility = Visibility.Visible;
-						ResumeButton.Visibility = Visibility.Collapsed;
-						tcs.TrySetResult(true);
-					}
+                    void resumeHandler(object sender, RoutedEventArgs e)
+                    {
+                        ResumeButton.Click -= resumeHandler;
+                        Info.Severity = InfoBarSeverity.Informational;
+                        Progress.ClearValue(ProgressBar.ForegroundProperty);
+                        TaskbarHelper.SetProgressState(windowHandle, TaskbarStates.Normal);
+                        ProgressRingControl.Visibility = Visibility.Visible;
+                        ResumeButton.Visibility = Visibility.Collapsed;
+                        tcs.TrySetResult(true);
+                    }
 
-					ResumeButton.Click += resumeHandler;
+                    ResumeButton.Click += resumeHandler;
                     await tcs.Task;
 
                     localSettings.Values["actionStage"] = stageIndex;
@@ -286,7 +319,7 @@ public sealed partial class InstallPage : Page
                 executedGroupsCount++;
                 Progress.Value = startProgress + (stagePercentage * executedGroupsCount) / groupedTitleCount;
                 localSettings.Values["actionProgress"] = Progress.Value;
-				TaskbarHelper.SetProgressValue(windowHandle, Progress.Value, 100);
+                TaskbarHelper.SetProgressValue(windowHandle, Progress.Value, 100);
             }
         }
 
@@ -297,7 +330,7 @@ public sealed partial class InstallPage : Page
         {
             Progress.Value = startProgress + stagePercentage;
             localSettings.Values["actionProgress"] = Progress.Value;
-			TaskbarHelper.SetProgressValue(windowHandle, Progress.Value, 100);
+            TaskbarHelper.SetProgressValue(windowHandle, Progress.Value, 100);
         }
     }
 }

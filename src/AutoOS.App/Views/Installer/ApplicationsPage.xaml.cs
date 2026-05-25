@@ -21,7 +21,7 @@ public sealed partial class ApplicationsPage : Page
         GetMessaging();
         GetLaunchers();
         GetMusic();
-		GetPeripherals();
+        GetPeripherals();
         GetDevelopment();
         GetOffice();
     }
@@ -47,8 +47,8 @@ public sealed partial class ApplicationsPage : Page
             new() { Text = "Steam", ImageSource = "ms-appx:///Assets/Fluent/Steam.png" },
             new() { Text = "Riot Client", ImageSource = "ms-appx:///Assets/Fluent/RiotClient.png" },
             new() { Text = "Ubisoft Connect", ImageSource = "ms-appx:///Assets/Fluent/UbisoftConnect.png" },
-			new() { Text = "EA", ImageSource = "ms-appx:///Assets/Fluent/EA.png" },
-			new() { Text = "Battle.Net", ImageSource = "ms-appx:///Assets/Fluent/BattleNet.png" },
+            new() { Text = "EA", ImageSource = "ms-appx:///Assets/Fluent/EA.png" },
+            new() { Text = "Battle.Net", ImageSource = "ms-appx:///Assets/Fluent/BattleNet.png" },
             new() { Text = "Minecraft Launcher", ImageSource = "ms-appx:///Assets/Fluent/MinecraftLauncher.png" },
             new() { Text = "Rockstar Games Launcher", ImageSource = "ms-appx:///Assets/Fluent/RockstarGamesLauncher.png" },
             new() { Text = "FiveM", ImageSource = "ms-appx:///Assets/Fluent/FiveM.jpg" },
@@ -65,14 +65,14 @@ public sealed partial class ApplicationsPage : Page
             new() { Text = "Spotify", ImageSource = "ms-appx:///Assets/Fluent/Spotify.png" }
         };
 
-		Peripherals.ItemsSource = new List<GridViewItem>
+        Peripherals.ItemsSource = new List<GridViewItem>
         {
             new() { Text = "Logitech G HUB", ImageSource = "ms-appx:///Assets/Fluent/Logitech.png" },
             new() { Text = "Logitech Onboard Memory Manager", ImageSource = "ms-appx:///Assets/Fluent/Logitech.png" },
             new() { Text = "Wootility", ImageSource = "ms-appx:///Assets/Fluent/Wootility.png" },
             new() { Text = "SteelSeries GG", ImageSource = "ms-appx:///Assets/Fluent/SteelSeriesGG.png" },
             new() { Text = "Razer Synapse", ImageSource = "ms-appx:///Assets/Fluent/RazerSynapse.png" },
-			new() { Text = "Corsair iCUE", ImageSource = "ms-appx:///Assets/Fluent/CorsairICue.png" }
+            new() { Text = "Corsair iCUE", ImageSource = "ms-appx:///Assets/Fluent/CorsairICue.png" }
         };
 
         Development.ItemsSource = new List<GridViewItem>

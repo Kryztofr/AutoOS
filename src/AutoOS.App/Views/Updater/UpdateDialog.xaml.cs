@@ -147,7 +147,7 @@ public sealed partial class UpdateDialog : UserControl
         private readonly double _startValue = startValue;
         private readonly double _targetValue = targetValue;
 
-		public void Report(string message = null, double? progress = null, bool? isIndeterminate = null)
+        public void Report(string message = null, double? progress = null, bool? isIndeterminate = null)
         {
             _uiContext?.Post(_ =>
             {

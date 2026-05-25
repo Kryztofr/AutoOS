@@ -1,4 +1,4 @@
-﻿using AutoOS.Core.Helpers.Picker;
+using AutoOS.Core.Helpers.Picker;
 using AutoOS.Views.Installer.Actions;
 using System.Diagnostics;
 using Windows.Storage;

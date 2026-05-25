@@ -9,10 +9,10 @@ namespace AutoOS.Views.Settings;
 public sealed partial class ApplicationsPage : Page
 {
     private readonly ObservableCollection<GridViewItem> messagingItems = [];
-	private readonly ObservableCollection<GridViewItem> launchersItems = [];
+    private readonly ObservableCollection<GridViewItem> launchersItems = [];
     private readonly ObservableCollection<GridViewItem> musicItems = [];
     private readonly ObservableCollection<GridViewItem> peripheralsItems = [];
-	private readonly ObservableCollection<GridViewItem> developmentItems = [];
+    private readonly ObservableCollection<GridViewItem> developmentItems = [];
     private readonly ObservableCollection<GridViewItem> officeItems = [];
 
 
@@ -83,7 +83,7 @@ public sealed partial class ApplicationsPage : Page
             new() { Text = "Wootility", ImageSource = "ms-appx:///Assets/Fluent/Wootility.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs", "wootility", "Wootility.exe")) },
             new() { Text = "SteelSeries GG", ImageSource = "ms-appx:///Assets/Fluent/SteelSeriesGG.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "SteelSeries", "GG", "SteelSeriesGGEZ.exe")) },
             new() { Text = "Razer Synapse", ImageSource = "ms-appx:///Assets/Fluent/RazerSynapse.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Razer", "RazerAppEngine", "RazerAppEngine.exe")) },
-			new() { Text = "Corsair iCUE", ImageSource = "ms-appx:///Assets/Fluent/CorsairICue.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Corsair", "Corsair iCUE5 Software", "iCUE.exe")) }
+            new() { Text = "Corsair iCUE", ImageSource = "ms-appx:///Assets/Fluent/CorsairICue.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Corsair", "Corsair iCUE5 Software", "iCUE.exe")) }
         };
         foreach (var item in peripheralsList.Where(item => !item.IsInstalled))
             peripheralsItems.Add(item);
@@ -97,7 +97,7 @@ public sealed partial class ApplicationsPage : Page
             new() { Text = "Python", ImageSource = "ms-appx:///Assets/Fluent/Python.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "py.exe")) },
             new() { Text = "Node.js", ImageSource = "ms-appx:///Assets/Fluent/Nodejs.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "nodejs", "node.exe")) },
             new() { Text = "Trello", ImageSource = "ms-appx:///Assets/Fluent/Trello.png", IsInstalled = Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Packages", "45273LiamForsyth.PawsforTrello_7pb5ddty8z1pa")) }
-		};
+        };
         foreach (var item in devList.Where(item => !item.IsInstalled))
             developmentItems.Add(item);
 

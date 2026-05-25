@@ -104,8 +104,8 @@ public static partial class DiscordHelper
             { @"AppData\Local\Perplexity\Comet\User Data\Default\Local Storage\leveldb", "Perplexity" }
         };
 
-		var systemDrive = Path.GetPathRoot(Environment.GetFolderPath(Environment.SpecialFolder.System));
-		var foundDatabasePaths = DriveInfo.GetDrives()
+        var systemDrive = Path.GetPathRoot(Environment.GetFolderPath(Environment.SpecialFolder.System));
+        var foundDatabasePaths = DriveInfo.GetDrives()
             .Where(d => d.DriveType == DriveType.Fixed && d.Name != systemDrive)
             .SelectMany(d =>
             {
@@ -175,67 +175,67 @@ public static partial class DiscordHelper
         public string Origin { get; set; }
     }
 
-	public static List<DiscordAccountInfo> GetAccountData(string databasePath)
-	{
-		JsonNode multiAccountStore = DatabaseHelper.Read(databasePath, "_https://discord.com", "MultiAccountStore");
-		JsonNode userIdCache = DatabaseHelper.Read(databasePath, "_https://discord.com", "user_id_cache");
+    public static List<DiscordAccountInfo> GetAccountData(string databasePath)
+    {
+        JsonNode multiAccountStore = DatabaseHelper.Read(databasePath, "_https://discord.com", "MultiAccountStore");
+        JsonNode userIdCache = DatabaseHelper.Read(databasePath, "_https://discord.com", "user_id_cache");
 
-		if (multiAccountStore != null)
-		{
-			var accounts = new List<DiscordAccountInfo>();
-			JsonNode users = multiAccountStore["_state"]?["users"];
+        if (multiAccountStore != null)
+        {
+            var accounts = new List<DiscordAccountInfo>();
+            JsonNode users = multiAccountStore["_state"]?["users"];
 
-			if (users != null && users is JsonArray usersArray)
-			{
-				foreach (JsonNode user in usersArray)
-				{
-					string id = user?["id"]?.ToString();
-					string username = user?["username"]?.ToString();
-					string avatar = user?["avatar"]?.ToString();
-					bool isActive = id == userIdCache?.ToString();
+            if (users != null && users is JsonArray usersArray)
+            {
+                foreach (JsonNode user in usersArray)
+                {
+                    string id = user?["id"]?.ToString();
+                    string username = user?["username"]?.ToString();
+                    string avatar = user?["avatar"]?.ToString();
+                    bool isActive = id == userIdCache?.ToString();
 
-					accounts.Add(new DiscordAccountInfo { UserId = id, Username = username, Avatar = avatar, IsActive = isActive });
-				}
-			}
+                    accounts.Add(new DiscordAccountInfo { UserId = id, Username = username, Avatar = avatar, IsActive = isActive });
+                }
+            }
 
-			return accounts;
-		}
-		return null;
-	}
+            return accounts;
+        }
+        return null;
+    }
 
-	public static void SetSystemAppearance(string databasePath)
-	{
-		JsonNode jsonContent = new JsonObject
-		{
-			["_state"] = new JsonObject
-			{
-				["darkSidebar"] = false,
-				["hdrDynamicRange"] = "no-limit",
-				["useSystemTheme"] = 2
-			},
-			["_version"] = 2
-		};
-		DatabaseHelper.Write(databasePath, "_https://discord.com", "UnsyncedUserSettingsStore", jsonContent);
-	}
+    public static void SetSystemAppearance(string databasePath)
+    {
+        JsonNode jsonContent = new JsonObject
+        {
+            ["_state"] = new JsonObject
+            {
+                ["darkSidebar"] = false,
+                ["hdrDynamicRange"] = "no-limit",
+                ["useSystemTheme"] = 2
+            },
+            ["_version"] = 2
+        };
+        DatabaseHelper.Write(databasePath, "_https://discord.com", "UnsyncedUserSettingsStore", jsonContent);
+    }
 
-	public static void DisableGameOverlay(string databasePath)
-	{
-		JsonNode jsonContent = new JsonObject
-		{
-			["legacyEnabled"] = false,
-			["oopEnabled"] = false
-		};
-		DatabaseHelper.Write(databasePath, "_https://discord.com", "OverlayStore6", jsonContent);
-	}
+    public static void DisableGameOverlay(string databasePath)
+    {
+        JsonNode jsonContent = new JsonObject
+        {
+            ["legacyEnabled"] = false,
+            ["oopEnabled"] = false
+        };
+        DatabaseHelper.Write(databasePath, "_https://discord.com", "OverlayStore6", jsonContent);
+    }
 
-	public static void DisableClips(string databasePath)
-	{
-		JsonNode clipsNode = DatabaseHelper.Read(databasePath, "https://discordapp.com", "ClipsStore");
+    public static void DisableClips(string databasePath)
+    {
+        JsonNode clipsNode = DatabaseHelper.Read(databasePath, "https://discordapp.com", "ClipsStore");
 
-		if (clipsNode != null)
-		{
-			clipsNode["_state"]?["clipsSettings"]?["clipsEnabled"] = false;
-			DatabaseHelper.Write(databasePath, "https://discord.com", "ClipsStore", clipsNode);
-		}
-	}
+        if (clipsNode != null)
+        {
+            clipsNode["_state"]?["clipsSettings"]?["clipsEnabled"] = false;
+            DatabaseHelper.Write(databasePath, "https://discord.com", "ClipsStore", clipsNode);
+        }
+    }
 }

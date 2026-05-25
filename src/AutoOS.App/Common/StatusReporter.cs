@@ -37,7 +37,7 @@ public class InstallPageReporter : IStatusReporter
     {
         _uiContext?.Post(_ =>
         {
-			InstallPage.Info?.Title = title;
+            InstallPage.Info?.Title = title;
         }, null);
     }
 }
@@ -47,7 +47,7 @@ public class ProgressButtonReporter(ProgressButton progressButton) : IStatusRepo
     private readonly SynchronizationContext _uiContext = SynchronizationContext.Current;
     private readonly ProgressButton _progressButton = progressButton;
 
-	public void Report(string message = null, double? progress = null, bool? isIndeterminate = null)
+    public void Report(string message = null, double? progress = null, bool? isIndeterminate = null)
     {
         _uiContext?.Post(_ =>
         {

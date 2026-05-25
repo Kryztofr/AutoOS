@@ -1,4 +1,4 @@
-﻿using System.Runtime.InteropServices.Marshalling;
+using System.Runtime.InteropServices.Marshalling;
 using System.Runtime.InteropServices;
 using Windows.Win32;
 

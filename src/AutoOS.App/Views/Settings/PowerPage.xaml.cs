@@ -1,4 +1,4 @@
-﻿using AutoOS.Core.Helpers.Picker;
+using AutoOS.Core.Helpers.Picker;
 using AutoOS.Helpers.Picker;
 using AutoOS.Views.Settings.Power;
 using Microsoft.UI.Text;

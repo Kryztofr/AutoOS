@@ -1,4 +1,4 @@
-﻿using AutoOS.Core.Helpers.Device.Models;
+using AutoOS.Core.Helpers.Device.Models;
 using AutoOS.Core.Helpers.Device;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.Win32;

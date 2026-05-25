@@ -136,8 +136,8 @@ public static class ApplicationStage
         bool Teams = selection?.Teams ?? PreparingStage.Teams;
         bool Outlook = selection?.Outlook ?? PreparingStage.Outlook;
         bool OneDrive = selection?.OneDrive ?? PreparingStage.OneDrive;
-		
-		string icloudVersion = "";
+        
+        string icloudVersion = "";
         string bitwardenVersion = "";
         string onePasswordVersion = "";
         string discordVersion = "";
@@ -347,8 +347,8 @@ public static class ApplicationStage
             ("Installing Process Monitor", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\ProcessMonitor", "UninstallString", $@"cmd /c rd /s /q ""{Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Process Monitor")}"" & del ""{Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), @"Microsoft\Windows\Start Menu\Programs\Process Monitor.lnk")}"" & reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\ProcessMonitor"" /f", RegistryValueKind.String), () => selection == null),
             ("Installing Process Monitor", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\ProcessMonitor", "DisplayIcon", Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Process Monitor", "Procmon64.exe"), RegistryValueKind.String), () => selection == null),
             ("Installing Process Monitor", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\ProcessMonitor", "Publisher", "Sysinternals", RegistryValueKind.String), () => selection == null),
-			("Installing Process Monitor", async () => await Process.Start(new ProcessStartInfo { FileName = "reg.exe", Arguments = $@"import ""{Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Scripts", "processmonitor.reg")}""", CreateNoWindow = true })!.WaitForExitAsync(), () => selection == null),
-			("Installing Process Monitor", async () => await Task.Delay(500), () => selection == null),
+            ("Installing Process Monitor", async () => await Process.Start(new ProcessStartInfo { FileName = "reg.exe", Arguments = $@"import ""{Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Scripts", "processmonitor.reg")}""", CreateNoWindow = true })!.WaitForExitAsync(), () => selection == null),
+            ("Installing Process Monitor", async () => await Task.Delay(500), () => selection == null),
             ("Cleaning up Process Monitor files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "ProcessMonitor.zip")), () => selection == null),
 
             // download process explorer
@@ -387,7 +387,7 @@ public static class ApplicationStage
             // disable discord startup entry
             ("Disabling Discord startup entry", async () => RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run", "Discord", new byte[] { 0x01 }, RegistryValueKind.Binary), () => Discord == true),
 
-			// optimize discord settings
+            // optimize discord settings
             ("Optimizing Discord settings", async () => await File.WriteAllTextAsync(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Discord", "settings.json"), "{\n  \"enableHardwareAcceleration\": false,\n  \"OPEN_ON_STARTUP\": false,\n  \"MINIMIZE_TO_TRAY\": false,\n  \"debugLogging\": false,\n  \"openasar\": {\n    \"setup\": true,\n    \"noTrack\": true\n  }\n}"), () => Discord == true),
 
             // download vencord
@@ -395,33 +395,32 @@ public static class ApplicationStage
 
             // install vencord
             ("Installing Vencord", async () => await Process.Start(new ProcessStartInfo { FileName = "cmd.exe", Arguments = $@"/c """"{Path.Combine(Path.GetTempPath(), "VencordInstallerCli.exe")}"" -install -install-openasar -branch auto""" , CreateNoWindow = true })!.WaitForExitAsync(), () => Discord == true),
-			("Installing OpenAsar", async () => await Process.Start(new ProcessStartInfo { FileName = "cmd.exe", Arguments = $@"/c """"{Path.Combine(Path.GetTempPath(), "VencordInstallerCli.exe")}"" -install-openasar -branch auto""" , CreateNoWindow = true })!.WaitForExitAsync(), () => Discord == true),
-			("Cleaning up Vencord files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "VencordInstallerCli.exe")), () => Discord == true),
+            ("Installing OpenAsar", async () => await Process.Start(new ProcessStartInfo { FileName = "cmd.exe", Arguments = $@"/c """"{Path.Combine(Path.GetTempPath(), "VencordInstallerCli.exe")}"" -install-openasar -branch auto""" , CreateNoWindow = true })!.WaitForExitAsync(), () => Discord == true),
+            ("Cleaning up Vencord files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "VencordInstallerCli.exe")), () => Discord == true),
 
             // import vencord settings
             ("Importing Vencord settings", async () => Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Vencord", "settings")), () => Discord == true),
-			("Importing Vencord settings", async () => File.Copy(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Scripts", "settings.json"), Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Vencord", "settings", "settings.json"), true), () => Discord == true),
-			("Importing Vencord settings", async () => await Task.Delay(500), () => Discord == true),
+            ("Importing Vencord settings", async () => File.Copy(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Scripts", "settings.json"), Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Vencord", "settings", "settings.json"), true), () => Discord == true),
+            ("Importing Vencord settings", async () => await Task.Delay(500), () => Discord == true),
 
             // import discord account
-            ("Importing Discord Account", async () => { Process.Start(new ProcessStartInfo { FileName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Discord", "app-" + discordVersion, "Discord.exe"), WindowStyle = ProcessWindowStyle.Hidden }); while (!Process.GetProcessesByName("OpenWith").Any()) { await Task.Delay(500); } }, () => Discord == true && DiscordAccount == true),
-            ("Importing Discord Account", async () => await Task.Delay(2000), () => Discord == true && DiscordAccount == true),
+            ("Importing Discord Account", async () => { Process.Start(new ProcessStartInfo { FileName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Discord", "app-" + discordVersion, "Discord.exe"), WindowStyle = ProcessWindowStyle.Hidden }); while (Process.GetProcessesByName("OpenWith").Length == 0) { await Task.Delay(500); } }, () => Discord == true && DiscordAccount == true),
+            ("Importing Discord Account", async () => await Task.Delay(3000), () => Discord == true && DiscordAccount == true),
             ("Importing Discord Account", async () => { foreach (Process process in Process.GetProcessesByName("OpenWith")) { process.Kill(); process.WaitForExit(); }}, () => Discord == true && DiscordAccount == true),
-            ("Importing Discord Account", async () => { foreach (Process process in Process.GetProcessesByName("Discord")) { if (process.MainWindowHandle != IntPtr.Zero) PInvoke.PostMessage((HWND)process.MainWindowHandle, PInvoke.WM_CLOSE, default(WPARAM), default(LPARAM)); else process.Kill(); } }, () => Discord == true && DiscordAccount == true),
-			("Importing Discord Account", async () => await Task.Delay(2000), () => Discord == true && DiscordAccount == true),
+            ("Importing Discord Account", async () => { foreach (Process process in Process.GetProcessesByName("Discord")) { if (process.MainWindowHandle != IntPtr.Zero) { PInvoke.PostMessage((HWND)process.MainWindowHandle, PInvoke.WM_CLOSE, default(WPARAM), default(LPARAM)); process.WaitForExit(); } } }, () => Discord == true && DiscordAccount == true),
             ("Importing Discord Account", async () => await DiscordHelper.ImportAccount(reporter), () => Discord == true && DiscordAccount == true),
-			
+            
             // log in to discord
             ("Please log in to your Discord account (Close to continue)", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Discord", "app-" + discordVersion, "Discord.exe"), WindowStyle = ProcessWindowStyle.Maximized }) !.WaitForExitAsync(), () => Discord == true && DiscordAccount == false),
-			
-			// set appearance to system
+            
+            // set appearance to system
             ("Setting appearance to system", async () => DiscordHelper.SetSystemAppearance(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "discord", "Local Storage", "leveldb")), () => Discord == true),
 
             // disable game overlay
             ("Disabling game overlay", async () => DiscordHelper.DisableGameOverlay(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "discord", "Local Storage", "leveldb")), () => Discord == true),
 
-			// disable clips
-			("Disabling clips", async () => DiscordHelper.DisableClips(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "discord", "Local Storage", "leveldb")), () => Discord == true),
+            // disable clips
+            ("Disabling clips", async () => DiscordHelper.DisableClips(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "discord", "Local Storage", "leveldb")), () => Discord == true),
 
             // remove discord desktop shortcut 
             ("Removing Discord desktop shortcut", async () => File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "Discord.lnk")), () => Discord == true),
@@ -434,7 +433,7 @@ public static class ApplicationStage
             ("Installing WhatsApp", async () => whatsAppVersion = StoreHelper.GetVersion("5319275A.WhatsAppDesktop_cv1g1gvanyjgm"), () => WhatsApp == true),
 
             // disable "minimize to system tray"
-			(@"Disabling ""Minimize to system tray""", async () => await ProcessActions.RunPowerShellScript("whatsapp.ps1", ""), () => WhatsApp == true),
+            (@"Disabling ""Minimize to system tray""", async () => await ProcessActions.RunPowerShellScript("whatsapp.ps1", ""), () => WhatsApp == true),
 
             // pin whatsapp to the taskbar
             ("Pinning WhatsApp to the taskbar", async () => await ProcessActions.RunPowerShellScript("taskbarpin.ps1", @"-Type UWA -Path 5319275A.WhatsAppDesktop_cv1g1gvanyjgm!App"), () => WhatsApp == true),
@@ -490,7 +489,7 @@ public static class ApplicationStage
             ("Updating Steam", async () => { while (Process.GetProcessesByName("steamwebhelper").Length == 0) await Task.Delay(500); }, () => Steam == true),
 
             // log in to steam
-            ("Please log in to your Steam account (Close to continue)", async () => await SteamHelper.SteamLogin(), () => Steam == true),
+            ("Please log in to your Steam account (Close to continue)", async () => await SteamHelper.SteamLogin(reporter), () => Steam == true),
 
             // import steam games
             ("Importing Steam Games", async () => await SteamHelper.ImportGames(), () => Steam == true && SteamGames == true),
@@ -513,7 +512,7 @@ public static class ApplicationStage
             // import riot client account
             ("Importing Riot Client Account", async () => await RiotHelper.ImportAccount(), () => RiotClient == true && RiotClientAccount == true),
 
-			// import riot client games
+            // import riot client games
             ("Importing Riot Client Games", async () => await RiotHelper.ImportGames(), () => RiotClient == true && RiotClientGames == true),
             ("Importing Riot Client Games", async () => Valorant = File.Exists(Path.Combine(RiotHelper.RiotGamesMetadataPath, "valorant.live", "valorant.live.product_settings.yaml")) && !string.IsNullOrEmpty(Regex.Match(await File.ReadAllTextAsync(Path.Combine(RiotHelper.RiotGamesMetadataPath, "valorant.live", "valorant.live.product_settings.yaml")), @"product_install_full_path:\s*(.+)").Groups[1].Value.Trim()), () => RiotClient == true && RiotClientGames == true),
 
@@ -526,8 +525,8 @@ public static class ApplicationStage
             // disable riot client startup entry
             ("Disabling Riot Client startup entry", async () => RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run", "RiotClient", new byte[] { 0x01 }, RegistryValueKind.Binary), () => RiotClient == true),
 
-			// download vanguard
-			("Downloading Vanguard", async () => await DownloadHelper.Download("https://www.dl.dropboxusercontent.com/scl/fi/emynbdc0oimyqtgh8ormc/setup.exe?rlkey=o4yii06fxauvaurqcdsgn8hna&st=3r4gvxt8&dl=0", Path.GetTempPath(), "setup.exe", new InstallPageReporter()), () => RiotClient == true),
+            // download vanguard
+            ("Downloading Vanguard", async () => await DownloadHelper.Download("https://www.dl.dropboxusercontent.com/scl/fi/emynbdc0oimyqtgh8ormc/setup.exe?rlkey=o4yii06fxauvaurqcdsgn8hna&st=3r4gvxt8&dl=0", Path.GetTempPath(), "setup.exe", new InstallPageReporter()), () => RiotClient == true),
 
             // install vanguard
             ("Installing Vanguard", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "setup.exe"), WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => RiotClient == true),
@@ -870,14 +869,14 @@ public static class ApplicationStage
 
             // install logitech g hub
             ("Installing Logitech G HUB", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "lghub_installer.exe"), Arguments = "--silent" , WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => LogitechGHub == true),
-			("Installing Logitech G HUB", async () => { foreach (Process process in new[] { "lghub", "lghub_system_tray", "lghub_agent" }.SelectMany(Process.GetProcessesByName)) { process.Kill(); process.WaitForExit(); }}, () => LogitechGHub == true),
-			("Cleaning up Logitech G HUB files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "lghub_installer.exe")), () => LogitechGHub == true),
+            ("Installing Logitech G HUB", async () => { foreach (Process process in new[] { "lghub", "lghub_system_tray", "lghub_agent" }.SelectMany(Process.GetProcessesByName)) { process.Kill(); process.WaitForExit(); }}, () => LogitechGHub == true),
+            ("Cleaning up Logitech G HUB files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "lghub_installer.exe")), () => LogitechGHub == true),
 
-			// disable logitech g hub services
-			("Disabling Logitech G HUB services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\LGHUBUpdaterService", "Start", 3, RegistryValueKind.DWord), () => LogitechGHub == true),
-			("Disabling Logitech G HUB services", async () => ServicesHelper.StopService("LGHUBUpdaterService"), () => LogitechGHub == true),
+            // disable logitech g hub services
+            ("Disabling Logitech G HUB services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\LGHUBUpdaterService", "Start", 3, RegistryValueKind.DWord), () => LogitechGHub == true),
+            ("Disabling Logitech G HUB services", async () => ServicesHelper.StopService("LGHUBUpdaterService"), () => LogitechGHub == true),
             ("Disabling Logitech G HUB services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\logi_lamparray_service", "Start", 3, RegistryValueKind.DWord), () => LogitechGHub == true),
-			("Disabling Logitech G HUB services", async () => ServicesHelper.StopService("logi_lamparray_service"), () => LogitechGHub == true),
+            ("Disabling Logitech G HUB services", async () => ServicesHelper.StopService("logi_lamparray_service"), () => LogitechGHub == true),
 
             // remove logitech g hub desktop shortcut
             ("Removing Logitech G HUB desktop shortcut", async () => File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonDesktopDirectory), "Logitech G HUB.lnk")), () => LogitechGHub == true),
@@ -934,9 +933,9 @@ public static class ApplicationStage
             ("Installing SteelSeries GG", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "SteelSeriesGGSetup.exe"), Arguments = "/S" , WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => SteelSeriesGG == true),
             ("Cleaning up SteelSeries GG files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "SteelSeriesGGSetup.exe")), () => SteelSeriesGG == true),
 
-			// disable steelseries gg service
-			("Disabling SteelSeries GG service", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\SteelSeriesGGUpdateServiceProxy", "Start", 4, RegistryValueKind.DWord), () => SteelSeriesGG == true),
-			("Disabling SteelSeries GG service", async () => ServicesHelper.StopService("SteelSeriesGGUpdateServiceProxy"), () => SteelSeriesGG == true),
+            // disable steelseries gg service
+            ("Disabling SteelSeries GG service", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\SteelSeriesGGUpdateServiceProxy", "Start", 4, RegistryValueKind.DWord), () => SteelSeriesGG == true),
+            ("Disabling SteelSeries GG service", async () => ServicesHelper.StopService("SteelSeriesGGUpdateServiceProxy"), () => SteelSeriesGG == true),
 
             // disable steelseries gg startup entry
             ("Disabling SteelSeries GG startup entry", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run", "SteelSeriesGG", new byte[] { 0x01 }, RegistryValueKind.Binary), () => SteelSeriesGG == true),
@@ -960,15 +959,15 @@ public static class ApplicationStage
             ("Cleaning up Razer Synapse files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "Razer.zip")), () => RazerSynapse == true),
             ("Cleaning up Razer Synapse files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "leveldb.zip")), () => RazerSynapse == true),
 
-			// disable razer synapse services
+            // disable razer synapse services
             ("Disabling Razer Synapse services", async () => File.Move(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), @"Razer\Razer Services\GMS3\GameManagerService3.exe"), Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), @"Razer\Razer Services\GMS3\GameManagerService3.exe.bak")), () => RazerSynapse == true),
             ("Disabling Razer Synapse services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\Razer Game Manager Service 3", "Start", 4, RegistryValueKind.DWord), () => RazerSynapse == true),
-			("Disabling Razer Synapse services", async () => ServicesHelper.StopService("Razer Game Manager Service 3"), () => RazerSynapse == true),
+            ("Disabling Razer Synapse services", async () => ServicesHelper.StopService("Razer Game Manager Service 3"), () => RazerSynapse == true),
             ("Disabling Razer Synapse services", async () => File.Move(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), @"Razer\razer_elevation_service\razer_elevation_service.exe"), Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), @"Razer\razer_elevation_service\razer_elevation_service.exe.bak")), () => RazerSynapse == true),
-			("Disabling Razer Synapse services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\Razer Elevation Service", "Start", 4, RegistryValueKind.DWord), () => RazerSynapse == true),
-			("Disabling Razer Synapse services", async () => ServicesHelper.StopService("Razer Elevation Service"), () => RazerSynapse == true),
+            ("Disabling Razer Synapse services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\Razer Elevation Service", "Start", 4, RegistryValueKind.DWord), () => RazerSynapse == true),
+            ("Disabling Razer Synapse services", async () => ServicesHelper.StopService("Razer Elevation Service"), () => RazerSynapse == true),
 
-			// disable razer synapse startup entry
+            // disable razer synapse startup entry
             ("Disabling Razer Synapse startup entry", async () => RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run", "RazerAppEngine", new byte[] { 0x01 }, RegistryValueKind.Binary), () => RazerSynapse == true),
 
             // download corsair icue
@@ -979,11 +978,11 @@ public static class ApplicationStage
             ("Installing Corsair iCUE", async () => { while (Process.GetProcessesByName("icue-installer").Length >= 1) await Task.Delay(500); }, () => CorsairICue == true),
             ("Cleaning up Corsair iCUE files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "Install iCUE.exe")), () => CorsairICue == true),
 
-			// disable corsair icue services
-			("Disabling Corsair iCUE services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\CorsairService", "Start", 4, RegistryValueKind.DWord), () => CorsairICue == true),
-			("Disabling Corsair iCUE services", async () => ServicesHelper.StopService("CorsairService"), () => CorsairICue == true),
+            // disable corsair icue services
+            ("Disabling Corsair iCUE services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\CorsairService", "Start", 4, RegistryValueKind.DWord), () => CorsairICue == true),
+            ("Disabling Corsair iCUE services", async () => ServicesHelper.StopService("CorsairService"), () => CorsairICue == true),
 
-			// disable corsair icue startup entry
+            // disable corsair icue startup entry
             ("Disabling Corsair iCUE startup entry", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run", "Corsair iCUE5 Software", new byte[] { 0x01 }, RegistryValueKind.Binary), () => CorsairICue == true),
 
             // download visual studio
@@ -1083,7 +1082,7 @@ public static class ApplicationStage
             ("Installing Office", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "setup.exe"), Arguments = $@"/configure ""{Path.Combine(Path.GetTempPath(), "configuration.xml")}""" , WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => Word == true || Excel == true || PowerPoint == true || OneNote == true || Teams == true || Outlook == true || OneDrive == true),
             ("Cleaning up Office files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "setup.exe")), () => Word == true || Excel == true || PowerPoint == true || OneNote == true || Teams == true || Outlook == true || OneDrive == true),
             ("Cleaning up Office files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "configuration.xml")), () => Word == true || Excel == true || PowerPoint == true || OneNote == true || Teams == true || Outlook == true || OneDrive == true),
-			
+            
             // disable office startup entries
             ("Disabling Office startup entries", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_CLASSES_ROOT\PROTOCOLS\Filter\AutorunsDisabled\text/xml\CLSID", "", "{807583E5-5146-11D5-A672-00B0D022E945}", RegistryValueKind.String), () => Word == true || Excel == true || PowerPoint == true || OneNote == true || Teams == true || Outlook == true || OneDrive == true),
             ("Disabling Office startup entries", async () => RegistryHelper.DeleteKey(RegistryHelper.Identity.TrustedInstaller, @"HKEY_CLASSES_ROOT\PROTOCOLS\Filter\text/xml"), () => Word == true || Excel == true || PowerPoint == true || OneNote == true || Teams == true || Outlook == true || OneDrive == true),

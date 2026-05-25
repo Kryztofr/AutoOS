@@ -1,4 +1,4 @@
-﻿using AutoOS.Core.Helpers.Registry;
+using AutoOS.Core.Helpers.Registry;
 using Microsoft.Win32;
 using System.Diagnostics;
 using System.ServiceProcess;

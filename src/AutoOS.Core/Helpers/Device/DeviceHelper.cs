@@ -636,8 +636,8 @@ public static partial class DeviceHelper
 
         if (enable)
         {
-			var intervals = (obj["Intervals"]?.AsObject()) ?? throw new Exception("No saved intervals found.");
-			foreach (var kvp in intervals)
+            var intervals = (obj["Intervals"]?.AsObject()) ?? throw new Exception("No saved intervals found.");
+            foreach (var kvp in intervals)
                 if (ulong.TryParse(kvp.Key, out ulong addr) && uint.TryParse(kvp.Value?.ToString(), out uint val))
                     hw.WriteMemory32(addr, val);
         }

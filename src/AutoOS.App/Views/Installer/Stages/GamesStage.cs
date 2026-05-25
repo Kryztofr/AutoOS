@@ -1,4 +1,4 @@
-﻿using AutoOS.Core.Helpers.Download;
+using AutoOS.Core.Helpers.Download;
 using AutoOS.Core.Helpers.Games;
 using AutoOS.Core.Helpers.Monitor;
 using AutoOS.Core.Helpers.Registry;
@@ -16,12 +16,12 @@ public static partial class GamesStage
         bool Valorant = ApplicationStage.Valorant;
 
         string fortnitePath = string.Empty;
-		string valorantPath = string.Empty;
+        string valorantPath = string.Empty;
 
         string fortniteIniPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "FortniteGame", "Saved", "Config", "WindowsClient");
         string valorantIniPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "VALORANT", "Saved", "Config", "WindowsClient");
 
-		int maxRefreshRate = (int)MonitorHelper.GetMonitors().Max(max => max.RefreshRate);
+        int maxRefreshRate = (int)MonitorHelper.GetMonitors().Max(max => max.RefreshRate);
 
         var actions = new List<(string Title, Func<Task> Action, Func<bool> Condition)>
         {
@@ -40,9 +40,9 @@ public static partial class GamesStage
             (@"Setting ""GPU Preference"" to ""High Performance"" for Fortnite", async () => RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_CURRENT_USER\Software\Microsoft\DirectX\UserGpuPreferences", fortnitePath + @"\FortniteGame\Binaries\Win64\FortniteClient-Win64-Shipping.exe", "SwapEffectUpgradeEnable=1;GpuPreference=2;", RegistryValueKind.String), () => Fortnite == true),
             (@"Setting ""GPU Preference"" to ""High Performance"" for Fortnite", async () => await Task.Delay(1000), () => Fortnite == true),
 
-			// install easyanticheat
+            // install easyanticheat
             ("Installing EasyAntiCheat", async () => await Process.Start(new ProcessStartInfo($@"{fortnitePath}\FortniteGame\Binaries\Win64\EasyAntiCheat\EasyAntiCheat_EOS_Setup.exe", "install 4fe75bbc5a674f4f9b356b5c90567da5") {  WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => Fortnite == true),
-			("Installing EasyAntiCheat", async () => await Task.Delay(1000), () => Fortnite == true),
+            ("Installing EasyAntiCheat", async () => await Task.Delay(1000), () => Fortnite == true),
 
             // download gameusersettings.ini for valorant
             ("Downloading GameUserSettings.ini for Valorant", async () => await DownloadHelper.Download("https://www.dl.dropboxusercontent.com/scl/fi/v8t7zr92smdwp6c0u43li/GameUserSettings.ini?rlkey=9utj5hcekf4ddvpvvxbzzhbua&st=y7q4r3hm&dl=0", valorantIniPath, "GameUserSettings.ini"), () => Valorant == true),
@@ -53,7 +53,7 @@ public static partial class GamesStage
 
             // set "gpu preference" to "high performance" for valorant
             (@"Setting ""GPU Preference"" to ""High Performance"" for Valorant", async () => valorantPath = RiotHelper.ProductInstallFullPathRegex().Match(File.ReadAllText(RiotHelper.RiotGamesMetadataPath + @"\valorant.live\valorant.live.product_settings.yaml")).Groups[1].Value.Replace('/', '\\'), () => Valorant == true),
-			(@"Setting ""GPU Preference"" to ""High Performance"" for Valorant", async () => RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_CURRENT_USER\Software\Microsoft\DirectX\UserGpuPreferences", $@"{valorantPath}\ShooterGame\Binaries\Win64\VALORANT-Win64-Shipping.exe", "SwapEffectUpgradeEnable=1;GpuPreference=2;", RegistryValueKind.String), () => Valorant == true),
+            (@"Setting ""GPU Preference"" to ""High Performance"" for Valorant", async () => RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_CURRENT_USER\Software\Microsoft\DirectX\UserGpuPreferences", $@"{valorantPath}\ShooterGame\Binaries\Win64\VALORANT-Win64-Shipping.exe", "SwapEffectUpgradeEnable=1;GpuPreference=2;", RegistryValueKind.String), () => Valorant == true),
             (@"Setting ""GPU Preference"" to ""High Performance"" for Valorant", async () => await Task.Delay(1000), () => Valorant == true),
             
             // disable fullscreen optimizations for valorant

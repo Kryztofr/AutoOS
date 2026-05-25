@@ -1,4 +1,4 @@
-﻿using AutoOS.Common;
+using AutoOS.Common;
 using AutoOS.Core.Helpers.Device.Models;
 using AutoOS.Core.Helpers.Device;
 using AutoOS.Core.Helpers.GPU.Models;

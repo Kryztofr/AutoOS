@@ -1,4 +1,4 @@
-﻿using AutoOS.Assets.NavViewMenu;
+using AutoOS.Assets.NavViewMenu;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml.Input;
 using Windows.Win32.Foundation;

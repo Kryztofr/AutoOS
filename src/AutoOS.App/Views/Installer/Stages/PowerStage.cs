@@ -1,4 +1,4 @@
-﻿using AutoOS.Common;
+using AutoOS.Common;
 using AutoOS.Core.Helpers.Registry;
 using AutoOS.Views.Settings.Power;
 using Microsoft.Win32;

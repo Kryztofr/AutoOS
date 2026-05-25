@@ -140,8 +140,8 @@ public static class StartupStage
             StartupWindow.Progress.Value = (executedGroupsCount * 100.0) / groupedTitleCount;
         }
 
-		await Task.Delay(500);
-		StartupWindow.Status.Text = "Done.";
+        await Task.Delay(500);
+        StartupWindow.Status.Text = "Done.";
         StartupWindow.Progress.Foreground = new SolidColorBrush((Windows.UI.Color)Application.Current.Resources["SystemFillColorSuccess"]);
         await Task.Delay(250);
         Application.Current.Exit();

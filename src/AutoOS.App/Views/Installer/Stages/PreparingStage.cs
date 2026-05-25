@@ -135,7 +135,7 @@ public static partial class PreparingStage
 
         InstallPage.Info.Severity = InfoBarSeverity.Warning;
         InstallPage.Progress.Foreground = (Brush)Application.Current.Resources["SystemFillColorCautionBrush"];
-		TaskbarHelper.SetProgressState(WindowHandle, TaskbarStates.Paused);
+        TaskbarHelper.SetProgressState(WindowHandle, TaskbarStates.Paused);
         InstallPage.ProgressRingControl.Foreground = (Brush)Application.Current.Resources["SystemFillColorCautionBrush"];
         if (localSettings.Values["Install_Start"] == null)
             localSettings.Values["Install_Start"] = DateTimeOffset.Now.ToString("O");
@@ -336,103 +336,103 @@ public static partial class PreparingStage
                 })
                 .FirstOrDefault(false);
 
-			RiotClientAccount = DriveInfo.GetDrives()
-				.Where(d => d.DriveType == DriveType.Fixed && d.Name != systemDrive)
-				.SelectMany(d =>
-				{
-					string usersPath = Path.Combine(d.Name, "Users");
-					if (!Directory.Exists(usersPath)) return [];
+            RiotClientAccount = DriveInfo.GetDrives()
+                .Where(d => d.DriveType == DriveType.Fixed && d.Name != systemDrive)
+                .SelectMany(d =>
+                {
+                    string usersPath = Path.Combine(d.Name, "Users");
+                    if (!Directory.Exists(usersPath)) return [];
 
-					return Directory.GetDirectories(usersPath)
-						.Select(userDir => Path.Combine(userDir, "AppData", "Local", "Riot Games", "Riot Client", "Data", "RiotGamesPrivateSettings.yaml"))
-						.Where(File.Exists);
-				})
-				.Any(file =>
-				{
-					string fileContent = File.ReadAllText(file);
-					Match ssidMatch = RiotHelper.SsidRegex().Match(fileContent);
+                    return Directory.GetDirectories(usersPath)
+                        .Select(userDir => Path.Combine(userDir, "AppData", "Local", "Riot Games", "Riot Client", "Data", "RiotGamesPrivateSettings.yaml"))
+                        .Where(File.Exists);
+                })
+                .Any(file =>
+                {
+                    string fileContent = File.ReadAllText(file);
+                    Match ssidMatch = RiotHelper.SsidRegex().Match(fileContent);
 
-					return ssidMatch.Success && !string.IsNullOrWhiteSpace(ssidMatch.Groups[1].Value);
-				});
+                    return ssidMatch.Success && !string.IsNullOrWhiteSpace(ssidMatch.Groups[1].Value);
+                });
 
-			RiotClientGames = DriveInfo.GetDrives()
-				.Where(d => d.DriveType == DriveType.Fixed && d.Name != systemDrive)
-				.SelectMany(d =>
-				{
-					string metadataPath = Path.Combine(d.Name, "ProgramData", "Riot Games", "Metadata");
-					if (!Directory.Exists(metadataPath)) return [];
+            RiotClientGames = DriveInfo.GetDrives()
+                .Where(d => d.DriveType == DriveType.Fixed && d.Name != systemDrive)
+                .SelectMany(d =>
+                {
+                    string metadataPath = Path.Combine(d.Name, "ProgramData", "Riot Games", "Metadata");
+                    if (!Directory.Exists(metadataPath)) return [];
 
-					return Directory.GetDirectories(metadataPath)
-						.Select(subFolder =>
-						{
-							string folderName = new DirectoryInfo(subFolder).Name;
-							string settingsFile = Path.Combine(subFolder, $"{folderName}.product_settings.yaml");
+                    return Directory.GetDirectories(metadataPath)
+                        .Select(subFolder =>
+                        {
+                            string folderName = new DirectoryInfo(subFolder).Name;
+                            string settingsFile = Path.Combine(subFolder, $"{folderName}.product_settings.yaml");
 
-							if (!File.Exists(settingsFile))
-								return false;
+                            if (!File.Exists(settingsFile))
+                                return false;
 
-							string fileContent = File.ReadAllText(settingsFile);
-							Match pathMatch = RiotHelper.ProductInstallFullPathRegex().Match(fileContent);
+                            string fileContent = File.ReadAllText(settingsFile);
+                            Match pathMatch = RiotHelper.ProductInstallFullPathRegex().Match(fileContent);
 
-							return pathMatch.Success && !string.IsNullOrWhiteSpace(pathMatch.Groups[1].Value);
-						});
-				})
-				.Any(hasGame => hasGame);
+                            return pathMatch.Success && !string.IsNullOrWhiteSpace(pathMatch.Groups[1].Value);
+                        });
+                })
+                .Any(hasGame => hasGame);
 
-			// DiscordAccount = DriveInfo.GetDrives()
-			// 	.Where(d => d.DriveType == DriveType.Fixed && d.Name != systemDrive)
-			// 	.SelectMany(d =>
-			// 	{
-			// 		string usersPath = Path.Combine(d.Name, "Users");
-			// 		if (!Directory.Exists(usersPath)) return [];
+            // DiscordAccount = DriveInfo.GetDrives()
+            //     .Where(d => d.DriveType == DriveType.Fixed && d.Name != systemDrive)
+            //     .SelectMany(d =>
+            //     {
+            //         string usersPath = Path.Combine(d.Name, "Users");
+            //         if (!Directory.Exists(usersPath)) return [];
 
-			// 		return Directory.GetDirectories(usersPath)
-			// 			.Select(userDir => Path.Combine(userDir, "AppData", "Roaming", "discord", "Local Storage", "leveldb"))
-			// 			.Where(Directory.Exists);
-			// 	})
-			// 	.Any(leveldbPath =>
-			// 	{
-			// 		var accounts = DiscordHelper.GetAccountData(leveldbPath);
-			// 		return accounts != null && accounts.Count > 0;
-			// 	});
+            //         return Directory.GetDirectories(usersPath)
+            //             .Select(userDir => Path.Combine(userDir, "AppData", "Roaming", "discord", "Local Storage", "leveldb"))
+            //             .Where(Directory.Exists);
+            //     })
+            //     .Any(leveldbPath =>
+            //     {
+            //         var accounts = DiscordHelper.GetAccountData(leveldbPath);
+            //         return accounts != null && accounts.Count > 0;
+            //     });
 
-			var browserPaths = new Dictionary<string, string>
-			{
-				{ @"AppData\Local\Google\Chrome\User Data\Default\Local Storage\leveldb", "Chrome" },
-				{ @"AppData\Local\Thorium\User Data\Default\Local Storage\leveldb", "Thorium" },
-				{ @"AppData\Local\imput\Helium\User Data\Default\Local Storage\leveldb", "Helium" },
-				{ @"AppData\Local\BraveSoftware\Brave-Browser\User Data\Default\Local Storage\leveldb", "Brave" },
-				{ @"AppData\Local\Vivaldi\User Data\Default\Local Storage\leveldb", "Vivaldi" },
-				{ @"AppData\Local\Packages\TheBrowserCompany.Arc_ttt1ap7aakyb4\LocalCache\Local\Arc\User Data\Default\Local Storage\leveldb", "Arc" },
-				{ @"AppData\Local\Perplexity\Comet\User Data\Default\Local Storage\leveldb", "Perplexity" }
-			};
+            var browserPaths = new Dictionary<string, string>
+            {
+                { @"AppData\Local\Google\Chrome\User Data\Default\Local Storage\leveldb", "Chrome" },
+                { @"AppData\Local\Thorium\User Data\Default\Local Storage\leveldb", "Thorium" },
+                { @"AppData\Local\imput\Helium\User Data\Default\Local Storage\leveldb", "Helium" },
+                { @"AppData\Local\BraveSoftware\Brave-Browser\User Data\Default\Local Storage\leveldb", "Brave" },
+                { @"AppData\Local\Vivaldi\User Data\Default\Local Storage\leveldb", "Vivaldi" },
+                { @"AppData\Local\Packages\TheBrowserCompany.Arc_ttt1ap7aakyb4\LocalCache\Local\Arc\User Data\Default\Local Storage\leveldb", "Arc" },
+                { @"AppData\Local\Perplexity\Comet\User Data\Default\Local Storage\leveldb", "Perplexity" }
+            };
 
-			DiscordAccount = DriveInfo.GetDrives()
-				.Where(d => d.DriveType == DriveType.Fixed && d.Name != systemDrive)
-				.SelectMany(d =>
-				{
-					string usersPath = Path.Combine(d.Name, "Users");
-					if (!Directory.Exists(usersPath)) return [];
+            DiscordAccount = DriveInfo.GetDrives()
+                .Where(d => d.DriveType == DriveType.Fixed && d.Name != systemDrive)
+                .SelectMany(d =>
+                {
+                    string usersPath = Path.Combine(d.Name, "Users");
+                    if (!Directory.Exists(usersPath)) return [];
 
-					return Directory.GetDirectories(usersPath)
-						.SelectMany(userDir => browserPaths.Keys.Select(browserPath => new { Path = Path.Combine(userDir, browserPath), Browser = browserPaths[browserPath] }))
-						.Where(x => Directory.Exists(x.Path));
-				})
-				.Any(databasePath =>
-				{
-					try
-					{
-						var tokenNode = DatabaseHelper.Read(databasePath.Path, "_https://discord.com", "token");
-						string token = tokenNode?.ToString();
-						return !string.IsNullOrEmpty(token);
-					}
-					catch
-					{
-						return false;
-					}
-				});
+                    return Directory.GetDirectories(usersPath)
+                        .SelectMany(userDir => browserPaths.Keys.Select(browserPath => new { Path = Path.Combine(userDir, browserPath), Browser = browserPaths[browserPath] }))
+                        .Where(x => Directory.Exists(x.Path));
+                })
+                .Any(databasePath =>
+                {
+                    try
+                    {
+                        var tokenNode = DatabaseHelper.Read(databasePath.Path, "_https://discord.com", "token");
+                        string token = tokenNode?.ToString();
+                        return !string.IsNullOrEmpty(token);
+                    }
+                    catch
+                    {
+                        return false;
+                    }
+                });
 
-			var nics = DeviceHelper.GetDevices(DeviceType.NIC);
+            var nics = DeviceHelper.GetDevices(DeviceType.NIC);
             Wifi = nics.Any(device => device.NicType == NicDeviceType.WiFi);
             TxIntDelay = nics.Any(device => Registry.LocalMachine.OpenSubKey(device.RegistryPath).GetValue("TxIntDelay") != null);
             NetAdapterCx = nics.Any(device => device.IsActive && device.DriverType == NicDriverType.NetAdapterCx);
@@ -440,9 +440,9 @@ public static partial class PreparingStage
 
         InstallPage.Info.Severity = InfoBarSeverity.Informational;
         InstallPage.Progress.ClearValue(ProgressBar.ForegroundProperty);
-		TaskbarHelper.SetProgressState(WindowHandle, TaskbarStates.Normal);
+        TaskbarHelper.SetProgressState(WindowHandle, TaskbarStates.Normal);
         InstallPage.ProgressRingControl.Foreground = null;
-		TaskbarHelper.SetProgressValue(WindowHandle, InstallPage.Progress.Value, 100);
+        TaskbarHelper.SetProgressValue(WindowHandle, InstallPage.Progress.Value, 100);
     }
 }
 

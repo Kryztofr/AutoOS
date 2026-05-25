@@ -9,7 +9,7 @@ namespace AutoOS.Core.Helpers.RAM
     {
         private const uint RSMB = 0x52534D42;
 
-		public static unsafe RamInfo GetRam()
+        public static unsafe RamInfo GetRam()
         {
             var info = new RamInfo();
 

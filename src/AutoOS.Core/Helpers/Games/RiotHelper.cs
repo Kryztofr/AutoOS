@@ -9,7 +9,7 @@ public static partial class RiotHelper
     public static partial Regex SsidRegex();
 
     [GeneratedRegex(@"product_install_full_path:\s*""([^""]+)""")]
-	public static partial Regex ProductInstallFullPathRegex();
+    public static partial Regex ProductInstallFullPathRegex();
 
     public static readonly string RiotGamesDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + @"\Riot Games\Riot Client\Data";
     public static readonly string RiotGamesConfigPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + @"\Riot Games\Riot Client\Config";

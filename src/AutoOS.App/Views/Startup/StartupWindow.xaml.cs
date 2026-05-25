@@ -1,4 +1,4 @@
-﻿using AutoOS.Views.Startup.Stages;
+using AutoOS.Views.Startup.Stages;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml.Input;
 using Windows.Win32.Foundation;

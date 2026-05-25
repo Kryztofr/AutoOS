@@ -21,7 +21,7 @@ public static class ProcessActions
         WindowHandle = WindowNative.GetWindowHandle(App.MainWindow);
         InstallPage.Info.Severity = InfoBarSeverity.Warning;
         InstallPage.Progress.Foreground = (Brush)Application.Current.Resources["SystemFillColorCautionBrush"];
-		TaskbarHelper.SetProgressState(WindowHandle, TaskbarStates.Paused);
+        TaskbarHelper.SetProgressState(WindowHandle, TaskbarStates.Paused);
         InstallPage.ProgressRingControl.Foreground = (Brush)Application.Current.Resources["SystemFillColorCautionBrush"];
 
         await Task.Delay(1000);
@@ -37,7 +37,7 @@ public static class ProcessActions
                 {
                     InstallPage.Info.Severity = InfoBarSeverity.Informational;
                     InstallPage.Progress.ClearValue(ProgressBar.ForegroundProperty);
-					TaskbarHelper.SetProgressState(WindowHandle, TaskbarStates.Normal);
+                    TaskbarHelper.SetProgressState(WindowHandle, TaskbarStates.Normal);
                     InstallPage.ProgressRingControl.Foreground = null;
                     InstallPage.Info.Title = "Internet connection successfully established...";
                     await Task.Delay(500);
@@ -68,10 +68,10 @@ public static class ProcessActions
                 await process.WaitForExitAsync();
             }
         }
-		
-		Registry.SetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon", "AutoRestartShell", 1, RegistryValueKind.DWord);
+        
+        Registry.SetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon", "AutoRestartShell", 1, RegistryValueKind.DWord);
 
-		string dll = @"StartAllBack\StartAllBackX64.dll";
+        string dll = @"StartAllBack\StartAllBackX64.dll";
         var paths = new[] {
             Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), dll),
             Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), dll),

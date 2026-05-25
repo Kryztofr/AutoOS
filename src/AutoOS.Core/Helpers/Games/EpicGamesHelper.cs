@@ -672,51 +672,51 @@ public static partial class EpicGamesHelper
             }
         }
 
-		// launch epic games to get new token
-		Process.Start(new ProcessStartInfo(EpicGamesPath) { WindowStyle = ProcessWindowStyle.Hidden });
+        // launch epic games to get new token
+        Process.Start(new ProcessStartInfo(EpicGamesPath) { WindowStyle = ProcessWindowStyle.Hidden });
 
-		// wait for token to get used
-		while (true)
-		{
-			await Task.Delay(50);
+        // wait for token to get used
+        while (true)
+        {
+            await Task.Delay(50);
 
-			if (!ValidateData(ActiveEpicGamesAccountPath))
-			{
-				await UpdateInvalidEpicGamesToken();
-				return;
-			}
+            if (!ValidateData(ActiveEpicGamesAccountPath))
+            {
+                await UpdateInvalidEpicGamesToken();
+                return;
+            }
 
-			if (GetAccountData(ActiveEpicGamesAccountPath).TokenUseCount == 1)
-				break;
-		}
+            if (GetAccountData(ActiveEpicGamesAccountPath).TokenUseCount == 1)
+                break;
+        }
 
-		// wait for new token
-		while (true)
-		{
-			await Task.Delay(50);
+        // wait for new token
+        while (true)
+        {
+            await Task.Delay(50);
 
-			if (!ValidateData(ActiveEpicGamesAccountPath))
-			{
-				await UpdateInvalidEpicGamesToken();
-				return;
-			}
+            if (!ValidateData(ActiveEpicGamesAccountPath))
+            {
+                await UpdateInvalidEpicGamesToken();
+                return;
+            }
 
-			if (GetAccountData(ActiveEpicGamesAccountPath).TokenUseCount == 0)
-				break;
-		}
+            if (GetAccountData(ActiveEpicGamesAccountPath).TokenUseCount == 0)
+                break;
+        }
 
-		// close epic games launcher
-		CloseEpicGames();
+        // close epic games launcher
+        CloseEpicGames();
 
-		// update the backed up config
-		File.Copy(ActiveEpicGamesAccountPath, Path.Combine(EpicGamesAccountDir, GetAccountData(ActiveEpicGamesAccountPath).AccountId, "GameUserSettings.ini"), true);
-	}
+        // update the backed up config
+        File.Copy(ActiveEpicGamesAccountPath, Path.Combine(EpicGamesAccountDir, GetAccountData(ActiveEpicGamesAccountPath).AccountId, "GameUserSettings.ini"), true);
+    }
 
     public static async Task<List<GameModel>> GetGames()
     {
         var games = new ConcurrentBag<GameModel>();
 
-		if (File.Exists(EpicGamesPath) && (Directory.Exists(EpicGamesManifestDir) || Directory.Exists(EpicGamesThirdPartyManifestDir)))
+        if (File.Exists(EpicGamesPath) && (Directory.Exists(EpicGamesManifestDir) || Directory.Exists(EpicGamesThirdPartyManifestDir)))
         {
             // get access token
             string AccessToken = await UpdateEpicGamesToken(ActiveEpicGamesAccountPath);

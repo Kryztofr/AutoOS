@@ -1,4 +1,4 @@
-﻿using AutoOS.Core.Helpers.Picker;
+using AutoOS.Core.Helpers.Picker;
 using Windows.Storage;
 
 namespace AutoOS.Views.Installer;

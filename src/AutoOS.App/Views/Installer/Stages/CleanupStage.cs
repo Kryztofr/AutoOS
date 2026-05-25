@@ -1,4 +1,4 @@
-﻿using AutoOS.Core.Helpers.Registry;
+using AutoOS.Core.Helpers.Registry;
 using AutoOS.Views.Installer.Actions;
 using Microsoft.Win32;
 using System.Diagnostics;
@@ -57,14 +57,14 @@ public static class CleanupStage
             ("Running disk cleanup", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VolumeCaches\Windows Upgrade Log Files", "StateFlags0000", 2, RegistryValueKind.DWord), null),
             ("Running disk cleanup", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System), "cleanmgr.exe"), Arguments = "/sagerun:0", UseShellExecute = false, CreateNoWindow = true })!.WaitForExitAsync(), null),
         
-			// enable system restore
-			("Enabling system restore", async () => await ProcessActions.RunPowerShell($"Enable-ComputerRestore -Drive '{Path.GetPathRoot(Environment.GetFolderPath(Environment.SpecialFolder.System))}'"), null),
-			("Enabling system restore", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System), "vssadmin.exe"), Arguments = $"resize shadowstorage /for={Path.GetPathRoot(Environment.GetFolderPath(Environment.SpecialFolder.System)).TrimEnd('\\')} /on={Path.GetPathRoot(Environment.GetFolderPath(Environment.SpecialFolder.System)).TrimEnd('\\')} /maxsize=10%", UseShellExecute = false, CreateNoWindow = true })!.WaitForExitAsync(), null),
-			("Enabling system restore", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SystemRestore", "SystemRestorePointCreationFrequency", 0, RegistryValueKind.DWord), null),
+            // enable system restore
+            ("Enabling system restore", async () => await ProcessActions.RunPowerShell($"Enable-ComputerRestore -Drive '{Path.GetPathRoot(Environment.GetFolderPath(Environment.SpecialFolder.System))}'"), null),
+            ("Enabling system restore", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System), "vssadmin.exe"), Arguments = $"resize shadowstorage /for={Path.GetPathRoot(Environment.GetFolderPath(Environment.SpecialFolder.System)).TrimEnd('\\')} /on={Path.GetPathRoot(Environment.GetFolderPath(Environment.SpecialFolder.System)).TrimEnd('\\')} /maxsize=10%", UseShellExecute = false, CreateNoWindow = true })!.WaitForExitAsync(), null),
+            ("Enabling system restore", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SystemRestore", "SystemRestorePointCreationFrequency", 0, RegistryValueKind.DWord), null),
 
             // create a restore point
             ("Creating a restore point", async () => await ProcessActions.RunPowerShell(@"Checkpoint-Computer -Description AutoOS -RestorePointType MODIFY_SETTINGS"), null)
-		};
+        };
 
         return actions;
     }

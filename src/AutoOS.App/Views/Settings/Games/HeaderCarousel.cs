@@ -68,8 +68,8 @@ public partial class HeaderCarousel : ItemsControl
     private StackPanel SteamGrowl;
 
     private readonly ApplicationDataContainer localSettings = ApplicationData.Current.LocalSettings;
-	
-	private TextBlock AgeRatingDescriptionText;
+    
+    private TextBlock AgeRatingDescriptionText;
     private TextBlock ElementsText;
 
     private AutoSuggestBox SearchBox;
@@ -664,7 +664,7 @@ public partial class HeaderCarousel : ItemsControl
 
     private void AddGames(List<GameModel> games)
     {
-		foreach (var game in games)
+        foreach (var game in games)
         {
             Items.Add(new HeaderCarouselItem
             {
@@ -699,8 +699,8 @@ public partial class HeaderCarousel : ItemsControl
                 ReleaseDate = game.ReleaseDate,
                 Size = game.Size,
                 Version = game.Version,
-				Width = 240,
-				Height = 320
+                Width = 240,
+                Height = 320
             }); 
         }
     }
@@ -2131,73 +2131,73 @@ public partial class HeaderCarousel : ItemsControl
             // stop services
             var serviceNames = new[]
             {
-				"AudioEndpointBuilder",
+                "AudioEndpointBuilder",
                 "AppXSvc",
-				"Appinfo",
-				"BITS",
-				"CaptureService",
-				"cbdhsvc",
-				"ClipSvc",
-				"CryptSvc",
-				"DevicesFlowUserSvc",
-				"DeviceAssociationService",
-				"DispBrokerDesktopSvc",
+                "Appinfo",
+                "BITS",
+                "CaptureService",
+                "cbdhsvc",
+                "ClipSvc",
+                "CryptSvc",
+                "DevicesFlowUserSvc",
+                "DeviceAssociationService",
+                "DispBrokerDesktopSvc",
                 //"Dnscache",
-				"DoSvc",
-				"Everything (1.5a)",
-				"gpsvc",
-				"InstallService",
-				"KeyIso",
-				"LicenseManager",
-				"lfsvc",
-				"msiserver",
-				"Netman",
-				"NetSetupSvc",
-				"netprofm",
-				"NgcCtnrSvc",
-				"NgcSvc",
-				//"nsi",
-				"NVDisplay.ContainerLocalSystem",
-				"ProfSvc",
+                "DoSvc",
+                "Everything (1.5a)",
+                "gpsvc",
+                "InstallService",
+                "KeyIso",
+                "LicenseManager",
+                "lfsvc",
+                "msiserver",
+                "Netman",
+                "NetSetupSvc",
+                "netprofm",
+                "NgcCtnrSvc",
+                "NgcSvc",
+                //"nsi",
+                "NVDisplay.ContainerLocalSystem",
+                "ProfSvc",
                 "StateRepository",
-				"TrustedInstaller",
-				"UdkUserSvc",
+                "TrustedInstaller",
+                "UdkUserSvc",
                 "UserManager",
-				"WFDSConMgrSvc",
-				"Windhawk",
-				//"WinHttpAutoProxySvc",
-				//"Winmgmt",
-				//"Wcmsvc"
-			};
+                "WFDSConMgrSvc",
+                "Windhawk",
+                //"WinHttpAutoProxySvc",
+                //"Winmgmt",
+                //"Wcmsvc"
+            };
 
             foreach (var serviceName in serviceNames)
             {
-				try
-				{
-					ServicesHelper.StopService(serviceName);
-				}
-				catch
-				{
-					ServicesHelper.KillServiceProcess(serviceName);
-				}
-			}
+                try
+                {
+                    ServicesHelper.StopService(serviceName);
+                }
+                catch
+                {
+                    ServicesHelper.KillServiceProcess(serviceName);
+                }
+            }
 
-			foreach (var serviceName in serviceNames)
-			{
-				try
-				{
-					ServicesHelper.StopService(serviceName);
-				}
-				catch
-				{
-					ServicesHelper.KillServiceProcess(serviceName);
-				}
-			}
+            foreach (var serviceName in serviceNames)
+            {
+                try
+                {
+                    ServicesHelper.StopService(serviceName);
+                }
+                catch
+                {
+                    ServicesHelper.KillServiceProcess(serviceName);
+                }
+            }
 
-			Process.GetProcessesByName("ctfmon").ToList().ForEach(process => process.Kill());
-			ProcessesHelper.SuspendProcess(ServicesHelper.GetServicePid("TextInputManagementService"));
+            Process.GetProcessesByName("ctfmon").ToList().ForEach(process => process.Kill());
+            ProcessesHelper.SuspendProcess(ServicesHelper.GetServicePid("TextInputManagementService"));
 
-			if (Process.GetProcessesByName("ClassicWindowSwitcher").Length == 0)
+            if (Process.GetProcessesByName("ClassicWindowSwitcher").Length == 0)
                 Process.Start(new ProcessStartInfo(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Applications", "ClassicWindowSwitcher", "ClassicWindowSwitcher.exe")) { CreateNoWindow = true });
         });
 
@@ -2256,11 +2256,11 @@ public partial class HeaderCarousel : ItemsControl
                 "nsi",
                 "ProfSvc",
                  "StateRepository",
-				"TextInputManagementService",
-				"TrustedInstaller",
+                "TextInputManagementService",
+                "TrustedInstaller",
                 "UdkUserSvc",
                  "UserManager",
-				"WFDSConMgrSvc",
+                "WFDSConMgrSvc",
                 //"WinHttpAutoProxySvc",
                 //"Winmgmt",
                 //"Wcmsvc"
@@ -2276,7 +2276,7 @@ public partial class HeaderCarousel : ItemsControl
             }
 
             ProcessesHelper.ResumeProcess(ServicesHelper.GetServicePid("TextInputManagementService"));
-			Process.Start("ctfmon.exe");
+            Process.Start("ctfmon.exe");
 
             string filePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Everything 1.5a", "Everything.exe");
 

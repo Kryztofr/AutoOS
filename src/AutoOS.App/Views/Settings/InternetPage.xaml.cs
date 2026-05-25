@@ -1,4 +1,4 @@
-﻿using AutoOS.Core.Helpers.Device.Models;
+using AutoOS.Core.Helpers.Device.Models;
 using AutoOS.Core.Helpers.Device;
 using AutoOS.Core.Helpers.Network.Models;
 using AutoOS.Core.Helpers.Network;
@@ -221,7 +221,7 @@ public sealed partial class InternetPage : Page
             bool success = await Task.Run(() =>
             {
                 foreach (var change in changes)
-					Core.Helpers.Network.NetworkHelper.SetAdvancedSetting(device, change.Key, change.Value.Value);
+                    Core.Helpers.Network.NetworkHelper.SetAdvancedSetting(device, change.Key, change.Value.Value);
                 
                 return DeviceHelper.RestartDevice(device);
             });
