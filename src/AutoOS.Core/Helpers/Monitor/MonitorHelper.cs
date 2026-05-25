@@ -1,4 +1,5 @@
 using AutoOS.Core.Helpers.Monitor.Models;
+using AutoOS.Core.Helpers.Registry;
 using System.Text;
 using Windows.Win32.Foundation;
 using Windows.Win32.Graphics.Gdi;
@@ -6,11 +7,11 @@ using Windows.Win32;
 
 namespace AutoOS.Core.Helpers.Monitor;
 
-public static unsafe partial class MonitorHelper
+public static partial class MonitorHelper
 {
     private const uint EDD_GET_DEVICE_INTERFACE_NAME = 0x00000001;
 
-    public static List<MonitorInfo> GetMonitors()
+    public static unsafe List<MonitorInfo> GetMonitors()
     {
         List<MonitorInfo> monitors = [];
         var hardwareNames = GetModelNamesFromRegistry();
@@ -96,7 +97,7 @@ public static unsafe partial class MonitorHelper
         return "";
     }
 
-    public static void SetHighestRefreshRates()
+    public static unsafe void SetHighestRefreshRates()
     {
         DISPLAY_DEVICEW adapter = new() { cb = (uint)sizeof(DISPLAY_DEVICEW) };
         uint i = 0;
@@ -130,5 +131,32 @@ public static unsafe partial class MonitorHelper
                 }
             }
         }
+    }
+
+    public static async Task ImportMonitorConfig()
+    {
+        var systemDrive = Path.GetPathRoot(Environment.GetFolderPath(Environment.SpecialFolder.System))?.ToUpperInvariant();
+        var target = DriveInfo.GetDrives()
+            .Where(d => d.DriveType == DriveType.Fixed && d.Name.ToUpperInvariant() != systemDrive)
+            .Select(d => new { Drive = d.Name, SystemHivePath = Path.Combine(d.Name, "Windows", "System32", "config", "SYSTEM") })
+            .Where(x => File.Exists(x.SystemHivePath))
+            .Select(x => new { x.Drive, x.SystemHivePath, LastWriteTime = File.GetLastWriteTime(x.SystemHivePath) })
+            .OrderByDescending(x => x.LastWriteTime)
+            .FirstOrDefault();
+
+        if (target == null) return;
+
+        await Task.Run(() =>
+        {
+            RegistryHelper.LoadHive(RegistryHelper.Identity.System, @"HKLM\OfflineSystem", target.SystemHivePath);
+
+            string[] keysToCopy = ["Configuration", "Connectivity", "ScaleFactors"];
+            foreach (var key in keysToCopy)
+            {
+                RegistryHelper.CopyKey(RegistryHelper.Identity.System, $@"HKLM\OfflineSystem\ControlSet001\Control\GraphicsDrivers\{key}", $@"HKLM\SYSTEM\CurrentControlSet\Control\GraphicsDrivers\{key}");
+            }
+
+            RegistryHelper.UnLoadHive(RegistryHelper.Identity.System, @"HKLM\OfflineSystem");
+        });
     }
 }

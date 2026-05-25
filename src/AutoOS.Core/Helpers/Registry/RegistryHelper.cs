@@ -8,6 +8,7 @@ using System.Security.Principal;
 using System.ServiceProcess;
 using Windows.Win32.Foundation;
 using Windows.Win32.Security;
+using Windows.Win32.System.Registry;
 using Windows.Win32.System.Services;
 using Windows.Win32.System.Threading;
 using Windows.Win32;
@@ -143,7 +144,7 @@ public static partial class RegistryHelper
 
     public static string[] GetValueNames(Identity identity, string keyPath)
     {
-        string[] names = Array.Empty<string>();
+        string[] names = [];
         RunAs(identity, () =>
         {
             var (root, subKeyPath) = ParseKeyPath(keyPath);
@@ -154,6 +155,81 @@ public static partial class RegistryHelper
             }
         });
         return names;
+    }
+
+    public static void LoadHive(Identity identity, string hiveName, string hiveFilePath)
+    {
+        RunAs(identity, () =>
+        {
+            EnablePrivilege("SeRestorePrivilege");
+            
+            var (root, subKeyPath) = ParseKeyPath(hiveName);
+            if (root != Microsoft.Win32.Registry.LocalMachine)
+                throw new ArgumentException("Hive can only be loaded under HKLM");
+
+            unsafe
+            {
+                fixed (char* pSubKey = subKeyPath)
+                fixed (char* pFile = hiveFilePath)
+                {
+                    WIN32_ERROR result = PInvoke.RegLoadKey(new HKEY(root.Handle.DangerousGetHandle()), new PCWSTR(pSubKey), new PCWSTR(pFile));
+                    if (result != 0)
+                        throw new Win32Exception((int)result);
+                }
+            }
+        });
+    }
+
+    public static void UnLoadHive(Identity identity, string hiveName)
+    {
+        RunAs(identity, () =>
+        {
+            EnablePrivilege("SeRestorePrivilege");
+            
+            var (root, subKeyPath) = ParseKeyPath(hiveName);
+            if (root != Microsoft.Win32.Registry.LocalMachine)
+                throw new ArgumentException("Hive can only be unloaded from HKLM");
+
+            unsafe
+            {
+                fixed (char* pSubKey = subKeyPath)
+                {
+                    WIN32_ERROR result = PInvoke.RegUnLoadKey(new HKEY(root.Handle.DangerousGetHandle()), new PCWSTR(pSubKey));
+                    if (result != 0)
+                        throw new Win32Exception((int)result);
+                }
+            }
+        });
+    }
+
+    public static void CopyKey(Identity identity, string sourceKeyPath, string destinationKeyPath)
+    {
+        RunAs(identity, () =>
+        {
+            var (sourceRoot, sourceSubKey) = ParseKeyPath(sourceKeyPath);
+            var (destRoot, destSubKey) = ParseKeyPath(destinationKeyPath);
+
+			using var sourceKey = sourceRoot.OpenSubKey(sourceSubKey) ?? throw new ArgumentException($"Source key not found: {sourceKeyPath}");
+			CopyKeyRecursive(sourceKey, destRoot, destSubKey);
+        });
+    }
+
+    private static void CopyKeyRecursive(RegistryKey sourceKey, RegistryKey destRoot, string destSubKey)
+    {
+        using var destKey = destRoot.CreateSubKey(destSubKey, true);
+        
+        foreach (var valueName in sourceKey.GetValueNames())
+        {
+            var value = sourceKey.GetValue(valueName);
+            var valueKind = sourceKey.GetValueKind(valueName);
+            destKey.SetValue(valueName, value, valueKind);
+        }
+
+        foreach (var subKeyName in sourceKey.GetSubKeyNames())
+        {
+            using var subKey = sourceKey.OpenSubKey(subKeyName);
+            CopyKeyRecursive(subKey, destKey, subKeyName);
+        }
     }
 
     private static (RegistryKey root, string subKey) ParseKeyPath(string fullPath)

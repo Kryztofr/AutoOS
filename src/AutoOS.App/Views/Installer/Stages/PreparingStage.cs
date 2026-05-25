@@ -103,6 +103,7 @@ public static partial class PreparingStage
     public static List<GpuInfo> GPUs { get; set; } = [];
     public static bool MSI;
     public static bool CRU;
+    public static bool ImportMonitorConfig;
 
     public static bool Wifi;
     public static bool TxIntDelay;
@@ -267,7 +268,13 @@ public static partial class PreparingStage
 
             MSI = (localSettings.Values["MsiProfile"] != null);
             CRU = (localSettings.Values["CruProfile"] != null);
-
+            
+            var systemDrive = Path.GetPathRoot(Environment.GetFolderPath(Environment.SpecialFolder.System))?.ToUpperInvariant();
+            ImportMonitorConfig = DriveInfo.GetDrives()
+                .Where(d => d.DriveType == DriveType.Fixed && !d.Name.Equals(systemDrive, StringComparison.InvariantCultureIgnoreCase))
+                .Select(d => Path.Combine(d.Name, "Windows", "System32", "config", "SYSTEM"))
+                .Any(File.Exists);
+            
             WindowsDefender = (localSettings.Values["WindowsDefender"]?.ToString() == "1");
             UserAccountControl = (localSettings.Values["UserAccountControl"]?.ToString() == "1");
             DEP = (localSettings.Values["DataExecutionPrevention"]?.ToString() == "1");
@@ -280,7 +287,6 @@ public static partial class PreparingStage
             var (pCores, _) = CpuHelper.GroupCpuSetsByEfficiencyClass(cpuSetsInfo);
             PCores = pCores.Count;
             HyperThreading = cpuSetsInfo.HyperThreading;
-            var systemDrive = Path.GetPathRoot(Environment.GetFolderPath(Environment.SpecialFolder.System));
 
             EpicGamesAccount = DriveInfo.GetDrives()
                 .Where(d => d.DriveType == DriveType.Fixed && d.Name != systemDrive)

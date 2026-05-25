@@ -20,6 +20,7 @@ public static class GraphicsStage
         var GPUs = PreparingStage.GPUs;
         bool MSI = PreparingStage.MSI;
         bool CRU = PreparingStage.CRU;
+        bool ImportMonitorConfig = PreparingStage.ImportMonitorConfig;
         bool NVIDIA = GPUs.Any(gpu => gpu.VendorId == "10de");
         bool AMD = GPUs.Any(gpu => gpu.VendorId == "1002");
         bool INTEL = GPUs.Any(gpu => gpu.VendorId == "8086");
@@ -39,6 +40,12 @@ public static class GraphicsStage
             ("Applying Custom Resolution Utility (CRU) profile", async () => await Task.Delay(1500), () => CRU == true),
             ("Applying Custom Resolution Utility (CRU) profile", async () => await Process.Start(new ProcessStartInfo(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Applications", "CRU", "restart64.exe"), "/q") { CreateNoWindow = true })!.WaitForExitAsync(), () => CRU == true),
             ("Applying Custom Resolution Utility (CRU) profile", async () => await Task.Delay(2000), () => CRU == true),
+
+			// import old monitor layout and settings
+			("Importing old monitor layout and settings", async () => await Task.Delay(1500), () => ImportMonitorConfig == true),
+			("Importing old monitor layout and settings", async () => await MonitorHelper.ImportMonitorConfig(), () => ImportMonitorConfig == true),
+			("Importing old monitor layout and settings", async () => await Process.Start(new ProcessStartInfo(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Applications", "CRU", "restart64.exe"), "/q") { CreateNoWindow = true })!.WaitForExitAsync(), () => ImportMonitorConfig == true),
+			("Importing old monitor layout and settings", async () => await Task.Delay(2000), () => ImportMonitorConfig == true),
 
             // set the highest supported refresh rate for every monitor
             ("Setting the highest supported refresh rate for every monitor", async () => await Task.Delay(1000), null),
