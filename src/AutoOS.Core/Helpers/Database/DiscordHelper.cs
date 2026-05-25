@@ -205,7 +205,7 @@ public static partial class DiscordHelper
 
     public static void SetSystemAppearance(string databasePath)
     {
-        JsonNode jsonContent = new JsonObject
+        JsonNode UnsyncedUserSettingsStore = new JsonObject
         {
             ["_state"] = new JsonObject
             {
@@ -215,27 +215,44 @@ public static partial class DiscordHelper
             },
             ["_version"] = 2
         };
-        DatabaseHelper.Write(databasePath, "_https://discord.com", "UnsyncedUserSettingsStore", jsonContent);
+        DatabaseHelper.Write(databasePath, "_https://discord.com", "UnsyncedUserSettingsStore", UnsyncedUserSettingsStore);
+
+        JsonNode ThemeStore = new JsonObject
+        {
+            ["_state"] = new JsonObject
+            {
+                ["theme"] = "midnight",
+                ["preferences"] = new JsonObject
+                {
+                    ["dark"] = "dmidnightr",
+                    ["light"] = "light",
+                    ["unknown"] = "darker"
+                },
+                ["status"] = 0
+            },
+            ["_version"] = 2
+        };
+        DatabaseHelper.Write(databasePath, "_https://discord.com", "ThemeStore", ThemeStore);
     }
 
     public static void DisableGameOverlay(string databasePath)
     {
-        JsonNode jsonContent = new JsonObject
+        JsonNode OverlayStore6 = new JsonObject
         {
             ["legacyEnabled"] = false,
             ["oopEnabled"] = false
         };
-        DatabaseHelper.Write(databasePath, "_https://discord.com", "OverlayStore6", jsonContent);
+        DatabaseHelper.Write(databasePath, "_https://discord.com", "OverlayStore6", OverlayStore6);
     }
 
     public static void DisableClips(string databasePath)
     {
-        JsonNode clipsNode = DatabaseHelper.Read(databasePath, "https://discordapp.com", "ClipsStore");
+        JsonNode ClipsStore = DatabaseHelper.Read(databasePath, "https://discordapp.com", "ClipsStore");
 
-        if (clipsNode != null)
+        if (ClipsStore != null)
         {
-            clipsNode["_state"]?["clipsSettings"]?["clipsEnabled"] = false;
-            DatabaseHelper.Write(databasePath, "https://discord.com", "ClipsStore", clipsNode);
+            ClipsStore["_state"]?["clipsSettings"]?["clipsEnabled"] = false;
+            DatabaseHelper.Write(databasePath, "https://discord.com", "ClipsStore", ClipsStore);
         }
     }
 }
