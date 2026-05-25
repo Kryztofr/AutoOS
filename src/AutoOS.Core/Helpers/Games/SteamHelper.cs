@@ -131,7 +131,7 @@ public static partial class SteamHelper
 		await Task.Delay(1000);
 	}
 
-	public static async Task RunImportSteamGames()
+	public static async Task ImportGames()
 	{
 		var options = new KVSerializerOptions { HasEscapeSequences = true };
 
@@ -165,6 +165,25 @@ public static partial class SteamHelper
 			foreach (var file in Directory.GetFiles(sourceCacheDir, "*.*", SearchOption.AllDirectories))
 			{
 				var targetFile = file.Replace(sourceCacheDir, targetCacheDir);
+				File.Copy(file, targetFile, true);
+			}
+		}
+
+		string sourceUserDataDir = SteamUserDataDir.Replace(Path.GetPathRoot(SteamUserDataDir) ?? "", sourceDrive + @"\");
+
+		Directory.CreateDirectory(SteamUserDataDir);
+
+		if (Directory.Exists(sourceUserDataDir))
+		{
+			foreach (var dir in Directory.GetDirectories(sourceUserDataDir, "*", SearchOption.AllDirectories))
+			{
+				var targetDir = dir.Replace(sourceUserDataDir, SteamUserDataDir);
+				Directory.CreateDirectory(targetDir);
+			}
+
+			foreach (var file in Directory.GetFiles(sourceUserDataDir, "*.*", SearchOption.AllDirectories))
+			{
+				var targetFile = file.Replace(sourceUserDataDir, SteamUserDataDir);
 				File.Copy(file, targetFile, true);
 			}
 		}
