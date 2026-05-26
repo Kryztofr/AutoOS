@@ -1,5 +1,6 @@
 using AutoOS.Core.Common;
 using AutoOS.Core.Helpers.Download;
+using AutoOS.Core.Helpers.Logging;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text.Json;
@@ -36,14 +37,14 @@ public static partial class StoreHelper
         var product = await GetProductID(identifier);
         if (string.IsNullOrEmpty(product))
         {
-            Debug.WriteLine("[StoreHelper] ProductID not found.");
+            await LogHelper.LogError(new Exception($"[StoreHelper] ProductID not found for {identifier}."));
             return;
         }
 
         var category = await GetCategoryID(product);
         if (string.IsNullOrEmpty(category))
         {
-            Debug.WriteLine("[StoreHelper] CategoryID not found.");
+            await LogHelper.LogError(new Exception($"[StoreHelper] CategoryID not found for {identifier} (Product: {product})."));
             return;
         }
 
@@ -63,7 +64,7 @@ public static partial class StoreHelper
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"[StoreHelper] Download failed: {ex.Message}");
+            await LogHelper.LogError(ex, actionTitle: $"[StoreHelper] Download failed for {identifier}");
         }
     }
 
@@ -98,7 +99,6 @@ public static partial class StoreHelper
             };
 
             await tcs.Task;
-            Debug.WriteLine("[StoreHelper] Installation successful.");
         }
         finally
         {
