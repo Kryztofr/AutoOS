@@ -2351,7 +2351,22 @@ public partial class HeaderCarousel : ItemsControl
                     }
                     else if (!isRunning && epicGameStartTimes.TryGetValue(ArtifactId, out var startTime))
                     {
-                        EpicGamesHelper.AddPlaytime(ArtifactId, startTime);
+                        EpicGamesHelper.AddPlaytime(ArtifactId, startTime, (artId, newPlaytime) =>
+                        {
+                            foreach (var item in Items)
+                            {
+                                if (item is HeaderCarouselItem tile && tile.ArtifactId == artId)
+                                {
+                                    tile.PlayTime = newPlaytime;
+                                    break;
+                                }
+                            }
+
+                            if (selectedTile != null && selectedTile.ArtifactId == artId)
+                            {
+                                PlayTime = newPlaytime;
+                            }
+                        });
                         epicGameStartTimes.Remove(ArtifactId);
                     }
                 }

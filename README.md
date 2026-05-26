@@ -18,7 +18,7 @@
 </h3>
 </div>
 
-AutoOS is a Native AOT WinUI 3 application that automates Windows setup and optimization with a focus on gaming performance, privacy, system compatibility and quality of life improvements.
+AutoOS is a Native AOT WinUI 3 application that automates migrating to a new Windows installation on a separate partition. With minimal user effort, it seamlessly configures a cleaner and faster system optimized for gaming performance and productivity while preserving all system compatibility.
 
 ## ✨ Introduction
 
@@ -58,7 +58,8 @@ Pressing **Install AutoOS** in the **AutoOS Installer** does the following:
 - Adjusts Memory Management and Prefetching depending on disk type
 - Downloads strips, installs and optimizes your selected Graphic Card drivers
 - Imports the selected Custom Resolution Utility (CRU) profile
-- Automatically sets your Monitors to their highest supported refresh rates
+- Imports the monitor configuration from the old Windows Installation
+- Automatically sets your monitors to their highest supported refresh rates
 - Imports the selected MSI Afterburner overclock profile
 - Installs OBS Studio with optimal settings depending on your GPUs
 - Adjusts your Ethernet and Wi-Fi adapters advanced settings
@@ -74,18 +75,18 @@ Pressing **Install AutoOS** in the **AutoOS Installer** does the following:
 - Installs selected Browsers with selected Browser Extensions
 - Installs additional Image / Video Extensions
 - Installs NanaZip, Everything, StartAllBack and Windhawk with Mods for Start Menu, Taskbar, File Explorer etc.
-- Installs selected Apps for Office, Development, Music, Messaging, Launchers and disables their startup entries
-- Imports the Epic Games Account from the old Windows installation
-- Imports / Links Epic Games and Steam titles from the old Windows installation
+- Installs selected Apps for Messaging, Launchers, Music, Peripherals, Development, Office and disables their startup entries
+- Imports the Epic Games and Riot Games Account from the old Windows installation
+- Imports / Links Epic Games, Riot Games and Steam titles from the old Windows installation
 - Sets Fortnite frame rate depending on your main monitors refresh rate
 - Groups services and disables failure actions for some
-- Cleans up temporary files
+- Cleans up temporary files and creates a restore point
 
-See the [Screenshots](docs/SCREENSHOTS.md#%EF%B8%8F-autoos-installer) or [YouTube Showcase](https://youtu.be/k_xp1WXjMvw) for more information.
+See the [AutoOS Installer Screenshots](docs/SCREENSHOTS.md#%EF%B8%8F-autoos-installer) or [YouTube Showcase](https://youtu.be/k_xp1WXjMvw) for more information.
 
 After the **AutoOS Installer** is done you have a **fully optimized Windows installation** and the **AutoOS Settings** app.
 
-See the [Screenshots](docs/SCREENSHOTS.md#%EF%B8%8F-autoos-settings) or [YouTube Showcase](https://youtu.be/SVfBKoSJDCQ) for more information.
+See the [AutoOS Settings Screenshots](docs/SCREENSHOTS.md#%EF%B8%8F-autoos-settings) or [YouTube Showcase](https://youtu.be/SVfBKoSJDCQ) for more information.
 
 On startup **AutoOS Startup** does the following:
 
@@ -97,7 +98,7 @@ On startup **AutoOS Startup** does the following:
 - Launches OBS Studio if selected
 - Cleans up temporary files
 
-Up until this point all the work has been done by me and me alone. I have spent countless hours every day. There is still some work to do and I am looking for contributors or suggestions to make this a big community project.
+I have spent countless hours every day for 2 years building this project for myself and others. There is still some work to do and I am looking for contributors and suggestions to make this a big community project.
 
 ## 📜 License
 This project is licensed under the **GNU General Public License v3.0**. Detailed information about third-party components and credits can be found in **[License & Credits](docs/LICENSE_THIRD_PARTY.md)**.

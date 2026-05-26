@@ -54,7 +54,22 @@ AutoOS/
   docs/ # Project documentation
   deploy/ # Deployment and installation scripts
   src/
-    AutoOS.App/ # Main WinUI 3 Application (Installer, Settings, Startup, Updater)
+    AutoOS.App/ # Main WinUI 3 Application
+      Assets # Assets  
+        Assets/Applications # Third Party Applications
+        Assets/Fluent # Icons
+        Assets/NavViewMenu # Navigation View
+        Assets/Scripts # Installation Scripts
+      Views/Installer # AutoOS Installer pages
+        Views/Installer/Stages # AutoOS Installer Stages
+      Views/Settings # AutoOS Settings pages
+        Views/Settings/BIOS # Components of BIOS page
+        Views/Settings/Games # Components of Games page
+        Views/Settings/Power # Components of Energy & Power page
+        Views/Settings/Scheduling # Components of Per-CPU Scheduling page
+      Views/Startup # AutoOS Startup
+      Viwes/Updater # AutoOS Updater
+        Views/Updater/Stages # AutoOS Update Stages
     AutoOS.App.Sound/ # Separate C++ Application for applying Sound Buffer Sizes
     AutoOS.Core/ # Helper functions and Models
       NativeMethods.txt # Native Methods for Win32 interop

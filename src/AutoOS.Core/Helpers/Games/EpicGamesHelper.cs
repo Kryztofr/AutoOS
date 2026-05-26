@@ -1056,18 +1056,13 @@ public static partial class EpicGamesHelper
 }
 
 internal record PlaytimePayload(
-    string MachineId,
-    string ArtifactId,
-    string StartTime,
-    string EndTime,
-    bool StartSegment,
-    bool EndSegment
+    [property: JsonPropertyName("machineId")] string MachineId,
+    [property: JsonPropertyName("artifactId")] string ArtifactId,
+    [property: JsonPropertyName("startTime")] string StartTime,
+    [property: JsonPropertyName("endTime")] string EndTime,
+    [property: JsonPropertyName("startSegment")] bool StartSegment,
+    [property: JsonPropertyName("endSegment")] bool EndSegment
 );
 
 [JsonSerializable(typeof(PlaytimePayload))]
 internal partial class PlaytimeJsonContext : JsonSerializerContext { }
-
-
-
-
-

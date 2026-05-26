@@ -1,13 +1,13 @@
 # 🚀 Installation Guide
 
-> [!TIP]
-> Join my [Discord Server](https://discord.gg/bZU4dMMWpg) to receive installation support and stay informed about future updates or changes.
+### Step 1: Join Discord Server
+Join my [Discord Server](https://discord.gg/bZU4dMMWpg) to receive installation support and stay informed about future updates or changes.
 
-### Step 1: Downloading the ISO
+### Step 2: Downloading the ISO
 Download the latest Windows 25H2 ISO file from [here](https://drive.google.com/drive/folders/1BlAYofjlW1bU-WPG3jXygO1ezoJ4gPs7?usp=sharing) (Log into your Google Account if you get an error).<br/>
 Other ISOs are not supported (will not work) to guarantee consistency and the latest features. 
 
-### Step 2: Downloading Drivers
+### Step 3: Downloading Drivers
 Open Device Manager (`devmgmt.msc`) and look for the brand of your Ethernet and Wi-Fi Adapter under the `Network Adapters` section.<br/>
 If you have one of following below, download them.<br/>
 
@@ -32,7 +32,7 @@ If they don't have that option, use `7-Zip, NanaZip, or WinRAR` to extract them.
 
 Finally, create a `New Folder` and move all extracted folders into it. The folder should contain each driver and their `.inf` files.
 
-### Step 3: Run the deployment script
+### Step 4: Run the deployment script
 Open PowerShell **as Administrator**.<br/>
 Paste this into the PowerShell window to run the deployment script.<br/>
 
@@ -41,17 +41,17 @@ $PSDefaultParameterValues['Invoke-WebRequest:UseBasicParsing'] = $true
 Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force 
 irm https://raw.githubusercontent.com/tinodin/AutoOS/master/deploy/deploy.ps1 | iex
 ```
-Then select the **ISO** file you downloaded in Step 1 and your **drivers folder** you created in Step 2.<br/>
+Then select the **ISO** file you downloaded in Step 2 and your **drivers folder** you created in Step 3.<br/>
 If you get any errors during the script leave a message in my [Discord Server](https://discord.gg/bZU4dMMWpg).
 
-### Step 4: Restarting into AutoOS
+### Step 5: Restarting into AutoOS
 Once the script finished, restart your PC and boot into the `default option` by pressing `Enter`.<br/>
 
 > [!WARNING]  
 > Make sure to `keep your ethernet cable connected` or `connect to your WiFi in the setup`.<br/>
 > **DO NOT BYPASS THE NETWORK REQUIREMENT!**
 
-### Step 5: AutoOS Installer
+### Step 6: AutoOS Installer
 Once the OOBE has finished, wait for AutoOS Installer to open up.<br/>
 Carefully look through every tab and select your preferences and apps.<br/>
 
