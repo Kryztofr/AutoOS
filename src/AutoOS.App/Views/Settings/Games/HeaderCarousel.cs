@@ -1950,10 +1950,25 @@ public partial class HeaderCarousel : ItemsControl
                 string exchangeCode = await EpicGamesHelper.Exchange();
                 var (accountId, displayName, _, _) = EpicGamesHelper.GetAccountData(EpicGamesHelper.ActiveEpicGamesAccountPath);
 
+                var arguments = $@"{launchCommand} -AUTH_LOGIN=unused -AUTH_PASSWORD={exchangeCode} -AUTH_TYPE=exchangeCode -epicenv=Prod -EpicPortal -epicapp={appName} -epicusername={displayName} -epicuserid={accountId} -epiclocale=en -epicsandboxid={catalogNamespace}";
+
+                var iniHelper = new InIHelper(EpicGamesHelper.ActiveEpicGamesAccountPath);
+                string settingsSection = $"{accountId}_Settings";
+
+                if (iniHelper.ReadValue($"{catalogNamespace}:{catalogItemId}:{appName}_AdditionalCommandsEnabled", settingsSection) == "True")
+                {
+                    string additionalCommands = iniHelper.ReadValue($"{catalogNamespace}:{catalogItemId}:{appName}_AdditionalCommands", settingsSection);
+
+					if (!string.IsNullOrEmpty(additionalCommands))
+                    {
+                        arguments += $" {additionalCommands}";
+                    }
+                }
+
                 var startInfo = new ProcessStartInfo
                 {
                     FileName = Path.Combine(installLocation, launchExecutable),
-                    Arguments = $@"{launchCommand} -AUTH_LOGIN=unused -AUTH_PASSWORD={exchangeCode} -AUTH_TYPE=exchangeCode -epicenv=Prod -EpicPortal -epicapp={appName} -epicusername={displayName} -epicuserid={accountId} -epiclocale=en -epicsandboxid={catalogNamespace}",
+                    Arguments = arguments,
                     WorkingDirectory = Path.GetDirectoryName(Path.Combine(installLocation, launchExecutable)),
                     UseShellExecute = false
                 };
