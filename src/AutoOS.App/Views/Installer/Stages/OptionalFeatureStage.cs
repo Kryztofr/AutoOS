@@ -1,4 +1,3 @@
-using AutoOS.Common;
 using AutoOS.Views.Installer.Actions;
 
 namespace AutoOS.Views.Installer.Stages;
