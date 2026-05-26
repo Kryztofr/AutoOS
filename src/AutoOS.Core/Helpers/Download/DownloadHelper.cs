@@ -36,13 +36,13 @@ public static partial class DownloadHelper
         DownloadConfiguration config = new()
         {
             MaxTryAgainOnFailure = 5,
-            EnableAutoResumeDownload = false,
-            ParallelDownload = true,
-            ChunkCount = 8,
-            ParallelCount = 4,
+            EnableAutoResumeDownload = true,
+            ParallelDownload = false,
+            ChunkCount = 1,
+            ParallelCount = 1,
             RequestConfiguration = new RequestConfiguration
             {
-                UserAgent = $"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36 AutoOS/{ProcessInfoHelper.Version}"
+                UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
             }
         };
 
