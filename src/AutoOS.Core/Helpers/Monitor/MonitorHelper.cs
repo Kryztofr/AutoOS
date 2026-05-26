@@ -1,9 +1,9 @@
 using AutoOS.Core.Helpers.Monitor.Models;
-using AutoOS.Core.Helpers.Registry;
 using System.Text;
 using Windows.Win32.Foundation;
 using Windows.Win32.Graphics.Gdi;
 using Windows.Win32;
+using System.Diagnostics;
 
 namespace AutoOS.Core.Helpers.Monitor;
 
@@ -146,17 +146,32 @@ public static partial class MonitorHelper
 
         if (target == null) return;
 
-        await Task.Run(() =>
+        await Process.Start(new ProcessStartInfo
         {
-            RegistryHelper.LoadHive(RegistryHelper.Identity.System, @"HKLM\OfflineSystem", target.SystemHivePath);
+            FileName = "reg.exe",
+            Arguments = $@"load HKLM\OfflineSystem ""{target.SystemHivePath}""",
+            CreateNoWindow = true,
+            UseShellExecute = false
+        })!.WaitForExitAsync();
 
-            string[] keysToCopy = ["Configuration", "Connectivity", "ScaleFactors"];
-            foreach (var key in keysToCopy)
+        string[] keysToCopy = ["Configuration", "Connectivity", "ScaleFactors"];
+        foreach (var key in keysToCopy)
+        {
+            await Process.Start(new ProcessStartInfo
             {
-                RegistryHelper.CopyKey(RegistryHelper.Identity.System, $@"HKLM\OfflineSystem\ControlSet001\Control\GraphicsDrivers\{key}", $@"HKLM\SYSTEM\CurrentControlSet\Control\GraphicsDrivers\{key}");
-            }
-
-            RegistryHelper.UnLoadHive(RegistryHelper.Identity.System, @"HKLM\OfflineSystem");
-        });
+                FileName = "reg.exe",
+                Arguments = $@"copy ""HKLM\OfflineSystem\ControlSet001\Control\GraphicsDrivers\{key}"" ""HKLM\SYSTEM\CurrentControlSet\Control\GraphicsDrivers\{key}"" /s /f",
+                CreateNoWindow = true,
+                UseShellExecute = false
+            })!.WaitForExitAsync();
+        }
+    
+        await Process.Start(new ProcessStartInfo
+        {
+            FileName = "reg.exe",
+            Arguments = @"unload HKLM\OfflineSystem",
+            CreateNoWindow = true,
+            UseShellExecute = false
+        })!.WaitForExitAsync();
     }
 }

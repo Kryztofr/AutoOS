@@ -404,9 +404,9 @@ public static class ApplicationStage
             ("Importing Vencord settings", async () => await Task.Delay(500), () => Discord == true),
 
             // import discord account
-            ("Importing Discord Account", async () => { Process.Start(new ProcessStartInfo { FileName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Discord", "app-" + discordVersion, "Discord.exe"), WindowStyle = ProcessWindowStyle.Hidden }); while (Process.GetProcessesByName("OpenWith").Length == 0) { await Task.Delay(500); } }, () => Discord == true && DiscordAccount == true),
-            ("Importing Discord Account", async () => await Task.Delay(3000), () => Discord == true && DiscordAccount == true),
-            ("Importing Discord Account", async () => { foreach (Process process in Process.GetProcessesByName("OpenWith")) { process.Kill(); process.WaitForExit(); }}, () => Discord == true && DiscordAccount == true),
+            ("Importing Discord Account", async () => { Process.Start(new ProcessStartInfo { FileName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Discord", "app-" + discordVersion, "Discord.exe"), WindowStyle = ProcessWindowStyle.Hidden }); while (Process.GetProcessesByName("OpenWith").Length == 0 && Process.GetProcessesByName("msedge").Length == 0) { await Task.Delay(500); } }, () => Discord == true && DiscordAccount == true),
+            ("Importing Discord Account", async () => await Task.Delay(4000), () => Discord == true && DiscordAccount == true),
+            ("Importing Discord Account", async () => { foreach (Process process in Process.GetProcessesByName("OpenWith")) { process.Kill(); process.WaitForExit(); } foreach (Process process in Process.GetProcessesByName("msedge")) { process.Kill(); process.WaitForExit(); } }, () => Discord == true && DiscordAccount == true),
             ("Importing Discord Account", async () => { foreach (Process process in Process.GetProcessesByName("Discord")) { if (process.MainWindowHandle != IntPtr.Zero) { PInvoke.PostMessage((HWND)process.MainWindowHandle, PInvoke.WM_CLOSE, default(WPARAM), default(LPARAM)); process.WaitForExit(); } } }, () => Discord == true && DiscordAccount == true),
             ("Importing Discord Account", async () => await DiscordHelper.ImportAccount(reporter), () => Discord == true && DiscordAccount == true),
             

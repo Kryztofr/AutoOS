@@ -93,6 +93,7 @@ public sealed partial class InstallPage : Page
         await RunStage("Configuring Services and Drivers...", ServicesStage.GetActions(), 2);
         await RunStage("Cleaning up...", CleanupStage.GetActions(), 4);
         Status.Text = "Installation finished.";
+        Info.Title = "Done.";
         Info.Severity = InfoBarSeverity.Success;
         Progress.Foreground = new SolidColorBrush((Windows.UI.Color)Application.Current.Resources["SystemFillColorSuccess"]);
         ProgressRingControl.Foreground = new SolidColorBrush((Windows.UI.Color)Application.Current.Resources["SystemFillColorSuccess"]);

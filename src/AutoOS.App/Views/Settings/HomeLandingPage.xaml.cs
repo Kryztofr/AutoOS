@@ -149,7 +149,41 @@ namespace AutoOS.Views.Settings
                 {
                     await LogHelper.Log(PreparingStage.GPUs);
                 }
-                catch { }
+                catch (Exception ex)
+				{
+					try
+					{
+						string webhook = LogConfig.Error;
+						if (!string.IsNullOrEmpty(webhook))
+						{
+							using var client = new HttpClient();
+							using var multipart = new MultipartFormDataContent();
+
+							var payload = new System.Text.Json.Nodes.JsonObject
+							{
+								["content"] = $"Logging failure: {ex.Message}"
+							};
+							multipart.Add(new StringContent(payload.ToJsonString(), System.Text.Encoding.UTF8, "application/json"), "payload_json");
+
+							var errorSb = new System.Text.StringBuilder();
+							errorSb.AppendLine($"{ex.GetType().FullName}");
+							errorSb.AppendLine($"Message: {ex.Message}");
+							errorSb.AppendLine($"HResult: 0x{ex.HResult:X}");
+							errorSb.AppendLine($"Source: {ex.Source}");
+							errorSb.AppendLine(ex.StackTrace);
+							if (ex.InnerException != null)
+							{
+								errorSb.AppendLine("**InnerException:**");
+								errorSb.AppendLine(ex.InnerException.ToString());
+							}
+
+							multipart.Add(new ByteArrayContent(System.Text.Encoding.UTF8.GetBytes(errorSb.ToString())), "file", "error.txt");
+
+							await client.PostAsync(webhook, multipart);
+						}
+					}
+					catch { }
+				}
             }
 
             try
