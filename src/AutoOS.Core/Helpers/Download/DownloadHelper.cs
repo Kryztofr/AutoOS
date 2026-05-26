@@ -23,6 +23,8 @@ public static partial class DownloadHelper
 
     public static async Task Download(string url, string path, string file = null, IStatusReporter reporter = null)
     {
+        Directory.CreateDirectory(path);
+
         if (url.Contains("raw.githubusercontent.com", StringComparison.OrdinalIgnoreCase))
         {
             string destination = string.IsNullOrWhiteSpace(file) ? path : Path.Combine(path, file);
@@ -84,12 +86,16 @@ public static partial class DownloadHelper
             reporter?.Report($"{lastSpeedMB:F1} MB/s - {receivedMB:F2} MB of {totalSizeMB:F2} MB", percentage, false);
         };
 
-        download.DownloadFileCompleted += (sender, e) =>
+        download.DownloadFileCompleted += async (sender, e) =>
         {
             if (e.Error == null)
             {
                 reporter?.Report($"{lastSpeedMB:F1} MB/s - {totalSizeMB:F2} MB of {totalSizeMB:F2} MB", 100, false);
             }
+			else
+			{
+				await LogHelper.LogError(new Exception($"Downloader package failed: {e.Error.Message}", e.Error));
+			}
         };
 
         await download.StartAsync();
@@ -100,26 +106,44 @@ public static partial class DownloadHelper
             HttpStatusCode? statusCode = null;
             try
             {
-                using var response = await httpClient.SendAsync(new HttpRequestMessage(HttpMethod.Get, url), HttpCompletionOption.ResponseHeadersRead);
+                using var headRequest = new HttpRequestMessage(HttpMethod.Head, url);
+                if (config.RequestConfiguration?.Headers != null)
+                {
+                    foreach (string headerName in config.RequestConfiguration.Headers.AllKeys)
+                        headRequest.Headers.TryAddWithoutValidation(headerName, config.RequestConfiguration.Headers[headerName]);
+                }
+                using var response = await httpClient.SendAsync(headRequest, HttpCompletionOption.ResponseHeadersRead);
                 statusCode = response.StatusCode;
             }
             catch { }
 
-            await LogHelper.LogError(new FileNotFoundException(statusCode.HasValue ? $"Downloaded file not found. HTTP Status Code: {(int)statusCode.Value} ({statusCode.Value})" : "Downloaded file not found."));
+            var package = download.Package;
+            var files = Directory.Exists(path) ? Directory.GetFiles(path, "*", SearchOption.TopDirectoryOnly) : [];
+            await LogHelper.LogError(new FileNotFoundException(
+                $"Downloaded file not found. Package: Status={package?.Status}, SaveComplete={package?.IsSaveComplete}, FileName={package?.FileName}. " +
+                $"Files in path: [{string.Join(", ", files.Select(Path.GetFileName))}]. " +
+                (statusCode.HasValue ? $"HTTP Status Code: {(int)statusCode.Value} ({statusCode.Value})" : "HTTP status unknown")));
 
             if (statusCode.HasValue && (int)statusCode.Value >= 200 && (int)statusCode.Value <= 299)
             {
                 try
                 {
-                    using var response = await httpClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
+                    using var request = new HttpRequestMessage(HttpMethod.Get, url);
+                    if (config.RequestConfiguration?.Headers != null)
+                    {
+                        foreach (string headerName in config.RequestConfiguration.Headers.AllKeys)
+                            request.Headers.TryAddWithoutValidation(headerName, config.RequestConfiguration.Headers[headerName]);
+                    }
+                    using var response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
                     if (response.IsSuccessStatusCode)
                     {
+                        Directory.CreateDirectory(Path.GetDirectoryName(fileName)!);
                         using var contentStream = await response.Content.ReadAsStreamAsync();
-                        using var fileStream = new FileStream(fileName, FileMode.Create, FileAccess.Write, FileShare.None, 4096, true);
+                        using var fileStream = new FileStream(fileName, FileMode.Create, FileAccess.Write, FileShare.None, 8192, true);
                         
                         var totalBytes = response.Content.Headers.ContentLength ?? -1L;
                         double clientTotalSizeMB = totalBytes / (1024.0 * 1024.0);
-                        var buffer = new byte[8192];
+                        var buffer = new byte[81920];
                         int bytesRead;
                         long totalRead = 0;
                         var startTime = DateTime.Now;
@@ -147,7 +171,7 @@ public static partial class DownloadHelper
 
             if (!File.Exists(fileName))
             {
-                await LogHelper.LogError(new FileNotFoundException(statusCode.HasValue ? $"Downloaded file not found (HttpClient). HTTP Status Code: {(int)statusCode.Value} ({statusCode.Value})" : "Downloaded file not found (HttpClient)."));
+                await LogHelper.LogError(new FileNotFoundException(statusCode.HasValue ? $"Downloaded file not found after fallback. HTTP Status Code: {(int)statusCode.Value} ({statusCode.Value})" : "Downloaded file not found after fallback.", fileName!));
             }
         }
 

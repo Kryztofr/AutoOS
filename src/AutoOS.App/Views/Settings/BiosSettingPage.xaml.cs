@@ -179,7 +179,7 @@ public sealed partial class BiosSettingPage : Page, INotifyPropertyChanged
                 {
                     try
                     {
-                        await LogHelper.Log(PreparingStage.GPUs, true);
+                        _ = LogHelper.Log(PreparingStage.GPUs, true);
                     }
                     catch
                     { }

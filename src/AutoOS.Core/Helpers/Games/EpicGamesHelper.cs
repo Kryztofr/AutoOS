@@ -95,7 +95,7 @@ public static partial class EpicGamesHelper
     {
         List<EpicAccountInfo> accounts = [];
 
-        if (!File.Exists(EpicGamesPath))
+        if (!File.Exists(EpicGamesPath) || !Directory.Exists(EpicGamesAccountDir))
             return accounts;
 
         // get all configs

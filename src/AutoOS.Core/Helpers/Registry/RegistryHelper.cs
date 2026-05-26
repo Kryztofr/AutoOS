@@ -162,6 +162,7 @@ public static partial class RegistryHelper
         RunAs(identity, () =>
         {
             EnablePrivilege("SeRestorePrivilege");
+            EnablePrivilege("SeBackupPrivilege");
             
             var (root, subKeyPath) = ParseKeyPath(hiveName);
             if (root != Microsoft.Win32.Registry.LocalMachine)
@@ -185,6 +186,7 @@ public static partial class RegistryHelper
         RunAs(identity, () =>
         {
             EnablePrivilege("SeRestorePrivilege");
+            EnablePrivilege("SeBackupPrivilege");
             
             var (root, subKeyPath) = ParseKeyPath(hiveName);
             if (root != Microsoft.Win32.Registry.LocalMachine)
