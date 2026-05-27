@@ -223,18 +223,18 @@ $restartRequired = $false
 
 $services = @(
     @{ Path = "HKLM:\SYSTEM\CurrentControlSet\Services\cdrom"; Name = "Start"; Value = 1 },
-    @{ Path = "HKLM:\SYSTEM\CurrentControlSet\Services\defragsvc "; Name = "Start"; Value = 3 },
+    @{ Path = "HKLM:\SYSTEM\CurrentControlSet\Services\defragsvc"; Name = "Start"; Value = 3 },
     @{ Path = "HKLM:\SYSTEM\CurrentControlSet\Services\spaceport"; Name = "Start"; Value = 0 },
     @{ Path = "HKLM:\SYSTEM\CurrentControlSet\Services\vdrvroot"; Name = "Start"; Value = 0 },
     @{ Path = "HKLM:\SYSTEM\CurrentControlSet\Services\vds"; Name = "Start"; Value = 3 }
 )
 
 foreach ($service in $services) {
+    $serviceName = Split-Path $service.Path -Leaf
     if (-not (Test-Path $service.Path)) {
         Write-Host "Your OS has the $serviceName removed. Either use an existing dual boot or install a default Windows and run the script there."
         return
     }
-    $serviceName = Split-Path $service.Path -Leaf
     $current = (Get-ItemProperty -Path $service.Path -Name $service.Name -ErrorAction SilentlyContinue).$($service.Name)
     if ($current -ne $service.Value) {
         Write-Host "Updating $serviceName startup..."
