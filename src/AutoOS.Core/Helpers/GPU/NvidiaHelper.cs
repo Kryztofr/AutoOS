@@ -3,6 +3,7 @@ using AutoOS.Core.Helpers.Download;
 using AutoOS.Core.Helpers.Extract;
 using AutoOS.Core.Helpers.GPU.Models;
 using AutoOS.Core.Helpers.Registry;
+using AutoOS.Core.Helpers.Store;
 using DevWinUI;
 using Microsoft.Win32;
 using System.Diagnostics;
@@ -173,6 +174,12 @@ namespace AutoOS.Core.Helpers.GPU
         {
             var actions = new List<(string Title, Func<Task> Action, Func<bool> Condition)>
             {
+				// download nvidia control panel
+				("Downloading NVIDIA Control Panel", async () => await StoreHelper.Download("NVIDIACorp.NVIDIAControlPanel_56jybvy8sckqj", 0), null),
+
+				// install nvidia control panel
+				("Installing NVIDIA Control Panel", async () => await StoreHelper.Install("NVIDIACorp.NVIDIAControlPanel_56jybvy8sckqj"), null),
+
                 // disable nvidia tray icon
                 (@"Disabling ""Show Notification Tray Icon""", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\NVIDIA Corporation\NvTray", "StartOnLogin", 0, RegistryValueKind.DWord), null),
                 (@"Disabling ""Show Notification Tray Icon""", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\nvlddmkm\Global\NVTweak", "HideXGpuTrayIcon", 1, RegistryValueKind.DWord), null),

@@ -235,7 +235,7 @@ public static partial class RegistryHelper
             EnablePrivilege("SeDebugPrivilege");
             using (var sc = new ServiceController("TrustedInstaller"))
             {
-                if (sc.Status != ServiceControllerStatus.Running)
+                if (sc.Status == ServiceControllerStatus.Stopped)
                 {
                     try
                     {

@@ -164,9 +164,14 @@ public static partial class DownloadHelper
                                 reporter?.Report(totalBytes > 0 ? $"{speedMB:F1} MB/s - {receivedMB:F2} MB of {clientTotalSizeMB:F2} MB" : $"{speedMB:F1} MB/s - {receivedMB:F2} MB", percentage, false);
                             }
                         }
+                        
+                        await fileStream.FlushAsync();
                     }
                 }
-                catch { }
+                catch (Exception ex)
+                {
+                    await LogHelper.LogError(new Exception($"Fallback download failed: {ex.Message}", ex));
+                }
             }
 
             if (!File.Exists(fileName))
