@@ -1995,22 +1995,11 @@ public partial class HeaderCarousel : ItemsControl
             }
             else if (launcher == "Steam")
             {
-                if (ulong.TryParse(gameId, out ulong id) && id > (ulong)int.MaxValue)
+                Process.Start(new ProcessStartInfo
                 {
-                    Process.Start(new ProcessStartInfo
-                    {
-                        FileName = SteamHelper.SteamPath,
-                        Arguments = $"-silent steam://rungameid/{gameId} "
-                    });
-                }
-                else
-                {
-                    Process.Start(new ProcessStartInfo
-                    {
-                        FileName = SteamHelper.SteamPath,
-                        Arguments = $"-applaunch {gameId} -silent"
-                    });
-                }
+                    FileName = SteamHelper.SteamPath,
+                    Arguments = $"-silent steam://rungameid/{gameId} "
+                });
             }
             else if (launcher == "Eden")
             {

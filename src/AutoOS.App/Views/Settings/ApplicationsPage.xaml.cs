@@ -42,7 +42,7 @@ public sealed partial class ApplicationsPage : Page
     {
         var messagingList = new List<GridViewItem>
         {
-            new() { Text = "Discord", ImageSource = "ms-appx:///Assets/Fluent/Discord.png", IsInstalled = Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Discord")) },
+            new() { Text = "Discord", ImageSource = "ms-appx:///Assets/Fluent/Discord.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Discord", "Update.exe")) },
             new() { Text = "WhatsApp", ImageSource = "ms-appx:///Assets/Fluent/Whatsapp.png", IsInstalled = Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Packages", "5319275A.WhatsAppDesktop_cv1g1gvanyjgm")) }
         };
         foreach (var item in messagingList.Where(item => !item.IsInstalled))

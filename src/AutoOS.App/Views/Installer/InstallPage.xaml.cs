@@ -103,6 +103,8 @@ public sealed partial class InstallPage : Page
         localSettings.Values["Install_End"] = DateTimeOffset.Now.ToString("O");
         Registry.SetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\AutoOS", "IsInstalled", 1, RegistryValueKind.DWord);
         Registry.SetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\Explorer", "LockedStartLayout", 0, RegistryValueKind.DWord);
+        localSettings.Values.Remove("actionStage");
+        localSettings.Values.Remove("actionIndex");
         try
         {
             await LogHelper.Log(PreparingStage.GPUs);
