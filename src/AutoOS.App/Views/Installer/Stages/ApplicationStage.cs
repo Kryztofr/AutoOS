@@ -50,9 +50,16 @@ public class ApplicationSelection
     public bool SteelSeriesGG { get; set; }
     public bool RazerSynapse { get; set; }
     public bool CorsairICue { get; set; }
-    public bool VisualStudio { get; set; }
+	public bool ViGEmBus { get; set; }
+	public bool HidHide { get; set; }
+	public bool DualSenseY { get; set; }
+	public bool RaceElement { get; set; }
+	public bool PlaystationAccessories { get; set; }
+	public bool XboxAccessories { get; set; }
+	public bool VisualStudio { get; set; }
     public bool VisualStudioCode { get; set; }
     public bool Antigravity { get; set; }
+    public bool Windsurf {get; set; }
     public bool Git { get; set; }
     public bool Python { get; set; }
     public bool Nodejs { get; set; }
@@ -121,9 +128,17 @@ public static class ApplicationStage
         bool RazerSynapse = selection?.RazerSynapse ?? PreparingStage.RazerSynapse;
         bool CorsairICue = selection?.CorsairICue ?? PreparingStage.CorsairICue;
 
+        bool ViGEmBus = selection?.ViGEmBus ?? PreparingStage.ViGEmBus;
+        bool HidHide = selection?.HidHide ?? PreparingStage.HidHide;
+        bool DualSenseY = selection?.DualSenseY ?? PreparingStage.DualSenseY;
+        bool RaceElement = selection?.RaceElement ?? PreparingStage.RaceElement;
+        bool PlaystationAccessories = selection?.PlaystationAccessories ?? PreparingStage.PlaystationAccessories;
+        bool XboxAccessories = selection?.XboxAccessories ?? PreparingStage.XboxAccessories;
+
         bool VisualStudio = selection?.VisualStudio ?? PreparingStage.VisualStudio;
         bool VisualStudioCode = selection?.VisualStudioCode ?? PreparingStage.VisualStudioCode;
         bool Antigravity = selection?.Antigravity ?? PreparingStage.Antigravity;
+        bool Windsurf = selection?.Windsurf ?? PreparingStage.Windsurf;
         bool Git = selection?.Git ?? PreparingStage.Git;
         bool Python = selection?.Python ?? PreparingStage.Python;
         bool Nodejs = selection?.Nodejs ?? PreparingStage.Nodejs;
@@ -985,6 +1000,60 @@ public static class ApplicationStage
             // disable corsair icue startup entry
             ("Disabling Corsair iCUE startup entry", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run", "Corsair iCUE5 Software", new byte[] { 0x01 }, RegistryValueKind.Binary), () => CorsairICue == true),
 
+            //download vigembus
+            ("Downloading ViGEmBus", async () => await DownloadHelper.Download(JsonDocument.Parse(await new HttpClient { DefaultRequestHeaders = { { "User-Agent", "AutoOS" } } }.GetStringAsync("https://api.github.com/repos/nefarius/ViGEmBus/releases/latest")).RootElement.GetProperty("assets").EnumerateArray().First(a => a.GetProperty("name").GetString().Contains("x64_x86_arm64.exe")).GetProperty("browser_download_url").GetString(), Path.GetTempPath(), "ViGEmBusx64_x86_arm64.exe", reporter: reporter), () => ViGEmBus == true),
+
+            // install vigembus
+            ("Installing ViGEmBus", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "ViGEmBusx64_x86_arm64.exe"), Arguments = "/qn /NORESTART" , WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => ViGEmBus == true),
+            ("Cleaning up ViGEmBus files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "ViGEmBusx64_x86_arm64.exe")), () => ViGEmBus == true),
+
+            //download hidhide
+            ("Downloading HidHide", async () => await DownloadHelper.Download(JsonDocument.Parse(await new HttpClient { DefaultRequestHeaders = { { "User-Agent", "AutoOS" } } }.GetStringAsync("https://api.github.com/repos/nefarius/HidHide/releases/latest")).RootElement.GetProperty("assets").EnumerateArray().First(a => a.GetProperty("name").GetString().Contains("x64.exe")).GetProperty("browser_download_url").GetString(), Path.GetTempPath(), "HidHide_x64.exe", reporter: reporter), () => HidHide == true),
+
+            // install hidhide
+            ("Installing HidHide", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "HidHide_x64.exe"), Arguments = "/qn /NORESTART" , WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => HidHide == true),
+            ("Cleaning up HidHide files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "HidHide_x64.exe")), () => HidHide == true),
+
+            // download dualsensey
+            ("Downloading DualSenseY", async () => await DownloadHelper.Download("https://github.com/WujekFoliarz/DualSenseY-v2/releases/latest/download/x64-release.zip", Path.Combine(Path.GetTempPath(), "DualSenseY.zip")), () => selection == null),
+
+            // install dualsensey
+            ("Installing DualSenseY", async () => await ExtractHelper.Extract(Path.Combine(Path.GetTempPath(), "DualSenseY.zip"), Path.Combine(Path.GetTempPath(), "DualSenseY")), () => selection == null),
+            ("Installing DualSenseY", async () => Directory.Move(Path.Combine(Path.GetTempPath(), "DualSenseY"), Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "DualSenseY")), () => selection == null),
+            ("Installing DualSenseY", async () => await ProcessActions.RunPowerShell(@"$Shell = New-Object -ComObject WScript.Shell; $Shortcut = $Shell.CreateShortcut([System.IO.Path]::Combine($env:ProgramData, 'Microsoft\Windows\Start Menu\Programs\DualSenseY.lnk')); $Shortcut.TargetPath = [System.IO.Path]::Combine($env:ProgramFiles, 'DualSenseY\DualSenseY.exe'); $Shortcut.Save()"), () => selection == null),
+            ("Installing DualSenseY", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\DualSenseY", "DisplayName", "DualSenseY", RegistryValueKind.String), () => selection == null),
+            ("Installing DualSenseY", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\DualSenseY", "UninstallString", $@"cmd /c rd /s /q ""{Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "DualSenseY")}"" & del ""{Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), @"Microsoft\Windows\Start Menu\Programs\DualSenseY.lnk")}"" & reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\DualSenseY"" /f", RegistryValueKind.String), () => selection == null),
+            ("Installing DualSenseY", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\DualSenseY", "DisplayIcon", Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), @"DualSenseY\DualSenseY.exe"), RegistryValueKind.String), () => selection == null),
+            ("Installing DualSenseY", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\DualSenseY", "Publisher", "WujekFoliarz", RegistryValueKind.String), () => selection == null),
+            ("Installing DualSenseY", async () => await Task.Delay(500), () => selection == null),
+            ("Cleaning up DualSenseY files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "DualSenseY.zip")), () => selection == null),
+
+            // download raceelement
+            ("Downloading RaceElement", async () => await DownloadHelper.Download("https://github.com/RiddleTime/Race-Element/releases/latest/download/RaceElement.exe", Path.Combine(Path.GetTempPath(), "RaceElement.exe")), () => selection == null),
+
+            // install raceelement
+            ("Installing RaceElement", async () => Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "RaceElement")), () => selection == null),
+            ("Installing RaceElement", async () => File.Move(Path.Combine(Path.GetTempPath(), "RaceElement.exe"), Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "RaceElement", "RaceElement.exe")), () => selection == null),
+            ("Installing RaceElement", async () => await ProcessActions.RunPowerShell(@"$Shell = New-Object -ComObject WScript.Shell; $Shortcut = $Shell.CreateShortcut([System.IO.Path]::Combine($env:ProgramData, 'Microsoft\Windows\Start Menu\Programs\RaceElement.lnk')); $Shortcut.TargetPath = [System.IO.Path]::Combine($env:ProgramFiles, 'RaceElement\RaceElement.exe'); $Shortcut.Save()"), () => selection == null),
+            ("Installing RaceElement", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\RaceElement", "DisplayName", "RaceElement", RegistryValueKind.String), () => selection == null),
+            ("Installing RaceElement", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\RaceElement", "UninstallString", $@"cmd /c rd /s /q ""{Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "RaceElement")}"" & del ""{Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), @"Microsoft\Windows\Start Menu\Programs\RaceElement.lnk")}"" & reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\RaceElement"" /f", RegistryValueKind.String), () => selection == null),
+            ("Installing RaceElement", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\RaceElement", "DisplayIcon", Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "RaceElement", "RaceElement.exe"), RegistryValueKind.String), () => selection == null),
+            ("Installing RaceElement", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\RaceElement", "Publisher", "RiddleTime", RegistryValueKind.String), () => selection == null),
+            ("Installing RaceElement", async () => await Task.Delay(500), () => selection == null),
+
+            //download playstation accessories
+            ("Downloading PlayStation® Accessories", async () => await DownloadHelper.Download("https://fwupdater.dl.playstation.net/fwupdater/PlayStationAccessoriesInstaller.exe", Path.GetTempPath(), "PlayStationAccessoriesInstaller.exe", reporter: reporter), () => PlaystationAccessories == true),
+
+            // install playstation accessories
+            ("Installing PlayStation® Accessories", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "PlayStationAccessoriesInstaller.exe"), Arguments = "/S /v/qn" , WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => PlaystationAccessories == true),
+            ("Cleaning up PlayStation® Accessories files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "PlayStationAccessoriesInstaller.exe")), () => PlaystationAccessories == true),
+
+            //download xbox accessories
+            ("Downloading Xbox Accessories", async () => await StoreHelper.Download("Microsoft.XboxDevices_8wekyb3d8bbwe", reporter: reporter), () => XboxAccessories == true),
+
+            // install xbox accessories
+            ("Installing Xbox Accessories", async () => await StoreHelper.Install("Microsoft.XboxDevices_8wekyb3d8bbwe"), () => XboxAccessories == true),
+
             // download visual studio
             ("Downloading Visual Studio", async () => await DownloadHelper.Download("https://aka.ms/vs/stable/vs_community.exe", Path.GetTempPath(), "vs_Community.exe", reporter: reporter), () => VisualStudio == true),
 
@@ -1035,6 +1104,16 @@ public static class ApplicationStage
 
             // pin antigravity to the taskbar
             ("Pinning Antigravity to the taskbar", async () => await ProcessActions.RunPowerShellScript("taskbarpin.ps1", $@"-Type Link -Path ""{Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), @"Microsoft\Windows\Start Menu\Programs\Antigravity\Antigravity.lnk")}"""), () => Antigravity == true),
+
+            // download windsurf
+            ("Downloading Windsurf", async () => await DownloadHelper.Download("https://windsurf-stable.codeiumdata.com/win32-x64-user/stable/a5d3f1ff990cabc0e8001cce6642bdb7ad429e73/WindsurfUserSetup-x64-2.3.9.exe", Path.GetTempPath(), "WindsurfUserSetup-x64.exe", reporter: reporter), () => Windsurf == true),
+
+            // install windsurf
+            ("Installing Windsurf", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "WindsurfUserSetup-x64.exe"), Arguments = "/VERYSILENT /NORESTART /MERGETASKS=!runcode" , WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => Windsurf == true),
+            ("Cleaning up Windsurf files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "WindsurfUserSetup-x64.exe")), () => Windsurf == true),
+
+            // pin windsurf to the taskbar
+            ("Pinning Windsurf to the taskbar", async () => await ProcessActions.RunPowerShellScript("taskbarpin.ps1", $@"-Type Link -Path ""{Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), @"Microsoft\Windows\Start Menu\Programs\Windsurf\Windsurf.lnk")}"""), () => Windsurf == true),
 
             // download git
             ("Downloading Git", async () => await DownloadHelper.Download(JsonDocument.Parse(await new HttpClient { DefaultRequestHeaders = { { "User-Agent", "AutoOS" } } }.GetStringAsync("https://api.github.com/repos/git-for-windows/git/releases")).RootElement.EnumerateArray().First(release => release.GetProperty("assets").EnumerateArray().Any(asset => asset.GetProperty("name").GetString().Contains("64-bit.exe"))).GetProperty("assets").EnumerateArray().First(asset => asset.GetProperty("name").GetString().Contains("64-bit.exe")).GetProperty("browser_download_url").GetString(), Path.GetTempPath(), "Git64-bit.exe", reporter: reporter), () => Git == true),

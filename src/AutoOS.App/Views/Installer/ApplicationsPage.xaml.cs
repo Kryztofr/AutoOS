@@ -9,6 +9,7 @@ public sealed partial class ApplicationsPage : Page
     private bool isInitializingDevelopmentState = true;
     private bool isInitializingMusicState = true;
     private bool isInitializingPeripheralsState = true;
+    private bool isInitializingControllersState = true;
     private bool isInitializingMessagingState = true;
     private bool isInitializingLaunchersState = true;
 
@@ -22,6 +23,7 @@ public sealed partial class ApplicationsPage : Page
         GetLaunchers();
         GetMusic();
         GetPeripherals();
+        GetControllers();
         GetDevelopment();
         GetOffice();
     }
@@ -74,12 +76,23 @@ public sealed partial class ApplicationsPage : Page
             new() { Text = "Razer Synapse", ImageSource = "ms-appx:///Assets/Fluent/RazerSynapse.png" },
             new() { Text = "Corsair iCUE", ImageSource = "ms-appx:///Assets/Fluent/CorsairICue.png" }
         };
+        
+        Controllers.ItemsSource = new List<GridViewItem>
+        {
+            new() { Text = "ViGEmBus", ImageSource = "ms-appx:///Assets/Fluent/ViGEmBus.png" },
+            new() { Text = "HidHide", ImageSource = "ms-appx:///Assets/Fluent/HidHide.png" },
+            new() { Text = "DualSenseY", ImageSource = "ms-appx:///Assets/Fluent/DualSenseY.png" },
+            new() { Text = "RaceElement", ImageSource = "ms-appx:///Assets/Fluent/RaceElement.png" },
+            new() { Text = "PlayStation® Accessories", ImageSource = "ms-appx:///Assets/Fluent/PlaystationAccessories.png" },
+            new() { Text = "Xbox Accessories", ImageSource = "ms-appx:///Assets/Fluent/XboxAccessories.png" },
+        };
 
         Development.ItemsSource = new List<GridViewItem>
         {
             new() { Text = "Visual Studio", ImageSource = "ms-appx:///Assets/Fluent/VisualStudio.png" },
             new() { Text = "Visual Studio Code", ImageSource = "ms-appx:///Assets/Fluent/VisualStudioCode.png" },
             new() { Text = "Antigravity", ImageSource = "ms-appx:///Assets/Fluent/Antigravity.png" },
+            new() { Text = "Windsurf", ImageSource = "ms-appx:///Assets/Fluent/Windsurf.png" },
             new() { Text = "Git", ImageSource = "ms-appx:///Assets/Fluent/Git.png" },
             new() { Text = "Python", ImageSource = "ms-appx:///Assets/Fluent/Python.png" },
             new() { Text = "Node.js", ImageSource = "ms-appx:///Assets/Fluent/Nodejs.png" },
@@ -148,6 +161,19 @@ public sealed partial class ApplicationsPage : Page
         );
 
         isInitializingPeripheralsState = false;
+    }
+    
+    private void GetControllers()
+    {
+        var selectedControllers = localSettings.Values["Controllers"] as string;
+        var controllersItems = Controllers.ItemsSource as List<GridViewItem>;
+        Controllers.SelectedItems.AddRange(
+            selectedControllers?.Split(new[] { ", " }, StringSplitOptions.RemoveEmptyEntries)
+            .Select(e => controllersItems?.FirstOrDefault(ext => ext.Text == e))
+            .Where(ext => ext != null) ?? Enumerable.Empty<GridViewItem>()
+        );
+
+        isInitializingControllersState = false;
     }
 
     private void GetDevelopment()
@@ -222,6 +248,18 @@ public sealed partial class ApplicationsPage : Page
             .ToArray();
 
         localSettings.Values["Peripherals"] = string.Join(", ", selectedPeripherals);
+    }
+    
+    private void Controllers_Changed(object sender, SelectionChangedEventArgs e)
+    {
+        if (isInitializingControllersState) return;
+
+        var selectedControllers = Controllers.SelectedItems
+            .Cast<GridViewItem>()
+            .Select(item => item.Text)
+            .ToArray();
+
+        localSettings.Values["Controllers"] = string.Join(", ", selectedControllers);
     }
 
     private void Development_Changed(object sender, SelectionChangedEventArgs e)
