@@ -12,7 +12,8 @@ public sealed partial class ApplicationsPage : Page
     private readonly ObservableCollection<GridViewItem> launchersItems = [];
     private readonly ObservableCollection<GridViewItem> musicItems = [];
     private readonly ObservableCollection<GridViewItem> peripheralsItems = [];
-    private readonly ObservableCollection<GridViewItem> developmentItems = [];
+	private readonly ObservableCollection<GridViewItem> controllersItems = [];
+	private readonly ObservableCollection<GridViewItem> developmentItems = [];
     private readonly ObservableCollection<GridViewItem> officeItems = [];
 
 
@@ -25,15 +26,9 @@ public sealed partial class ApplicationsPage : Page
         Launchers.ItemsSource = launchersItems;
         Music.ItemsSource = musicItems;
         Peripherals.ItemsSource = peripheralsItems;
-        Development.ItemsSource = developmentItems;
+        Controllers.ItemsSource = controllersItems;
+		Development.ItemsSource = developmentItems;
         Office.ItemsSource = officeItems;
-        
-        messagingItems.CollectionChanged += (s, e) => Bindings.Update();
-        launchersItems.CollectionChanged += (s, e) => Bindings.Update();
-        musicItems.CollectionChanged += (s, e) => Bindings.Update();
-        peripheralsItems.CollectionChanged += (s, e) => Bindings.Update();
-        developmentItems.CollectionChanged += (s, e) => Bindings.Update();
-        officeItems.CollectionChanged += (s, e) => Bindings.Update();
     }
 
     public Visibility GetVisibility(int count) => count > 0 ? Visibility.Visible : Visibility.Collapsed;
@@ -88,8 +83,21 @@ public sealed partial class ApplicationsPage : Page
         foreach (var item in peripheralsList.Where(item => !item.IsInstalled))
             peripheralsItems.Add(item);
 
+        var controllersList = new List<GridViewItem>
+        {
+            new() { Text = "ViGEmBus", ImageSource = "ms-appx:///Assets/Fluent/ViGEmBus.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System), "drivers", "ViGEmBus.sys")) },
+            new() { Text = "HidHide", ImageSource = "ms-appx:///Assets/Fluent/HidHide.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System), "drivers", "HidHide.sys")) },
+            new() { Text = "DualSenseY", ImageSource = "ms-appx:///Assets/Fluent/DualSenseY.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "DualSenseY", "DualSenseY.exe")) },
+            new() { Text = "RaceElement", ImageSource = "ms-appx:///Assets/Fluent/RaceElement.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "RaceElement", "RaceElement.exe")) },
+            new() { Text = "PlayStation® Accessories", ImageSource = "ms-appx:///Assets/Fluent/PlaystationAccessories.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Sony", "PlayStationAccessories", "PlayStationAccessories.exe")) },
+            new() { Text = "Xbox Accessories", ImageSource = "ms-appx:///Assets/Fluent/XboxAccessories.png", IsInstalled = Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Packages", "Microsoft.XboxDevices_8wekyb3d8bbwe")) },
+        };
+        foreach (var item in controllersList.Where(item => !item.IsInstalled))
+            controllersItems.Add(item);
+
         var devList = new List<GridViewItem>
         {
+            new() { Text = "Windsurf", ImageSource = "ms-appx:///Assets/Fluent/Windsurf.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs", "Windsurf", "Windsurf.exe"))},
             new() { Text = "Visual Studio", ImageSource = "ms-appx:///Assets/Fluent/VisualStudio.png", IsInstalled = Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Microsoft Visual Studio")) },
             new() { Text = "Visual Studio Code", ImageSource = "ms-appx:///Assets/Fluent/VisualStudioCode.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs", "Microsoft VS Code", "Code.exe")) },
             new() { Text = "Antigravity", ImageSource = "ms-appx:///Assets/Fluent/Antigravity.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs", "Antigravity", "Antigravity.exe")) },
@@ -117,7 +125,7 @@ public sealed partial class ApplicationsPage : Page
 
     private void GridView_SelectionChanged(object sender, SelectionChangedEventArgs e) 
     {
-        InstallButton.IsEnabled = Office.SelectedItems.Count > 0 || Development.SelectedItems.Count > 0 || Music.SelectedItems.Count > 0 || Peripherals.SelectedItems.Count > 0 || Messaging.SelectedItems.Count > 0 || Launchers.SelectedItems.Count > 0;
+        InstallButton.IsEnabled = Office.SelectedItems.Count > 0 || Development.SelectedItems.Count > 0 || Music.SelectedItems.Count > 0 || Peripherals.SelectedItems.Count > 0 || Controllers.SelectedItems.Count > 0 || Messaging.SelectedItems.Count > 0 || Launchers.SelectedItems.Count > 0;
     }
 
     private async void InstallButton_Click(object sender, RoutedEventArgs e)
@@ -160,9 +168,19 @@ public sealed partial class ApplicationsPage : Page
         selection.Wootility = selectedPeripherals.Contains("Wootility");
         selection.CorsairICue = selectedPeripherals.Contains("Corsair iCUE");
 
+        var selectedControllersItems = Controllers.SelectedItems.Cast<GridViewItem>().ToList();
+        var selectedControllers = selectedControllersItems.Select(item => item.Text).ToList();
+        selection.ViGEmBus = selectedControllers.Contains("ViGEmBus");
+        selection.HidHide = selectedControllers.Contains("HidHide");
+        selection.DualSenseY = selectedControllers.Contains("DualSenseY");
+        selection.RaceElement = selectedControllers.Contains("RaceElement");
+        selection.PlaystationAccessories = selectedControllers.Contains("PlaystationAccessories");
+        selection.XboxAccessories = selectedControllers.Contains("XboxAccessories");
+
         var selectedDevItems = Development.SelectedItems.Cast<GridViewItem>().ToList();
         var selectedDev = selectedDevItems.Select(item => item.Text).ToList();
         selection.VisualStudio = selectedDev.Contains("Visual Studio");
+        selection.Windsurf = selectedDev.Contains("Windsurf");
         selection.VisualStudioCode = selectedDev.Contains("Visual Studio Code");
         selection.Antigravity = selectedDev.Contains("Antigravity");
         selection.Git = selectedDev.Contains("Git");
@@ -219,12 +237,15 @@ public sealed partial class ApplicationsPage : Page
             foreach (var item in selectedPeripheralsItems)
                 peripheralsItems.Remove(item);
             
+            foreach (var item in selectedControllersItems)
+                controllersItems.Remove(item);
+
             foreach (var item in selectedDevItems)
                 developmentItems.Remove(item);
 
             foreach (var item in selectedOfficeItems)
                 officeItems.Remove(item);
-            
+
             GridView_SelectionChanged(null, null);
         }
     }

@@ -62,8 +62,8 @@ public static partial class PreparingStage
     public static bool RiotClient;
     public static bool RiotClientAccount;
     public static bool RiotClientGames;
-    public static bool EA;
     public static bool UbisoftConnect;
+    public static bool EA;
     public static bool BattleNet;
     public static bool MinecraftLauncher;
     public static bool RockstarGamesLauncher;
@@ -77,16 +77,24 @@ public static partial class PreparingStage
     public static bool DeezerMusic;
     public static bool Spotify;
 
-    public static bool SteelSeriesGG;
-    public static bool RazerSynapse;
     public static bool LogitechGHub;
     public static bool LogitechOnboardMemoryManager;
     public static bool Wootility;
+    public static bool SteelSeriesGG;
+    public static bool RazerSynapse;
     public static bool CorsairICue;
 
-    public static bool VisualStudio;
+	public static bool ViGEmBus;
+	public static bool HidHide;
+	public static bool DualSenseY;
+	public static bool RaceElement;
+	public static bool PlaystationAccessories;
+	public static bool XboxAccessories;
+
+	public static bool VisualStudio;
     public static bool VisualStudioCode;
     public static bool Antigravity;
+    public static bool Windsurf;
     public static bool Git;
     public static bool Python;
     public static bool Nodejs;
@@ -199,8 +207,8 @@ public static partial class PreparingStage
             EpicGames = (localSettings.Values["Launchers"]?.ToString().Contains("Epic Games") ?? false);
             Steam = (localSettings.Values["Launchers"]?.ToString().Contains("Steam") ?? false);
             RiotClient = (localSettings.Values["Launchers"]?.ToString().Contains("Riot Client") ?? false);
-            EA = (localSettings.Values["Launchers"]?.ToString().Contains("EA") ?? false);
             UbisoftConnect = (localSettings.Values["Launchers"]?.ToString().Contains("Ubisoft Connect") ?? false);
+            EA = (localSettings.Values["Launchers"]?.ToString().Contains("EA") ?? false);
             BattleNet = (localSettings.Values["Launchers"]?.ToString().Contains("Battle.Net") ?? false);
             MinecraftLauncher = (localSettings.Values["Launchers"]?.ToString().Contains("Minecraft Launcher") ?? false);
             RockstarGamesLauncher = (localSettings.Values["Launchers"]?.ToString().Contains("Rockstar Games Launcher") ?? false);
@@ -221,9 +229,17 @@ public static partial class PreparingStage
             Wootility = (localSettings.Values["Peripherals"]?.ToString().Contains("Wootility") ?? false);
             CorsairICue = (localSettings.Values["Peripherals"]?.ToString().Contains("Corsair iCUE") ?? false);
 
+            ViGEmBus = (localSettings.Values["Controllers"]?.ToString().Contains("ViGEmBus") ?? false);
+            HidHide = (localSettings.Values["Controllers"]?.ToString().Contains("HidHide") ?? false);
+            DualSenseY = (localSettings.Values["Controllers"]?.ToString().Contains("DualSenseY") ?? false);
+            RaceElement = (localSettings.Values["Controllers"]?.ToString().Contains("RaceElement") ?? false);
+            PlaystationAccessories = (localSettings.Values["Controllers"]?.ToString().Contains("PlaystationAccessories") ?? false);
+            XboxAccessories = (localSettings.Values["Controllers"]?.ToString().Contains("XboxAccessories") ?? false);
+
             VisualStudio = (localSettings.Values["Development"]?.ToString().Contains("Visual Studio") ?? false);
             VisualStudioCode = (localSettings.Values["Development"]?.ToString().Contains("Visual Studio Code") ?? false);
             Antigravity = (localSettings.Values["Development"]?.ToString().Contains("Antigravity") ?? false);
+            Windsurf = (localSettings.Values["Development"]?.ToString().Contains("Windsurf") ?? false);
             Git = (localSettings.Values["Development"]?.ToString().Contains("Git") ?? false);
             Python = (localSettings.Values["Development"]?.ToString().Contains("Python") ?? false);
             Nodejs = (localSettings.Values["Development"]?.ToString().Contains("Node.js") ?? false);
