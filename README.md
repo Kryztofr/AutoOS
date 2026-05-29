@@ -71,11 +71,11 @@ Pressing **Install AutoOS** in the **AutoOS Installer** does the following:
 - Disables some unneeded Optional Features
 - Removes some unneeded Capabilities
 - Uninstalls and deprovisions unneeded AppX packages and updates all installed AppX to their latest version
-- Installs Visual C++ Redistributable, Microsoft Edge WebView2, Microsoft Windows App Runtime and DirectX
+- Installs Visual C++ Redistributable, Microsoft Edge WebView2, .NET 10 Runtime, Microsoft Windows App Runtime and DirectX
 - Installs selected Browsers with selected Browser Extensions
 - Installs additional Image / Video Extensions
 - Installs NanaZip, Everything, StartAllBack and Windhawk with Mods for Start Menu, Taskbar, File Explorer etc.
-- Installs selected Apps for Messaging, Launchers, Music, Peripherals, Development, Office and disables their startup entries
+- Installs selected Apps for Messaging, Launchers, Music, Peripherals, Controllers, Development, Office, Miscellaneous
 - Imports the Epic Games and Riot Games Account from the old Windows installation
 - Imports / Links Epic Games, Riot Games and Steam titles from the old Windows installation
 - Sets Fortnite frame rate depending on your main monitors refresh rate

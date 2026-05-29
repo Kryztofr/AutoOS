@@ -120,5 +120,5 @@ Switch between Epic Games and Steam Accounts.
 ![Games](https://raw.githubusercontent.com/tinodin/AutoOS-Resources/main/AutoOS%20Settings/Games.png)
 
 ### Settings
-Toggle Pre-release Updates, configure AutoOS Startup style and Theme preferences.
+Configure AutoOS window and theme preferences.
 ![Settings](https://raw.githubusercontent.com/tinodin/AutoOS-Resources/main/AutoOS%20Settings/Settings.png)
