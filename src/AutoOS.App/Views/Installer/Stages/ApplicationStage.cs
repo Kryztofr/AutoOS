@@ -28,6 +28,8 @@ public class ApplicationSelection
     public bool OnePassword { get; set; }
     public bool Discord { get; set; }
     public bool WhatsApp { get; set; }
+    public bool Telegram { get; set; }
+    public bool Unigram { get; set; }
     public bool EpicGames { get; set; }
     public bool Steam { get; set; }
     public bool RiotClient { get; set; }
@@ -104,6 +106,8 @@ public static class ApplicationStage
         bool Discord = selection?.Discord ?? PreparingStage.Discord;
         bool DiscordAccount = selection != null ? false : PreparingStage.DiscordAccount;
         bool WhatsApp = selection?.WhatsApp ?? PreparingStage.WhatsApp;
+        bool Telegram = selection?.Telegram ?? PreparingStage.Telegram;
+        bool Unigram = selection?.Unigram ?? PreparingStage.Unigram;
 
         bool EpicGames = selection?.EpicGames ?? PreparingStage.EpicGames;
         bool EpicGamesAccount = selection != null ? false : PreparingStage.EpicGamesAccount;
@@ -473,6 +477,24 @@ public static class ApplicationStage
 
             // disable whatsapp startup entry
             ("Disabling WhatsApp startup entry", async () => RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_CURRENT_USER\Software\Classes\Local Settings\Software\Microsoft\Windows\CurrentVersion\AppModel\SystemAppData\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\2defd21c-0b9e-4e4e-873a-2a68c47d7da5", "State", 1, RegistryValueKind.DWord), () => WhatsApp == true),
+
+            // download telegram desktop
+            ("Downloading Telegram Desktop", async () => await StoreHelper.Download("TelegramMessengerLLP.TelegramDesktop_t4vj0pshhgkwm", reporter: reporter), () => Telegram == true),
+
+            // install telegram desktop
+            ("Installing Telegram Desktop", async () => await StoreHelper.Install("TelegramMessengerLLP.TelegramDesktop_t4vj0pshhgkwm"), () => Telegram == true),
+
+            // pin telegram desktop to the taskbar
+            ("Pinning Telegram Desktop to the taskbar", async () => await ProcessActions.RunPowerShellScript("taskbarpin.ps1", @"-Type UWA -Path TelegramMessengerLLP.TelegramDesktop_t4vj0pshhgkwm!Telegram.TelegramDesktop.Store"), () => Telegram == true),
+
+            // download unigram
+            ("Downloading Unigram", async () => await StoreHelper.Download("38833FF26BA1D.UnigramPreview_g9c9v27vpyspw", reporter: reporter), () => Unigram == true),
+
+            // install unigram
+            ("Installing Unigram", async () => await StoreHelper.Install("38833FF26BA1D.UnigramPreview_g9c9v27vpyspw"), () => Unigram == true),
+
+            // pin unigram to the taskbar
+            ("Pinning Unigram to the taskbar", async () => await ProcessActions.RunPowerShellScript("taskbarpin.ps1", @"-Type UWA -Path 38833FF26BA1D.UnigramPreview_g9c9v27vpyspw!App"), () => Unigram == true),
 
             // download epic games launcher
             ("Downloading Epic Games Launcher", async () => await DownloadHelper.Download("https://launcher-public-service-prod06.ol.epicgames.com/launcher/api/installer/download/EpicGamesLauncherInstaller.msi", Path.GetTempPath(), "EpicGamesLauncherInstaller.msi", reporter: reporter), () => EpicGames == true),

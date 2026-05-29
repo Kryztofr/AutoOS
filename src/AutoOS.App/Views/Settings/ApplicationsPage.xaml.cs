@@ -40,7 +40,9 @@ public sealed partial class ApplicationsPage : Page
         var messagingList = new List<GridViewItem>
         {
             new() { Text = "Discord", ImageSource = "ms-appx:///Assets/Fluent/Discord.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Discord", "Update.exe")) },
-            new() { Text = "WhatsApp", ImageSource = "ms-appx:///Assets/Fluent/Whatsapp.png", IsInstalled = Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Packages", "5319275A.WhatsAppDesktop_cv1g1gvanyjgm")) }
+            new() { Text = "WhatsApp", ImageSource = "ms-appx:///Assets/Fluent/Whatsapp.png", IsInstalled = Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Packages", "5319275A.WhatsAppDesktop_cv1g1gvanyjgm")) },
+            new() { Text = "Telegram Desktop", ImageSource = "ms-appx:///Assets/Fluent/Telegram.png", IsInstalled = Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Packages", "TelegramMessengerLLP.TelegramDesktop_t4vj0pshhgkwm")) },
+            new() { Text = "Unigram", ImageSource = "ms-appx:///Assets/Fluent/Unigram.png", IsInstalled = Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Packages", "38833FF26BA1D.UnigramPreview_g9c9v27vpyspw")) }
         };
         foreach (var item in messagingList.Where(item => !item.IsInstalled))
             messagingItems.Add(item);
@@ -150,6 +152,8 @@ public sealed partial class ApplicationsPage : Page
         var selectedMessaging = selectedMessagingItems.Select(item => item.Text).ToList();
         selection.Discord = selectedMessaging.Contains("Discord");
         selection.WhatsApp = selectedMessaging.Contains("WhatsApp");
+        selection.Telegram = selectedMessaging.Contains("Telegram Desktop");
+        selection.Unigram = selectedMessaging.Contains("Unigram");
 
         var selectedLaunchersItems = Launchers.SelectedItems.Cast<GridViewItem>().ToList();
         var selectedLaunchers = selectedLaunchersItems.Select(item => item.Text).ToList();

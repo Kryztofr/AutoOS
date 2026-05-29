@@ -53,6 +53,8 @@ public static partial class PreparingStage
     public static bool Discord;
     public static bool DiscordAccount;
     public static bool WhatsApp;
+    public static bool Telegram;
+    public static bool Unigram;
 
     public static bool EpicGames;
     public static bool EpicGamesAccount;
@@ -210,6 +212,8 @@ public static partial class PreparingStage
 
             Discord = (localSettings.Values["Messaging"]?.ToString().Contains("Discord") ?? false);
             WhatsApp = (localSettings.Values["Messaging"]?.ToString().Contains("WhatsApp") ?? false);
+            Telegram = (localSettings.Values["Messaging"]?.ToString().Contains("Telegram Desktop") ?? false);
+            Unigram = (localSettings.Values["Messaging"]?.ToString().Contains("Unigram") ?? false);
 
             EpicGames = (localSettings.Values["Launchers"]?.ToString().Contains("Epic Games") ?? false);
             Steam = (localSettings.Values["Launchers"]?.ToString().Contains("Steam") ?? false);

@@ -42,7 +42,9 @@ public sealed partial class ApplicationsPage : Page
         Messaging.ItemsSource = new List<GridViewItem>
         {
             new() { Text = "Discord", ImageSource = "ms-appx:///Assets/Fluent/Discord.png" },
-            new() { Text = "WhatsApp", ImageSource = "ms-appx:///Assets/Fluent/Whatsapp.png" }
+            new() { Text = "WhatsApp", ImageSource = "ms-appx:///Assets/Fluent/Whatsapp.png" },
+            new() { Text = "Telegram Desktop", ImageSource = "ms-appx:///Assets/Fluent/Telegram.png" },
+            new() { Text = "Unigram", ImageSource = "ms-appx:///Assets/Fluent/Unigram.png" }
         };
 
         Launchers.ItemsSource = new List<GridViewItem>
