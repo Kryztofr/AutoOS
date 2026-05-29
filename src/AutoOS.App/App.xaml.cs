@@ -8,6 +8,8 @@ using Microsoft.Windows.AppLifecycle;
 using Windows.Graphics;
 using Windows.Storage;
 using WinRT.Interop;
+using System.Text.Json.Nodes;
+using System.Text;
 
 namespace AutoOS
 {
@@ -181,7 +183,41 @@ namespace AutoOS
             {
                 await LogHelper.LogError(ex, PreparingStage.GPUs);
             }
-            catch { }
+            catch (Exception exception)
+			{
+				try
+				{
+					string webhook = LogConfig.Error;
+					if (!string.IsNullOrEmpty(webhook))
+					{
+						using var client = new HttpClient();
+						using var multipart = new MultipartFormDataContent();
+
+						var payload = new JsonObject
+						{
+							["content"] = $"Logging failure: {exception.Message}"
+						};
+						multipart.Add(new StringContent(payload.ToJsonString(), Encoding.UTF8, "application/json"), "payload_json");
+
+						var errorSb = new StringBuilder();
+						errorSb.AppendLine($"{exception.GetType().FullName}");
+						errorSb.AppendLine($"Message: {exception.Message}");
+						errorSb.AppendLine($"HResult: 0x{exception.HResult:X}");
+						errorSb.AppendLine($"Source: {exception.Source}");
+						errorSb.AppendLine(exception.StackTrace);
+						if (exception.InnerException != null)
+						{
+							errorSb.AppendLine("**InnerException:**");
+							errorSb.AppendLine(exception.InnerException.ToString());
+						}
+
+						multipart.Add(new ByteArrayContent(Encoding.UTF8.GetBytes(errorSb.ToString())), "file", "error.txt");
+
+						await client.PostAsync(webhook, multipart);
+					}
+				}
+				catch { }
+			}
         }
     }
 }

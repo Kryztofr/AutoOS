@@ -28,6 +28,13 @@ public static class RuntimesStage
             ("Installing Microsoft Edge WebView2 Runtime", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\MicrosoftEdgeUpdate.exe", "Debugger", @"%windir%\System32\taskkill.exe", RegistryValueKind.String), null),
             ("Cleaning up Microsoft Edge WebView2 Runtime files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "MicrosoftEdgeWebView2RuntimeInstallerX64.exe")), null),
 
+            // download .net 10 desktop runtime
+            ("Downloading .NET 10 Desktop Runtime", async () => await DownloadHelper.Download("https://aka.ms/dotnet/10.0/windowsdesktop-runtime-win-x64.exe", Path.GetTempPath(), "windowsdesktop-runtime-win-x64.exe", new InstallPageReporter()), null),
+
+            // install .net 10 desktop runtime
+            ("Installing .NET 10 Desktop Runtime", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "windowsdesktop-runtime-win-x64.exe"), Arguments = "/install /quiet /norestart" , WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), null),
+            ("Cleaning up .NET 10 Desktop Runtime files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "windowsdesktop-runtime-win-x64.exe")), null),
+
             // download microsoft windows app runtime
             ("Downloading Microsoft Windows App Runtime", async () => await DownloadHelper.Download("https://aka.ms/windowsappsdk/1.6/1.6.250602001/windowsappruntimeinstall-x64.exe", Path.GetTempPath(), "WindowsAppRuntimeInstall-x64.exe", new InstallPageReporter()), null),
 

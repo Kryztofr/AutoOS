@@ -42,7 +42,9 @@ public sealed partial class ApplicationsPage : Page
         Messaging.ItemsSource = new List<GridViewItem>
         {
             new() { Text = "Discord", ImageSource = "ms-appx:///Assets/Fluent/Discord.png" },
-            new() { Text = "WhatsApp", ImageSource = "ms-appx:///Assets/Fluent/Whatsapp.png" }
+            new() { Text = "WhatsApp", ImageSource = "ms-appx:///Assets/Fluent/Whatsapp.png" },
+            new() { Text = "Telegram Desktop", ImageSource = "ms-appx:///Assets/Fluent/Telegram.png" },
+            new() { Text = "Unigram", ImageSource = "ms-appx:///Assets/Fluent/Unigram.png" }
         };
 
         Launchers.ItemsSource = new List<GridViewItem>
@@ -95,6 +97,7 @@ public sealed partial class ApplicationsPage : Page
             new() { Text = "Visual Studio", ImageSource = "ms-appx:///Assets/Fluent/VisualStudio.png" },
             new() { Text = "Visual Studio Code", ImageSource = "ms-appx:///Assets/Fluent/VisualStudioCode.png" },
             new() { Text = "Antigravity", ImageSource = "ms-appx:///Assets/Fluent/Antigravity.png" },
+            new() { Text = "Cursor", ImageSource = "ms-appx:///Assets/Fluent/Cursor.png" },
             new() { Text = "Windsurf", ImageSource = "ms-appx:///Assets/Fluent/Windsurf.png" },
             new() { Text = "Git", ImageSource = "ms-appx:///Assets/Fluent/Git.png" },
             new() { Text = "Python", ImageSource = "ms-appx:///Assets/Fluent/Python.png" },
@@ -116,8 +119,9 @@ public sealed partial class ApplicationsPage : Page
         Miscellaneous.ItemsSource = new List<GridViewItem>
         {
             new() { Text = "MiniTool Partition Wizard", ImageSource = "ms-appx:///Assets/Fluent/MiniToolPartitionWizard.png" },
-            new() { Text = "Bulk Crap Uninstaller", ImageSource = "ms-appx:///Assets/Fluent/BulkCrapUninstaller.png" },
+            new() { Text = "AOMEI Partition Assistant", ImageSource = "ms-appx:///Assets/Fluent/AomeiPartitionAssistant.png" },
             new() { Text = "WizTree", ImageSource = "ms-appx:///Assets/Fluent/WizTree.png" },
+            new() { Text = "Bulk Crap Uninstaller", ImageSource = "ms-appx:///Assets/Fluent/BulkCrapUninstaller.png" }
             new() { Text = "Bluetooth Audio Receiver", ImageSource = "ms-appx:///Assets/Fluent/BluetoothAudioReceiver.png" }
         };
     }

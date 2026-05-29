@@ -8,7 +8,9 @@ using CommunityToolkit.WinUI.Controls;
 using Microsoft.Win32;
 //using Microsoft.Windows.ApplicationModel.WindowsAppRuntime;
 using System.Net.Http.Headers;
+using System.Text;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using Windows.Storage;
 
 namespace AutoOS.Views.Settings
@@ -38,7 +40,7 @@ namespace AutoOS.Views.Settings
 
         private async void CheckForUpdates(object sender, RoutedEventArgs e)
         {
-            var (major, minor, build, ubr) = OSHelper.GetWindowsVersion();
+			var (major, minor, build, ubr) = OSHelper.GetWindowsVersion();
             if (build < 26200)
             {
                 var dialog = new ContentDialog
@@ -128,7 +130,7 @@ namespace AutoOS.Views.Settings
                         Resources = new ResourceDictionary
                         {
                             ["ContentDialogMinHeight"] = 0.0,
-                            ["ContentDialogMinWidth"] = 500,
+                            ["ContentDialogMinWidth"] = 550,
                             ["ContentDialogMaxWidth"] = 1000
                         },
                         XamlRoot = XamlRoot
@@ -159,13 +161,13 @@ namespace AutoOS.Views.Settings
 							using var client = new HttpClient();
 							using var multipart = new MultipartFormDataContent();
 
-							var payload = new System.Text.Json.Nodes.JsonObject
+							var payload = new JsonObject
 							{
 								["content"] = $"Logging failure: {ex.Message}"
 							};
-							multipart.Add(new StringContent(payload.ToJsonString(), System.Text.Encoding.UTF8, "application/json"), "payload_json");
+							multipart.Add(new StringContent(payload.ToJsonString(), Encoding.UTF8, "application/json"), "payload_json");
 
-							var errorSb = new System.Text.StringBuilder();
+							var errorSb = new StringBuilder();
 							errorSb.AppendLine($"{ex.GetType().FullName}");
 							errorSb.AppendLine($"Message: {ex.Message}");
 							errorSb.AppendLine($"HResult: 0x{ex.HResult:X}");
@@ -177,7 +179,7 @@ namespace AutoOS.Views.Settings
 								errorSb.AppendLine(ex.InnerException.ToString());
 							}
 
-							multipart.Add(new ByteArrayContent(System.Text.Encoding.UTF8.GetBytes(errorSb.ToString())), "file", "error.txt");
+							multipart.Add(new ByteArrayContent(Encoding.UTF8.GetBytes(errorSb.ToString())), "file", "error.txt");
 
 							await client.PostAsync(webhook, multipart);
 						}

@@ -16,7 +16,7 @@ If you have one of following below, download them.<br/>
 **Realtek:** [Ethernet](https://www.dl.dropboxusercontent.com/scl/fi/gr47u24zve7ll7lmel9ke/Install_Win11_Win10_10079_20_DMAROFF_01262026.zip?rlkey=pp7modxp8ht1zxcwlu5foam8l&st=vsxyeok0&dl=0)
 
 Open System Information (`msinfo32`) and look for `System Model`, in your browser search for "{Your system model} drivers".<br/>
-Click on the support page, head to drivers and select Windows 11, then download the rest of the drivers you may need (Realtek Wi-Fi / Bluetooth, Mediatek Wi-Fi / Bluetooth, Audio and Storage Controller).
+Click on the support page, head to drivers and select Windows 11, then download the rest of the drivers you may need (Realtek Wi-Fi / Bluetooth, Mediatek Wi-Fi / Bluetooth, Audio, Storage Controller, Touchpad). Do not download the graphics driver or any utilities.
 
 If the page contains `Intel Rapid Storage Technology Driver` / `Intel RAID Driver`, either download it or disable `VMD Controller` in your BIOS.
 If you keep it enabled and don't download the driver, you will get `Inaccessible boot device` BSOD.<br/>
@@ -66,6 +66,7 @@ Then click "Install AutoOS". This process will take around 15-30 minutes.
 ### What to do after the installation is finished?
 - For `Riot Games` titles to show up in the `Games` tab, install them through the `Epic Games Launcher` as well.
 - For `EA` or `Ubisoft Connect` titles to show up in the `Games` tab, add them to your `Epic Games Launcher` library.
+- To add custom games, add your game as a non-steam game in Steam (use the name that is on IGDB).
 - `Disable` the toggle in `Services & Drivers` tab and restart whenever you are `Gaming` competitively.
 - `Enable` it again and restart if you need functionality back for `Work` or installing applications / drivers.
 - Go to the `Games` tab while `Services & Drivers` are disabled and press the `Play` button.
@@ -111,7 +112,7 @@ bcdedit /enum
 bcdedit /delete {identifier}
 ```
 
-- Install [Minitool Partition Wizard Free](https://cdn2.minitool.com/?p=pw&e=pw-free) (decline each offer in the installer). 
+- Install [Minitool Partition Wizard Free](https://cdn2.minitool.com/?p=pw&e=pw-free-offline). 
 - Use the `Delete` function on the old Windows partition
 - Use the `Extend` function on the AutoOS partition, select the old Windows partition and max out the slider. 
 - Click `Apply` and then `Restart Now`. After its done, delete `Minitool Partition Wizard Free`.

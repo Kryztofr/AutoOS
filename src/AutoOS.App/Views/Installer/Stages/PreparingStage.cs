@@ -53,6 +53,8 @@ public static partial class PreparingStage
     public static bool Discord;
     public static bool DiscordAccount;
     public static bool WhatsApp;
+    public static bool Telegram;
+    public static bool Unigram;
 
     public static bool EpicGames;
     public static bool EpicGamesAccount;
@@ -95,6 +97,7 @@ public static partial class PreparingStage
 	public static bool VisualStudio;
     public static bool VisualStudioCode;
     public static bool Antigravity;
+    public static bool Cursor;
     public static bool Windsurf;
     public static bool WinMerge;
     public static bool Git;
@@ -111,8 +114,9 @@ public static partial class PreparingStage
     public static bool OneDrive;
 
     public static bool MinitoolPartitionWizard;
-    public static bool BulkCrapUninstaller;
+    public static bool AomeiPartitionAssistant;
     public static bool WizTree;
+    public static bool BulkCrapUninstaller;
     public static bool BluetoothAudioReceiver;
 
     public static List<GpuInfo> GPUs { get; set; } = [];
@@ -210,6 +214,8 @@ public static partial class PreparingStage
 
             Discord = (localSettings.Values["Messaging"]?.ToString().Contains("Discord") ?? false);
             WhatsApp = (localSettings.Values["Messaging"]?.ToString().Contains("WhatsApp") ?? false);
+            Telegram = (localSettings.Values["Messaging"]?.ToString().Contains("Telegram Desktop") ?? false);
+            Unigram = (localSettings.Values["Messaging"]?.ToString().Contains("Unigram") ?? false);
 
             EpicGames = (localSettings.Values["Launchers"]?.ToString().Contains("Epic Games") ?? false);
             Steam = (localSettings.Values["Launchers"]?.ToString().Contains("Steam") ?? false);
@@ -247,6 +253,7 @@ public static partial class PreparingStage
             VisualStudio = (localSettings.Values["Development"]?.ToString().Contains("Visual Studio") ?? false);
             VisualStudioCode = (localSettings.Values["Development"]?.ToString().Contains("Visual Studio Code") ?? false);
             Antigravity = (localSettings.Values["Development"]?.ToString().Contains("Antigravity") ?? false);
+            Cursor = (localSettings.Values["Development"]?.ToString().Contains("Cursor") ?? false);
             Windsurf = (localSettings.Values["Development"]?.ToString().Contains("Windsurf") ?? false);
             WinMerge = (localSettings.Values["Development"]?.ToString().Contains("WinMerge") ?? false);
             Git = (localSettings.Values["Development"]?.ToString().Contains("Git") ?? false);
@@ -263,8 +270,9 @@ public static partial class PreparingStage
             OneDrive = (localSettings.Values["Office"]?.ToString().Contains("OneDrive") ?? false);
 
             MinitoolPartitionWizard = (localSettings.Values["Miscellaneous"]?.ToString().Contains("Minitool Partition Wizard") ?? false);
-            BulkCrapUninstaller = (localSettings.Values["Miscellaneous"]?.ToString().Contains("Bulk Crap Uninstaller") ?? false);
+            AomeiPartitionAssistant = (localSettings.Values["Miscellaneous"]?.ToString().Contains("AOMEI Partition Assistant") ?? false);
             WizTree = (localSettings.Values["Miscellaneous"]?.ToString().Contains("WizTree") ?? false);
+			      BulkCrapUninstaller = (localSettings.Values["Miscellaneous"]?.ToString().Contains("Bulk Crap Uninstaller") ?? false);
             BluetoothAudioReceiver = (localSettings.Values["Miscellaneous"]?.ToString().Contains("BluetoothAudioReceiver") ?? false);
 
             var gpuArray = JsonNode.Parse(localSettings.Values["GPUs"]?.ToString() ?? "[]")?.AsArray();

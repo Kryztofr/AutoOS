@@ -1,5 +1,9 @@
+using System.Text;
+using System.Text.Json.Nodes;
 using AutoOS.Core.Common;
 using AutoOS.Core.Helpers.Download;
+using AutoOS.Core.Helpers.Logging;
+using AutoOS.Views.Installer.Stages;
 using Microsoft.UI.Xaml.Media;
 
 namespace AutoOS.Views.Updater;
@@ -78,18 +82,57 @@ public sealed partial class UpdateDialog : UserControl
                 CurrentGroupStart = ProgressBar.Value;
                 CurrentGroupTarget = CurrentGroupStart + incrementPerTitle;
 
-                foreach (var groupedAction in currentGroup)
-                {
-                    try
-                    {
-                        await groupedAction();
-                    }
-                    catch (Exception ex)
-                    {
-                        StatusText.Text = ex.Message;
-                        SetError();
-                    }
-                }
+				foreach (var groupedAction in currentGroup)
+				{
+					try
+					{
+						await groupedAction();
+					}
+					catch (Exception ex)
+					{
+						try
+						{
+							await LogHelper.LogError(ex, PreparingStage.GPUs, previousTitle);
+						}
+						catch (Exception exception)
+						{
+							StatusText.Text = ex.Message;
+							SetError();
+							try
+							{
+								string webhook = LogConfig.Error;
+								if (!string.IsNullOrEmpty(webhook))
+								{
+									using var client = new HttpClient();
+									using var multipart = new MultipartFormDataContent();
+
+									var payload = new JsonObject
+									{
+										["content"] = $"Logging failure: {exception.Message}"
+									};
+									multipart.Add(new StringContent(payload.ToJsonString(), Encoding.UTF8, "application/json"), "payload_json");
+
+									var errorSb = new StringBuilder();
+									errorSb.AppendLine($"{exception.GetType().FullName}");
+									errorSb.AppendLine($"Message: {exception.Message}");
+									errorSb.AppendLine($"HResult: 0x{exception.HResult:X}");
+									errorSb.AppendLine($"Source: {exception.Source}");
+									errorSb.AppendLine(exception.StackTrace);
+									if (exception.InnerException != null)
+									{
+										errorSb.AppendLine("**InnerException:**");
+										errorSb.AppendLine(exception.InnerException.ToString());
+									}
+
+									multipart.Add(new ByteArrayContent(Encoding.UTF8.GetBytes(errorSb.ToString())), "file", "error.txt");
+
+									await client.PostAsync(webhook, multipart);
+								}
+							}
+							catch { }
+						}
+					}
+				}
 
                 ProgressBar.Value = CurrentGroupTarget;
                 await Task.Delay(500);

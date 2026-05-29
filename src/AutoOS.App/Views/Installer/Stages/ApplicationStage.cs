@@ -28,6 +28,8 @@ public class ApplicationSelection
     public bool OnePassword { get; set; }
     public bool Discord { get; set; }
     public bool WhatsApp { get; set; }
+    public bool Telegram { get; set; }
+    public bool Unigram { get; set; }
     public bool EpicGames { get; set; }
     public bool Steam { get; set; }
     public bool RiotClient { get; set; }
@@ -60,6 +62,7 @@ public class ApplicationSelection
 	public bool VisualStudio { get; set; }
     public bool VisualStudioCode { get; set; }
     public bool Antigravity { get; set; }
+    public bool Cursor { get; set; }
     public bool Windsurf {get; set; }
     public bool WinMerge {get; set; }
     public bool Git { get; set; }
@@ -74,10 +77,10 @@ public class ApplicationSelection
     public bool Outlook { get; set; }
     public bool OneDrive { get; set; }
     public bool MinitoolPartitionWizard { get; set; }
-    public bool BulkCrapUninstaller { get; set; }
+    public bool AomeiPartitionAssistant { get; set; }
     public bool WizTree { get; set; }
+    public bool BulkCrapUninstaller { get; set; }
     public bool BluetoothAudioReceiver { get; set; }
-    
 }
 
 public static class ApplicationStage
@@ -104,6 +107,8 @@ public static class ApplicationStage
         bool Discord = selection?.Discord ?? PreparingStage.Discord;
         bool DiscordAccount = selection != null ? false : PreparingStage.DiscordAccount;
         bool WhatsApp = selection?.WhatsApp ?? PreparingStage.WhatsApp;
+        bool Telegram = selection?.Telegram ?? PreparingStage.Telegram;
+        bool Unigram = selection?.Unigram ?? PreparingStage.Unigram;
 
         bool EpicGames = selection?.EpicGames ?? PreparingStage.EpicGames;
         bool EpicGamesAccount = selection != null ? false : PreparingStage.EpicGamesAccount;
@@ -146,6 +151,7 @@ public static class ApplicationStage
         bool VisualStudio = selection?.VisualStudio ?? PreparingStage.VisualStudio;
         bool VisualStudioCode = selection?.VisualStudioCode ?? PreparingStage.VisualStudioCode;
         bool Antigravity = selection?.Antigravity ?? PreparingStage.Antigravity;
+        bool Cursor = selection?.Cursor ?? PreparingStage.Cursor;
         bool Windsurf = selection?.Windsurf ?? PreparingStage.Windsurf;
         bool WinMerge = selection?.WinMerge ?? PreparingStage.WinMerge;
         bool Git = selection?.Git ?? PreparingStage.Git;
@@ -162,8 +168,9 @@ public static class ApplicationStage
         bool OneDrive = selection?.OneDrive ?? PreparingStage.OneDrive;
 
         bool MinitoolPartitionWizard = selection?.MinitoolPartitionWizard ?? PreparingStage.MinitoolPartitionWizard;
-        bool BulkCrapUninstaller = selection?.BulkCrapUninstaller ?? PreparingStage.BulkCrapUninstaller;
+        bool AomeiPartitionAssistant = selection?.AomeiPartitionAssistant ?? PreparingStage.AomeiPartitionAssistant;
         bool WizTree = selection?.WizTree ?? PreparingStage.WizTree;
+        bool BulkCrapUninstaller = selection?.BulkCrapUninstaller ?? PreparingStage.BulkCrapUninstaller;
         bool BluetoothAudioReceiver = selection?.BluetoothAudioReceiver ?? PreparingStage.BluetoothAudioReceiver;
 
         string icloudVersion = "";
@@ -443,13 +450,13 @@ public static class ApplicationStage
             ("Please log in to your Discord account (Close to continue)", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Discord", "app-" + discordVersion, "Discord.exe"), WindowStyle = ProcessWindowStyle.Maximized }) !.WaitForExitAsync(), () => Discord == true && DiscordAccount == false),
             
             // set appearance to system
-            ("Setting appearance to system", async () => DiscordHelper.SetSystemAppearance(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "discord", "Local Storage", "leveldb")), () => Discord == true),
+            ("Setting appearance to system", async () => await DiscordHelper.SetSystemAppearance(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "discord", "Local Storage", "leveldb")), () => Discord == true),
 
             // disable game overlay
-            ("Disabling game overlay", async () => DiscordHelper.DisableGameOverlay(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "discord", "Local Storage", "leveldb")), () => Discord == true),
+            ("Disabling game overlay", async () => await DiscordHelper.DisableGameOverlay(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "discord", "Local Storage", "leveldb")), () => Discord == true),
 
             // disable clips
-            ("Disabling clips", async () => DiscordHelper.DisableClips(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "discord", "Local Storage", "leveldb")), () => Discord == true),
+            ("Disabling clips", async () => await DiscordHelper.DisableClips(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "discord", "Local Storage", "leveldb")), () => Discord == true),
 
             // remove discord desktop shortcut 
             ("Removing Discord desktop shortcut", async () => File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "Discord.lnk")), () => Discord == true),
@@ -473,6 +480,24 @@ public static class ApplicationStage
 
             // disable whatsapp startup entry
             ("Disabling WhatsApp startup entry", async () => RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_CURRENT_USER\Software\Classes\Local Settings\Software\Microsoft\Windows\CurrentVersion\AppModel\SystemAppData\5319275A.WhatsAppDesktop_cv1g1gvanyjgm\2defd21c-0b9e-4e4e-873a-2a68c47d7da5", "State", 1, RegistryValueKind.DWord), () => WhatsApp == true),
+
+            // download telegram desktop
+            ("Downloading Telegram Desktop", async () => await StoreHelper.Download("TelegramMessengerLLP.TelegramDesktop_t4vj0pshhgkwm", reporter: reporter), () => Telegram == true),
+
+            // install telegram desktop
+            ("Installing Telegram Desktop", async () => await StoreHelper.Install("TelegramMessengerLLP.TelegramDesktop_t4vj0pshhgkwm"), () => Telegram == true),
+
+            // pin telegram desktop to the taskbar
+            ("Pinning Telegram Desktop to the taskbar", async () => await ProcessActions.RunPowerShellScript("taskbarpin.ps1", @"-Type UWA -Path TelegramMessengerLLP.TelegramDesktop_t4vj0pshhgkwm!Telegram.TelegramDesktop.Store"), () => Telegram == true),
+
+            // download unigram
+            ("Downloading Unigram", async () => await StoreHelper.Download("38833FF26BA1D.UnigramPreview_g9c9v27vpyspw", reporter: reporter), () => Unigram == true),
+
+            // install unigram
+            ("Installing Unigram", async () => await StoreHelper.Install("38833FF26BA1D.UnigramPreview_g9c9v27vpyspw"), () => Unigram == true),
+
+            // pin unigram to the taskbar
+            ("Pinning Unigram to the taskbar", async () => await ProcessActions.RunPowerShellScript("taskbarpin.ps1", @"-Type UWA -Path 38833FF26BA1D.UnigramPreview_g9c9v27vpyspw!App"), () => Unigram == true),
 
             // download epic games launcher
             ("Downloading Epic Games Launcher", async () => await DownloadHelper.Download("https://launcher-public-service-prod06.ol.epicgames.com/launcher/api/installer/download/EpicGamesLauncherInstaller.msi", Path.GetTempPath(), "EpicGamesLauncherInstaller.msi", reporter: reporter), () => EpicGames == true),
@@ -1037,32 +1062,39 @@ public static class ApplicationStage
             ("Installing HidHide", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "HidHide_x64.exe"), Arguments = "/qn /NORESTART" , WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => HidHide == true),
             ("Cleaning up HidHide files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "HidHide_x64.exe")), () => HidHide == true),
 
+            // disable hidhide service
+            ("Disabling HidHide service", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\HidHideWatchdog.exe", "Start", 4, RegistryValueKind.DWord), () => HidHide == true),
+            ("Disabling HidHide service", async () => ServicesHelper.StopService("HidHideWatchdog.exe"), () => HidHide == true),
+
+            // disable hidhide startup entry
+            ("Disabling HidHide startup entry", async () => TaskSchedulerHelper.Toggle(@"nefarius_HidHide_Updater", false), () => HidHide == true),
+
             // download dualsensey
-            ("Downloading DualSenseY", async () => await DownloadHelper.Download("https://github.com/WujekFoliarz/DualSenseY-v2/releases/latest/download/x64-release.zip", Path.Combine(Path.GetTempPath(), "DualSenseY.zip")), () => selection == null),
+            ("Downloading DualSenseY", async () => await DownloadHelper.Download("https://github.com/WujekFoliarz/DualSenseY-v2/releases/latest/download/x64-release.zip", Path.GetTempPath(), "x64-release.zip"), () => DualSenseY == true),
 
             // install dualsensey
-            ("Installing DualSenseY", async () => await ExtractHelper.Extract(Path.Combine(Path.GetTempPath(), "DualSenseY.zip"), Path.Combine(Path.GetTempPath(), "DualSenseY")), () => selection == null),
-            ("Installing DualSenseY", async () => Directory.Move(Path.Combine(Path.GetTempPath(), "DualSenseY"), Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "DualSenseY")), () => selection == null),
-            ("Installing DualSenseY", async () => await ProcessActions.RunPowerShell(@"$Shell = New-Object -ComObject WScript.Shell; $Shortcut = $Shell.CreateShortcut([System.IO.Path]::Combine($env:ProgramData, 'Microsoft\Windows\Start Menu\Programs\DualSenseY.lnk')); $Shortcut.TargetPath = [System.IO.Path]::Combine($env:ProgramFiles, 'DualSenseY\DualSenseY.exe'); $Shortcut.Save()"), () => selection == null),
-            ("Installing DualSenseY", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\DualSenseY", "DisplayName", "DualSenseY", RegistryValueKind.String), () => selection == null),
-            ("Installing DualSenseY", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\DualSenseY", "UninstallString", $@"cmd /c rd /s /q ""{Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "DualSenseY")}"" & del ""{Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), @"Microsoft\Windows\Start Menu\Programs\DualSenseY.lnk")}"" & reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\DualSenseY"" /f", RegistryValueKind.String), () => selection == null),
-            ("Installing DualSenseY", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\DualSenseY", "DisplayIcon", Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), @"DualSenseY\DualSenseY.exe"), RegistryValueKind.String), () => selection == null),
-            ("Installing DualSenseY", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\DualSenseY", "Publisher", "WujekFoliarz", RegistryValueKind.String), () => selection == null),
-            ("Installing DualSenseY", async () => await Task.Delay(500), () => selection == null),
-            ("Cleaning up DualSenseY files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "DualSenseY.zip")), () => selection == null),
+            ("Installing DualSenseY", async () => await ExtractHelper.Extract(Path.Combine(Path.GetTempPath(), "x64-release.zip"), Path.Combine(Path.GetTempPath(), "DualSenseY")), () => DualSenseY == true),
+            ("Installing DualSenseY", async () => Directory.Move(Path.Combine(Path.GetTempPath(), "DualSenseY"), Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "DualSenseY")), () => DualSenseY == true),
+            ("Installing DualSenseY", async () => await ProcessActions.RunPowerShell(@"$Shell = New-Object -ComObject WScript.Shell; $Shortcut = $Shell.CreateShortcut([System.IO.Path]::Combine($env:ProgramData, 'Microsoft\Windows\Start Menu\Programs\DualSenseY.lnk')); $Shortcut.TargetPath = [System.IO.Path]::Combine($env:ProgramFiles, 'DualSenseY\DualSenseY.exe'); $Shortcut.Save()"), () => DualSenseY == true),
+            ("Installing DualSenseY", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\DualSenseY", "DisplayName", "DualSenseY", RegistryValueKind.String), () => DualSenseY == true),
+            ("Installing DualSenseY", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\DualSenseY", "UninstallString", $@"cmd /c rd /s /q ""{Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "DualSenseY")}"" & del ""{Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), @"Microsoft\Windows\Start Menu\Programs\DualSenseY.lnk")}"" & reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\DualSenseY"" /f", RegistryValueKind.String), () => DualSenseY == true),
+            ("Installing DualSenseY", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\DualSenseY", "DisplayIcon", Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), @"DualSenseY\DualSenseY.exe"), RegistryValueKind.String), () => DualSenseY == true),
+            ("Installing DualSenseY", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\DualSenseY", "Publisher", "WujekFoliarz", RegistryValueKind.String), () => DualSenseY == true),
+            ("Installing DualSenseY", async () => await Task.Delay(500), () => DualSenseY == true),
+            ("Cleaning up DualSenseY files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "x64-release.zip")), () => DualSenseY == true),
 
             // download raceelement
-            ("Downloading RaceElement", async () => await DownloadHelper.Download("https://github.com/RiddleTime/Race-Element/releases/latest/download/RaceElement.exe", Path.Combine(Path.GetTempPath(), "RaceElement.exe")), () => selection == null),
+            ("Downloading RaceElement", async () => await DownloadHelper.Download("https://github.com/RiddleTime/Race-Element/releases/latest/download/RaceElement.exe", Path.GetTempPath(), "RaceElement.exe"), () => RaceElement == true),
 
             // install raceelement
-            ("Installing RaceElement", async () => Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "RaceElement")), () => selection == null),
-            ("Installing RaceElement", async () => File.Move(Path.Combine(Path.GetTempPath(), "RaceElement.exe"), Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "RaceElement", "RaceElement.exe")), () => selection == null),
-            ("Installing RaceElement", async () => await ProcessActions.RunPowerShell(@"$Shell = New-Object -ComObject WScript.Shell; $Shortcut = $Shell.CreateShortcut([System.IO.Path]::Combine($env:ProgramData, 'Microsoft\Windows\Start Menu\Programs\RaceElement.lnk')); $Shortcut.TargetPath = [System.IO.Path]::Combine($env:ProgramFiles, 'RaceElement\RaceElement.exe'); $Shortcut.Save()"), () => selection == null),
-            ("Installing RaceElement", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\RaceElement", "DisplayName", "RaceElement", RegistryValueKind.String), () => selection == null),
-            ("Installing RaceElement", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\RaceElement", "UninstallString", $@"cmd /c rd /s /q ""{Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "RaceElement")}"" & del ""{Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), @"Microsoft\Windows\Start Menu\Programs\RaceElement.lnk")}"" & reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\RaceElement"" /f", RegistryValueKind.String), () => selection == null),
-            ("Installing RaceElement", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\RaceElement", "DisplayIcon", Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "RaceElement", "RaceElement.exe"), RegistryValueKind.String), () => selection == null),
-            ("Installing RaceElement", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\RaceElement", "Publisher", "RiddleTime", RegistryValueKind.String), () => selection == null),
-            ("Installing RaceElement", async () => await Task.Delay(500), () => selection == null),
+            ("Installing RaceElement", async () => Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "RaceElement")), () => RaceElement == true),
+            ("Installing RaceElement", async () => File.Move(Path.Combine(Path.GetTempPath(), "RaceElement.exe"), Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "RaceElement", "RaceElement.exe"), true), () => RaceElement == true),
+            ("Installing RaceElement", async () => await ProcessActions.RunPowerShell(@"$Shell = New-Object -ComObject WScript.Shell; $Shortcut = $Shell.CreateShortcut([System.IO.Path]::Combine($env:ProgramData, 'Microsoft\Windows\Start Menu\Programs\RaceElement.lnk')); $Shortcut.TargetPath = [System.IO.Path]::Combine($env:ProgramFiles, 'RaceElement\RaceElement.exe'); $Shortcut.Save()"), () => RaceElement == true),
+            ("Installing RaceElement", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\RaceElement", "DisplayName", "RaceElement", RegistryValueKind.String), () => RaceElement == true),
+            ("Installing RaceElement", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\RaceElement", "UninstallString", $@"cmd /c rd /s /q ""{Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "RaceElement")}"" & del ""{Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), @"Microsoft\Windows\Start Menu\Programs\RaceElement.lnk")}"" & reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\RaceElement"" /f", RegistryValueKind.String), () => RaceElement == true),
+            ("Installing RaceElement", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\RaceElement", "DisplayIcon", Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "RaceElement", "RaceElement.exe"), RegistryValueKind.String), () => RaceElement == true),
+            ("Installing RaceElement", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\RaceElement", "Publisher", "RiddleTime", RegistryValueKind.String), () => RaceElement == true),
+            ("Installing RaceElement", async () => await Task.Delay(500), () => RaceElement == true),
 
             //download playstation accessories
             ("Downloading PlayStation® Accessories", async () => await DownloadHelper.Download("https://fwupdater.dl.playstation.net/fwupdater/PlayStationAccessoriesInstaller.exe", Path.GetTempPath(), "PlayStationAccessoriesInstaller.exe", reporter: reporter), () => PlaystationAccessories == true),
@@ -1070,6 +1102,9 @@ public static class ApplicationStage
             // install playstation accessories
             ("Installing PlayStation® Accessories", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "PlayStationAccessoriesInstaller.exe"), Arguments = "/S /v/qn" , WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => PlaystationAccessories == true),
             ("Cleaning up PlayStation® Accessories files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "PlayStationAccessoriesInstaller.exe")), () => PlaystationAccessories == true),
+
+            // set playstation accessories data collection to limited
+            ("Setting PlayStation® Accessories data collection to limited", async () => await File.WriteAllTextAsync(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Sony Corporation", "PlayStationAccessories", "AppSettings.json"), new JsonObject { ["IsAgreedFullDataCollection"] = false, ["IsAnsweredDataCollection"] = true, ["IsCheckedDisabledButtonMessage"] = false, ["IsCheckedUpdateInfo2_0_0_0"] = true, ["IsCompletedEdgeWelcomeFlow"] = false }.ToString()), () => PlaystationAccessories == true),
 
             //download xbox accessories
             ("Downloading Xbox Accessories", async () => await StoreHelper.Download("Microsoft.XboxDevices_8wekyb3d8bbwe", reporter: reporter), () => XboxAccessories == true),
@@ -1087,9 +1122,9 @@ public static class ApplicationStage
             // optimize visual studio
             ("Optimizing Visual Studio", async () => { while (Process.GetProcessesByName("VSNgenRunner").Length == 1) await Task.Delay(500); }, () => VisualStudio == true),
 
-			// disable visual studio startup entry
+			      // disable visual studio startup entry
             ("Disabling Visual Studio startup entry", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\VSStandardCollectorService150", "Start", 4, RegistryValueKind.DWord), () => VisualStudio == true),
-			("Disabling Visual Studio startup entry", async () => ServicesHelper.StopService("VSStandardCollectorService150"), () => VisualStudio == true),
+			      ("Disabling Visual Studio startup entry", async () => ServicesHelper.StopService("VSStandardCollectorService150"), () => VisualStudio == true),
 
             // pin visual studio to the taskbar
             ("Pinning Visual Studio to the taskbar", async () => await ProcessActions.RunPowerShellScript("taskbarpin.ps1", $@"-Type Link -Path ""{Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Microsoft", "Windows", "Start Menu", "Programs", "Visual Studio.lnk")}"""), () => VisualStudio == true),
@@ -1127,6 +1162,16 @@ public static class ApplicationStage
 
             // pin antigravity to the taskbar
             ("Pinning Antigravity to the taskbar", async () => await ProcessActions.RunPowerShellScript("taskbarpin.ps1", $@"-Type Link -Path ""{Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), @"Microsoft\Windows\Start Menu\Programs\Antigravity\Antigravity.lnk")}"""), () => Antigravity == true),
+
+            // download cursor
+            ("Downloading Cursor", async () => await DownloadHelper.Download("https://api2.cursor.sh/updates/download/golden/win32-x64/cursor/3.5", Path.GetTempPath(), "CursorSetup-x64.exe", reporter: reporter), () => Cursor == true),
+
+            // install cursor
+            ("Installing Cursor", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "CursorSetup-x64.exe"), Arguments = "/VERYSILENT /NORESTART /MERGETASKS=!runcode" , WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => Cursor == true),
+            ("Cleaning up Cursor files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "CursorSetup-x64.exe")), () => Cursor == true),
+
+            // pin cursor to the taskbar
+            ("Pinning Cursor to the taskbar", async () => await ProcessActions.RunPowerShellScript("taskbarpin.ps1", $@"-Type Link -Path ""{Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), @"Microsoft\Windows\Start Menu\Programs\Cursor\Cursor.lnk")}"""), () => Cursor == true),
 
             // download windsurf
             ("Downloading Windsurf", async () => await DownloadHelper.Download("https://windsurf-stable.codeiumdata.com/win32-x64-user/stable/a5d3f1ff990cabc0e8001cce6642bdb7ad429e73/WindsurfUserSetup-x64-2.3.9.exe", Path.GetTempPath(), "WindsurfUserSetup-x64.exe", reporter: reporter), () => Windsurf == true),
@@ -1243,22 +1288,27 @@ public static class ApplicationStage
 
             // install minitool partition wizard
             ("Installing MiniTool Partition Wizard", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "pw-free-offline.exe"), Arguments = "/VERYSILENT /SUPPRESSMSGBOXES /NORESTART" , WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => MinitoolPartitionWizard == true),
-            ("Cleaning up MiniTool Partition Wizard files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "pw-free-offline.exe")), () => MinitoolPartitionWizard == true),
+            ("Installing MiniTool Partition Wizard", async () => { foreach (Process process in new[] { "partitionwizard", "OpenWith", "msedge" }.SelectMany(Process.GetProcessesByName)) { process.Kill(); process.WaitForExit(); }}, () => MinitoolPartitionWizard == true),
+			      ("Cleaning up MiniTool Partition Wizard files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "pw-free-offline.exe")), () => MinitoolPartitionWizard == true),
 
             // disable minitool partition wizard notifications
-			("Disabling MiniTool Partition Wizard notifications", async () => RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_CURRENT_USER\Software\MiniTool Software Limited\MiniTool Partition Wizard\00cfb691-7786-46e4-a4af-7e2cb0eb10c5", "2", RegistryValueKind.DWord), () => MinitoolPartitionWizard == true),
+			      ("Disabling MiniTool Partition Wizard notifications", async () => RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_CURRENT_USER\Software\MiniTool Software Limited\MiniTool Partition Wizard", "00cfb691-7786-46e4-a4af-7e2cb0eb10c5", "2", RegistryValueKind.DWord), () => MinitoolPartitionWizard == true),
 
-			// disable minitool partition wizard startup entries
-			("Disabling MiniTool Partition Wizard startup entries", async () => TaskSchedulerHelper.Toggle(@"MiniToolPartitionWizard", false), () => MinitoolPartitionWizard == true),
-			("Disabling MiniTool Partition Wizard startup entries", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run", "MTPW", new byte[] { 0x01 }, RegistryValueKind.Binary), () => MinitoolPartitionWizard == true),
+			      // disable minitool partition wizard startup entries
+			      ("Disabling MiniTool Partition Wizard startup entries", async () => TaskSchedulerHelper.Toggle(@"MiniToolPartitionWizard", false), () => MinitoolPartitionWizard == true),
+			      ("Disabling MiniTool Partition Wizard startup entries", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run", "MTPW", new byte[] { 0x01 }, RegistryValueKind.Binary), () => MinitoolPartitionWizard == true),
 
-            // download bulk crap uninstaller
-            ("Downloading Bulk Crap Uninstaller", async () => await DownloadHelper.Download(JsonDocument.Parse(await new HttpClient { DefaultRequestHeaders = { { "User-Agent", "AutoOS" } } }.GetStringAsync("https://api.github.com/repos/Klocman/Bulk-Crap-Uninstaller/releases/latest")).RootElement.GetProperty("assets").EnumerateArray().First(a => a.GetProperty("name").GetString().Contains("setup.exe")).GetProperty("browser_download_url").GetString(), Path.GetTempPath(), "BCUninstaller_setup.exe", reporter: reporter), () => BulkCrapUninstaller == true),
-            
-			// install bulk crap uninstaller
-            ("Installing Bulk Crap Uninstaller", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "BCUninstaller_setup.exe"), Arguments = "/VERYSILENT /SUPPRESSMSGBOXES /NORESTART" , WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => BulkCrapUninstaller == true),
-            ("Cleaning up Bulk Crap Uninstaller files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "BCUninstaller_setup.exe")), () => BulkCrapUninstaller == true),
+            // download aomei partition assistant
+            ("Downloading AOMEI Partition Assistant", async () => await DownloadHelper.Download("https://www2.aomeisoftware.com/download/pa/PAssist_ProDemo.exe", Path.GetTempPath(), "PAssist_ProDemo.exe", reporter: reporter), () => AomeiPartitionAssistant == true),
 
+            // install aomei partition assistant
+            ("Installing AOMEI Partition Assistant", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "PAssist_ProDemo.exe"), Arguments = "/VERYSILENT /SUPPRESSMSGBOXES /NORESTART /SP-" , WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => AomeiPartitionAssistant == true),
+            ("Installing AOMEI Partition Assistant", async () => { foreach (Process process in new[] { "OpenWith", "msedge" }.SelectMany(Process.GetProcessesByName)) { process.Kill(); process.WaitForExit(); }}, () => AomeiPartitionAssistant == true),
+            ("Cleaning up AOMEI Partition Assistant files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "PAssist_ProDemo.exe")), () => AomeiPartitionAssistant == true),
+
+            // activate aomei partition assistant
+            ("Activating AOMEI Partition Assistant", async () => { var iniHelper = new InIHelper(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "AOMEI Partition Assistant", "cfg.ini")); iniHelper.AddValue("KEY", "AOPR-CM948-83ZJZ-4NQW1", "CONFIG"); }, () => AomeiPartitionAssistant == true),
+			
             // download wiztree
             ("Downloading WizTree", async () => await DownloadHelper.Download("https://diskanalyzer.com/files/wiztree_4_31_setup.exe", Path.GetTempPath(), "wiztree_setup.exe", reporter: reporter), () => WizTree == true),
 
@@ -1266,6 +1316,13 @@ public static class ApplicationStage
             ("Installing WizTree", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "wiztree_setup.exe"), Arguments = "/VERYSILENT /SUPPRESSMSGBOXES /NORESTART /SP- /MERGETASKS=!desktopicon" , WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => WizTree == true),
             ("Cleaning up WizTree files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "wiztree_setup.exe")), () => WizTree == true),
 
+            // download bulk crap uninstaller
+            ("Downloading Bulk Crap Uninstaller", async () => await DownloadHelper.Download(JsonDocument.Parse(await new HttpClient { DefaultRequestHeaders = { { "User-Agent", "AutoOS" } } }.GetStringAsync("https://api.github.com/repos/Klocman/Bulk-Crap-Uninstaller/releases/latest")).RootElement.GetProperty("assets").EnumerateArray().First(a => a.GetProperty("name").GetString().Contains("setup.exe")).GetProperty("browser_download_url").GetString(), Path.GetTempPath(), "BCUninstaller_setup.exe", reporter: reporter), () => BulkCrapUninstaller == true),
+            
+			      // install bulk crap uninstaller
+            ("Installing Bulk Crap Uninstaller", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "BCUninstaller_setup.exe"), Arguments = "/VERYSILENT /SUPPRESSMSGBOXES /NORESTART" , WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => BulkCrapUninstaller == true),
+            ("Cleaning up Bulk Crap Uninstaller files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "BCUninstaller_setup.exe")), () => BulkCrapUninstaller == true),
+          
             // download bluetooth audio receiver
             ("Downloading Bluetooth Audio Receiver", async () => await StoreHelper.Download("55746MarkSmirnov.BluetoothAudioReveicer_xwrbx6997tsfc", reporter: reporter), () => BluetoothAudioReceiver == true),
 

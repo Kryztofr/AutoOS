@@ -40,7 +40,9 @@ public sealed partial class ApplicationsPage : Page
         var messagingList = new List<GridViewItem>
         {
             new() { Text = "Discord", ImageSource = "ms-appx:///Assets/Fluent/Discord.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Discord", "Update.exe")) },
-            new() { Text = "WhatsApp", ImageSource = "ms-appx:///Assets/Fluent/Whatsapp.png", IsInstalled = Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Packages", "5319275A.WhatsAppDesktop_cv1g1gvanyjgm")) }
+            new() { Text = "WhatsApp", ImageSource = "ms-appx:///Assets/Fluent/Whatsapp.png", IsInstalled = Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Packages", "5319275A.WhatsAppDesktop_cv1g1gvanyjgm")) },
+            new() { Text = "Telegram Desktop", ImageSource = "ms-appx:///Assets/Fluent/Telegram.png", IsInstalled = Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Packages", "TelegramMessengerLLP.TelegramDesktop_t4vj0pshhgkwm")) },
+            new() { Text = "Unigram", ImageSource = "ms-appx:///Assets/Fluent/Unigram.png", IsInstalled = Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Packages", "38833FF26BA1D.UnigramPreview_g9c9v27vpyspw")) }
         };
         foreach (var item in messagingList.Where(item => !item.IsInstalled))
             messagingItems.Add(item);
@@ -103,6 +105,7 @@ public sealed partial class ApplicationsPage : Page
             new() { Text = "Visual Studio", ImageSource = "ms-appx:///Assets/Fluent/VisualStudio.png", IsInstalled = Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Microsoft Visual Studio")) },
             new() { Text = "Visual Studio Code", ImageSource = "ms-appx:///Assets/Fluent/VisualStudioCode.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs", "Microsoft VS Code", "Code.exe")) },
             new() { Text = "Antigravity", ImageSource = "ms-appx:///Assets/Fluent/Antigravity.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs", "Antigravity", "Antigravity.exe")) },
+            new() { Text = "Cursor", ImageSource = "ms-appx:///Assets/Fluent/Cursor.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "cursor", "Cursor.exe")) },
             new() { Text = "Windsurf", ImageSource = "ms-appx:///Assets/Fluent/Windsurf.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs", "Windsurf", "Windsurf.exe"))},
             new() { Text = "WinMerge", ImageSource = "ms-appx:///Assets/Fluent/WinMerge.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "WinMerge", "WinMergeU.exe"))},
             new() { Text = "Git", ImageSource = "ms-appx:///Assets/Fluent/Git.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Git", "bin", "git.exe")) },
@@ -129,8 +132,9 @@ public sealed partial class ApplicationsPage : Page
         var miscellaneousList = new List<GridViewItem>
         {
             new() { Text = "Minitool Partition Wizard", ImageSource = "ms-appx:///Assets/Fluent/MinitoolPartitionWizard.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "MiniTool Partition Wizard 13", "partitionwizard.exe")) },
-            new() { Text = "Bulk Crap Uninstaller", ImageSource = "ms-appx:///Assets/Fluent/BulkCrapUninstaller.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "BCUninstaller", "BCUninstaller.exe")) },
+            new() { Text = "AOMEI Partition Assistant", ImageSource = "ms-appx:///Assets/Fluent/AomeiPartitionAssistant.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "AOMEI Partition Assistant", "PartAssist.exe")) },
             new() { Text = "WizTree", ImageSource = "ms-appx:///Assets/Fluent/WizTree.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "WizTree", "WizTree64.exe")) },
+			      new() { Text = "Bulk Crap Uninstaller", ImageSource = "ms-appx:///Assets/Fluent/BulkCrapUninstaller.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "BCUninstaller", "BCUninstaller.exe")) },
             new() { Text = "Bluetooth Audio Receiver", ImageSource = "ms-appx:///Assets/Fluent/BluetoothAudioReceiver.png", IsInstalled = Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Packages", "55746MarkSmirnov.BluetoothAudioReveicer_xwrbx6997tsfc")) }
         };
         foreach (var item in miscellaneousList.Where(item => !item.IsInstalled))
@@ -150,6 +154,8 @@ public sealed partial class ApplicationsPage : Page
         var selectedMessaging = selectedMessagingItems.Select(item => item.Text).ToList();
         selection.Discord = selectedMessaging.Contains("Discord");
         selection.WhatsApp = selectedMessaging.Contains("WhatsApp");
+        selection.Telegram = selectedMessaging.Contains("Telegram Desktop");
+        selection.Unigram = selectedMessaging.Contains("Unigram");
 
         var selectedLaunchersItems = Launchers.SelectedItems.Cast<GridViewItem>().ToList();
         var selectedLaunchers = selectedLaunchersItems.Select(item => item.Text).ToList();
@@ -189,14 +195,15 @@ public sealed partial class ApplicationsPage : Page
         selection.HidHide = selectedControllers.Contains("HidHide");
         selection.DualSenseY = selectedControllers.Contains("DualSenseY");
         selection.RaceElement = selectedControllers.Contains("RaceElement");
-        selection.PlaystationAccessories = selectedControllers.Contains("PlaystationAccessories");
-        selection.XboxAccessories = selectedControllers.Contains("XboxAccessories");
+        selection.PlaystationAccessories = selectedControllers.Contains("PlayStation® Accessories");
+        selection.XboxAccessories = selectedControllers.Contains("Xbox Accessories");
 
         var selectedDevItems = Development.SelectedItems.Cast<GridViewItem>().ToList();
         var selectedDev = selectedDevItems.Select(item => item.Text).ToList();
         selection.VisualStudio = selectedDev.Contains("Visual Studio");
         selection.VisualStudioCode = selectedDev.Contains("Visual Studio Code");
         selection.Antigravity = selectedDev.Contains("Antigravity");
+        selection.Cursor = selectedDev.Contains("Cursor");
         selection.Windsurf = selectedDev.Contains("Windsurf");
         selection.WinMerge = selectedDev.Contains("WinMerge");
         selection.Git = selectedDev.Contains("Git");
@@ -217,7 +224,9 @@ public sealed partial class ApplicationsPage : Page
         var selectedMiscellaneousItems = Miscellaneous.SelectedItems.Cast<GridViewItem>().ToList();
         var selectedMiscellaneous = selectedMiscellaneousItems.Select(item => item.Text).ToList();
         selection.MinitoolPartitionWizard = selectedMiscellaneous.Contains("Minitool Partition Wizard");
-        selection.BulkCrapUninstaller = selectedMiscellaneous.Contains("Bulk Crap Uninstaller");
+        selection.AomeiPartitionAssistant = selectedMiscellaneous.Contains("AOMEI Partition Assistant");
+        selection.WizTree = selectedMiscellaneous.Contains("WizTree");
+		selection.BulkCrapUninstaller = selectedMiscellaneous.Contains("Bulk Crap Uninstaller");
 
         var updateDialog = new UpdateDialog();
         var reporter = new UpdateDialogReporter(updateDialog);
@@ -232,7 +241,7 @@ public sealed partial class ApplicationsPage : Page
                 Resources = new ResourceDictionary
                 {
                     ["ContentDialogMinHeight"] = 0.0,
-                    ["ContentDialogMinWidth"] = 500,
+                    ["ContentDialogMinWidth"] = 550,
                     ["ContentDialogMaxWidth"] = 1000
                 },
                 XamlRoot = XamlRoot

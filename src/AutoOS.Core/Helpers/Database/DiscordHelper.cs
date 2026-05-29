@@ -1,4 +1,5 @@
 using AutoOS.Core.Common;
+using System.Diagnostics;
 using System.Text.Json.Nodes;
 
 namespace AutoOS.Core.Helpers.Database;
@@ -203,8 +204,18 @@ public static partial class DiscordHelper
         return null;
     }
 
-    public static void SetSystemAppearance(string databasePath)
+    public static async Task KillDiscord()
     {
+        foreach (var process in Process.GetProcessesByName("Discord"))
+        {
+            process.Kill();
+            await process.WaitForExitAsync();
+        }
+    }
+
+    public static async Task SetSystemAppearance(string databasePath)
+    {
+        await KillDiscord();
         JsonNode UnsyncedUserSettingsStore = new JsonObject
         {
             ["_state"] = new JsonObject
@@ -235,8 +246,9 @@ public static partial class DiscordHelper
         DatabaseHelper.Write(databasePath, "_https://discord.com", "ThemeStore", ThemeStore);
     }
 
-    public static void DisableGameOverlay(string databasePath)
+    public static async Task DisableGameOverlay(string databasePath)
     {
+        await KillDiscord();
         JsonNode OverlayStore6 = new JsonObject
         {
             ["legacyEnabled"] = false,
@@ -245,8 +257,9 @@ public static partial class DiscordHelper
         DatabaseHelper.Write(databasePath, "_https://discord.com", "OverlayStore6", OverlayStore6);
     }
 
-    public static void DisableClips(string databasePath)
+    public static async Task DisableClips(string databasePath)
     {
+        await KillDiscord();
         JsonNode ClipsStore = DatabaseHelper.Read(databasePath, "https://discordapp.com", "ClipsStore");
 
         if (ClipsStore != null)
