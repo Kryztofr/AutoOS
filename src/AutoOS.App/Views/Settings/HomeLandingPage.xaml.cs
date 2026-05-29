@@ -149,7 +149,7 @@ namespace AutoOS.Views.Settings
                 Registry.SetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\AutoOS", "IsInstalled", 1, RegistryValueKind.DWord);
                 try
                 {
-                    await LogHelper.Log(PreparingStage.GPUs);
+                    _ = LogHelper.Log(PreparingStage.GPUs);
                 }
                 catch (Exception ex)
 				{

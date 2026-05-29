@@ -177,6 +177,7 @@ public sealed partial class UpdateDialog : UserControl
 
         uiContext?.Post(_ =>
         {
+            ProgressBar.IsIndeterminate = false;
             ProgressBar.Value = targetValue;
         }, null);
     }

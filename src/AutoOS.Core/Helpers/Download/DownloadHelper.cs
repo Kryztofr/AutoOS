@@ -72,6 +72,7 @@ public static partial class DownloadHelper
         DateTime lastLoggedTime = DateTime.MinValue;
         double lastSpeedMB = 0;
         double totalSizeMB = 0;
+        Exception downloaderError = null;
 
         download.DownloadProgressChanged += (sender, e) =>
         {
@@ -86,16 +87,16 @@ public static partial class DownloadHelper
             reporter?.Report($"{lastSpeedMB:F1} MB/s - {receivedMB:F2} MB of {totalSizeMB:F2} MB", percentage, false);
         };
 
-        download.DownloadFileCompleted += async (sender, e) =>
+        download.DownloadFileCompleted += (sender, e) =>
         {
             if (e.Error == null)
             {
                 reporter?.Report($"{lastSpeedMB:F1} MB/s - {totalSizeMB:F2} MB of {totalSizeMB:F2} MB", 100, false);
             }
-			else
-			{
-				await LogHelper.LogError(new Exception($"Downloader package failed: {e.Error.Message}", e.Error));
-			}
+            else
+            {
+                downloaderError = e.Error;
+            }
         };
 
         await download.StartAsync();
@@ -103,6 +104,16 @@ public static partial class DownloadHelper
         string fileName = download.Package?.FileName ?? (!string.IsNullOrEmpty(file) ? Path.Combine(path, file) : null);
         if (!File.Exists(fileName))
         {
+            var errorDetails = new StringBuilder();
+            var package = download.Package;
+
+            errorDetails.AppendLine($"Primary download failed for: {url}");
+            errorDetails.AppendLine($"Package: Status={package?.Status}, SaveComplete={package?.IsSaveComplete}, FileName={package?.FileName}");
+            if (downloaderError != null)
+                errorDetails.AppendLine($"Downloader error: {downloaderError.GetType().Name}: {downloaderError.Message}");
+            var files = Directory.Exists(path) ? Directory.GetFiles(path, "*", SearchOption.TopDirectoryOnly) : [];
+            errorDetails.AppendLine($"Files in path: [{string.Join(", ", files.Select(Path.GetFileName))}]");
+
             HttpStatusCode? statusCode = null;
             try
             {
@@ -116,14 +127,9 @@ public static partial class DownloadHelper
                 statusCode = response.StatusCode;
             }
             catch { }
+            errorDetails.AppendLine(statusCode.HasValue ? $"HTTP Status Code: {(int)statusCode.Value} ({statusCode.Value})" : "HTTP status unknown");
 
-            var package = download.Package;
-            var files = Directory.Exists(path) ? Directory.GetFiles(path, "*", SearchOption.TopDirectoryOnly) : [];
-            await LogHelper.LogError(new FileNotFoundException(
-                $"Downloaded file not found. Package: Status={package?.Status}, SaveComplete={package?.IsSaveComplete}, FileName={package?.FileName}. " +
-                $"Files in path: [{string.Join(", ", files.Select(Path.GetFileName))}]. " +
-                (statusCode.HasValue ? $"HTTP Status Code: {(int)statusCode.Value} ({statusCode.Value})" : "HTTP status unknown")));
-
+            Exception fallbackError = null;
             if (statusCode.HasValue && (int)statusCode.Value >= 200 && (int)statusCode.Value <= 299)
             {
                 try
@@ -170,13 +176,25 @@ public static partial class DownloadHelper
                 }
                 catch (Exception ex)
                 {
-                    await LogHelper.LogError(new Exception($"Fallback download failed: {ex.Message}", ex));
+                    fallbackError = ex;
                 }
             }
 
-            if (!File.Exists(fileName))
+            if (File.Exists(fileName))
             {
-                await LogHelper.LogError(new FileNotFoundException(statusCode.HasValue ? $"Downloaded file not found after fallback. HTTP Status Code: {(int)statusCode.Value} ({statusCode.Value})" : "Downloaded file not found after fallback.", fileName!));
+                errorDetails.AppendLine("Fallback download succeeded");
+                await LogHelper.LogError(new Exception(errorDetails.ToString(), downloaderError));
+            }
+            else
+            {
+                if (fallbackError != null)
+                    errorDetails.AppendLine($"Fallback download error: {fallbackError.GetType().Name}: {fallbackError.Message}");
+                else if (statusCode.HasValue && (int)statusCode.Value >= 200 && (int)statusCode.Value <= 299)
+                    errorDetails.AppendLine("Fallback download completed but file still not found");
+                else
+                    errorDetails.AppendLine("Fallback download not attempted (non-success HTTP status or unknown)");
+
+                await LogHelper.LogError(new FileNotFoundException(errorDetails.ToString(), fileName!, downloaderError));
             }
         }
 

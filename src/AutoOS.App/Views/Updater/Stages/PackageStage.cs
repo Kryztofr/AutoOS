@@ -27,10 +27,7 @@ public static class PackageStage
             store.Add(cert);
         }
 
-        dialog.SetProgress(50);
-        await dialog.Download(downloadUrl, tempFolderPath, "AutoOS.msix", "Downloading Update...", 50, 75);
-        double startValue = 75;
-        double weight = 25;
+        await dialog.Download(downloadUrl, tempFolderPath, "AutoOS.msix", "Downloading Update", 50, 75);
 
         dialog.SetStatus("Installing Update...");
         PInvoke.RegisterApplicationRestart(null, 0);
@@ -47,7 +44,7 @@ public static class PackageStage
                 }
                 else
                 {
-                    double scaledProgress = startValue + (progress.percentage / 80.0 * weight);
+                    double scaledProgress = 75 + (progress.percentage / 80.0 * 25);
                     dialog.SetProgress(scaledProgress);
                     dialog.SetStatus($"Installing Update ({Math.Round(progress.percentage / 80.0 * 100)}%)...");
                 }
