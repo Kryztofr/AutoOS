@@ -68,7 +68,8 @@ public sealed partial class ApplicationsPage : Page
             new() { Text = "Qobuz", ImageSource = "ms-appx:///Assets/Fluent/Qobuz.png" },
             new() { Text = "Amazon Music", ImageSource = "ms-appx:///Assets/Fluent/AmazonMusic.png" },
             new() { Text = "Deezer Music", ImageSource = "ms-appx:///Assets/Fluent/DeezerMusic.png" },
-            new() { Text = "Spotify", ImageSource = "ms-appx:///Assets/Fluent/Spotify.png" }
+            new() { Text = "Spotify", ImageSource = "ms-appx:///Assets/Fluent/Spotify.png" },
+            new() { Text = "MusicBee", ImageSource = "ms-appx:///Assets/Fluent/MusicBee.png" }
         };
 
         Peripherals.ItemsSource = new List<GridViewItem>
@@ -119,8 +120,9 @@ public sealed partial class ApplicationsPage : Page
         {
             new() { Text = "MiniTool Partition Wizard", ImageSource = "ms-appx:///Assets/Fluent/MiniToolPartitionWizard.png" },
             new() { Text = "AOMEI Partition Assistant", ImageSource = "ms-appx:///Assets/Fluent/AomeiPartitionAssistant.png" },
-			new() { Text = "WizTree", ImageSource = "ms-appx:///Assets/Fluent/WizTree.png" },
-			new() { Text = "Bulk Crap Uninstaller", ImageSource = "ms-appx:///Assets/Fluent/BulkCrapUninstaller.png" }
+            new() { Text = "WizTree", ImageSource = "ms-appx:///Assets/Fluent/WizTree.png" },
+            new() { Text = "Bulk Crap Uninstaller", ImageSource = "ms-appx:///Assets/Fluent/BulkCrapUninstaller.png" }
+            new() { Text = "Bluetooth Audio Receiver", ImageSource = "ms-appx:///Assets/Fluent/BluetoothAudioReceiver.png" }
         };
     }
 

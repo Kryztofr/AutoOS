@@ -46,6 +46,7 @@ public class ApplicationSelection
     public bool AmazonMusic { get; set; }
     public bool DeezerMusic { get; set; }
     public bool Spotify { get; set; }
+    public bool MusicBee {get; set; }
     public bool LogitechGHub { get; set; }
     public bool LogitechOnboardMemoryManager { get; set; }
     public bool Wootility { get; set; }
@@ -77,9 +78,9 @@ public class ApplicationSelection
     public bool OneDrive { get; set; }
     public bool MinitoolPartitionWizard { get; set; }
     public bool AomeiPartitionAssistant { get; set; }
-	public bool WizTree { get; set; }
-	public bool BulkCrapUninstaller { get; set; }
-    
+    public bool WizTree { get; set; }
+    public bool BulkCrapUninstaller { get; set; }
+    public bool BluetoothAudioReceiver { get; set; }
 }
 
 public static class ApplicationStage
@@ -131,6 +132,7 @@ public static class ApplicationStage
         bool AmazonMusic = selection?.AmazonMusic ?? PreparingStage.AmazonMusic;
         bool DeezerMusic = selection?.DeezerMusic ?? PreparingStage.DeezerMusic;
         bool Spotify = selection?.Spotify ?? PreparingStage.Spotify;
+        bool MusicBee = selection?.MusicBee ?? PreparingStage.MusicBee;
 
         bool LogitechGHub = selection?.LogitechGHub ?? PreparingStage.LogitechGHub;
         bool LogitechOnboardMemoryManager = selection?.LogitechOnboardMemoryManager ?? PreparingStage.LogitechOnboardMemoryManager;
@@ -167,9 +169,10 @@ public static class ApplicationStage
 
         bool MinitoolPartitionWizard = selection?.MinitoolPartitionWizard ?? PreparingStage.MinitoolPartitionWizard;
         bool AomeiPartitionAssistant = selection?.AomeiPartitionAssistant ?? PreparingStage.AomeiPartitionAssistant;
-		bool WizTree = selection?.WizTree ?? PreparingStage.WizTree;
-		bool BulkCrapUninstaller = selection?.BulkCrapUninstaller ?? PreparingStage.BulkCrapUninstaller;
-        
+        bool WizTree = selection?.WizTree ?? PreparingStage.WizTree;
+        bool BulkCrapUninstaller = selection?.BulkCrapUninstaller ?? PreparingStage.BulkCrapUninstaller;
+        bool BluetoothAudioReceiver = selection?.BluetoothAudioReceiver ?? PreparingStage.BluetoothAudioReceiver;
+
         string icloudVersion = "";
         string bitwardenVersion = "";
         string onePasswordVersion = "";
@@ -915,6 +918,15 @@ public static class ApplicationStage
             // disable spotify startup entry
             ("Disabling Spotify startup entry", async () => RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run", "Spotify", new byte[] { 0x01 }, RegistryValueKind.Binary), () => Spotify == true),
 
+            // download musicbee
+            ("Downloading MusicBee", async () => await StoreHelper.Download("50072StevenMayall.MusicBee_kcr266et74avj", reporter: reporter), () => MusicBee == true),
+
+            // install musicbee
+            ("Installing MusicBee", async () => await StoreHelper.Install("50072StevenMayall.MusicBee_kcr266et74avj"), () => MusicBee == true),
+
+            // pin musicbee to the taskbar
+            ("Pinning MusicBee to the taskbar", async () => await ProcessActions.RunPowerShellScript("taskbarpin.ps1", @"-Type UWA -Path 50072StevenMayall.MusicBee_kcr266et74avj!MusicBeePackage"), () => MusicBee == true),
+
             // download logitech g hub
             ("Downloading Logitech G HUB", async () => await DownloadHelper.Download("https://download01.logi.com/web/ftp/pub/techsupport/gaming/lghub_installer.exe", Path.GetTempPath(), "lghub_installer.exe", reporter: reporter), () => LogitechGHub == true),
 
@@ -1110,9 +1122,9 @@ public static class ApplicationStage
             // optimize visual studio
             ("Optimizing Visual Studio", async () => { while (Process.GetProcessesByName("VSNgenRunner").Length == 1) await Task.Delay(500); }, () => VisualStudio == true),
 
-			// disable visual studio startup entry
+			      // disable visual studio startup entry
             ("Disabling Visual Studio startup entry", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\VSStandardCollectorService150", "Start", 4, RegistryValueKind.DWord), () => VisualStudio == true),
-			("Disabling Visual Studio startup entry", async () => ServicesHelper.StopService("VSStandardCollectorService150"), () => VisualStudio == true),
+			      ("Disabling Visual Studio startup entry", async () => ServicesHelper.StopService("VSStandardCollectorService150"), () => VisualStudio == true),
 
             // pin visual studio to the taskbar
             ("Pinning Visual Studio to the taskbar", async () => await ProcessActions.RunPowerShellScript("taskbarpin.ps1", $@"-Type Link -Path ""{Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Microsoft", "Windows", "Start Menu", "Programs", "Visual Studio.lnk")}"""), () => VisualStudio == true),
@@ -1277,14 +1289,14 @@ public static class ApplicationStage
             // install minitool partition wizard
             ("Installing MiniTool Partition Wizard", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "pw-free-offline.exe"), Arguments = "/VERYSILENT /SUPPRESSMSGBOXES /NORESTART" , WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => MinitoolPartitionWizard == true),
             ("Installing MiniTool Partition Wizard", async () => { foreach (Process process in new[] { "partitionwizard", "OpenWith", "msedge" }.SelectMany(Process.GetProcessesByName)) { process.Kill(); process.WaitForExit(); }}, () => MinitoolPartitionWizard == true),
-			("Cleaning up MiniTool Partition Wizard files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "pw-free-offline.exe")), () => MinitoolPartitionWizard == true),
+			      ("Cleaning up MiniTool Partition Wizard files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "pw-free-offline.exe")), () => MinitoolPartitionWizard == true),
 
             // disable minitool partition wizard notifications
-			("Disabling MiniTool Partition Wizard notifications", async () => RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_CURRENT_USER\Software\MiniTool Software Limited\MiniTool Partition Wizard", "00cfb691-7786-46e4-a4af-7e2cb0eb10c5", "2", RegistryValueKind.DWord), () => MinitoolPartitionWizard == true),
+			      ("Disabling MiniTool Partition Wizard notifications", async () => RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_CURRENT_USER\Software\MiniTool Software Limited\MiniTool Partition Wizard", "00cfb691-7786-46e4-a4af-7e2cb0eb10c5", "2", RegistryValueKind.DWord), () => MinitoolPartitionWizard == true),
 
-			// disable minitool partition wizard startup entries
-			("Disabling MiniTool Partition Wizard startup entries", async () => TaskSchedulerHelper.Toggle(@"MiniToolPartitionWizard", false), () => MinitoolPartitionWizard == true),
-			("Disabling MiniTool Partition Wizard startup entries", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run", "MTPW", new byte[] { 0x01 }, RegistryValueKind.Binary), () => MinitoolPartitionWizard == true),
+			      // disable minitool partition wizard startup entries
+			      ("Disabling MiniTool Partition Wizard startup entries", async () => TaskSchedulerHelper.Toggle(@"MiniToolPartitionWizard", false), () => MinitoolPartitionWizard == true),
+			      ("Disabling MiniTool Partition Wizard startup entries", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run", "MTPW", new byte[] { 0x01 }, RegistryValueKind.Binary), () => MinitoolPartitionWizard == true),
 
             // download aomei partition assistant
             ("Downloading AOMEI Partition Assistant", async () => await DownloadHelper.Download("https://www2.aomeisoftware.com/download/pa/PAssist_ProDemo.exe", Path.GetTempPath(), "PAssist_ProDemo.exe", reporter: reporter), () => AomeiPartitionAssistant == true),
@@ -1302,14 +1314,20 @@ public static class ApplicationStage
 
             // install wiztree
             ("Installing WizTree", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "wiztree_setup.exe"), Arguments = "/VERYSILENT /SUPPRESSMSGBOXES /NORESTART /SP- /MERGETASKS=!desktopicon" , WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => WizTree == true),
-			("Cleaning up WizTree files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "wiztree_setup.exe")), () => WizTree == true),
+            ("Cleaning up WizTree files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "wiztree_setup.exe")), () => WizTree == true),
 
             // download bulk crap uninstaller
             ("Downloading Bulk Crap Uninstaller", async () => await DownloadHelper.Download(JsonDocument.Parse(await new HttpClient { DefaultRequestHeaders = { { "User-Agent", "AutoOS" } } }.GetStringAsync("https://api.github.com/repos/Klocman/Bulk-Crap-Uninstaller/releases/latest")).RootElement.GetProperty("assets").EnumerateArray().First(a => a.GetProperty("name").GetString().Contains("setup.exe")).GetProperty("browser_download_url").GetString(), Path.GetTempPath(), "BCUninstaller_setup.exe", reporter: reporter), () => BulkCrapUninstaller == true),
             
-			// install bulk crap uninstaller
+			      // install bulk crap uninstaller
             ("Installing Bulk Crap Uninstaller", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "BCUninstaller_setup.exe"), Arguments = "/VERYSILENT /SUPPRESSMSGBOXES /NORESTART" , WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => BulkCrapUninstaller == true),
-            ("Cleaning up Bulk Crap Uninstaller files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "BCUninstaller_setup.exe")), () => BulkCrapUninstaller == true)
+            ("Cleaning up Bulk Crap Uninstaller files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "BCUninstaller_setup.exe")), () => BulkCrapUninstaller == true),
+          
+            // download bluetooth audio receiver
+            ("Downloading Bluetooth Audio Receiver", async () => await StoreHelper.Download("55746MarkSmirnov.BluetoothAudioReveicer_xwrbx6997tsfc", reporter: reporter), () => BluetoothAudioReceiver == true),
+
+            // install bluetooth audio receiver
+            ("Installing Bluetooth Audio Receiver", async () => await StoreHelper.Install("55746MarkSmirnov.BluetoothAudioReveicer_xwrbx6997tsfc"), () => BluetoothAudioReceiver == true)
         };
 
         if (selection != null)

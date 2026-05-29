@@ -70,7 +70,8 @@ public sealed partial class ApplicationsPage : Page
             new() { Text = "Qobuz", ImageSource = "ms-appx:///Assets/Fluent/Qobuz.png", IsInstalled = Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Qobuz")) },
             new() { Text = "Amazon Music", ImageSource = "ms-appx:///Assets/Fluent/AmazonMusic.png", IsInstalled = Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Packages", "AmazonMobileLLC.AmazonMusic_kc6t79cpj4tp0")) },
             new() { Text = "Deezer Music", ImageSource = "ms-appx:///Assets/Fluent/DeezerMusic.png", IsInstalled = Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Packages", "Deezer.62021768415AF_q7m17pa7q8kj0")) },
-            new() { Text = "Spotify", ImageSource = "ms-appx:///Assets/Fluent/Spotify.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Spotify", "Spotify.exe")) }
+            new() { Text = "Spotify", ImageSource = "ms-appx:///Assets/Fluent/Spotify.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Spotify", "Spotify.exe")) },
+            new() { Text = "MusicBee", ImageSource = "ms-appx:///Assets/Fluent/MusicBee.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "MusicBee", "MusicBee.exe")) }
         };
         foreach (var item in musicList.Where(item => !item.IsInstalled))
             musicItems.Add(item);
@@ -132,8 +133,9 @@ public sealed partial class ApplicationsPage : Page
         {
             new() { Text = "Minitool Partition Wizard", ImageSource = "ms-appx:///Assets/Fluent/MinitoolPartitionWizard.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "MiniTool Partition Wizard 13", "partitionwizard.exe")) },
             new() { Text = "AOMEI Partition Assistant", ImageSource = "ms-appx:///Assets/Fluent/AomeiPartitionAssistant.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "AOMEI Partition Assistant", "PartAssist.exe")) },
-			new() { Text = "WizTree", ImageSource = "ms-appx:///Assets/Fluent/WizTree.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "WizTree", "WizTree64.exe")) },
-			new() { Text = "Bulk Crap Uninstaller", ImageSource = "ms-appx:///Assets/Fluent/BulkCrapUninstaller.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "BCUninstaller", "BCUninstaller.exe")) }
+            new() { Text = "WizTree", ImageSource = "ms-appx:///Assets/Fluent/WizTree.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "WizTree", "WizTree64.exe")) },
+			      new() { Text = "Bulk Crap Uninstaller", ImageSource = "ms-appx:///Assets/Fluent/BulkCrapUninstaller.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "BCUninstaller", "BCUninstaller.exe")) },
+            new() { Text = "Bluetooth Audio Receiver", ImageSource = "ms-appx:///Assets/Fluent/BluetoothAudioReceiver.png", IsInstalled = Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Packages", "55746MarkSmirnov.BluetoothAudioReveicer_xwrbx6997tsfc")) }
         };
         foreach (var item in miscellaneousList.Where(item => !item.IsInstalled))
             miscellaneousItems.Add(item);
@@ -176,6 +178,7 @@ public sealed partial class ApplicationsPage : Page
         selection.AmazonMusic = selectedMusic.Contains("Amazon Music");
         selection.DeezerMusic = selectedMusic.Contains("Deezer Music");
         selection.Spotify = selectedMusic.Contains("Spotify");
+        selection.MusicBee = selectedMusic.Contains("MusicBee");
 
         var selectedPeripheralsItems = Peripherals.SelectedItems.Cast<GridViewItem>().ToList();
         var selectedPeripherals = selectedPeripheralsItems.Select(item => item.Text).ToList();
