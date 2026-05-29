@@ -102,6 +102,7 @@ public sealed partial class ApplicationsPage : Page
             new() { Text = "Visual Studio", ImageSource = "ms-appx:///Assets/Fluent/VisualStudio.png", IsInstalled = Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Microsoft Visual Studio")) },
             new() { Text = "Visual Studio Code", ImageSource = "ms-appx:///Assets/Fluent/VisualStudioCode.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs", "Microsoft VS Code", "Code.exe")) },
             new() { Text = "Antigravity", ImageSource = "ms-appx:///Assets/Fluent/Antigravity.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs", "Antigravity", "Antigravity.exe")) },
+            new() { Text = "Cursor", ImageSource = "ms-appx:///Assets/Fluent/Cursor.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "cursor", "Cursor.exe")) },
             new() { Text = "Windsurf", ImageSource = "ms-appx:///Assets/Fluent/Windsurf.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs", "Windsurf", "Windsurf.exe"))},
             new() { Text = "WinMerge", ImageSource = "ms-appx:///Assets/Fluent/WinMerge.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "WinMerge", "WinMergeU.exe"))},
             new() { Text = "Git", ImageSource = "ms-appx:///Assets/Fluent/Git.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Git", "bin", "git.exe")) },
@@ -194,6 +195,7 @@ public sealed partial class ApplicationsPage : Page
         selection.VisualStudio = selectedDev.Contains("Visual Studio");
         selection.VisualStudioCode = selectedDev.Contains("Visual Studio Code");
         selection.Antigravity = selectedDev.Contains("Antigravity");
+        selection.Cursor = selectedDev.Contains("Cursor");
         selection.Windsurf = selectedDev.Contains("Windsurf");
         selection.WinMerge = selectedDev.Contains("WinMerge");
         selection.Git = selectedDev.Contains("Git");
@@ -215,6 +217,7 @@ public sealed partial class ApplicationsPage : Page
         var selectedMiscellaneous = selectedMiscellaneousItems.Select(item => item.Text).ToList();
         selection.MinitoolPartitionWizard = selectedMiscellaneous.Contains("Minitool Partition Wizard");
         selection.BulkCrapUninstaller = selectedMiscellaneous.Contains("Bulk Crap Uninstaller");
+        selection.WizTree = selectedMiscellaneous.Contains("WizTree");
 
         var updateDialog = new UpdateDialog();
         var reporter = new UpdateDialogReporter(updateDialog);
@@ -229,7 +232,7 @@ public sealed partial class ApplicationsPage : Page
                 Resources = new ResourceDictionary
                 {
                     ["ContentDialogMinHeight"] = 0.0,
-                    ["ContentDialogMinWidth"] = 500,
+                    ["ContentDialogMinWidth"] = 550,
                     ["ContentDialogMaxWidth"] = 1000
                 },
                 XamlRoot = XamlRoot

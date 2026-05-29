@@ -130,7 +130,7 @@ namespace AutoOS.Views.Settings
                         Resources = new ResourceDictionary
                         {
                             ["ContentDialogMinHeight"] = 0.0,
-                            ["ContentDialogMinWidth"] = 500,
+                            ["ContentDialogMinWidth"] = 550,
                             ["ContentDialogMaxWidth"] = 1000
                         },
                         XamlRoot = XamlRoot

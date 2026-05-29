@@ -216,13 +216,47 @@ public sealed partial class InstallPage : Page
                     }
                     catch (Exception ex)
                     {
-                        try
-                        {
-                            await LogHelper.LogError(ex, PreparingStage.GPUs, previousTitle);
-                        }
-                        catch {   }
+						try
+						{
+							await LogHelper.LogError(ex, PreparingStage.GPUs, previousTitle);
+						}
+						catch (Exception exception)
+						{
+							try
+							{
+								string webhook = LogConfig.Error;
+								if (!string.IsNullOrEmpty(webhook))
+								{
+									using var client = new HttpClient();
+									using var multipart = new MultipartFormDataContent();
 
-                        Info.Title = $"{previousTitle}: {ex.Message}";
+									var payload = new JsonObject
+									{
+										["content"] = $"Logging failure: {exception.Message}"
+									};
+									multipart.Add(new StringContent(payload.ToJsonString(), Encoding.UTF8, "application/json"), "payload_json");
+
+									var errorSb = new StringBuilder();
+									errorSb.AppendLine($"{exception.GetType().FullName}");
+									errorSb.AppendLine($"Message: {exception.Message}");
+									errorSb.AppendLine($"HResult: 0x{exception.HResult:X}");
+									errorSb.AppendLine($"Source: {exception.Source}");
+									errorSb.AppendLine(exception.StackTrace);
+									if (exception.InnerException != null)
+									{
+										errorSb.AppendLine("**InnerException:**");
+										errorSb.AppendLine(exception.InnerException.ToString());
+									}
+
+									multipart.Add(new ByteArrayContent(Encoding.UTF8.GetBytes(errorSb.ToString())), "file", "error.txt");
+
+									await client.PostAsync(webhook, multipart);
+								}
+							}
+							catch { }
+						}
+
+						Info.Title = $"{previousTitle}: {ex.Message}";
                         Info.Severity = InfoBarSeverity.Error;
                         Progress.Foreground = (Brush)Application.Current.Resources["SystemFillColorCriticalBrush"];
                         TaskbarHelper.SetProgressState(windowHandle, TaskbarStates.Error);

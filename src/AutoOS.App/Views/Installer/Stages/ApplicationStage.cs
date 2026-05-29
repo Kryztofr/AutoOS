@@ -59,6 +59,7 @@ public class ApplicationSelection
 	public bool VisualStudio { get; set; }
     public bool VisualStudioCode { get; set; }
     public bool Antigravity { get; set; }
+    public bool Cursor { get; set; }
     public bool Windsurf {get; set; }
     public bool WinMerge {get; set; }
     public bool Git { get; set; }
@@ -143,6 +144,7 @@ public static class ApplicationStage
         bool VisualStudio = selection?.VisualStudio ?? PreparingStage.VisualStudio;
         bool VisualStudioCode = selection?.VisualStudioCode ?? PreparingStage.VisualStudioCode;
         bool Antigravity = selection?.Antigravity ?? PreparingStage.Antigravity;
+        bool Cursor = selection?.Cursor ?? PreparingStage.Cursor;
         bool Windsurf = selection?.Windsurf ?? PreparingStage.Windsurf;
         bool WinMerge = selection?.WinMerge ?? PreparingStage.WinMerge;
         bool Git = selection?.Git ?? PreparingStage.Git;
@@ -1125,6 +1127,16 @@ public static class ApplicationStage
             // pin antigravity to the taskbar
             ("Pinning Antigravity to the taskbar", async () => await ProcessActions.RunPowerShellScript("taskbarpin.ps1", $@"-Type Link -Path ""{Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), @"Microsoft\Windows\Start Menu\Programs\Antigravity\Antigravity.lnk")}"""), () => Antigravity == true),
 
+            // download cursor
+            ("Downloading Cursor", async () => await DownloadHelper.Download("https://api2.cursor.sh/updates/download/golden/win32-x64/cursor/3.5", Path.GetTempPath(), "CursorSetup-x64.exe", reporter: reporter), () => Cursor == true),
+
+            // install cursor
+            ("Installing Cursor", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "CursorSetup-x64.exe"), Arguments = "/VERYSILENT /NORESTART /MERGETASKS=!runcode" , WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => Cursor == true),
+            ("Cleaning up Cursor files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "CursorSetup-x64.exe")), () => Cursor == true),
+
+            // pin cursor to the taskbar
+            ("Pinning Cursor to the taskbar", async () => await ProcessActions.RunPowerShellScript("taskbarpin.ps1", $@"-Type Link -Path ""{Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), @"Microsoft\Windows\Start Menu\Programs\Cursor\Cursor.lnk")}"""), () => Cursor == true),
+
             // download windsurf
             ("Downloading Windsurf", async () => await DownloadHelper.Download("https://windsurf-stable.codeiumdata.com/win32-x64-user/stable/a5d3f1ff990cabc0e8001cce6642bdb7ad429e73/WindsurfUserSetup-x64-2.3.9.exe", Path.GetTempPath(), "WindsurfUserSetup-x64.exe", reporter: reporter), () => Windsurf == true),
 
@@ -1240,10 +1252,11 @@ public static class ApplicationStage
 
             // install minitool partition wizard
             ("Installing MiniTool Partition Wizard", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "pw-free-offline.exe"), Arguments = "/VERYSILENT /SUPPRESSMSGBOXES /NORESTART" , WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => MinitoolPartitionWizard == true),
-            ("Cleaning up MiniTool Partition Wizard files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "pw-free-offline.exe")), () => MinitoolPartitionWizard == true),
+            ("Installing MiniTool Partition Wizard", async () => { foreach (Process process in new[] { "partitionwizard", "OpenWith", "msedge" }.SelectMany(Process.GetProcessesByName)) { process.Kill(); process.WaitForExit(); }}, () => MinitoolPartitionWizard == true),
+			("Cleaning up MiniTool Partition Wizard files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "pw-free-offline.exe")), () => MinitoolPartitionWizard == true),
 
             // disable minitool partition wizard notifications
-			("Disabling MiniTool Partition Wizard notifications", async () => RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_CURRENT_USER\Software\MiniTool Software Limited\MiniTool Partition Wizard\00cfb691-7786-46e4-a4af-7e2cb0eb10c5", "2", RegistryValueKind.DWord), () => MinitoolPartitionWizard == true),
+			("Disabling MiniTool Partition Wizard notifications", async () => RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_CURRENT_USER\Software\MiniTool Software Limited\MiniTool Partition Wizard", "00cfb691-7786-46e4-a4af-7e2cb0eb10c5", "2", RegistryValueKind.DWord), () => MinitoolPartitionWizard == true),
 
 			// disable minitool partition wizard startup entries
 			("Disabling MiniTool Partition Wizard startup entries", async () => TaskSchedulerHelper.Toggle(@"MiniToolPartitionWizard", false), () => MinitoolPartitionWizard == true),
