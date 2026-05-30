@@ -40,6 +40,9 @@ public static partial class DownloadHelper
             ParallelDownload = false,
             ChunkCount = 1,
             ParallelCount = 1,
+            HttpClientTimeout = 300000,
+            CheckDiskSizeBeforeDownload = false,
+            MinimumChunkSize = 1024 * 1024,
             RequestConfiguration = new RequestConfiguration
             {
                 UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"

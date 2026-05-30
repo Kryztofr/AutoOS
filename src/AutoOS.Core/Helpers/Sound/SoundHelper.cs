@@ -315,32 +315,46 @@ public static partial class SoundHelper
                 {
                     IAudioClient3* audioClient = (IAudioClient3*)pAudioClient;
                     WAVEFORMATEX* format = null;
-                    audioClient->GetMixFormat(&format);
-                    if (format != null)
+                    try
                     {
-                        audioClient->GetSharedModeEnginePeriod(*format, out uint def, out uint fund, out uint min, out uint max);
-                        audioClient->GetCurrentSharedModeEnginePeriod(out _, out uint current);
-
-                        if (min > 0)
+                        audioClient->GetMixFormat(&format);
+                        if (format != null)
                         {
-                            double factor = 1000.0 / format->nSamplesPerSec;
-                            var options = new HashSet<uint> { min, def, max, current }.Where(x => x > 0).OrderBy(x => x);
-                            foreach (var frames in options)
+                            try
                             {
-                                float ms = (float)Math.Round(frames * factor, 2);
-                                bufferSizes.Add(new BufferSizeOption
+                                audioClient->GetSharedModeEnginePeriod(*format, out uint def, out uint fund, out uint min, out uint max);
+                                audioClient->GetCurrentSharedModeEnginePeriod(out _, out uint current);
+
+                                if (min > 0)
                                 {
-                                    Frames = frames,
-                                    Ms = ms,
-                                    DisplayName = $"{frames} samples ({ms:0.#} ms)",
-                                    IsCurrent = (frames == current),
-                                    IsDefault = (frames == def)
-                                });
+                                    double factor = 1000.0 / format->nSamplesPerSec;
+                                    var options = new HashSet<uint> { min, def, max, current }.Where(x => x > 0).OrderBy(x => x);
+                                    foreach (var frames in options)
+                                    {
+                                        float ms = (float)Math.Round(frames * factor, 2);
+                                        bufferSizes.Add(new BufferSizeOption
+                                        {
+                                            Frames = frames,
+                                            Ms = ms,
+                                            DisplayName = $"{frames} samples ({ms:0.#} ms)",
+                                            IsCurrent = (frames == current),
+                                            IsDefault = (frames == def)
+                                        });
+                                    }
+                                }
                             }
+                            catch { }
                         }
-                        PInvoke.CoTaskMemFree(format);
                     }
-                    audioClient->Release();
+                    catch { }
+                    finally
+                    {
+                        if (format != null)
+                        {
+                            PInvoke.CoTaskMemFree(format);
+                        }
+                        audioClient->Release();
+                    }
                 }
                 endpoint->Release();
             }

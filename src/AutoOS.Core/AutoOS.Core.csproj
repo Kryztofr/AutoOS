@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <RootNamespace>AutoOS.Core</RootNamespace>
     <AssemblyName>AutoOS.Core</AssemblyName>
@@ -16,7 +16,6 @@
   <ItemGroup>
     <PackageReference Include="DevWinUI" />
     <PackageReference Include="Downloader" />
-    <PackageReference Include="IronLeveldb" />
     <PackageReference Include="LevelDB.Standard" />
     <PackageReference Include="Microsoft.Data.OData" />
     <PackageReference Include="Microsoft.Windows.CsWin32" />
