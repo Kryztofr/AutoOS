@@ -1042,7 +1042,7 @@ public static class ApplicationStage
             ("Cleaning up Corsair iCUE files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "Install iCUE.exe")), () => CorsairICue == true),
 
             // disable corsair icue services
-            ("Disabling Corsair iCUE services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\CorsairService", "Start", 4, RegistryValueKind.DWord), () => CorsairICue == true),
+            ("Disabling Corsair iCUE services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\CorsairService", "Start", 3, RegistryValueKind.DWord), () => CorsairICue == true),
             ("Disabling Corsair iCUE services", async () => ServicesHelper.StopService("CorsairService"), () => CorsairICue == true),
 
             // disable corsair icue startup entry

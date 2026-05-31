@@ -1,4 +1,7 @@
 <Project>
+  <PropertyGroup>
+    <LevelDBSharpPackageVersion>1.0.0</LevelDBSharpPackageVersion>
+  </PropertyGroup>
   <ItemGroup>
     <PackageVersion Include="CommunityToolkit.Labs.WinUI.Controls.DataTable" Version="0.1.260109-build.2471" />
     <PackageVersion Include="CommunityToolkit.Labs.WinUI.Controls.MarkdownTextBlock" Version="0.1.260109-build.2471" />
@@ -7,12 +10,11 @@
     <PackageVersion Include="CommunityToolkit.WinUI.Converters" Version="8.3.260402-preview2" />
     <PackageVersion Include="DevWinUI" Version="10.0.0-Preview3" />
     <PackageVersion Include="Downloader" Version="5.5.0" />
-    <PackageVersion Include="LevelDB.Standard" Version="2.1.7-beta1" />
+    <PackageVersion Include="LevelDBSharp" Version="1.0.0" />
     <PackageVersion Include="Microsoft.Windows.CsWin32" Version="0.3.275" />
     <PackageVersion Include="Microsoft.Windows.CsWinRT" Version="2.3.0-prerelease.251115.2" />
     <PackageVersion Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.28000.1839" />
     <PackageVersion Include="Microsoft.WindowsAppSDK" Version="2.1.4-experimental8" />
-    <PackageVersion Include="Microsoft.Data.OData" Version="5.8.5" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.5-beta1" />
     <PackageVersion Include="nucs.JsonSettings" Version="2.0.2" />
     <PackageVersion Include="nucs.JsonSettings.AutoSaveGenerator" Version="2.0.4" />

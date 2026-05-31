@@ -99,6 +99,26 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
+
+  <ItemGroup Condition="'$(Platform)' == 'x64'">
+    <Content Include="$(NuGetPackageRoot)leveldbsharp\$(LevelDBSharpPackageVersion)\runtimes\win-x64\native\leveldb.dll">
+      <Link>runtimes\win-x64\native\leveldb.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup Condition="'$(Platform)' == 'ARM64'">
+    <Content Include="$(NuGetPackageRoot)leveldbsharp\$(LevelDBSharpPackageVersion)\runtimes\win-arm64\native\leveldb.dll">
+      <Link>runtimes\win-arm64\native\leveldb.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup Condition="'$(Platform)' == 'x86'">
+    <Content Include="$(NuGetPackageRoot)leveldbsharp\$(LevelDBSharpPackageVersion)\runtimes\win-x86\native\leveldb.dll">
+      <Link>runtimes\win-x86\native\leveldb.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
   <!-- 
     Defining the "HasPackageAndPublishMenuAddedByProject" property here allows the Solution 
     Explorer "Package and Publish" context menu entry to be enabled for this project even if 

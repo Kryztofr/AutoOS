@@ -16,11 +16,10 @@
   <ItemGroup>
     <PackageReference Include="DevWinUI" />
     <PackageReference Include="Downloader" />
-    <PackageReference Include="LevelDB.Standard" />
-    <PackageReference Include="Microsoft.Data.OData" />
     <PackageReference Include="Microsoft.Windows.CsWin32" />
     <PackageReference Include="Newtonsoft.Json" />
     <PackageReference Include="System.ServiceProcess.ServiceController" />
+    <PackageReference Include="LevelDBSharp" />
     <PackageReference Include="ValveKeyValue" />
   </ItemGroup>
 
