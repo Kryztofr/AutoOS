@@ -32,9 +32,6 @@ public static partial class GamesStage
             ($"Capping Frame Rate for Fortnite to {maxRefreshRate}fps", async () => new InIHelper(Path.Combine(fortniteIniPath, "GameUserSettings.ini")).AddValue("FrameRateLimit", $"{maxRefreshRate}.000000", "/Script/FortniteGame.FortGameUserSettings"), () => Fortnite == true),
             ($"Capping Frame Rate for Fortnite to {maxRefreshRate}fps", async () => await Task.Delay(1000), () => Fortnite == true),
 
-            // disable fullscreen optimizations for fortnite
-            ("Disabling fullscreen optimizations for Fortnite", async () => RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers", $@"{fortnitePath}\FortniteGame\Binaries\Win64\FortniteClient-Win64-Shipping.exe", "~ DISABLEDXMAXIMIZEDWINDOWEDMODE", RegistryValueKind.String), () => Fortnite == true),
-
             // set gpu preference to high performance for fortnite
             (@"Setting ""GPU Preference"" to ""High Performance"" for Fortnite", async () => fortnitePath = JsonDocument.Parse(File.ReadAllText(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Epic", "UnrealEngineLauncher", "LauncherInstalled.dat"))).RootElement.GetProperty("InstallationList").EnumerateArray().FirstOrDefault(e => e.GetProperty("AppName").GetString() == "Fortnite").GetProperty("InstallLocation").GetString(), () => Fortnite == true),
             (@"Setting ""GPU Preference"" to ""High Performance"" for Fortnite", async () => RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_CURRENT_USER\Software\Microsoft\DirectX\UserGpuPreferences", fortnitePath + @"\FortniteGame\Binaries\Win64\FortniteClient-Win64-Shipping.exe", "SwapEffectUpgradeEnable=1;GpuPreference=2;", RegistryValueKind.String), () => Fortnite == true),
@@ -54,10 +51,7 @@ public static partial class GamesStage
             // set "gpu preference" to "high performance" for valorant
             (@"Setting ""GPU Preference"" to ""High Performance"" for Valorant", async () => valorantPath = RiotHelper.ProductInstallFullPathRegex().Match(File.ReadAllText(RiotHelper.RiotGamesMetadataPath + @"\valorant.live\valorant.live.product_settings.yaml")).Groups[1].Value.Replace('/', '\\'), () => Valorant == true),
             (@"Setting ""GPU Preference"" to ""High Performance"" for Valorant", async () => RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_CURRENT_USER\Software\Microsoft\DirectX\UserGpuPreferences", $@"{valorantPath}\ShooterGame\Binaries\Win64\VALORANT-Win64-Shipping.exe", "SwapEffectUpgradeEnable=1;GpuPreference=2;", RegistryValueKind.String), () => Valorant == true),
-            (@"Setting ""GPU Preference"" to ""High Performance"" for Valorant", async () => await Task.Delay(1000), () => Valorant == true),
-            
-            // disable fullscreen optimizations for valorant
-            ("Disabling fullscreen optimizations for Valorant", async () => RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers", $@"{valorantPath}\ShooterGame\Binaries\Win64\VALORANT-Win64-Shipping.exe", "~ DISABLEDXMAXIMIZEDWINDOWEDMODE", RegistryValueKind.String), () => Valorant == true),
+            (@"Setting ""GPU Preference"" to ""High Performance"" for Valorant", async () => await Task.Delay(1000), () => Valorant == true)
         };
 
         return actions;

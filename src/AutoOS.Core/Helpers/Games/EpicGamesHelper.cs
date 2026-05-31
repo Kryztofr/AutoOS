@@ -427,8 +427,7 @@ public static partial class EpicGamesHelper
                     newestFilePath = file.FullName;
 
                     // copy the file
-                    Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), @"EpicGamesLauncher\Saved\Config\WindowsEditor"));
-                    //Directory.CreateDirectory(EpicGamesAccountDir);
+                    Directory.CreateDirectory(Path.GetDirectoryName(ActiveEpicGamesAccountPath)!);
                     File.Copy(newestFilePath, ActiveEpicGamesAccountPath, true);
 
                     // disable tray and notifications
@@ -678,7 +677,7 @@ public static partial class EpicGamesHelper
         // wait for token to get used
         while (true)
         {
-            await Task.Delay(50);
+            await Task.Delay(500);
 
             if (!ValidateData(ActiveEpicGamesAccountPath))
             {
@@ -693,7 +692,7 @@ public static partial class EpicGamesHelper
         // wait for new token
         while (true)
         {
-            await Task.Delay(50);
+            await Task.Delay(500);
 
             if (!ValidateData(ActiveEpicGamesAccountPath))
             {
