@@ -175,10 +175,10 @@ namespace AutoOS.Core.Helpers.GPU
             var actions = new List<(string Title, Func<Task> Action, Func<bool> Condition)>
             {
 				// download nvidia control panel
-				("Downloading NVIDIA Control Panel", async () => await StoreHelper.Download("NVIDIACorp.NVIDIAControlPanel_56jybvy8sckqj", 0), () => gpu.CurrentVersion.StartsWith("6")),
+				("Downloading NVIDIA Control Panel", async () => await StoreHelper.Download("NVIDIACorp.NVIDIAControlPanel_56jybvy8sckqj", 0), null),
 
 				// install nvidia control panel
-				("Installing NVIDIA Control Panel", async () => await StoreHelper.Install("NVIDIACorp.NVIDIAControlPanel_56jybvy8sckqj"), () => gpu.CurrentVersion.StartsWith("6")),
+				("Installing NVIDIA Control Panel", async () => await StoreHelper.Install("NVIDIACorp.NVIDIAControlPanel_56jybvy8sckqj"), null),
 
                 // disable nvidia tray icon
                 (@"Disabling ""Show Notification Tray Icon""", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\NVIDIA Corporation\NvTray", "StartOnLogin", 0, RegistryValueKind.DWord), null),

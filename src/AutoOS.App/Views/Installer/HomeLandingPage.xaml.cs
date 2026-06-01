@@ -40,7 +40,7 @@ namespace AutoOS.Views.Installer
             }
 
             var (major, minor, build, ubr) = OSHelper.GetWindowsVersion();
-            if (build < 26200 || (build == 26200 && ubr < 8117))
+            if (build < 26200 || (build == 26200 && ubr < 8521))
             {
                 var dialog = new ContentDialog
                 {

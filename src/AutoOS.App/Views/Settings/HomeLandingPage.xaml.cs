@@ -1,3 +1,9 @@
+//using Microsoft.Windows.ApplicationModel.WindowsAppRuntime;
+using System.Diagnostics;
+using System.Net.Http.Headers;
+using System.Text;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using AutoOS.Core.Helpers.Database;
 using AutoOS.Core.Helpers.Logging;
 using AutoOS.Core.Helpers.OS;
@@ -7,11 +13,6 @@ using AutoOS.Views.Updater;
 using AutoOS.Views.Updater.Stages;
 using CommunityToolkit.WinUI.Controls;
 using Microsoft.Win32;
-//using Microsoft.Windows.ApplicationModel.WindowsAppRuntime;
-using System.Net.Http.Headers;
-using System.Text;
-using System.Text.Json;
-using System.Text.Json.Nodes;
 using Windows.Storage;
 
 namespace AutoOS.Views.Settings
@@ -78,26 +79,34 @@ namespace AutoOS.Views.Settings
 				}
 			}
 
-			if (ubr >= 8313 && (Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Windhawk\Engine\Mods\windows-11-start-menu-styler", "Version", null) as string) == "1.4.1")
+			if (ubr >= 8521 && (Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Windhawk\Engine\Mods\windows-11-start-menu-styler", "disableNewStartMenuLayout", null) as string) == "disableNewLayoutKeepPhoneLink")
             {
-                RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_LOCAL_MACHINE\SOFTWARE\Windhawk\Engine\Mods\windows-11-start-menu-styler\Settings", "theme", "SideBySide2", RegistryValueKind.String);
-                RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_LOCAL_MACHINE\SOFTWARE\Windhawk\Engine\Mods\windows-11-start-menu-styler\Settings", "disableNewStartMenuLayout", "disableNewLayoutKeepPhoneLink", RegistryValueKind.String);
-                RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\FeatureManagement\Overrides\8\3036241548", "EnabledState", "1", RegistryValueKind.DWord);
-                RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\FeatureManagement\Overrides\8\3036241548", "EnabledStateOptions", "0", RegistryValueKind.DWord);
-                RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\FeatureManagement\Overrides\8\3036241548", "Variant", "0", RegistryValueKind.DWord);
-                RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\FeatureManagement\Overrides\8\3036241548", "VariantPayload", "0", RegistryValueKind.DWord);
-                RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\FeatureManagement\Overrides\8\3036241548", "VariantPayloadKind", "0", RegistryValueKind.DWord);
-                var restartDialog = new ContentDialog
+                RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_LOCAL_MACHINE\SOFTWARE\Windhawk\Engine\Mods\windows-11-start-menu-styler\Settings", "theme", "None", RegistryValueKind.String);
+                RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_LOCAL_MACHINE\SOFTWARE\Windhawk\Engine\Mods\windows-11-start-menu-styler\Settings", "disableNewStartMenuLayout", "", RegistryValueKind.String);
+                RegistryHelper.DeleteKey(RegistryHelper.Identity.CurrentUser, @"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\FeatureManagement\Overrides\8\3036241548");
+                
+				var restartDialog = new ContentDialog
                 {
-                    Title = "Update Windhawk Mod",
-                    Content = "Open Windhawk and update the Windows Start Menu Styler Mod.",
-                    PrimaryButtonText = "Done",
+                    Title = "Restart Required",
+                    Content = "A restart is required to fix the start menu.",
+                    PrimaryButtonText = "Restart",
                     DefaultButton = ContentDialogButton.Primary,
                     XamlRoot = XamlRoot
                 };
 
-                await restartDialog.ShowAsync();
-                return;
+				if (await restartDialog.ShowAsync() == ContentDialogResult.Primary)
+				{
+					ProcessStartInfo processStartInfo = new()
+					{
+						FileName = "cmd.exe",
+						Arguments = $"/c shutdown /r /t 0",
+						UseShellExecute = false,
+						CreateNoWindow = true,
+					};
+					Process.Start(processStartInfo);
+				}
+
+				return;
             }
 
             Version currentVersion = new(ProcessInfoHelper.Version);
