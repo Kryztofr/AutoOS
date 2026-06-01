@@ -25,7 +25,7 @@ public static partial class DatabaseHelper
 		{
 			result = ReadFromDatabase(databasePath, finalKeyBytes);
 		}
-		catch (IOException)
+		catch
 		{
 			string tempDatabasePath = databasePath + " - Copy";
 

@@ -6,9 +6,30 @@ namespace AutoOS.Core.Helpers.Database;
 
 public static partial class DiscordHelper
 {
-    public static readonly string DiscordRoamingPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "discord");
+    public class DiscordAccountInfo
+	{
+		public string UserId { get; set; }
+		public string Username { get; set; }
+		public string Avatar { get; set; }
+		public bool IsActive { get; set; }
+		public string Origin { get; set; }
+		public bool IsMember { get; set; }
+	}
 
-    public static async Task ImportAccount(IStatusReporter reporter = null)
+    public static readonly string LevelDbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "discord", "Local Storage", "leveldb");
+
+    private static readonly Dictionary<string, string> browserPaths = new()
+    {
+        { @"AppData\Local\Google\Chrome\User Data\Default\Local Storage\leveldb", "Chrome" },
+        { @"AppData\Local\Thorium\User Data\Default\Local Storage\leveldb", "Thorium" },
+        { @"AppData\Local\imput\Helium\User Data\Default\Local Storage\leveldb", "Helium" },
+        { @"AppData\Local\BraveSoftware\Brave-Browser\User Data\Default\Local Storage\leveldb", "Brave" },
+        { @"AppData\Local\Vivaldi\User Data\Default\Local Storage\leveldb", "Vivaldi" },
+        { @"AppData\Local\Packages\TheBrowserCompany.Arc_ttt1ap7aakyb4\LocalCache\Local\Arc\User Data\Default\Local Storage\leveldb", "Arc" },
+        { @"AppData\Local\Perplexity\Comet\User Data\Default\Local Storage\leveldb", "Perplexity" }
+    };
+
+	public static async Task ImportAccount(IStatusReporter reporter = null)
     {
         // get all leveldb folders from other drives
         //var systemDrive = Path.GetPathRoot(Environment.GetFolderPath(Environment.SpecialFolder.System));
@@ -45,11 +66,11 @@ public static partial class DiscordHelper
         //            newestFolder = folder;
 
         //            // create destination directory
-        //            Directory.CreateDirectory(DiscordRoamingPath);
+        //            Directory.CreateDirectory(RoamingPath);
 
         //            // copy Local Storage folder
         //            string sourceLocalStoragePath = Path.Combine(discordPath, "Local Storage");
-        //            string destLocalStoragePath = Path.Combine(DiscordRoamingPath, "Local Storage");
+        //            string destLocalStoragePath = Path.Combine(RoamingPath, "Local Storage");
 
         //            if (Directory.Exists(sourceLocalStoragePath))
         //            {
@@ -70,7 +91,7 @@ public static partial class DiscordHelper
 
         //            // copy Local State file
         //            string sourceLocalStatePath = Path.Combine(discordPath, "Local State");
-        //            string destLocalStatePath = Path.Combine(DiscordRoamingPath, "Local State");
+        //            string destLocalStatePath = Path.Combine(RoamingPath, "Local State");
 
         //            if (File.Exists(sourceLocalStatePath))
         //            {
@@ -93,17 +114,6 @@ public static partial class DiscordHelper
         //        }
         //    }
         //}
-
-        var browserPaths = new Dictionary<string, string>
-        {
-            { @"AppData\Local\Google\Chrome\User Data\Default\Local Storage\leveldb", "Chrome" },
-            { @"AppData\Local\Thorium\User Data\Default\Local Storage\leveldb", "Thorium" },
-            { @"AppData\Local\imput\Helium\User Data\Default\Local Storage\leveldb", "Helium" },
-            { @"AppData\Local\BraveSoftware\Brave-Browser\User Data\Default\Local Storage\leveldb", "Brave" },
-            { @"AppData\Local\Vivaldi\User Data\Default\Local Storage\leveldb", "Vivaldi" },
-            { @"AppData\Local\Packages\TheBrowserCompany.Arc_ttt1ap7aakyb4\LocalCache\Local\Arc\User Data\Default\Local Storage\leveldb", "Arc" },
-            { @"AppData\Local\Perplexity\Comet\User Data\Default\Local Storage\leveldb", "Perplexity" }
-        };
 
         var systemDrive = Path.GetPathRoot(Environment.GetFolderPath(Environment.SpecialFolder.System));
         var foundDatabasePaths = DriveInfo.GetDrives()
@@ -148,7 +158,7 @@ public static partial class DiscordHelper
 
         if (!string.IsNullOrEmpty(foundToken))
         {
-            DatabaseHelper.Write(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "discord", "Local Storage", "leveldb"), "_https://discord.com", "token", foundToken);
+            DatabaseHelper.Write(LevelDbPath, "_https://discord.com", "token", foundToken);
 
             var accounts = GetAccountData(foundDatabasePath);
             if (accounts != null && accounts.Count > 0)
@@ -167,50 +177,115 @@ public static partial class DiscordHelper
         }
     }
 
-    public class DiscordAccountInfo
-    {
-        public string UserId { get; set; }
-        public string Username { get; set; }
-        public string Avatar { get; set; }
-        public bool IsActive { get; set; }
-        public string Origin { get; set; }
-    }
+	public static async Task KillDiscord()
+	{
+		foreach (var process in Process.GetProcessesByName("Discord"))
+		{
+			process.Kill();
+			await process.WaitForExitAsync();
+		}
+	}
 
-    public static List<DiscordAccountInfo> GetAccountData(string databasePath)
+    public static List<DiscordAccountInfo> GetAccountData(string levelDbPath, string origin = null)
     {
-        JsonNode multiAccountStore = DatabaseHelper.Read(databasePath, "_https://discord.com", "MultiAccountStore");
-        JsonNode userIdCache = DatabaseHelper.Read(databasePath, "_https://discord.com", "user_id_cache");
+        JsonNode multiAccountStore = DatabaseHelper.Read(levelDbPath, "_https://discord.com", "MultiAccountStore");
+        JsonNode userIdCache = DatabaseHelper.Read(levelDbPath, "_https://discord.com", "user_id_cache");
 
         if (multiAccountStore != null)
         {
             var accounts = new List<DiscordAccountInfo>();
             JsonNode users = multiAccountStore["_state"]?["users"];
+            JsonNode apexExperimentStore = DatabaseHelper.Read(levelDbPath, "_https://discord.com", "ApexExperimentStore");
+            bool isMember = apexExperimentStore != null && apexExperimentStore.ToJsonString().Contains("1148987246746279977", StringComparison.Ordinal);
 
             if (users != null && users is JsonArray usersArray)
             {
                 foreach (JsonNode user in usersArray)
                 {
                     string id = user?["id"]?.ToString();
-                    string username = user?["username"]?.ToString();
-                    string avatar = user?["avatar"]?.ToString();
                     bool isActive = id == userIdCache?.ToString();
 
-                    accounts.Add(new DiscordAccountInfo { UserId = id, Username = username, Avatar = avatar, IsActive = isActive });
+                    accounts.Add(new DiscordAccountInfo
+                    {
+                        UserId = id,
+                        Username = user?["username"]?.ToString(),
+                        Avatar = user?["avatar"]?.ToString(),
+                        IsActive = isActive,
+                        Origin = origin,
+                        IsMember = isMember
+                    });
                 }
             }
 
             return accounts;
         }
+
         return null;
     }
 
-    public static async Task KillDiscord()
+    public static List<DiscordAccountInfo> GetLocalAccounts()
     {
-        foreach (var process in Process.GetProcessesByName("Discord"))
+        var accounts = new List<DiscordAccountInfo>();
+
+        var localDiscordAccounts = GetAccountData(LevelDbPath, "Discord");
+        if (localDiscordAccounts != null)
+            accounts.AddRange(localDiscordAccounts);
+
+        var systemDrive = Path.GetPathRoot(Environment.GetFolderPath(Environment.SpecialFolder.System));
+        string usersPath = Path.Combine(systemDrive, "Users");
+        if (Directory.Exists(usersPath))
         {
-            process.Kill();
-            await process.WaitForExitAsync();
+            foreach (var databasePath in Directory.GetDirectories(usersPath)
+                .SelectMany(userDir => browserPaths.Keys.Select(browserPath => new { Path = Path.Combine(userDir, browserPath), Browser = browserPaths[browserPath] }))
+                .Where(x => Directory.Exists(x.Path))
+                .OrderByDescending(x => new DirectoryInfo(x.Path).LastWriteTime))
+            {
+                var browserAccounts = GetAccountData(databasePath.Path, databasePath.Browser);
+                if (browserAccounts != null)
+                    accounts.AddRange(browserAccounts);
+            }
         }
+
+        return accounts;
+    }
+
+    public static List<DiscordAccountInfo> GetOtherAccounts()
+    {
+        var accounts = new List<DiscordAccountInfo>();
+        var systemDrive = Path.GetPathRoot(Environment.GetFolderPath(Environment.SpecialFolder.System));
+
+        foreach (var drive in DriveInfo.GetDrives().Where(d => d.DriveType == DriveType.Fixed && d.Name != systemDrive))
+        {
+            string driveLabel = drive.Name.TrimEnd('\\');
+            string usersPath = Path.Combine(drive.Name, "Users");
+            if (!Directory.Exists(usersPath))
+                continue;
+
+            var discordPaths = Directory.GetDirectories(usersPath)
+                .Select(userDir => Path.Combine(userDir, "AppData", "Roaming", "discord", "Local Storage", "leveldb"))
+                .Where(Directory.Exists)
+                .Select(path => new DirectoryInfo(path))
+                .OrderByDescending(x => x.LastWriteTime);
+
+            foreach (var folder in discordPaths)
+            {
+                var discordAccounts = GetAccountData(folder.FullName, $"Discord ({driveLabel})");
+                if (discordAccounts != null)
+                    accounts.AddRange(discordAccounts);
+            }
+
+            foreach (var databasePath in Directory.GetDirectories(usersPath)
+                .SelectMany(userDir => browserPaths.Keys.Select(browserPath => new { Path = Path.Combine(userDir, browserPath), Browser = browserPaths[browserPath] }))
+                .Where(x => Directory.Exists(x.Path))
+                .OrderByDescending(x => new DirectoryInfo(x.Path).LastWriteTime))
+            {
+                var browserAccounts = GetAccountData(databasePath.Path, $"{databasePath.Browser} ({driveLabel})");
+                if (browserAccounts != null)
+                    accounts.AddRange(browserAccounts);
+            }
+        }
+
+        return accounts;
     }
 
     public static async Task SetSystemAppearance(string databasePath)

@@ -1288,7 +1288,7 @@ public static class ApplicationStage
 
             // install minitool partition wizard
             ("Installing MiniTool Partition Wizard", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "pw-free-offline.exe"), Arguments = "/VERYSILENT /SUPPRESSMSGBOXES /NORESTART" , WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => MinitoolPartitionWizard == true),
-            ("Installing MiniTool Partition Wizard", async () => { foreach (Process process in new[] { "partitionwizard", "OpenWith", "msedge" }.SelectMany(Process.GetProcessesByName)) { process.Kill(); process.WaitForExit(); }}, () => MinitoolPartitionWizard == true),
+            ("Installing MiniTool Partition Wizard", async () => { while (new[] { "partitionwizard", "OpenWith", "msedge" }.All(name => Process.GetProcessesByName(name).Length == 0)) await Task.Delay(500); foreach (Process process in new[] { "partitionwizard", "OpenWith", "msedge" }.SelectMany(Process.GetProcessesByName)) { process.Kill(); process.WaitForExit(); } }, () => MinitoolPartitionWizard == true),
             ("Cleaning up MiniTool Partition Wizard files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "pw-free-offline.exe")), () => MinitoolPartitionWizard == true),
 
             // disable minitool partition wizard notifications
@@ -1303,7 +1303,7 @@ public static class ApplicationStage
 
             // install aomei partition assistant
             ("Installing AOMEI Partition Assistant", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "PAssist_ProDemo.exe"), Arguments = "/VERYSILENT /SUPPRESSMSGBOXES /NORESTART /SP-" , WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => AomeiPartitionAssistant == true),
-            ("Installing AOMEI Partition Assistant", async () => { foreach (Process process in new[] { "OpenWith", "msedge" }.SelectMany(Process.GetProcessesByName)) { process.Kill(); process.WaitForExit(); }}, () => AomeiPartitionAssistant == true),
+            ("Installing AOMEI Partition Assistant", async () => { while (new[] { "OpenWith", "msedge" }.All(name => Process.GetProcessesByName(name).Length == 0)) await Task.Delay(500); foreach (Process process in new[] { "OpenWith", "msedge" }.SelectMany(Process.GetProcessesByName)) { process.Kill(); process.WaitForExit(); } }, () => AomeiPartitionAssistant == true),
             ("Cleaning up AOMEI Partition Assistant files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "PAssist_ProDemo.exe")), () => AomeiPartitionAssistant == true),
 
             // activate aomei partition assistant

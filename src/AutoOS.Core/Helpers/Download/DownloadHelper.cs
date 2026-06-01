@@ -35,13 +35,13 @@ public static partial class DownloadHelper
 
         DownloadConfiguration config = new()
         {
-            MaxTryAgainOnFailure = 5,
+            MaxTryAgainOnFailure = 10,
             EnableAutoResumeDownload = true,
-            ParallelDownload = false,
-            ChunkCount = 1,
-            ParallelCount = 1,
+            ParallelDownload = true,
+            ChunkCount = 4,
+            ParallelCount = 4,
             HttpClientTimeout = 300000,
-            CheckDiskSizeBeforeDownload = false,
+            CheckDiskSizeBeforeDownload = true,
             MinimumChunkSize = 1024 * 1024,
             RequestConfiguration = new RequestConfiguration
             {

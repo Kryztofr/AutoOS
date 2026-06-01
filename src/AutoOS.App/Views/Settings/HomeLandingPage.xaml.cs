@@ -1,3 +1,4 @@
+using AutoOS.Core.Helpers.Database;
 using AutoOS.Core.Helpers.Logging;
 using AutoOS.Core.Helpers.OS;
 using AutoOS.Core.Helpers.Registry;
@@ -55,7 +56,29 @@ namespace AutoOS.Views.Settings
                 Application.Current.Exit();
             }
 
-            if (ubr >= 8313 && (Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Windhawk\Engine\Mods\windows-11-start-menu-styler", "Version", null) as string) == "1.4.1")
+			if (localSettings.Values["ServerPromptShown"] is not true)
+			{
+				var localAccounts = DiscordHelper.GetLocalAccounts();
+				if (localAccounts.Count > 0 && !localAccounts.Any(account => account.IsMember))
+				{
+					localSettings.Values["ServerPromptShown"] = true;
+
+					var serverDialog = new ContentDialog
+					{
+						Title = "Join the Discord Server",
+						Content = "Join to get instant support, and help shape the future of the project.",
+						PrimaryButtonText = "Join now",
+						CloseButtonText = "No thanks",
+						DefaultButton = ContentDialogButton.Close,
+						XamlRoot = XamlRoot
+					};
+
+					if (await serverDialog.ShowAsync() == ContentDialogResult.Primary)
+						await Windows.System.Launcher.LaunchUriAsync(new Uri("https://discord.gg/bZU4dMMWpg"));
+				}
+			}
+
+			if (ubr >= 8313 && (Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Windhawk\Engine\Mods\windows-11-start-menu-styler", "Version", null) as string) == "1.4.1")
             {
                 RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_LOCAL_MACHINE\SOFTWARE\Windhawk\Engine\Mods\windows-11-start-menu-styler\Settings", "theme", "SideBySide2", RegistryValueKind.String);
                 RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_LOCAL_MACHINE\SOFTWARE\Windhawk\Engine\Mods\windows-11-start-menu-styler\Settings", "disableNewStartMenuLayout", "disableNewLayoutKeepPhoneLink", RegistryValueKind.String);
