@@ -2198,8 +2198,8 @@ public partial class HeaderCarousel : ItemsControl
                 }
             }
 
-            Process.GetProcessesByName("ctfmon").ToList().ForEach(process => process.Kill());
-            ProcessesHelper.SuspendProcess(ServicesHelper.GetServicePid("TextInputManagementService"));
+            //Process.GetProcessesByName("ctfmon").ToList().ForEach(process => process.Kill());
+            //ProcessesHelper.SuspendProcess(ServicesHelper.GetServicePid("TextInputManagementService"));
 
             if (Process.GetProcessesByName("ClassicWindowSwitcher").Length == 0)
                 Process.Start(new ProcessStartInfo(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Applications", "ClassicWindowSwitcher", "ClassicWindowSwitcher.exe")) { CreateNoWindow = true });
@@ -2259,11 +2259,11 @@ public partial class HeaderCarousel : ItemsControl
                 "NgcSvc",
                 "nsi",
                 "ProfSvc",
-                 "StateRepository",
+                "StateRepository",
                 "TextInputManagementService",
                 "TrustedInstaller",
                 "UdkUserSvc",
-                 "UserManager",
+                "UserManager",
                 "WFDSConMgrSvc",
                 //"WinHttpAutoProxySvc",
                 //"Winmgmt",
@@ -2279,8 +2279,8 @@ public partial class HeaderCarousel : ItemsControl
                 catch { }
             }
 
-            ProcessesHelper.ResumeProcess(ServicesHelper.GetServicePid("TextInputManagementService"));
-            Process.Start("ctfmon.exe");
+            //ProcessesHelper.ResumeProcess(ServicesHelper.GetServicePid("TextInputManagementService"));
+            //Process.Start("ctfmon.exe");
 
             string filePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Everything 1.5a", "Everything.exe");
 
