@@ -100,7 +100,11 @@ public static partial class StoreHelper
 
             await tcs.Task;
         }
-        finally
+		catch (Exception ex)
+		{
+			await LogHelper.LogError(ex, actionTitle: $"[StoreHelper] Installation failed for {identifier}");
+		}
+		finally
         {
             Directory.Delete(folderPath, true);
         }

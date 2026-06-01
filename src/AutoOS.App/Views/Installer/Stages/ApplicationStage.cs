@@ -323,7 +323,7 @@ public static class ApplicationStage
             ("Removing Everything desktop shortcut", async () => File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "Everything 1.5a.lnk")), () => selection == null),
 
             // download windhawk
-            ("Downloading Windhawk", async () => await DownloadHelper.Download("https://www.dl.dropboxusercontent.com/scl/fi/1id8mn7onjmyvd5ky1hka/Windhawk.zip?rlkey=0y77dk0u8crd34gnhszpt4nqc&st=baqilmcq&dl=0", Path.GetTempPath(), "Windhawk.zip", reporter: reporter), () => selection == null),
+            ("Downloading Windhawk", async () => await DownloadHelper.Download("https://www.dl.dropboxusercontent.com/scl/fi/1id8mn7onjmyvd5ky1hka/Windhawk.zip?rlkey=0y77dk0u8crd34gnhszpt4nqc&st=dn11ts0o&dl=0", Path.GetTempPath(), "Windhawk.zip", reporter: reporter), () => selection == null),
 
             // install windhawk
             ("Installing Windhawk", async () => await ExtractHelper.Extract(Path.Combine(Path.GetTempPath(), "Windhawk.zip"), Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Windhawk")), () => selection == null),

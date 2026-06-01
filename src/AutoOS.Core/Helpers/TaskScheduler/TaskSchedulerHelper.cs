@@ -99,6 +99,34 @@ public static partial class TaskSchedulerHelper
 {
     private static readonly Guid CLSID_TaskScheduler = new("0F87369F-A4E5-4CFC-BD3E-73E6154572DD");
 
+    private static bool SearchTasks(ITaskFolder folder, Func<ITaskFolder, IRegisteredTask, bool> onMatch)
+    {
+        try
+        {
+            var tasks = folder.GetTasks(1);
+            for (int i = 1; i <= tasks.Get_Count(); i++)
+            {
+                var task = tasks.Get_Item(VARIANT.FromInt(i));
+                if (onMatch(folder, task))
+                    return true;
+            }
+        }
+        catch (COMException) { }
+
+        try
+        {
+            var subFolders = folder.GetFolders(0);
+            for (int i = 1; i <= subFolders.Get_Count(); i++)
+            {
+                if (SearchTasks(subFolders.Get_Item(VARIANT.FromInt(i)), onMatch))
+                    return true;
+            }
+        }
+        catch (COMException) { }
+
+        return false;
+    }
+
     private static unsafe ITaskService CreateTaskService()
     {
         Guid iid = typeof(ITaskService).GUID;
@@ -112,27 +140,14 @@ public static partial class TaskSchedulerHelper
         var ts = CreateTaskService();
         ts.Connect(VARIANT.Empty, VARIANT.Empty, VARIANT.Empty, VARIANT.Empty);
 
-        bool Search(ITaskFolder folder)
+        SearchTasks(ts.GetFolder("\\"), (_, task) =>
         {
-            var tasks = folder.GetTasks(1);
-            for (int i = 1; i <= tasks.Get_Count(); i++)
-            {
-                var task = tasks.Get_Item(VARIANT.FromInt(i));
-                if (task.Get_Path().Contains(wildcard, StringComparison.OrdinalIgnoreCase))
-                {
-                    if (task.Get_Enabled() != enable)
-                        task.Put_Enabled(enable);
-                    return true;
-                }
-            }
-
-            var subFolders = folder.GetFolders(0);
-            for (int i = 1; i <= subFolders.Get_Count(); i++)
-                if (Search(subFolders.Get_Item(VARIANT.FromInt(i)))) return true;
-            return false;
-        }
-
-        Search(ts.GetFolder("\\"));
+            if (!task.Get_Path().Contains(wildcard, StringComparison.OrdinalIgnoreCase))
+                return false;
+            if (task.Get_Enabled() != enable)
+                task.Put_Enabled(enable);
+            return true;
+        });
     }
 
     public static void Unregister(string wildcard)
@@ -140,25 +155,12 @@ public static partial class TaskSchedulerHelper
         var ts = CreateTaskService();
         ts.Connect(VARIANT.Empty, VARIANT.Empty, VARIANT.Empty, VARIANT.Empty);
 
-        bool Search(ITaskFolder folder)
+        SearchTasks(ts.GetFolder("\\"), (folder, task) =>
         {
-            var tasks = folder.GetTasks(1);
-            for (int i = 1; i <= tasks.Get_Count(); i++)
-            {
-                var task = tasks.Get_Item(VARIANT.FromInt(i));
-                if (task.Get_Path().Contains(wildcard, StringComparison.OrdinalIgnoreCase))
-                {
-                    folder.DeleteTask(task.Get_Name(), 0);
-                    return true;
-                }
-            }
-
-            var subFolders = folder.GetFolders(0);
-            for (int i = 1; i <= subFolders.Get_Count(); i++)
-                if (Search(subFolders.Get_Item(VARIANT.FromInt(i)))) return true;
-            return false;
-        }
-
-        Search(ts.GetFolder("\\"));
+            if (!task.Get_Path().Contains(wildcard, StringComparison.OrdinalIgnoreCase))
+                return false;
+            folder.DeleteTask(task.Get_Name(), 0);
+            return true;
+        });
     }
 }
