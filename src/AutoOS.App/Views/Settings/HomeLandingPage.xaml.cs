@@ -81,9 +81,10 @@ namespace AutoOS.Views.Settings
 
 			if (ubr >= 8521 && (Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Windhawk\Engine\Mods\windows-11-start-menu-styler", "disableNewStartMenuLayout", null) as string) == "disableNewLayoutKeepPhoneLink")
             {
-                RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_LOCAL_MACHINE\SOFTWARE\Windhawk\Engine\Mods\windows-11-start-menu-styler\Settings", "theme", "None", RegistryValueKind.String);
-                RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_LOCAL_MACHINE\SOFTWARE\Windhawk\Engine\Mods\windows-11-start-menu-styler\Settings", "disableNewStartMenuLayout", "", RegistryValueKind.String);
-                RegistryHelper.DeleteKey(RegistryHelper.Identity.CurrentUser, @"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\FeatureManagement\Overrides\8\3036241548");
+                RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Windhawk\Engine\Mods\windows-11-start-menu-styler\Settings", "theme", "None", RegistryValueKind.String);
+                RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Windhawk\Engine\Mods\windows-11-start-menu-styler\Settings", "disableNewStartMenuLayout", "", RegistryValueKind.String);
+                RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Start", "AllAppsViewMode", 2, RegistryValueKind.DWord);
+				RegistryHelper.DeleteKey(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\FeatureManagement\Overrides\8\3036241548");
                 
 				var restartDialog = new ContentDialog
                 {
