@@ -36,12 +36,15 @@ public static partial class SteamHelper
             if (string.IsNullOrWhiteSpace(content))
                 return [];
 
-            var options = new KVSerializerOptions
+            KVDocument kv;
+            try
             {
-                HasEscapeSequences = true,
-            };
-
-            var kv = KVSerializer.Create(KVSerializationFormat.KeyValues1Text).Deserialize(new MemoryStream(Encoding.UTF8.GetBytes(content)), options);
+                kv = KVSerializer.Create(KVSerializationFormat.KeyValues1Text).Deserialize(new MemoryStream(Encoding.UTF8.GetBytes(content)), new KVSerializerOptions { HasEscapeSequences = true });
+            }
+            catch (KeyValueException)
+            {
+                kv = KVSerializer.Create(KVSerializationFormat.KeyValues1Text).Deserialize(new MemoryStream(Encoding.UTF8.GetBytes(content)), new KVSerializerOptions { HasEscapeSequences = false });
+            }
 
             return [.. kv.Root.Children
                 .Select(children =>
@@ -71,12 +74,16 @@ public static partial class SteamHelper
             if (!File.Exists(SteamLoginUsersPath))
                 return null;
 
-            var options = new KVSerializerOptions
+            string content = File.ReadAllText(SteamLoginUsersPath);
+            KVDocument kv;
+            try
             {
-                HasEscapeSequences = true,
-            };
-
-            var kv = KVSerializer.Create(KVSerializationFormat.KeyValues1Text).Deserialize(new MemoryStream(Encoding.UTF8.GetBytes(File.ReadAllText(SteamLoginUsersPath))), options);
+                kv = KVSerializer.Create(KVSerializationFormat.KeyValues1Text).Deserialize(new MemoryStream(Encoding.UTF8.GetBytes(content)), new KVSerializerOptions { HasEscapeSequences = true });
+            }
+            catch (KeyValueException)
+            {
+                kv = KVSerializer.Create(KVSerializationFormat.KeyValues1Text).Deserialize(new MemoryStream(Encoding.UTF8.GetBytes(content)), new KVSerializerOptions { HasEscapeSequences = false });
+            }
         return kv.Root.Children.FirstOrDefault(children => children.Value["MostRecent"]?.ToString() == "1" && children.Value["AllowAutoLogin"]?.ToString() == "1").Key;
     }
 
@@ -102,21 +109,35 @@ public static partial class SteamHelper
         {
             if (File.Exists(SteamLoginUsersPath))
             {
-                var options = new KVSerializerOptions
+                string content = File.ReadAllText(SteamLoginUsersPath);
+                KVDocument kv;
+                try
                 {
-                    HasEscapeSequences = true,
-                };
+                    kv = KVSerializer.Create(KVSerializationFormat.KeyValues1Text).Deserialize(new MemoryStream(Encoding.UTF8.GetBytes(content)), new KVSerializerOptions { HasEscapeSequences = true });
+                }
+                catch (KeyValueException)
+                {
+                    kv = KVSerializer.Create(KVSerializationFormat.KeyValues1Text).Deserialize(new MemoryStream(Encoding.UTF8.GetBytes(content)), new KVSerializerOptions { HasEscapeSequences = false });
+                }
 
-                if (KVSerializer.Create(KVSerializationFormat.KeyValues1Text).Deserialize(new MemoryStream(Encoding.UTF8.GetBytes(File.ReadAllText(SteamLoginUsersPath))), options).Root.Children.Any())
+                if (kv.Root.Children.Any())
                 {
                     await Task.Delay(3000);
 
                     // close steam
                     CloseSteam();
 
-                    var kv = KVSerializer.Create(KVSerializationFormat.KeyValues1Text).Deserialize(new MemoryStream(Encoding.UTF8.GetBytes(File.ReadAllText(SteamLoginUsersPath))), options);
+					content = File.ReadAllText(SteamLoginUsersPath);
+					try
+					{
+						kv = KVSerializer.Create(KVSerializationFormat.KeyValues1Text).Deserialize(new MemoryStream(Encoding.UTF8.GetBytes(content)), new KVSerializerOptions { HasEscapeSequences = true });
+					}
+					catch (KeyValueException)
+					{
+						kv = KVSerializer.Create(KVSerializationFormat.KeyValues1Text).Deserialize(new MemoryStream(Encoding.UTF8.GetBytes(content)), new KVSerializerOptions { HasEscapeSequences = false });
+					}
 
-                    reporter?.SetTitle($"Successfully logged in as {kv.Root.Children.Select(children => children.Value["AccountName"]?.ToString()).FirstOrDefault(name => !string.IsNullOrEmpty(name))}...");
+					reporter?.SetTitle($"Successfully logged in as {kv.Root.Children.Select(children => children.Value["AccountName"]?.ToString()).FirstOrDefault(name => !string.IsNullOrEmpty(name))}...");
                     break;
                 }
 

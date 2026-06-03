@@ -1680,12 +1680,16 @@ public partial class HeaderCarousel : ItemsControl
         SteamHelper.CloseSteam();
 
         // read file
-        var options = new KVSerializerOptions
+        string content = File.ReadAllText(SteamHelper.SteamLoginUsersPath);
+        KVDocument kv;
+        try
         {
-            HasEscapeSequences = true,
-        };
-
-        var kv = KVSerializer.Create(KVSerializationFormat.KeyValues1Text).Deserialize(new MemoryStream(System.Text.Encoding.UTF8.GetBytes(File.ReadAllText(SteamHelper.SteamLoginUsersPath))), options);
+            kv = KVSerializer.Create(KVSerializationFormat.KeyValues1Text).Deserialize(new MemoryStream(Encoding.UTF8.GetBytes(content)), new KVSerializerOptions { HasEscapeSequences = true });
+        }
+        catch (KeyValueException)
+        {
+            kv = KVSerializer.Create(KVSerializationFormat.KeyValues1Text).Deserialize(new MemoryStream(Encoding.UTF8.GetBytes(content)), new KVSerializerOptions { HasEscapeSequences = false });
+        }
 
         // make all accounts inactive
         foreach (var user in kv.Root.Children)
@@ -1761,14 +1765,18 @@ public partial class HeaderCarousel : ItemsControl
             SteamHelper.CloseSteam();
 
             // read file
-            var options = new KVSerializerOptions
-            {
-                HasEscapeSequences = true,
-            };
-
             if (File.Exists(SteamHelper.SteamLoginUsersPath))
             {
-                var kv = KVSerializer.Create(KVSerializationFormat.KeyValues1Text).Deserialize(new MemoryStream(Encoding.UTF8.GetBytes(File.ReadAllText(SteamHelper.SteamLoginUsersPath))), options);
+                string content = File.ReadAllText(SteamHelper.SteamLoginUsersPath);
+                KVDocument kv;
+                try
+                {
+                    kv = KVSerializer.Create(KVSerializationFormat.KeyValues1Text).Deserialize(new MemoryStream(Encoding.UTF8.GetBytes(content)), new KVSerializerOptions { HasEscapeSequences = true });
+                }
+                catch (KeyValueException)
+                {
+                    kv = KVSerializer.Create(KVSerializationFormat.KeyValues1Text).Deserialize(new MemoryStream(Encoding.UTF8.GetBytes(content)), new KVSerializerOptions { HasEscapeSequences = false });
+                }
 
                 // make all accounts inactive
                 foreach (var user in kv.Root.Children)
@@ -1788,7 +1796,21 @@ public partial class HeaderCarousel : ItemsControl
             await Task.Delay(500);
 
             // get initial user count
-            int initialUserCount = File.Exists(SteamHelper.SteamLoginUsersPath) ? KVSerializer.Create(KVSerializationFormat.KeyValues1Text).Deserialize(new MemoryStream(Encoding.UTF8.GetBytes(File.ReadAllText(SteamHelper.SteamLoginUsersPath))), options).Root.Children.Count() : 0;
+            int initialUserCount = 0;
+            if (File.Exists(SteamHelper.SteamLoginUsersPath))
+            {
+                string initialContent = File.ReadAllText(SteamHelper.SteamLoginUsersPath);
+                KVDocument initialKv;
+                try
+                {
+                    initialKv = KVSerializer.Create(KVSerializationFormat.KeyValues1Text).Deserialize(new MemoryStream(Encoding.UTF8.GetBytes(initialContent)), new KVSerializerOptions { HasEscapeSequences = true });
+                }
+                catch (KeyValueException)
+                {
+                    initialKv = KVSerializer.Create(KVSerializationFormat.KeyValues1Text).Deserialize(new MemoryStream(Encoding.UTF8.GetBytes(initialContent)), new KVSerializerOptions { HasEscapeSequences = false });
+                }
+                initialUserCount = initialKv.Root.Children.Count();
+            }
 
             // launch steam
             Process.Start(SteamHelper.SteamPath);
@@ -1798,7 +1820,17 @@ public partial class HeaderCarousel : ItemsControl
             {
                 if (File.Exists(SteamHelper.SteamLoginUsersPath))
                 {
-                    if (KVSerializer.Create(KVSerializationFormat.KeyValues1Text).Deserialize(new MemoryStream(Encoding.UTF8.GetBytes(File.ReadAllText(SteamHelper.SteamLoginUsersPath))), options).Root.Children.Count() > initialUserCount)
+                    string loginContent = File.ReadAllText(SteamHelper.SteamLoginUsersPath);
+                    KVDocument loginKv;
+                    try
+                    {
+                        loginKv = KVSerializer.Create(KVSerializationFormat.KeyValues1Text).Deserialize(new MemoryStream(Encoding.UTF8.GetBytes(loginContent)), new KVSerializerOptions { HasEscapeSequences = true });
+                    }
+                    catch (KeyValueException)
+                    {
+                        loginKv = KVSerializer.Create(KVSerializationFormat.KeyValues1Text).Deserialize(new MemoryStream(Encoding.UTF8.GetBytes(loginContent)), new KVSerializerOptions { HasEscapeSequences = false });
+                    }
+                    if (loginKv.Root.Children.Count() > initialUserCount)
                         break;
                 }
 
@@ -1858,12 +1890,16 @@ public partial class HeaderCarousel : ItemsControl
             SteamHelper.CloseSteam();
 
             // read file
-            var options = new KVSerializerOptions
+            string content = File.ReadAllText(SteamHelper.SteamLoginUsersPath);
+            KVDocument kv;
+            try
             {
-                HasEscapeSequences = true,
-            };
-
-            var kv = KVSerializer.Create(KVSerializationFormat.KeyValues1Text).Deserialize(new MemoryStream(Encoding.UTF8.GetBytes(File.ReadAllText(SteamHelper.SteamLoginUsersPath))), options);
+                kv = KVSerializer.Create(KVSerializationFormat.KeyValues1Text).Deserialize(new MemoryStream(Encoding.UTF8.GetBytes(content)), new KVSerializerOptions { HasEscapeSequences = true });
+            }
+            catch (KeyValueException)
+            {
+                kv = KVSerializer.Create(KVSerializationFormat.KeyValues1Text).Deserialize(new MemoryStream(Encoding.UTF8.GetBytes(content)), new KVSerializerOptions { HasEscapeSequences = false });
+            }
 
             // remove selected account
             var newChildren = kv.Root.Children.Where(c => c.Key != kv.Root.Children.First(child => child.Value["AccountName"]?.ToString() == SteamAccounts.SelectedItem.ToString()).Key).ToList();

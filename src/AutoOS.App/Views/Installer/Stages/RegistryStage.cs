@@ -264,13 +264,6 @@ public static class RegistryStage
             // disable game bar presence writer
             ("Disabling GameBar Presence Writer", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\WindowsRuntime\ActivatableClassId\Windows.Gaming.GameBar.PresenceServer.Internal.PresenceWriter", "ActivationType", 0, RegistryValueKind.DWord), null),
 
-			// enable full screen exclusive (FSE) mode 
-            ("Enabling Full Screen Exclusive (FSE) Mode", async () => RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_CURRENT_USER\System\GameConfigStore", "GameDVR_DSEBehavior", 2, RegistryValueKind.DWord), null),
-            ("Enabling Full Screen Exclusive (FSE) Mode", async () => RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_CURRENT_USER\System\GameConfigStore", "GameDVR_DXGIHonorFSEWindowsCompatible", 1, RegistryValueKind.DWord), null),
-            ("Enabling Full Screen Exclusive (FSE) Mode", async () => RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_CURRENT_USER\System\GameConfigStore", "GameDVR_FSEBehavior", 2, RegistryValueKind.DWord), null),
-            ("Enabling Full Screen Exclusive (FSE) Mode", async () => RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_CURRENT_USER\System\GameConfigStore", "GameDVR_FSEBehaviorMode", 2, RegistryValueKind.DWord), null),
-            ("Enabling Full Screen Exclusive (FSE) Mode", async () => RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_CURRENT_USER\System\GameConfigStore", "GameDVR_HonorUserFSEBehaviorMode", 0, RegistryValueKind.DWord), null),
-
             // enable scroll wheel for alt tab
             (@"Enabling Scroll Wheel for Alt Tab", async () => RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_CURRENT_USER\SOFTWARE\Ingan121\ClassicWindowSwitcher", "ScrollWheelBehavior", 1, RegistryValueKind.DWord), null)
         };
