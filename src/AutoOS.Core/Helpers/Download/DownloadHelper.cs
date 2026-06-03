@@ -37,9 +37,9 @@ public static partial class DownloadHelper
         {
             MaxTryAgainOnFailure = 10,
             EnableAutoResumeDownload = true,
-            ParallelDownload = true,
-            ChunkCount = 4,
-            ParallelCount = 4,
+            ParallelDownload = false,
+            ChunkCount = 1,
+            ParallelCount = 1,
             HttpClientTimeout = 300000,
             CheckDiskSizeBeforeDownload = true,
             MinimumChunkSize = 1024 * 1024,

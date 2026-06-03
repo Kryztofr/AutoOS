@@ -1,5 +1,4 @@
-using AutoOS.Core.Helpers.Registry;
-using Microsoft.Win32;
+using System.Diagnostics;
 
 namespace AutoOS.Views.Updater.Stages;
 
@@ -9,12 +8,8 @@ public static class UpdateStage
 	{
 		var actions = new List<(string Title, Func<Task> Action, Func<bool> Condition)>
 		{
-			// disable full screen exclusive (FSE) mode 
-            ("Disabling Full Screen Exclusive (FSE) Mode", async () => RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_CURRENT_USER\System\GameConfigStore", "GameDVR_DSEBehavior", 0, RegistryValueKind.DWord), null),
-			("Disabling Full Screen Exclusive (FSE) Mode", async () => RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_CURRENT_USER\System\GameConfigStore", "GameDVR_DXGIHonorFSEWindowsCompatible", 0, RegistryValueKind.DWord), null),
-			("Disabling Full Screen Exclusive (FSE) Mode", async () => RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_CURRENT_USER\System\GameConfigStore", "GameDVR_FSEBehavior", 0, RegistryValueKind.DWord), null),
-			("Disabling Full Screen Exclusive (FSE) Mode", async () => RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_CURRENT_USER\System\GameConfigStore", "GameDVR_FSEBehaviorMode", 0, RegistryValueKind.DWord), null),
-			("Disabling Full Screen Exclusive (FSE) Mode", async () => RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_CURRENT_USER\System\GameConfigStore", "GameDVR_HonorUserFSEBehaviorMode", 0, RegistryValueKind.DWord), null)
+			// enable ntfs file encryption
+			("Enabling NTFS File Encryption", async () => await Process.Start(new ProcessStartInfo { FileName = "fsutil.exe", Arguments = $@"behavior set disableencryption 0", UseShellExecute = false, CreateNoWindow = true })!.WaitForExitAsync(), null),
 		};
 
 		return actions;
