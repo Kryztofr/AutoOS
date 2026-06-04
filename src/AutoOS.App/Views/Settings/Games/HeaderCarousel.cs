@@ -103,6 +103,7 @@ public partial class HeaderCarousel : ItemsControl
 	private static readonly TimeSpan _subsequentRepeatDelay = TimeSpan.FromMilliseconds(100);
 	private static readonly List<HeaderCarousel> _activeInstances = [];
 	private static bool _staticEventsSubscribed = false;
+	private static bool _windowIsActive = true;
 	private static DependencyObject _lastFocusedElement;
 	private static DateTimeOffset _bottomFocusTime;
 	private static GamepadButtons _scrollingButtons = GamepadButtons.None;
@@ -226,7 +227,8 @@ public partial class HeaderCarousel : ItemsControl
 		{
 			DispatcherQueue.TryEnqueue(() =>
 			{
-				_gamepadPollingTimer?.Start();
+				if (_windowIsActive)
+					_gamepadPollingTimer?.Start();
 			});
 		};
 
@@ -239,6 +241,23 @@ public partial class HeaderCarousel : ItemsControl
 		if (Gamepad.Gamepads.Count > 0)
 		{
 			_gamepadPollingTimer.Start();
+		}
+
+		if (MainWindow.Instance != null)
+		{
+			MainWindow.Instance.Activated += (s, e) =>
+			{
+				_windowIsActive = e.WindowActivationState != WindowActivationState.Deactivated;
+				if (_windowIsActive)
+				{
+					if (Gamepad.Gamepads.Count > 0)
+						_gamepadPollingTimer?.Start();
+				}
+				else
+				{
+					_gamepadPollingTimer?.Stop();
+				}
+			};
 		}
 	}
 
