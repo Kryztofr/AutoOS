@@ -157,10 +157,14 @@ public static partial class EpicGamesHelper
 	{
 		foreach (var name in new[] { "EpicGamesLauncher", "EpicWebHelper" })
 		{
-			Process.GetProcessesByName(name).ToList().ForEach(p =>
+			Process.GetProcessesByName(name).ToList().ForEach(process =>
 			{
-				p.Kill();
-				p.WaitForExit();
+				try
+				{
+					process.Kill();
+					process.WaitForExit(2000);
+				}
+				catch { }
 			});
 		}
 	}
