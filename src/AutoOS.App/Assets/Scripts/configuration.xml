@@ -1,20 +1,20 @@
 <Configuration ID="e3448e65-f081-4366-9acd-52e6c55d339b">
   <Add OfficeClientEdition="64" Channel="CurrentPreview">
-    <Product ID="O365ProPlusRetail">
-      <Language ID="MatchOS" />
-      <ExcludeApp ID="Access" />
-      <ExcludeApp ID="Excel" />
-      <ExcludeApp ID="Groove" />
-      <ExcludeApp ID="Lync" />
-      <ExcludeApp ID="OneDrive" />
-      <ExcludeApp ID="OneNote" />
-      <ExcludeApp ID="Outlook" />
-      <ExcludeApp ID="OutlookForWindows" />
-      <ExcludeApp ID="PowerPoint" />
-      <ExcludeApp ID="Publisher" />
-      <ExcludeApp ID="Teams" />
-      <ExcludeApp ID="Word" />
-    </Product>
+	<Product ID="O365ProPlusRetail">
+	  <Language ID="MatchOS" />
+	  <ExcludeApp ID="Access" />
+	  <ExcludeApp ID="Excel" />
+	  <ExcludeApp ID="Groove" />
+	  <ExcludeApp ID="Lync" />
+	  <ExcludeApp ID="OneDrive" />
+	  <ExcludeApp ID="OneNote" />
+	  <ExcludeApp ID="Outlook" />
+	  <ExcludeApp ID="OutlookForWindows" />
+	  <ExcludeApp ID="PowerPoint" />
+	  <ExcludeApp ID="Publisher" />
+	  <ExcludeApp ID="Teams" />
+	  <ExcludeApp ID="Word" />
+	</Product>
   </Add>
   <Updates Enabled="TRUE" />
   <RemoveMSI />

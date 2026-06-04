@@ -116,19 +116,19 @@
 		</Build>
 		<ExtractScript>
 param(
-    [xml] $Document
+	[xml] $Document
 );
 
 foreach( $file in $Document.unattend.Extensions.File ) {
-    $path = [System.Environment]::ExpandEnvironmentVariables( $file.GetAttribute( 'path' ) );
-    mkdir -Path( $path | Split-Path -Parent ) -ErrorAction 'SilentlyContinue';
-    $encoding = switch( [System.IO.Path]::GetExtension( $path ) ) {
-        { $_ -in '.ps1', '.xml' } { [System.Text.Encoding]::UTF8; }
-        { $_ -in '.reg', '.vbs', '.js' } { [System.Text.UnicodeEncoding]::new( $false, $true ); }
-        default { [System.Text.Encoding]::Default; }
-    };
-    $bytes = $encoding.GetPreamble() + $encoding.GetBytes( $file.InnerText.Trim() );
-    [System.IO.File]::WriteAllBytes( $path, $bytes );
+	$path = [System.Environment]::ExpandEnvironmentVariables( $file.GetAttribute( 'path' ) );
+	mkdir -Path( $path | Split-Path -Parent ) -ErrorAction 'SilentlyContinue';
+	$encoding = switch( [System.IO.Path]::GetExtension( $path ) ) {
+		{ $_ -in '.ps1', '.xml' } { [System.Text.Encoding]::UTF8; }
+		{ $_ -in '.reg', '.vbs', '.js' } { [System.Text.UnicodeEncoding]::new( $false, $true ); }
+		default { [System.Text.Encoding]::Default; }
+	};
+	$bytes = $encoding.GetPreamble() + $encoding.GetBytes( $file.InnerText.Trim() );
+	[System.IO.File]::WriteAllBytes( $path, $bytes );
 }
 		</ExtractScript>
 		<File path="C:\Windows\Setup\Scripts\GetComputerName.ps1">
@@ -136,9 +136,9 @@ $chassis = (Get-CimInstance -ClassName Win32_SystemEnclosure).ChassisTypes
 $laptopTypes = @(1, 8, 9, 10, 11, 12, 14, 18, 21, 31, 32)
 
 if ($chassis -ne $null -and ($chassis | Where-Object { $laptopTypes -contains $_ })) {
-    return 'LAPTOP'
+	return 'LAPTOP'
 } else {
-    return 'PC'
+	return 'PC'
 }
 		</File>
 		<File path="C:\Windows\Setup\Scripts\SetComputerName.ps1">
@@ -271,9 +271,9 @@ End If
 		<File path="C:\Windows\Setup\Scripts\SetStartPins.ps1">
 $json = '{
   "pinnedList": [
-    {
-      "packagedAppId": "AutoOS_xxtketq8p23nt!App"
-    }
+	{
+	  "packagedAppId": "AutoOS_xxtketq8p23nt!App"
+	}
   ]
 }';
 if( [System.Environment]::OSVersion.Version.Build -lt 20000 ) {
@@ -357,7 +357,7 @@ fsutil repair set C: 0
 # Precompile .NET assemblies (speeds up PowerShell loading times)
 $env:path = "$([Runtime.InteropServices.RuntimeEnvironment]::GetRuntimeDirectory());" + $env:path
 [AppDomain]::CurrentDomain.GetAssemblies().Location | ? {$_} | % {
-    ngen install $_ | Out-Null
+	ngen install $_ | Out-Null
 }
 		</File>
 		<File path="C:\Windows\Setup\Scripts\unattend-05.ps1">
@@ -578,15 +578,15 @@ $scripts = @(
   [float] $complete = 0;
   [float] $increment = 100 / $scripts.Count;
   foreach( $script in $scripts ) {
-    Write-Progress -Id 0 -Activity 'Running scripts to customize your Windows installation. Do not close this window.' -PercentComplete $complete;
-    '*** Will now execute command &#xAB;{0}&#xBB;.' -f $(
-      $script.ToString().Trim() -replace '\s+', ' ' -replace '^(.{99})(.+)$', '$1&#x2026;';
-    );
-    $start = [datetime]::Now;
-    &amp; $script;
-    '*** Finished executing command after {0:0} ms.' -f [datetime]::Now.Subtract( $start ).TotalMilliseconds;
-    "`r`n" * 3;
-    $complete += $increment;
+	Write-Progress -Id 0 -Activity 'Running scripts to customize your Windows installation. Do not close this window.' -PercentComplete $complete;
+	'*** Will now execute command &#xAB;{0}&#xBB;.' -f $(
+	  $script.ToString().Trim() -replace '\s+', ' ' -replace '^(.{99})(.+)$', '$1&#x2026;';
+	);
+	$start = [datetime]::Now;
+	&amp; $script;
+	'*** Finished executing command after {0:0} ms.' -f [datetime]::Now.Subtract( $start ).TotalMilliseconds;
+	"`r`n" * 3;
+	$complete += $increment;
   }
 } *&gt;&amp;1 | Out-String -Width 1KB -Stream &gt;&gt; "C:\Windows\Setup\Scripts\Specialize.log";
 		</File>
@@ -618,15 +618,15 @@ $scripts = @(
   [float] $complete = 0;
   [float] $increment = 100 / $scripts.Count;
   foreach( $script in $scripts ) {
-    Write-Progress -Id 0 -Activity 'Running scripts to configure this user account. Do not close this window.' -PercentComplete $complete;
-    '*** Will now execute command &#xAB;{0}&#xBB;.' -f $(
-      $script.ToString().Trim() -replace '\s+', ' ' -replace '^(.{99})(.+)$', '$1&#x2026;';
-    );
-    $start = [datetime]::Now;
-    &amp; $script;
-    '*** Finished executing command after {0:0} ms.' -f [datetime]::Now.Subtract( $start ).TotalMilliseconds;
-    "`r`n" * 3;
-    $complete += $increment;
+	Write-Progress -Id 0 -Activity 'Running scripts to configure this user account. Do not close this window.' -PercentComplete $complete;
+	'*** Will now execute command &#xAB;{0}&#xBB;.' -f $(
+	  $script.ToString().Trim() -replace '\s+', ' ' -replace '^(.{99})(.+)$', '$1&#x2026;';
+	);
+	$start = [datetime]::Now;
+	&amp; $script;
+	'*** Finished executing command after {0:0} ms.' -f [datetime]::Now.Subtract( $start ).TotalMilliseconds;
+	"`r`n" * 3;
+	$complete += $increment;
   }
 } *&gt;&amp;1 | Out-String -Width 1KB -Stream &gt;&gt; "$env:TEMP\UserOnce.log";
 		</File>
@@ -679,15 +679,15 @@ $scripts = @(
   [float] $complete = 0;
   [float] $increment = 100 / $scripts.Count;
   foreach( $script in $scripts ) {
-    Write-Progress -Id 0 -Activity 'Running scripts to modify the default user&#x2019;&#x2019;s registry hive. Do not close this window.' -PercentComplete $complete;
-    '*** Will now execute command &#xAB;{0}&#xBB;.' -f $(
-      $script.ToString().Trim() -replace '\s+', ' ' -replace '^(.{99})(.+)$', '$1&#x2026;';
-    );
-    $start = [datetime]::Now;
-    &amp; $script;
-    '*** Finished executing command after {0:0} ms.' -f [datetime]::Now.Subtract( $start ).TotalMilliseconds;
-    "`r`n" * 3;
-    $complete += $increment;
+	Write-Progress -Id 0 -Activity 'Running scripts to modify the default user&#x2019;&#x2019;s registry hive. Do not close this window.' -PercentComplete $complete;
+	'*** Will now execute command &#xAB;{0}&#xBB;.' -f $(
+	  $script.ToString().Trim() -replace '\s+', ' ' -replace '^(.{99})(.+)$', '$1&#x2026;';
+	);
+	$start = [datetime]::Now;
+	&amp; $script;
+	'*** Finished executing command after {0:0} ms.' -f [datetime]::Now.Subtract( $start ).TotalMilliseconds;
+	"`r`n" * 3;
+	$complete += $increment;
   }
 } *&gt;&amp;1 | Out-String -Width 1KB -Stream &gt;&gt; "C:\Windows\Setup\Scripts\DefaultUser.log";
 		</File>
@@ -736,15 +736,15 @@ $scripts = @(
   [float] $complete = 0;
   [float] $increment = 100 / $scripts.Count;
   foreach( $script in $scripts ) {
-    Write-Progress -Id 0 -Activity 'Running scripts to finalize your Windows installation. Do not close this window.' -PercentComplete $complete;
-    '*** Will now execute command &#xAB;{0}&#xBB;.' -f $(
-      $script.ToString().Trim() -replace '\s+', ' ' -replace '^(.{99})(.+)$', '$1&#x2026;';
-    );
-    $start = [datetime]::Now;
-    &amp; $script;
-    '*** Finished executing command after {0:0} ms.' -f [datetime]::Now.Subtract( $start ).TotalMilliseconds;
-    "`r`n" * 3;
-    $complete += $increment;
+	Write-Progress -Id 0 -Activity 'Running scripts to finalize your Windows installation. Do not close this window.' -PercentComplete $complete;
+	'*** Will now execute command &#xAB;{0}&#xBB;.' -f $(
+	  $script.ToString().Trim() -replace '\s+', ' ' -replace '^(.{99})(.+)$', '$1&#x2026;';
+	);
+	$start = [datetime]::Now;
+	&amp; $script;
+	'*** Finished executing command after {0:0} ms.' -f [datetime]::Now.Subtract( $start ).TotalMilliseconds;
+	"`r`n" * 3;
+	$complete += $increment;
   }
 } *&gt;&amp;1 | Out-String -Width 1KB -Stream &gt;&gt; "C:\Windows\Setup\Scripts\FirstLogon.log";
 		</File>

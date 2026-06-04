@@ -8,136 +8,136 @@ using WinRT;
 
 namespace AutoOS.Views
 {
-    public sealed partial class MainWindow : Window
-    {
-        public string TitleBarName { get; set; }
-        internal static MainWindow Instance { get; set; }
+	public sealed partial class MainWindow : Window
+	{
+		public string TitleBarName { get; set; }
+		internal static MainWindow Instance { get; set; }
 
-        public MainWindow()
-        {
-            Instance = this;
-            InitializeComponent();
-            ExtendsContentIntoTitleBar = true;
-            SetTitleBar(AppTitleBar);
-            AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Tall;
-            _ = new ModernSystemMenu(this);
+		public MainWindow()
+		{
+			Instance = this;
+			InitializeComponent();
+			ExtendsContentIntoTitleBar = true;
+			SetTitleBar(AppTitleBar);
+			AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Tall;
+			_ = new ModernSystemMenu(this);
 
-            var presenter = AppWindow.Presenter.As<OverlappedPresenter>();
-            presenter.PreferredMinimumWidth = 660;
-            presenter.PreferredMinimumHeight = 715;
+			var presenter = AppWindow.Presenter.As<OverlappedPresenter>();
+			presenter.PreferredMinimumWidth = 660;
+			presenter.PreferredMinimumHeight = 715;
 
-            RootGrid.PointerPressed += OnPointerPressed;
+			RootGrid.PointerPressed += OnPointerPressed;
 
-            if (App.IsInstalled)
-            {
-                App.Current.NavService
-                    .Initialize(NavView, NavFrame, NavigationPageMappingsSettings.PageDictionary)
-                    .ConfigureDefaultPage(typeof(Settings.HomeLandingPage))
-                    .ConfigureSettingsPage(typeof(Settings.SettingsPage))
-                    .ConfigureJsonFile("Assets/NavViewMenu/Settings.json")
-                    .ConfigureTitleBar(AppTitleBar, false)
-                    .ConfigureBreadcrumbBar(BreadCrumbNav, BreadcrumbPageMappingsSettings.PageDictionary);
-                AppTitleBar.Title = "AutoOS Settings";
+			if (App.IsInstalled)
+			{
+				App.Current.NavService
+					.Initialize(NavView, NavFrame, NavigationPageMappingsSettings.PageDictionary)
+					.ConfigureDefaultPage(typeof(Settings.HomeLandingPage))
+					.ConfigureSettingsPage(typeof(Settings.SettingsPage))
+					.ConfigureJsonFile("Assets/NavViewMenu/Settings.json")
+					.ConfigureTitleBar(AppTitleBar, false)
+					.ConfigureBreadcrumbBar(BreadCrumbNav, BreadcrumbPageMappingsSettings.PageDictionary);
+				AppTitleBar.Title = "AutoOS Settings";
 
-                NavView.IsSettingsVisible = true;
-            }
-            else
-            {
-                App.Current.NavService
-                    .Initialize(NavView, NavFrame, NavigationPageMappingsInstaller.PageDictionary)
-                    .ConfigureDefaultPage((Windows.Storage.ApplicationData.Current.LocalSettings.Values["actionStage"] as int? ?? -1) > 0 ? typeof(Installer.InstallPage) : typeof(Installer.HomeLandingPage))
-                    .ConfigureJsonFile("Assets/NavViewMenu/Installer.json")
-                    .ConfigureTitleBar(AppTitleBar, false)
-                    .ConfigureBreadcrumbBar(BreadCrumbNav, BreadcrumbPageMappingsInstaller.PageDictionary);
-                AppTitleBar.Title = "AutoOS Installer";
+				NavView.IsSettingsVisible = true;
+			}
+			else
+			{
+				App.Current.NavService
+					.Initialize(NavView, NavFrame, NavigationPageMappingsInstaller.PageDictionary)
+					.ConfigureDefaultPage((Windows.Storage.ApplicationData.Current.LocalSettings.Values["actionStage"] as int? ?? -1) > 0 ? typeof(Installer.InstallPage) : typeof(Installer.HomeLandingPage))
+					.ConfigureJsonFile("Assets/NavViewMenu/Installer.json")
+					.ConfigureTitleBar(AppTitleBar, false)
+					.ConfigureBreadcrumbBar(BreadCrumbNav, BreadcrumbPageMappingsInstaller.PageDictionary);
+				AppTitleBar.Title = "AutoOS Installer";
 
-                presenter.Maximize();
-            }
-        }
+				presenter.Maximize();
+			}
+		}
 
-        private async void RootGrid_Loaded(object sender, RoutedEventArgs e)
-        {
-            if (!App.IsInstalled)
-            {
-                await Task.Delay(100);
-                foreach (var item in NavView.FooterMenuItems.OfType<NavigationViewItem>())
-                {
-                    item.IsEnabled = false;
-                }
-            }
-        }
+		private async void RootGrid_Loaded(object sender, RoutedEventArgs e)
+		{
+			if (!App.IsInstalled)
+			{
+				await Task.Delay(100);
+				foreach (var item in NavView.FooterMenuItems.OfType<NavigationViewItem>())
+				{
+					item.IsEnabled = false;
+				}
+			}
+		}
 
-        private readonly HashSet<string> _visitedPages = [];
-        public IReadOnlyCollection<string> VisitedPages => _visitedPages;
+		private readonly HashSet<string> _visitedPages = [];
+		public IReadOnlyCollection<string> VisitedPages => _visitedPages;
 
-        public readonly string[] AllPages =
-        [
-            "PersonalizationPage",
-            "ApplicationsPage",
-            "BrowsersPage",
-            "DisplayPage",
-            "GraphicsPage",
-            "SecurityPage"
-        ];
+		public readonly string[] AllPages =
+		[
+			"PersonalizationPage",
+			"ApplicationsPage",
+			"BrowsersPage",
+			"DisplayPage",
+			"GraphicsPage",
+			"SecurityPage"
+		];
 
-        public void MarkVisited(string pageName)
-        {
-            _visitedPages.Add(pageName);
-        }
+		public void MarkVisited(string pageName)
+		{
+			_visitedPages.Add(pageName);
+		}
 
-        public bool AllPagesVisited()
-        {
-            return AllPages.All(page => _visitedPages.Contains(page));
-        }
+		public bool AllPagesVisited()
+		{
+			return AllPages.All(page => _visitedPages.Contains(page));
+		}
 
-        public void CheckAllPagesVisited()
-        {
-            if (AllPagesVisited())
-            {
-                var navView = GetNavView();
-                foreach (var item in navView.FooterMenuItems.OfType<NavigationViewItem>())
-                {
-                    item.IsEnabled = true;
-                }
-            }
-        }
+		public void CheckAllPagesVisited()
+		{
+			if (AllPagesVisited())
+			{
+				var navView = GetNavView();
+				foreach (var item in navView.FooterMenuItems.OfType<NavigationViewItem>())
+				{
+					item.IsEnabled = true;
+				}
+			}
+		}
 
-        public NavigationView GetNavView()
-        {
-            return NavView;
-        }
+		public NavigationView GetNavView()
+		{
+			return NavView;
+		}
 
-        public TitleBar GetTitleBar()
-        {
-            return AppTitleBar;
-        }
+		public TitleBar GetTitleBar()
+		{
+			return AppTitleBar;
+		}
 
-        private void AppIcon_PointerPressed(object sender, PointerRoutedEventArgs e)
-        {
-            PInvoke.PostMessage((HWND)WindowNative.GetWindowHandle(App.MainWindow), PInvoke.WM_SYSCOMMAND, 0xF090, 0);
-        }
+		private void AppIcon_PointerPressed(object sender, PointerRoutedEventArgs e)
+		{
+			PInvoke.PostMessage((HWND)WindowNative.GetWindowHandle(App.MainWindow), PInvoke.WM_SYSCOMMAND, 0xF090, 0);
+		}
 
-        private void OnPointerPressed(object sender, PointerRoutedEventArgs e)
-        {
-            var pointerPoint = e.GetCurrentPoint(RootGrid);
-            var properties = pointerPoint.Properties;
+		private void OnPointerPressed(object sender, PointerRoutedEventArgs e)
+		{
+			var pointerPoint = e.GetCurrentPoint(RootGrid);
+			var properties = pointerPoint.Properties;
 
-            if (properties.IsXButton1Pressed)
-            {
-                if (App.Current.NavService.CanGoBack)
-                {
-                    App.Current.NavService.GoBack();
-                }
-                e.Handled = true;
-            }
-            else if (properties.IsXButton2Pressed)
-            {
-                if (NavFrame.CanGoForward)
-                {
-                    NavFrame.GoForward();
-                }
-                e.Handled = true;
-            }
-        }
-    }
+			if (properties.IsXButton1Pressed)
+			{
+				if (App.Current.NavService.CanGoBack)
+				{
+					App.Current.NavService.GoBack();
+				}
+				e.Handled = true;
+			}
+			else if (properties.IsXButton2Pressed)
+			{
+				if (NavFrame.CanGoForward)
+				{
+					NavFrame.GoForward();
+				}
+				e.Handled = true;
+			}
+		}
+	}
 }

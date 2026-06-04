@@ -6,38 +6,38 @@ namespace AutoOS.Views.Settings;
 
 public sealed partial class GamesPage : Page
 {
-    public static GamesPage Instance { get; private set; }
-    public Games.HeaderCarousel Games => games;
+	public static GamesPage Instance { get; private set; }
+	public Games.HeaderCarousel Games => games;
 
-    public GamesPage()
-    {
-        Instance = this;
-        InitializeComponent();
-        
-    }
+	public GamesPage()
+	{
+		Instance = this;
+		InitializeComponent();
+		
+	}
 
-    private void ToggleFullscreen(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
-    {
-        IntPtr hWnd = WindowNative.GetWindowHandle(App.MainWindow);
-        WindowId windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
-        AppWindow appWindow = AppWindow.GetFromWindowId(windowId);
+	private void ToggleFullscreen(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
+	{
+		IntPtr hWnd = WindowNative.GetWindowHandle(App.MainWindow);
+		WindowId windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
+		AppWindow appWindow = AppWindow.GetFromWindowId(windowId);
 
-        var navView = MainWindow.Instance.GetNavView();
-        var titleBar = MainWindow.Instance.GetTitleBar();
+		var navView = MainWindow.Instance.GetNavView();
+		var titleBar = MainWindow.Instance.GetTitleBar();
 
-        if (appWindow.Presenter.Kind == AppWindowPresenterKind.FullScreen)
-        {
-            appWindow.SetPresenter(AppWindowPresenterKind.Overlapped);
-            navView.IsPaneVisible = true;
-            titleBar.Visibility = Visibility.Visible;
-        }
-        else
-        {
-            appWindow.SetPresenter(AppWindowPresenterKind.FullScreen);
-            navView.IsPaneVisible = false;
-            titleBar.Visibility = Visibility.Collapsed;
-        }
+		if (appWindow.Presenter.Kind == AppWindowPresenterKind.FullScreen)
+		{
+			appWindow.SetPresenter(AppWindowPresenterKind.Overlapped);
+			navView.IsPaneVisible = true;
+			titleBar.Visibility = Visibility.Visible;
+		}
+		else
+		{
+			appWindow.SetPresenter(AppWindowPresenterKind.FullScreen);
+			navView.IsPaneVisible = false;
+			titleBar.Visibility = Visibility.Collapsed;
+		}
 
-        args.Handled = true;
-    }
+		args.Handled = true;
+	}
 }

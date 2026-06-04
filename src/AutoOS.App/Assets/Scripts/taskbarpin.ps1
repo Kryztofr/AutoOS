@@ -1,10 +1,10 @@
 param(
-    [Parameter(Mandatory)]
-    [ValidateSet("UWA","Link")]
-    [string]$Type,
+	[Parameter(Mandatory)]
+	[ValidateSet("UWA","Link")]
+	[string]$Type,
 
-    [Parameter(Mandatory)]
-    [string]$Path
+	[Parameter(Mandatory)]
+	[string]$Path
 )
 
 $xmlPath = "C:\Windows\Setup\Scripts\TaskbarLayoutModification.xml"
@@ -17,14 +17,14 @@ $pinList = $xml.SelectSingleNode("//taskbar:TaskbarPinList", $nsMgr)
 $nsUri = $nsMgr.LookupNamespace("taskbar")
 
 switch ($Type) {
-    "UWA" {
-        $newNode = $xml.CreateElement("taskbar", "UWA", $nsUri)
-        $newNode.SetAttribute("AppUserModelID", $Path)
-    }
-    "Link" {
-        $newNode = $xml.CreateElement("taskbar", "DesktopApp", $nsUri)
-        $newNode.SetAttribute("DesktopApplicationLinkPath", $Path)
-    }
+	"UWA" {
+		$newNode = $xml.CreateElement("taskbar", "UWA", $nsUri)
+		$newNode.SetAttribute("AppUserModelID", $Path)
+	}
+	"Link" {
+		$newNode = $xml.CreateElement("taskbar", "DesktopApp", $nsUri)
+		$newNode.SetAttribute("DesktopApplicationLinkPath", $Path)
+	}
 }
 
 $pinList.AppendChild($newNode) | Out-Null
@@ -36,19 +36,19 @@ Set-ItemProperty -Path $regPath -Name "StartLayoutFile" -Value $xmlPath -Type Ex
 Set-ItemProperty -Path $regPath -Name "LockedStartLayout" -Value 1 -Type DWord
 
 Get-Process explorer -ErrorAction SilentlyContinue | Where-Object {
-    $cmdLine = (Get-CimInstance Win32_Process -Filter "ProcessId = $($_.Id)" -ErrorAction SilentlyContinue).CommandLine
-    if ($null -eq $cmdLine) { return $false }
-    $cleanCmd = $cmdLine.Replace('"','').Trim()
-    $cleanCmd -eq "C:\Windows\explorer.exe" -or $cleanCmd -eq "explorer.exe"
+	$cmdLine = (Get-CimInstance Win32_Process -Filter "ProcessId = $($_.Id)" -ErrorAction SilentlyContinue).CommandLine
+	if ($null -eq $cmdLine) { return $false }
+	$cleanCmd = $cmdLine.Replace('"','').Trim()
+	$cleanCmd -eq "C:\Windows\explorer.exe" -or $cleanCmd -eq "explorer.exe"
 } | Stop-Process -Force
 
 Start-Sleep 5
 
 if (-not (Get-Process explorer -ErrorAction SilentlyContinue | Where-Object {
-    $cmdLine = (Get-CimInstance Win32_Process -Filter "ProcessId = $($_.Id)" -ErrorAction SilentlyContinue).CommandLine
-    if ($null -eq $cmdLine) { return $false }
-    $cleanCmd = $cmdLine.Replace('"','').Trim()
-    $cleanCmd -eq "C:\Windows\explorer.exe" -or $cleanCmd -eq "explorer.exe"
+	$cmdLine = (Get-CimInstance Win32_Process -Filter "ProcessId = $($_.Id)" -ErrorAction SilentlyContinue).CommandLine
+	if ($null -eq $cmdLine) { return $false }
+	$cleanCmd = $cmdLine.Replace('"','').Trim()
+	$cleanCmd -eq "C:\Windows\explorer.exe" -or $cleanCmd -eq "explorer.exe"
 })) {
-    Start-Process explorer.exe
+	Start-Process explorer.exe
 }

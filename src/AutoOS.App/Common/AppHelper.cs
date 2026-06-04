@@ -7,10 +7,10 @@ namespace AutoOS.Common;
 
 public static partial class AppHelper
 {
-    [System.Diagnostics.CodeAnalysis.DynamicDependency(System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.All, typeof(AppConfig))]
-    public static AppConfig Settings = JsonSettings.Configure<AppConfig>()
-                               .WithRecovery(RecoveryAction.RenameAndLoadDefault)
-                               .WithVersioning(VersioningResultAction.RenameAndLoadDefault)
-                               .LoadNow();
+	[System.Diagnostics.CodeAnalysis.DynamicDependency(System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.All, typeof(AppConfig))]
+	public static AppConfig Settings = JsonSettings.Configure<AppConfig>()
+							   .WithRecovery(RecoveryAction.RenameAndLoadDefault)
+							   .WithVersioning(VersioningResultAction.RenameAndLoadDefault)
+							   .LoadNow();
 }
 

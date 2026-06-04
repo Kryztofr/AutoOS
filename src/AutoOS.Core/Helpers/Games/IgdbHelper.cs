@@ -6,232 +6,232 @@ namespace AutoOS.Core.Helpers.Games;
 
 public static partial class IgdbHelper
 {
-    private static readonly HttpClient httpClient = new();
+	private static readonly HttpClient httpClient = new();
 
-    public static async Task<Dictionary<string, string>> SearchCovers(string name)
-    {
-        string Clean(string input) => Regex.Replace(input.ToLowerInvariant(), @"\s+", ".");
-        string GetSearchBucket(string input)
-        {
-            string cleaned = Regex.Replace(input.Length >= 2 ? input[..2] : input.ToLowerInvariant(), @"[^a-z\d]", "");
-            return string.IsNullOrEmpty(cleaned) ? "@" : cleaned;
-        }
+	public static async Task<Dictionary<string, string>> SearchCovers(string name)
+	{
+		string Clean(string input) => Regex.Replace(input.ToLowerInvariant(), @"\s+", ".");
+		string GetSearchBucket(string input)
+		{
+			string cleaned = Regex.Replace(input.Length >= 2 ? input[..2] : input.ToLowerInvariant(), @"[^a-z\d]", "");
+			return string.IsNullOrEmpty(cleaned) ? "@" : cleaned;
+		}
 
-        try
-        {
-            var bucketJson = await httpClient.GetStringAsync($"https://raw.githubusercontent.com/LizardByte/GameDB/gh-pages/buckets/{GetSearchBucket(Clean(name))}.json");
+		try
+		{
+			var bucketJson = await httpClient.GetStringAsync($"https://raw.githubusercontent.com/LizardByte/GameDB/gh-pages/buckets/{GetSearchBucket(Clean(name))}.json");
 
-            var bucketRoot = JsonDocument.Parse(bucketJson).RootElement;
+			var bucketRoot = JsonDocument.Parse(bucketJson).RootElement;
 
-            var matchingIds = new List<string>();
-            string cleanName = Clean(name);
+			var matchingIds = new List<string>();
+			string cleanName = Clean(name);
 
-            if (bucketRoot.ValueKind == JsonValueKind.Object)
-            {
-                foreach (var property in bucketRoot.EnumerateObject())
-                {
-                    if (property.Value.ValueKind != JsonValueKind.Object)
-                        continue;
+			if (bucketRoot.ValueKind == JsonValueKind.Object)
+			{
+				foreach (var property in bucketRoot.EnumerateObject())
+				{
+					if (property.Value.ValueKind != JsonValueKind.Object)
+						continue;
 
-                    if (!property.Value.TryGetProperty("name", out var nameProp))
-                        continue;
+					if (!property.Value.TryGetProperty("name", out var nameProp))
+						continue;
 
-                    string itemName = nameProp.GetString() ?? "";
+					string itemName = nameProp.GetString() ?? "";
 
-                    if (Clean(itemName) == cleanName)
-                        matchingIds.Add(property.Name);
-                }
-            }
+					if (Clean(itemName) == cleanName)
+						matchingIds.Add(property.Name);
+				}
+			}
 
-            JsonElement? maxGame = null;
-            int maxFields = 0;
+			JsonElement? maxGame = null;
+			int maxFields = 0;
 
-            foreach (var id in matchingIds)
-            {
-                using var response = await httpClient.GetAsync($"https://raw.githubusercontent.com/LizardByte/GameDB/gh-pages/games/{id}.json");
+			foreach (var id in matchingIds)
+			{
+				using var response = await httpClient.GetAsync($"https://raw.githubusercontent.com/LizardByte/GameDB/gh-pages/games/{id}.json");
 
-                if (!response.IsSuccessStatusCode)
-                    continue;
+				if (!response.IsSuccessStatusCode)
+					continue;
 
-                var json = await response.Content.ReadAsStringAsync();
+				var json = await response.Content.ReadAsStringAsync();
 
-                var root = JsonDocument.Parse(json).RootElement;
+				var root = JsonDocument.Parse(json).RootElement;
 
-                if (root.ValueKind != JsonValueKind.Object)
-                    continue;
+				if (root.ValueKind != JsonValueKind.Object)
+					continue;
 
-                int count = 0;
-                foreach (var prop in root.EnumerateObject())
-                {
-                    var val = prop.Value;
-                    if (val.ValueKind == JsonValueKind.Object)
-                        continue;
+				int count = 0;
+				foreach (var prop in root.EnumerateObject())
+				{
+					var val = prop.Value;
+					if (val.ValueKind == JsonValueKind.Object)
+						continue;
 
-                    if (val.ValueKind == JsonValueKind.Null)
-                        continue;
+					if (val.ValueKind == JsonValueKind.Null)
+						continue;
 
-                    if (val.ValueKind == JsonValueKind.String && string.IsNullOrWhiteSpace(val.GetString()))
-                        continue;
+					if (val.ValueKind == JsonValueKind.String && string.IsNullOrWhiteSpace(val.GetString()))
+						continue;
 
-                    count++;
-                }
+					count++;
+				}
 
-                if (count > maxFields)
-                {
-                    maxFields = count;
-                    maxGame = root.Clone();
-                }
-            }
+				if (count > maxFields)
+				{
+					maxFields = count;
+					maxGame = root.Clone();
+				}
+			}
 
-            if (maxGame.HasValue && maxGame.Value.TryGetProperty("cover", out var cover) && cover.ValueKind == JsonValueKind.Object && cover.TryGetProperty("url", out var url) && url.ValueKind == JsonValueKind.String)
-            {
-                string thumb = url.GetString() ?? "";
-                int dot = thumb.LastIndexOf('.');
-                int slash = thumb.LastIndexOf('/');
+			if (maxGame.HasValue && maxGame.Value.TryGetProperty("cover", out var cover) && cover.ValueKind == JsonValueKind.Object && cover.TryGetProperty("url", out var url) && url.ValueKind == JsonValueKind.String)
+			{
+				string thumb = url.GetString() ?? "";
+				int dot = thumb.LastIndexOf('.');
+				int slash = thumb.LastIndexOf('/');
 
-                if (dot >= 0 && slash >= 0)
-                {
-                    string slug = thumb.Substring(slash + 1, dot - slash - 1);
+				if (dot >= 0 && slash >= 0)
+				{
+					string slug = thumb.Substring(slash + 1, dot - slash - 1);
 
-                    var developers = new List<string>();
+					var developers = new List<string>();
 
-                    if (maxGame.HasValue && maxGame.Value.TryGetProperty("involved_companies", out var companies))
-                    {
-                        foreach (var company in companies.EnumerateArray())
-                        {
-                            if (company.GetProperty("developer").GetBoolean() &&
-                                company.GetProperty("company").TryGetProperty("name", out var nameProp))
-                            {
-                                var devName = nameProp.GetString();
-                                if (!string.IsNullOrWhiteSpace(devName))
-                                    developers.Add(devName);
-                            }
-                        }
-                    }
+					if (maxGame.HasValue && maxGame.Value.TryGetProperty("involved_companies", out var companies))
+					{
+						foreach (var company in companies.EnumerateArray())
+						{
+							if (company.GetProperty("developer").GetBoolean() &&
+								company.GetProperty("company").TryGetProperty("name", out var nameProp))
+							{
+								var devName = nameProp.GetString();
+								if (!string.IsNullOrWhiteSpace(devName))
+									developers.Add(devName);
+							}
+						}
+					}
 
-                    string developerNames = developers != null && developers.Any() ? string.Join(", ", developers) : "Unknown";
+					string developerNames = developers != null && developers.Any() ? string.Join(", ", developers) : "Unknown";
 
-                    string gameUrl = maxGame is JsonElement { ValueKind: JsonValueKind.Object } game &&
-                                        game.TryGetProperty("id", out var id) &&
-                                        id.ValueKind == JsonValueKind.Number &&
-                                        id.TryGetInt32(out var gameId)
-                        ? $"https://raw.githubusercontent.com/LizardByte/GameDB/gh-pages/games/{gameId}.json"
-                        : "";
+					string gameUrl = maxGame is JsonElement { ValueKind: JsonValueKind.Object } game &&
+										game.TryGetProperty("id", out var id) &&
+										id.ValueKind == JsonValueKind.Number &&
+										id.TryGetInt32(out var gameId)
+						? $"https://raw.githubusercontent.com/LizardByte/GameDB/gh-pages/games/{gameId}.json"
+						: "";
 
-                    string region = RegionInfo.CurrentRegion.TwoLetterISORegionName.ToUpper();
+					string region = RegionInfo.CurrentRegion.TwoLetterISORegionName.ToUpper();
 
-                    string ratingKey = region switch
-                    {
-                        "AU" => "ACB",
-                        "BR" => "DEJUS",
-                        "KR" => "GRAC",
-                        "DE" => "USK",
-                        "US" or "CA" => "ESRB",
-                        _ => "PEGI"
-                    };
+					string ratingKey = region switch
+					{
+						"AU" => "ACB",
+						"BR" => "DEJUS",
+						"KR" => "GRAC",
+						"DE" => "USK",
+						"US" or "CA" => "ESRB",
+						_ => "PEGI"
+					};
 
-                    string baseUrl = ratingKey.ToLowerInvariant() switch
-                    {
-                        "pegI" => "https://www.igdb.com/icons/rating_icons/pegi/pegi_",
-                        "esrb" => "https://www.igdb.com/icons/rating_icons/esrb/esrb_",
-                        "cero" => "https://www.igdb.com/icons/rating_icons/cero/cero_",
-                        "usk" => "https://www.igdb.com/icons/rating_icons/usk/usk_",
-                        "grac" => "https://www.igdb.com/icons/rating_icons/grac/grac_",
-                        "class_ind" => "https://www.igdb.com/icons/rating_icons/class_ind/class_ind_",
-                        "acb" => "https://www.igdb.com/icons/rating_icons/acb/acb_",
-                        _ => ""
-                    };
+					string baseUrl = ratingKey.ToLowerInvariant() switch
+					{
+						"pegI" => "https://www.igdb.com/icons/rating_icons/pegi/pegi_",
+						"esrb" => "https://www.igdb.com/icons/rating_icons/esrb/esrb_",
+						"cero" => "https://www.igdb.com/icons/rating_icons/cero/cero_",
+						"usk" => "https://www.igdb.com/icons/rating_icons/usk/usk_",
+						"grac" => "https://www.igdb.com/icons/rating_icons/grac/grac_",
+						"class_ind" => "https://www.igdb.com/icons/rating_icons/class_ind/class_ind_",
+						"acb" => "https://www.igdb.com/icons/rating_icons/acb/acb_",
+						_ => ""
+					};
 
-                    var ratingTitles = ratingKey switch
-                    {
-                        "PEGI" => new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-                        {
-                            {"3", "PEGI 3"}, {"7", "PEGI 7"}, {"12", "PEGI 12"}, {"16", "PEGI 16"}, {"18", "PEGI 18"},
-                        },
-                        "USK" => new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-                        {
-                            {"0", "USK ab 0"}, {"6", "USK ab 6"}, {"12", "USK ab 12"}, {"16", "USK ab 16"}, {"18", "USK ab 18"},
-                        },
-                        "ESRB" => new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-                        {
-                            {"ec", "Early Childhood"}, {"e", "Everyone"}, {"e10", "Everyone 10+"}, {"e10+", "Everyone 10+"},
-                            {"t", "Teen"}, {"m", "Mature 17+"}, {"ao", "Adults Only 18+"},
-                        },
-                        _ => new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-                    };
+					var ratingTitles = ratingKey switch
+					{
+						"PEGI" => new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+						{
+							{"3", "PEGI 3"}, {"7", "PEGI 7"}, {"12", "PEGI 12"}, {"16", "PEGI 16"}, {"18", "PEGI 18"},
+						},
+						"USK" => new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+						{
+							{"0", "USK ab 0"}, {"6", "USK ab 6"}, {"12", "USK ab 12"}, {"16", "USK ab 16"}, {"18", "USK ab 18"},
+						},
+						"ESRB" => new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+						{
+							{"ec", "Early Childhood"}, {"e", "Everyone"}, {"e10", "Everyone 10+"}, {"e10+", "Everyone 10+"},
+							{"t", "Teen"}, {"m", "Mature 17+"}, {"ao", "Adults Only 18+"},
+						},
+						_ => new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+					};
 
-                    JsonElement? ratingEntry = null;
+					JsonElement? ratingEntry = null;
 
-                    if (maxGame.HasValue && maxGame.Value.TryGetProperty("age_ratings", out var ageRatings))
-                    {
-                        foreach (var rating in ageRatings.EnumerateArray())
-                        {
-                            if (string.Equals(
-                                rating.GetProperty("organization").GetProperty("name").GetString(),
-                                ratingKey,
-                                StringComparison.OrdinalIgnoreCase))
-                            {
-                                ratingEntry = rating;
-                                break;
-                            }
-                        }
-                    }
+					if (maxGame.HasValue && maxGame.Value.TryGetProperty("age_ratings", out var ageRatings))
+					{
+						foreach (var rating in ageRatings.EnumerateArray())
+						{
+							if (string.Equals(
+								rating.GetProperty("organization").GetProperty("name").GetString(),
+								ratingKey,
+								StringComparison.OrdinalIgnoreCase))
+							{
+								ratingEntry = rating;
+								break;
+							}
+						}
+					}
 
-                    if (ratingEntry is null || !ratingEntry.Value.TryGetProperty("rating_category", out var ratingCategory) || !ratingCategory.TryGetProperty("rating", out var ratingValue))
-                    {
-                        return new Dictionary<string, string>
-                        {
-                            { "name", maxGame.Value.GetProperty("name").GetString() ?? "Unknown" },
-                            { "game_url", gameUrl },
-                            { "cover_url", $"https://images.igdb.com/igdb/image/upload/t_cover_big_2x/{slug}.jpg" },
-                            { "developers", developerNames },
-                            { "age_rating_url", null },
-                            { "age_rating_title", null },
-                            { "release_date", null }
-                        };
-                    }
+					if (ratingEntry is null || !ratingEntry.Value.TryGetProperty("rating_category", out var ratingCategory) || !ratingCategory.TryGetProperty("rating", out var ratingValue))
+					{
+						return new Dictionary<string, string>
+						{
+							{ "name", maxGame.Value.GetProperty("name").GetString() ?? "Unknown" },
+							{ "game_url", gameUrl },
+							{ "cover_url", $"https://images.igdb.com/igdb/image/upload/t_cover_big_2x/{slug}.jpg" },
+							{ "developers", developerNames },
+							{ "age_rating_url", null },
+							{ "age_rating_title", null },
+							{ "release_date", null }
+						};
+					}
 
-                    string ratingCode = ratingValue.GetString();
+					string ratingCode = ratingValue.GetString();
 
-                    string ratingKeyForUrl = ratingKey == "ESRB" &&
-                                                ratingCode.StartsWith("e10+", StringComparison.OrdinalIgnoreCase) ? "e10" : ratingCode;
+					string ratingKeyForUrl = ratingKey == "ESRB" &&
+												ratingCode.StartsWith("e10+", StringComparison.OrdinalIgnoreCase) ? "e10" : ratingCode;
 
-                    string ratingTitle = ratingTitles.TryGetValue(ratingCode, out var title) ? title : ratingCode;
+					string ratingTitle = ratingTitles.TryGetValue(ratingCode, out var title) ? title : ratingCode;
 
-                    string ratingUrl = $"{baseUrl}{ratingKeyForUrl.ToLowerInvariant()}.png";
+					string ratingUrl = $"{baseUrl}{ratingKeyForUrl.ToLowerInvariant()}.png";
 
-                    DateTimeOffset? releaseDate = null;
+					DateTimeOffset? releaseDate = null;
 
-                    if (maxGame.HasValue && maxGame.Value.TryGetProperty("release_dates", out var releaseDates))
-                    {
-                        var firstRelease = releaseDates.EnumerateArray().FirstOrDefault();
-                        if (firstRelease.ValueKind != JsonValueKind.Undefined &&
-                            firstRelease.TryGetProperty("date", out var dateProp) &&
-                            dateProp.ValueKind == JsonValueKind.Number)
-                        {
-                            long unixTime = dateProp.GetInt64();
-                            releaseDate = DateTimeOffset.FromUnixTimeSeconds(unixTime);
-                        }
-                    }
+					if (maxGame.HasValue && maxGame.Value.TryGetProperty("release_dates", out var releaseDates))
+					{
+						var firstRelease = releaseDates.EnumerateArray().FirstOrDefault();
+						if (firstRelease.ValueKind != JsonValueKind.Undefined &&
+							firstRelease.TryGetProperty("date", out var dateProp) &&
+							dateProp.ValueKind == JsonValueKind.Number)
+						{
+							long unixTime = dateProp.GetInt64();
+							releaseDate = DateTimeOffset.FromUnixTimeSeconds(unixTime);
+						}
+					}
 
-                    return new Dictionary<string, string>
-                    {
-                        { "name", maxGame?.GetProperty("name").GetString() ?? "Unknown" },
-                        { "game_url", gameUrl },
-                        { "cover_url", $"https://images.igdb.com/igdb/image/upload/t_cover_big_2x/{slug}.jpg" },
-                        { "developers", developerNames },
-                        { "age_rating_url", ratingUrl },
-                        { "age_rating_title", ratingTitle },
-                        { "release_date", releaseDate?.ToString("d") }
-                    };
-                }
-            }
-        }
-        catch
-        {
-            return null;
-        }
+					return new Dictionary<string, string>
+					{
+						{ "name", maxGame?.GetProperty("name").GetString() ?? "Unknown" },
+						{ "game_url", gameUrl },
+						{ "cover_url", $"https://images.igdb.com/igdb/image/upload/t_cover_big_2x/{slug}.jpg" },
+						{ "developers", developerNames },
+						{ "age_rating_url", ratingUrl },
+						{ "age_rating_title", ratingTitle },
+						{ "release_date", releaseDate?.ToString("d") }
+					};
+				}
+			}
+		}
+		catch
+		{
+			return null;
+		}
 
-        return null;
-    }
+		return null;
+	}
 }

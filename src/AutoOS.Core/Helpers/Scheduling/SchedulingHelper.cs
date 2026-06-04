@@ -7,128 +7,128 @@ namespace AutoOS.Core.Helpers.Scheduling;
 
 public static partial class SchedulingHelper
 {
-    public static async Task OptimizeAffinities(DeviceInfo device = null, Action<DeviceType, string, DeviceInfo> onDeviceUpdated = null)
-    {
-        var cpuSetsInfo = CpuHelper.GetCpuSets();
-        var (pCores, eCores) = CpuHelper.GroupCpuSetsByEfficiencyClass(cpuSetsInfo);
+	public static async Task OptimizeAffinities(DeviceInfo device = null, Action<DeviceType, string, DeviceInfo> onDeviceUpdated = null)
+	{
+		var cpuSetsInfo = CpuHelper.GetCpuSets();
+		var (pCores, eCores) = CpuHelper.GroupCpuSetsByEfficiencyClass(cpuSetsInfo);
 
-        if (pCores.Count < 4)
-            return;
+		if (pCores.Count < 4)
+			return;
 
-        int cores = pCores.Count;
-        ulong nicMask, xhciMask, gpuMask, audioMask;
+		int cores = pCores.Count;
+		ulong nicMask, xhciMask, gpuMask, audioMask;
 
-        if (cores == 4)
-        {
-            audioMask = GetCoreMask(pCores[0]);
-            gpuMask = GetCoreMask(pCores[1]) | GetCoreMask(pCores[2]);
-            xhciMask = pCores[3].Threads.First().BitMask;
-            nicMask = pCores[3].Threads.Last().BitMask;
-        }
-        else
-        {
-            nicMask = GetCoreMask(pCores[cores - 1]);
-            xhciMask = GetCoreMask(pCores[cores - 2]);
-            gpuMask = GetCoreMask(pCores[cores - 3]) | GetCoreMask(pCores[cores - 4]);
-            audioMask = GetCoreMask(pCores[cores - 5]);
-        }
+		if (cores == 4)
+		{
+			audioMask = GetCoreMask(pCores[0]);
+			gpuMask = GetCoreMask(pCores[1]) | GetCoreMask(pCores[2]);
+			xhciMask = pCores[3].Threads.First().BitMask;
+			nicMask = pCores[3].Threads.Last().BitMask;
+		}
+		else
+		{
+			nicMask = GetCoreMask(pCores[cores - 1]);
+			xhciMask = GetCoreMask(pCores[cores - 2]);
+			gpuMask = GetCoreMask(pCores[cores - 3]) | GetCoreMask(pCores[cores - 4]);
+			audioMask = GetCoreMask(pCores[cores - 5]);
+		}
 
-        var audioDevices = (device == null || device.DeviceType == DeviceType.AudioController) ? DeviceHelper.GetDevices(DeviceType.AudioController).Where(d => d.SupportsIrq).ToList() : new List<DeviceInfo>();
-        var gpuDevices = (device == null || device.DeviceType == DeviceType.GPU) ? DeviceHelper.GetDevices(DeviceType.GPU).Where(d => d.SupportsIrq).ToList() : new List<DeviceInfo>();
-        var xhciDevices = (device == null || device.DeviceType == DeviceType.XHCI) ? DeviceHelper.GetDevices(DeviceType.XHCI).Where(d => d.SupportsIrq).ToList() : new List<DeviceInfo>();
-        var nicDevices = (device == null || device.DeviceType == DeviceType.NIC) ? DeviceHelper.GetDevices(DeviceType.NIC).Where(d => d.SupportsIrq).ToList() : new List<DeviceInfo>();
+		var audioDevices = (device == null || device.DeviceType == DeviceType.AudioController) ? DeviceHelper.GetDevices(DeviceType.AudioController).Where(d => d.SupportsIrq).ToList() : new List<DeviceInfo>();
+		var gpuDevices = (device == null || device.DeviceType == DeviceType.GPU) ? DeviceHelper.GetDevices(DeviceType.GPU).Where(d => d.SupportsIrq).ToList() : new List<DeviceInfo>();
+		var xhciDevices = (device == null || device.DeviceType == DeviceType.XHCI) ? DeviceHelper.GetDevices(DeviceType.XHCI).Where(d => d.SupportsIrq).ToList() : new List<DeviceInfo>();
+		var nicDevices = (device == null || device.DeviceType == DeviceType.NIC) ? DeviceHelper.GetDevices(DeviceType.NIC).Where(d => d.SupportsIrq).ToList() : new List<DeviceInfo>();
 
-        if (device != null)
-        {
-            audioDevices = audioDevices.Where(device => device.PnpDeviceId == device.PnpDeviceId).ToList();
-            gpuDevices = gpuDevices.Where(device => device.PnpDeviceId == device.PnpDeviceId).ToList();
-            xhciDevices = xhciDevices.Where(device => device.PnpDeviceId == device.PnpDeviceId).ToList();
-            nicDevices = nicDevices.Where(device => device.PnpDeviceId == device.PnpDeviceId).ToList();
-        }
+		if (device != null)
+		{
+			audioDevices = audioDevices.Where(device => device.PnpDeviceId == device.PnpDeviceId).ToList();
+			gpuDevices = gpuDevices.Where(device => device.PnpDeviceId == device.PnpDeviceId).ToList();
+			xhciDevices = xhciDevices.Where(device => device.PnpDeviceId == device.PnpDeviceId).ToList();
+			nicDevices = nicDevices.Where(device => device.PnpDeviceId == device.PnpDeviceId).ToList();
+		}
 
-        var allChangedDevices = new List<(DeviceInfo device, DeviceType deviceType)>();
+		var allChangedDevices = new List<(DeviceInfo device, DeviceType deviceType)>();
 
-        if (audioDevices.Count > 0)
-        {
-            var result = ApplyAffinityOnly(audioDevices, audioMask, DeviceType.AudioController);
-            allChangedDevices.AddRange(result.ChangedDevices.Select(d => (d, DeviceType.AudioController)));
-        }
-        if (gpuDevices.Count > 0)
-        {
-            var result = ApplyAffinityOnly(gpuDevices, gpuMask, DeviceType.GPU);
-            allChangedDevices.AddRange(result.ChangedDevices.Select(d => (d, DeviceType.GPU)));
-        }
-        if (xhciDevices.Count > 0)
-        {
-            var result = ApplyAffinityOnly(xhciDevices, xhciMask, DeviceType.XHCI);
-            allChangedDevices.AddRange(result.ChangedDevices.Select(d => (d, DeviceType.XHCI)));
-        }
-        if (nicDevices.Count > 0)
-        {
-            var result = ApplyAffinityOnly(nicDevices, nicMask, DeviceType.NIC);
-            allChangedDevices.AddRange(result.ChangedDevices.Select(d => (d, DeviceType.NIC)));
-        }
+		if (audioDevices.Count > 0)
+		{
+			var result = ApplyAffinityOnly(audioDevices, audioMask, DeviceType.AudioController);
+			allChangedDevices.AddRange(result.ChangedDevices.Select(d => (d, DeviceType.AudioController)));
+		}
+		if (gpuDevices.Count > 0)
+		{
+			var result = ApplyAffinityOnly(gpuDevices, gpuMask, DeviceType.GPU);
+			allChangedDevices.AddRange(result.ChangedDevices.Select(d => (d, DeviceType.GPU)));
+		}
+		if (xhciDevices.Count > 0)
+		{
+			var result = ApplyAffinityOnly(xhciDevices, xhciMask, DeviceType.XHCI);
+			allChangedDevices.AddRange(result.ChangedDevices.Select(d => (d, DeviceType.XHCI)));
+		}
+		if (nicDevices.Count > 0)
+		{
+			var result = ApplyAffinityOnly(nicDevices, nicMask, DeviceType.NIC);
+			allChangedDevices.AddRange(result.ChangedDevices.Select(d => (d, DeviceType.NIC)));
+		}
 
-        if (allChangedDevices.Count > 0)
-        {
-            if (onDeviceUpdated != null)
-            {
-                foreach (var (changedDevice, deviceType) in allChangedDevices)
-                {
-                    onDeviceUpdated(deviceType, changedDevice.PnpDeviceId, changedDevice);
-                }
-            }
+		if (allChangedDevices.Count > 0)
+		{
+			if (onDeviceUpdated != null)
+			{
+				foreach (var (changedDevice, deviceType) in allChangedDevices)
+				{
+					onDeviceUpdated(deviceType, changedDevice.PnpDeviceId, changedDevice);
+				}
+			}
 
-            foreach (DeviceInfo changedDevice in allChangedDevices.Select(d => d.device))
-            {
-                await Task.Run(() => DeviceHelper.RestartDevice(changedDevice));
-            }
-        }
-    }
+			foreach (DeviceInfo changedDevice in allChangedDevices.Select(d => d.device))
+			{
+				await Task.Run(() => DeviceHelper.RestartDevice(changedDevice));
+			}
+		}
+	}
 
-    private static ulong GetCoreMask(CpuCore core) => core.Threads.Aggregate(0UL, (mask, t) => mask | t.BitMask);
+	private static ulong GetCoreMask(CpuCore core) => core.Threads.Aggregate(0UL, (mask, t) => mask | t.BitMask);
 
-    private static ApplyResult ApplyAffinityOnly(List<DeviceInfo> devices, ulong assignmentSetOverride, DeviceType deviceType)
-    {
-        var result = new ApplyResult();
-        var changedDevices = new List<DeviceInfo>();
+	private static ApplyResult ApplyAffinityOnly(List<DeviceInfo> devices, ulong assignmentSetOverride, DeviceType deviceType)
+	{
+		var result = new ApplyResult();
+		var changedDevices = new List<DeviceInfo>();
 
-        foreach (var device in devices)
-        {
-            bool msiChanged = device.MsiSupported != 1;
-            bool affinityChanged = device.DevicePolicy != 4 || device.AssignmentSetOverride != assignmentSetOverride;
+		foreach (var device in devices)
+		{
+			bool msiChanged = device.MsiSupported != 1;
+			bool affinityChanged = device.DevicePolicy != 4 || device.AssignmentSetOverride != assignmentSetOverride;
 
-            if (msiChanged)
-            {
-                uint msiLimit = device.MaxMsiLimit > 0 ? device.MaxMsiLimit : 1;
-                DeviceHelper.SetMSIMode(device.PnpDeviceId, true, msiLimit);
-                device.MsiSupported = 1;
-                device.MsiLimit = msiLimit;
-            }
+			if (msiChanged)
+			{
+				uint msiLimit = device.MaxMsiLimit > 0 ? device.MaxMsiLimit : 1;
+				DeviceHelper.SetMSIMode(device.PnpDeviceId, true, msiLimit);
+				device.MsiSupported = 1;
+				device.MsiLimit = msiLimit;
+			}
 
-            if (affinityChanged)
-            {
-                DeviceHelper.SetAffinityPolicy(device.PnpDeviceId, 4, 0, assignmentSetOverride);
-                
-                device.DevicePolicy = 4;
-                device.DevicePriority = 0;
-                device.AssignmentSetOverride = assignmentSetOverride;
-            }
+			if (affinityChanged)
+			{
+				DeviceHelper.SetAffinityPolicy(device.PnpDeviceId, 4, 0, assignmentSetOverride);
+				
+				device.DevicePolicy = 4;
+				device.DevicePriority = 0;
+				device.AssignmentSetOverride = assignmentSetOverride;
+			}
 
-            if (msiChanged || affinityChanged)
-            {
-                if (!changedDevices.Contains(device))
-                    changedDevices.Add(device);
-            }
+			if (msiChanged || affinityChanged)
+			{
+				if (!changedDevices.Contains(device))
+					changedDevices.Add(device);
+			}
 
-            if (deviceType == DeviceType.NIC && device.DriverType == NicDriverType.NDIS && assignmentSetOverride != 0)
-                DeviceHelper.SetRSS(device, assignmentSetOverride);
-        }
+			if (deviceType == DeviceType.NIC && device.DriverType == NicDriverType.NDIS && assignmentSetOverride != 0)
+				DeviceHelper.SetRSS(device, assignmentSetOverride);
+		}
 
-        result.ChangedDevices = changedDevices;
-        result.Success = changedDevices.Count > 0;
-        result.NeedsRestart = changedDevices.Count > 0;
+		result.ChangedDevices = changedDevices;
+		result.Success = changedDevices.Count > 0;
+		result.NeedsRestart = changedDevices.Count > 0;
 
-        return result;
-    }
+		return result;
+	}
 }
