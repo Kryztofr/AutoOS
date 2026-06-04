@@ -300,12 +300,15 @@ try {
 			$status = Get-BitLockerVolume -MountPoint "C:"
 			
 			if ($status.VolumeStatus -eq "FullyDecrypted") {
-				Write-Host "BitLocker is disabled"
+				Write-Host "`r" -NoNewline
+				Write-Host "BitLocker is fully disabled."
 				break
 			}
 			
-			Write-Host "Disabling BitLocker... ($progressPercentage = 100 - $status.EncryptionPercentage%)" -NoNewline
-			Start-Sleep -Seconds 10
+			$progressPercentage = 100 - $status.EncryptionPercentage
+			Write-Host "`rDisabling BitLocker... Progress: $progressPercentage%    " -NoNewline
+			
+			Start-Sleep -Seconds 5
 		}
 		Write-Host "BitLocker is disabled"
 	} else {
