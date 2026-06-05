@@ -26,19 +26,19 @@
   <ItemGroup>
 	<Content Include="Helpers\ReadWrite\WinRing0x64.dll">
 	  <Link>WinRing0x64.dll</Link>
-	  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	</Content>
 	<Content Include="Helpers\ReadWrite\WinRing0x64.sys">
 	  <Link>WinRing0x64.sys</Link>
-	  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	</Content>
 	<Content Include="Helpers\ReadWrite\inpoutx64.dll">
 	  <Link>inpoutx64.dll</Link>
-	  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	</Content>
 	<Content Include="Helpers\ReadWrite\inpoutx64.sys">
 	  <Link>inpoutx64.sys</Link>
-	  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	</Content>
   </ItemGroup>
 </Project>
