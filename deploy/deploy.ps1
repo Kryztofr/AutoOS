@@ -295,7 +295,8 @@ Write-Host "`n===== Step 2: Check BitLocker State =====`n"
 try {
 	if ((Get-BitLockerVolume -MountPoint C:).VolumeStatus -ne "FullyDecrypted") {
 		Write-Host "BitLocker is enabled"
-		
+		Disable-BitLocker -MountPoint "C:" | Out-Null
+
 		while ($true) {
 			$status = Get-BitLockerVolume -MountPoint "C:"
 			
