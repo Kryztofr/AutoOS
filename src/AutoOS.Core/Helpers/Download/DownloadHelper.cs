@@ -35,17 +35,27 @@ public static partial class DownloadHelper
 
 		DownloadConfiguration config = new()
 		{
-			MaxTryAgainOnFailure = 10,
+			MaxTryAgainOnFailure = 8,
 			EnableAutoResumeDownload = true,
 			ParallelDownload = true,
 			ChunkCount = 4,
 			ParallelCount = 4,
 			HttpClientTimeout = 300000,
 			CheckDiskSizeBeforeDownload = true,
-			MinimumChunkSize = 1024 * 1024
+			MinimumChunkSize = 1024 * 1024,
+			RequestConfiguration = new RequestConfiguration
+			{
+				Headers = new System.Net.WebHeaderCollection
+				{
+					{ "User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36" },
+					{ "Accept", "*/*" },
+					{ "Accept-Language", "en-US,en;q=0.9" },
+					{ "Connection", "keep-alive" }
+				}
+			};
 		};
 
-		if (url.Contains("dl.dropboxusercontent.com", StringComparison.OrdinalIgnoreCase))
+		if (url.Contains("dropboxusercontent.com", StringComparison.OrdinalIgnoreCase))
 		{
 			config.ParallelDownload = false;
 			config.ChunkCount = 1;

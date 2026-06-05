@@ -164,7 +164,7 @@ namespace AutoOS.Core.Helpers.GPU
 				(gpu.IsInstalled ? $"Updating to NVIDIA driver {newestVersion}" : $"Installing NVIDIA driver {newestVersion}", async () => await Task.Delay(3000), null),
 				(gpu.IsInstalled ? $"Updating to NVIDIA driver {newestVersion}" : $"Installing NVIDIA driver {newestVersion}", async () => GpuHelper.RefreshGpu(gpu), null),
 				(gpu.IsInstalled ? $"Updating to NVIDIA driver {newestVersion}" : $"Installing NVIDIA driver {newestVersion}", async () => await Task.Delay(3000), null),
-				("Cleaning up NVIDIA files", async () => Directory.Delete(Path.Combine(Path.GetTempPath(), "NVIDIA"), true), null)
+				("Cleaning up NVIDIA files", async () => { try { Directory.Delete(Path.Combine(Path.GetTempPath(), "NVIDIA"), true); } catch {} }, null)
 			};
 
 			return actions;

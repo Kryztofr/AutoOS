@@ -27,20 +27,28 @@ public static partial class DatabaseHelper
 		}
 		catch
 		{
+			if (!Directory.Exists(databasePath))
+				return null;
+
 			string tempDatabasePath = databasePath + " - Copy";
 
-			Directory.CreateDirectory(tempDatabasePath);
-
-			foreach (var file in Directory.GetFiles(databasePath))
+			try
 			{
-				File.Copy(file, Path.Combine(tempDatabasePath, Path.GetFileName(file)), true);
+				Directory.CreateDirectory(tempDatabasePath);
+
+				foreach (var file in Directory.GetFiles(databasePath))
+				{
+					File.Copy(file, Path.Combine(tempDatabasePath, Path.GetFileName(file)), true);
+				}
+
+				result = ReadFromDatabase(tempDatabasePath, finalKeyBytes);
 			}
-
-			result = ReadFromDatabase(tempDatabasePath, finalKeyBytes);
-
-			if (Directory.Exists(tempDatabasePath))
+			finally
 			{
-				Directory.Delete(tempDatabasePath, true);
+				if (Directory.Exists(tempDatabasePath))
+				{
+					Directory.Delete(tempDatabasePath, true);
+				}
 			}
 		}
 
@@ -79,7 +87,7 @@ public static partial class DatabaseHelper
 		byte[] finalValueBytes = new byte[1 + jsonBytes.Length];
 		finalValueBytes[0] = 0x01;
 		Buffer.BlockCopy(jsonBytes, 0, finalValueBytes, 1, jsonBytes.Length);
-		var options = new Options { CreateIfMissing = false };
+		var options = new Options { CreateIfMissing = true };
 		using var database = new DB(options, databasePath);
 		database.Put(finalKeyBytes, finalValueBytes);
 		return true;
@@ -96,7 +104,7 @@ public static partial class DatabaseHelper
 		Buffer.BlockCopy(separatorBytes, 0, finalKeyBytes, prefixBytes.Length, separatorBytes.Length);
 		Buffer.BlockCopy(keyNameBytes, 0, finalKeyBytes, prefixBytes.Length + separatorBytes.Length, keyNameBytes.Length);
 
-		var options = new Options { CreateIfMissing = false };
+		var options = new Options { CreateIfMissing = true };
 		using var database = new DB(options, databasePath);
 		database.Delete(finalKeyBytes);
 		return true;
