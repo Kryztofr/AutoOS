@@ -106,7 +106,7 @@ public sealed partial class ApplicationsPage : Page
 			new() { Text = "Visual Studio Code", ImageSource = "ms-appx:///Assets/Fluent/VisualStudioCode.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs", "Microsoft VS Code", "Code.exe")) },
 			new() { Text = "Antigravity", ImageSource = "ms-appx:///Assets/Fluent/Antigravity.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs", "Antigravity", "Antigravity.exe")) },
 			new() { Text = "Cursor", ImageSource = "ms-appx:///Assets/Fluent/Cursor.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "cursor", "Cursor.exe")) },
-			new() { Text = "Windsurf", ImageSource = "ms-appx:///Assets/Fluent/Windsurf.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs", "Windsurf", "Windsurf.exe"))},
+			new() { Text = "Devin", ImageSource = "ms-appx:///Assets/Fluent/Devin.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs", "Devin", "Devin.exe"))},
 			new() { Text = "WinMerge", ImageSource = "ms-appx:///Assets/Fluent/WinMerge.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "WinMerge", "WinMergeU.exe"))},
 			new() { Text = "Git", ImageSource = "ms-appx:///Assets/Fluent/Git.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Git", "bin", "git.exe")) },
 			new() { Text = "Python", ImageSource = "ms-appx:///Assets/Fluent/Python.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "py.exe")) },
@@ -204,7 +204,7 @@ public sealed partial class ApplicationsPage : Page
 		selection.VisualStudioCode = selectedDev.Contains("Visual Studio Code");
 		selection.Antigravity = selectedDev.Contains("Antigravity");
 		selection.Cursor = selectedDev.Contains("Cursor");
-		selection.Windsurf = selectedDev.Contains("Windsurf");
+		selection.Devin = selectedDev.Contains("Devin");
 		selection.WinMerge = selectedDev.Contains("WinMerge");
 		selection.Git = selectedDev.Contains("Git");
 		selection.Python = selectedDev.Contains("Python");

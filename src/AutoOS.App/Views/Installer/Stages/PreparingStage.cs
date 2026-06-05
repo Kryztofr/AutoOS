@@ -99,7 +99,7 @@ public static partial class PreparingStage
 	public static bool VisualStudioCode;
 	public static bool Antigravity;
 	public static bool Cursor;
-	public static bool Windsurf;
+	public static bool Devin;
 	public static bool WinMerge;
 	public static bool Git;
 	public static bool Python;
@@ -243,7 +243,7 @@ public static partial class PreparingStage
 			VisualStudioCode = (localSettings.Values["Development"]?.ToString().Contains("Visual Studio Code") ?? false);
 			Antigravity = (localSettings.Values["Development"]?.ToString().Contains("Antigravity") ?? false);
 			Cursor = (localSettings.Values["Development"]?.ToString().Contains("Cursor") ?? false);
-			Windsurf = (localSettings.Values["Development"]?.ToString().Contains("Windsurf") ?? false);
+			Devin = (localSettings.Values["Development"]?.ToString().Contains("Devin") ?? false);
 			WinMerge = (localSettings.Values["Development"]?.ToString().Contains("WinMerge") ?? false);
 			Git = (localSettings.Values["Development"]?.ToString().Contains("Git") ?? false);
 			Python = (localSettings.Values["Development"]?.ToString().Contains("Python") ?? false);

@@ -98,7 +98,7 @@ public sealed partial class ApplicationsPage : Page
 			new() { Text = "Visual Studio Code", ImageSource = "ms-appx:///Assets/Fluent/VisualStudioCode.png" },
 			new() { Text = "Antigravity", ImageSource = "ms-appx:///Assets/Fluent/Antigravity.png" },
 			new() { Text = "Cursor", ImageSource = "ms-appx:///Assets/Fluent/Cursor.png" },
-			new() { Text = "Windsurf", ImageSource = "ms-appx:///Assets/Fluent/Windsurf.png" },
+			new() { Text = "Devin", ImageSource = "ms-appx:///Assets/Fluent/Devin.png" },
 			new() { Text = "Git", ImageSource = "ms-appx:///Assets/Fluent/Git.png" },
 			new() { Text = "Python", ImageSource = "ms-appx:///Assets/Fluent/Python.png" },
 			new() { Text = "Node.js", ImageSource = "ms-appx:///Assets/Fluent/Nodejs.png" },
