@@ -63,7 +63,7 @@ public class ApplicationSelection
 	public bool VisualStudioCode { get; set; }
 	public bool Antigravity { get; set; }
 	public bool Cursor { get; set; }
-	public bool Windsurf {get; set; }
+	public bool Devin {get; set; }
 	public bool WinMerge {get; set; }
 	public bool Git { get; set; }
 	public bool Python { get; set; }
@@ -152,7 +152,7 @@ public static class ApplicationStage
 		bool VisualStudioCode = selection?.VisualStudioCode ?? PreparingStage.VisualStudioCode;
 		bool Antigravity = selection?.Antigravity ?? PreparingStage.Antigravity;
 		bool Cursor = selection?.Cursor ?? PreparingStage.Cursor;
-		bool Windsurf = selection?.Windsurf ?? PreparingStage.Windsurf;
+		bool Devin = selection?.Devin ?? PreparingStage.Devin;
 		bool WinMerge = selection?.WinMerge ?? PreparingStage.WinMerge;
 		bool Git = selection?.Git ?? PreparingStage.Git;
 		bool Python = selection?.Python ?? PreparingStage.Python;
@@ -1174,15 +1174,15 @@ public static class ApplicationStage
 			// pin cursor to the taskbar
 			("Pinning Cursor to the taskbar", async () => await ProcessActions.RunPowerShellScript("taskbarpin.ps1", $@"-Type Link -Path ""{Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), @"Microsoft\Windows\Start Menu\Programs\Cursor\Cursor.lnk")}"""), () => Cursor == true),
 
-			// download windsurf
-			("Downloading Windsurf", async () => await DownloadHelper.Download("https://windsurf-stable.codeiumdata.com/win32-x64-user/stable/a5d3f1ff990cabc0e8001cce6642bdb7ad429e73/WindsurfUserSetup-x64-2.3.9.exe", Path.GetTempPath(), "WindsurfUserSetup-x64.exe", reporter: reporter), () => Windsurf == true),
+			// download devin
+			("Downloading Devin", async () => await DownloadHelper.Download("https://windsurf.com/api/windsurf/download-redirect?build=win32-x64-user&isNext=false", Path.GetTempPath(), "DevinUserSetup-x64.exe", reporter: reporter), () => Devin == true),
 
-			// install windsurf
-			("Installing Windsurf", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "WindsurfUserSetup-x64.exe"), Arguments = "/VERYSILENT /NORESTART /MERGETASKS=!runcode" , WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => Windsurf == true),
-			("Cleaning up Windsurf files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "WindsurfUserSetup-x64.exe")), () => Windsurf == true),
+			// install devin
+			("Installing Devin", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "DevinUserSetup-x64.exe"), Arguments = "/VERYSILENT /NORESTART /MERGETASKS=!runcode" , WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => Devin == true),
+			("Cleaning up Devin files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "DevinUserSetup-x64.exe")), () => Devin == true),
 
-			// pin windsurf to the taskbar
-			("Pinning Windsurf to the taskbar", async () => await ProcessActions.RunPowerShellScript("taskbarpin.ps1", $@"-Type Link -Path ""{Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), @"Microsoft\Windows\Start Menu\Programs\Windsurf\Windsurf.lnk")}"""), () => Windsurf == true),
+			// pin devin to the taskbar
+			("Pinning Devin to the taskbar", async () => await ProcessActions.RunPowerShellScript("taskbarpin.ps1", $@"-Type Link -Path ""{Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), @"Microsoft\Windows\Start Menu\Programs\Devin\Devin.lnk")}"""), () => Devin == true),
 
 			// download winmerge
 			("Downloading WinMerge", async () => await DownloadHelper.Download(JsonDocument.Parse(await new HttpClient { DefaultRequestHeaders = { { "User-Agent", "AutoOS" } } }.GetStringAsync("https://api.github.com/repos/WinMerge/winmerge/releases/latest")).RootElement.GetProperty("assets").EnumerateArray().First(a => a.GetProperty("name").GetString().Contains("x64-Setup.exe")).GetProperty("browser_download_url").GetString(), Path.GetTempPath(), "WinMerge-x64-Setup.exe", reporter: reporter), () => WinMerge == true),
