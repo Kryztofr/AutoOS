@@ -97,6 +97,20 @@ namespace AutoOS.Core.Helpers.GPU
 					newestVersion = info.GetProperty("Version").GetString();
 					newestDownloadUrl = info.GetProperty("DownloadURL").GetString();
 				}
+				else
+				{
+					response = await httpClient.GetStringAsync($"https://gfwsl.geforce.com/services_toolkit/services/com/nvidia/services/AjaxDriverService.php?func=DriverManualLookup&pfid={gpuId}&osID=57&dch=1&upCRD=0");
+
+					using var respDoc2 = JsonDocument.Parse(response);
+					var root2 = respDoc2.RootElement;
+
+					if (int.TryParse(root2.GetProperty("Success").GetString(), out int success2) && success2 == 1)
+					{
+						var info = root2.GetProperty("IDS")[0].GetProperty("downloadInfo");
+						newestVersion = info.GetProperty("Version").GetString();
+						newestDownloadUrl = info.GetProperty("DownloadURL").GetString();
+					}
+				}
 			}
 
 			return (newestVersion, newestDownloadUrl);
