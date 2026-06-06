@@ -28,7 +28,15 @@ public static partial class DownloadHelper
 		if (url.Contains("raw.githubusercontent.com", StringComparison.OrdinalIgnoreCase))
 		{
 			string destination = string.IsNullOrWhiteSpace(file) ? path : Path.Combine(path, file);
-			await File.WriteAllTextAsync(destination, await httpClient.GetStringAsync(url), Encoding.UTF8);
+			using (var response = await httpClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead))
+			{
+				response.EnsureSuccessStatusCode();
+				using (var contentStream = await response.Content.ReadAsStreamAsync())
+				using (var fileStream = new FileStream(destination, FileMode.Create, FileAccess.Write, FileShare.None, 8192, true))
+				{
+					await contentStream.CopyToAsync(fileStream);
+				}
+			}
 			reporter?.Report(progress: 100);
 			return;
 		}
