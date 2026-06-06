@@ -15,14 +15,14 @@
 	<CsWinRTAotWarningLevel>2</CsWinRTAotWarningLevel>
 	<WindowsPackageType>MSIX</WindowsPackageType>
 	<ApplicationIcon>Assets\AppIcon.ico</ApplicationIcon>
-	<Version>1.4.2.6</Version>
+	<Version>1.4.2.7</Version>
 	<!--Remove git hash from assembly informational version in .NET >= 8, Example: false = 1.0.0, true = 1.0.0+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx-->
 	<IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
   </PropertyGroup>
 
   <!-- Publish Properties -->
   <PropertyGroup>
-	<PublishAot>False</PublishAot>
+	<PublishAot>True</PublishAot>
 	<PublishReadyToRun Condition="'$(Configuration)' == 'Debug'">False</PublishReadyToRun>
 	<PublishReadyToRun Condition="'$(Configuration)' != 'Debug'">True</PublishReadyToRun>
 	<PublishTrimmed Condition="'$(Configuration)' == 'Debug'">False</PublishTrimmed>
