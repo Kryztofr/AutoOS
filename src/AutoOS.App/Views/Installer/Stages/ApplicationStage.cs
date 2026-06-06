@@ -66,8 +66,11 @@ public class ApplicationSelection
 	public bool Devin {get; set; }
 	public bool WinMerge {get; set; }
 	public bool Git { get; set; }
-	public bool Python { get; set; }
+	public bool CMake { get; set; }
+	public bool Python { get; set; }	
 	public bool Nodejs { get; set; }
+	public bool Java { get; set; }
+	public bool Go { get; set; }
 	public bool Trello { get; set; }
 	public bool Word { get; set; }
 	public bool Excel { get; set; }
@@ -155,8 +158,11 @@ public static class ApplicationStage
 		bool Devin = selection?.Devin ?? PreparingStage.Devin;
 		bool WinMerge = selection?.WinMerge ?? PreparingStage.WinMerge;
 		bool Git = selection?.Git ?? PreparingStage.Git;
+		bool CMake = selection?.CMake ?? PreparingStage.CMake;
 		bool Python = selection?.Python ?? PreparingStage.Python;
 		bool Nodejs = selection?.Nodejs ?? PreparingStage.Nodejs;
+		bool Java = selection?.Java ?? PreparingStage.Java;
+		bool Go = selection?.Go ?? PreparingStage.Go;
 		bool Trello = selection?.Trello ?? PreparingStage.Trello;
 
 		bool Word = selection?.Word ?? PreparingStage.Word;
@@ -1156,7 +1162,7 @@ public static class ApplicationStage
 			("Pinning Visual Studio Code to the taskbar", async () => await ProcessActions.RunPowerShellScript("taskbarpin.ps1", $@"-Type Link -Path ""{Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), @"Microsoft\Windows\Start Menu\Programs\Visual Studio Code\Visual Studio Code.lnk")}"""), () => VisualStudioCode == true),
 
 			// download antigravity
-			("Downloading Antigravity", async () => await DownloadHelper.Download("https://edgedl.me.gvt1.com/edgedl/release2/j0qc3/antigravity/stable/1.23.2-4781536860569600/windows-x64/Antigravity.exe", Path.GetTempPath(), "Antigravity.exe", reporter: reporter), () => Antigravity == true),
+			("Downloading Antigravity", async () => await DownloadHelper.Download("https://edgedl.me.gvt1.com/edgedl/release2/j0qc3/antigravity/stable/2.0.4-6381998290370560/windows-x64/Antigravity%20IDE.exe", Path.GetTempPath(), "Antigravity.exe", reporter: reporter), () => Antigravity == true),
 
 			// install antigravity
 			("Installing Antigravity", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "Antigravity.exe"), Arguments = "/VERYSILENT /NORESTART /MERGETASKS=!runcode" , WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => Antigravity == true),
@@ -1199,6 +1205,13 @@ public static class ApplicationStage
 			("Installing Git", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "Git64-bit.exe"), Arguments = "/VERYSILENT /SUPPRESSMSGBOXES /NORESTART /NOICONS /COMPONENTS=GitLFS,GitGUI,GitCore" , WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => Git ==  true),
 			("Cleaning up Git files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "Git64-bit.exe")), () => Git ==  true),
 
+			// download cmake
+			("Downloading CMake", async () => await DownloadHelper.Download(JsonDocument.Parse(await new HttpClient { DefaultRequestHeaders = { { "User-Agent", "AutoOS" } } }.GetStringAsync("https://api.github.com/repos/Kitware/CMake/releases")).RootElement.EnumerateArray().First(release => release.GetProperty("assets").EnumerateArray().Any(asset => asset.GetProperty("name").GetString().Contains("windows-x86_64.msi"))).GetProperty("assets").EnumerateArray().First(asset => asset.GetProperty("name").GetString().Contains("windows-x86_64.msi")).GetProperty("browser_download_url").GetString(), Path.GetTempPath(), "cmake-windows-x86_64.msi", reporter: reporter), () => CMake == true),
+
+			// install cmake
+			("Installing CMake", async () => await Process.Start(new ProcessStartInfo { FileName = "msiexec.exe", Arguments = $@"/i ""{Path.Combine(Path.GetTempPath(), "cmake-windows-x86_64.msi")}"" /qn" , WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => CMake ==  true),
+			("Cleaning up CMake files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "cmake-windows-x86_64.msi")), () => CMake ==  true),
+
 			// download python
 			("Downloading Python", async () => await DownloadHelper.Download("https://www.python.org/ftp/python/3.14.5/python-3.14.5-amd64.exe", Path.GetTempPath(), "python-amd64.exe", reporter: reporter), () => Python == true),
 
@@ -1212,6 +1225,20 @@ public static class ApplicationStage
 			// install nodejs
 			("Installing Node.js", async () => await Process.Start(new ProcessStartInfo { FileName = "msiexec.exe", Arguments = $@"/i ""{Path.Combine(Path.GetTempPath(), "node-v24.12.0-x64.msi")}"" /qn" , WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => Nodejs ==  true),
 			("Cleaning up Node.js files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "node-v24.12.0-x64.msi")), () => Nodejs ==  true),
+
+			// download java
+			("Downloading Java", async () => await DownloadHelper.Download("https://download.oracle.com/java/26/latest/jdk-26_windows-x64_bin.msi", Path.GetTempPath(), "jdk-26_windows-x64_bin.msi", reporter: reporter), () => Java == true),
+
+			// install java
+			("Installing Java", async () => await Process.Start(new ProcessStartInfo { FileName = "msiexec.exe", Arguments = $@"/i ""{Path.Combine(Path.GetTempPath(), "jdk-26_windows-x64_bin.msi")}"" /qn" , WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => Java == true),
+			("Cleaning up Java files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "jdk-26_windows-x64_bin.msi")), () => Java == true),
+
+			// download go
+			("Downloading Go", async () => await DownloadHelper.Download("https://go.dev/dl/go1.26.4.windows-amd64.msi", Path.GetTempPath(), "gowindows-amd64.msi", reporter: reporter), () => Go == true),
+
+			// install go
+			("Installing Go", async () => await Process.Start(new ProcessStartInfo { FileName = "msiexec.exe", Arguments = $@"/i ""{Path.Combine(Path.GetTempPath(), "gowindows-amd64.msi")}"" /qn" , WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => Go == true),
+			("Cleaning up Go files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "gowindows-amd64.msi")), () => Go == true),
 
 			// download trello
 			("Downloading Trello", async () => await StoreHelper.Download("45273LiamForsyth.PawsforTrello_7pb5ddty8z1pa", reporter: reporter), () => Trello == true),

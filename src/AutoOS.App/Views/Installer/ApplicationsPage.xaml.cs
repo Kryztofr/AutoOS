@@ -89,7 +89,7 @@ public sealed partial class ApplicationsPage : Page
 			new() { Text = "DualSenseY", ImageSource = "ms-appx:///Assets/Fluent/DualSenseY.png" },
 			new() { Text = "RaceElement", ImageSource = "ms-appx:///Assets/Fluent/RaceElement.png" },
 			new() { Text = "PlayStation® Accessories", ImageSource = "ms-appx:///Assets/Fluent/PlaystationAccessories.png" },
-			new() { Text = "Xbox Accessories", ImageSource = "ms-appx:///Assets/Fluent/XboxAccessories.png" },
+			new() { Text = "Xbox Accessories", ImageSource = "ms-appx:///Assets/Fluent/XboxAccessories.png" }
 		};
 
 		Development.ItemsSource = new List<GridViewItem>
@@ -99,9 +99,13 @@ public sealed partial class ApplicationsPage : Page
 			new() { Text = "Antigravity", ImageSource = "ms-appx:///Assets/Fluent/Antigravity.png" },
 			new() { Text = "Cursor", ImageSource = "ms-appx:///Assets/Fluent/Cursor.png" },
 			new() { Text = "Devin", ImageSource = "ms-appx:///Assets/Fluent/Devin.png" },
+			new() { Text = "WinMerge", ImageSource = "ms-appx:///Assets/Fluent/WinMerge.png" },
 			new() { Text = "Git", ImageSource = "ms-appx:///Assets/Fluent/Git.png" },
+			new() { Text = "CMake", ImageSource = "ms-appx:///Assets/Fluent/CMake.png" },
 			new() { Text = "Python", ImageSource = "ms-appx:///Assets/Fluent/Python.png" },
 			new() { Text = "Node.js", ImageSource = "ms-appx:///Assets/Fluent/Nodejs.png" },
+			new() { Text = "Java", ImageSource = "ms-appx:///Assets/Fluent/Java.png" },
+			new() { Text = "Go", ImageSource = "ms-appx:///Assets/Fluent/Go.png" },
 			new() { Text = "Trello", ImageSource = "ms-appx:///Assets/Fluent/Trello.png" }
 		};
 

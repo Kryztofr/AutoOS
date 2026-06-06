@@ -102,8 +102,11 @@ public static partial class PreparingStage
 	public static bool Devin;
 	public static bool WinMerge;
 	public static bool Git;
+	public static bool CMake;
 	public static bool Python;
 	public static bool Nodejs;
+	public static bool Java;
+	public static bool Go;
 	public static bool Trello;
 
 	public static bool Word;
@@ -246,8 +249,11 @@ public static partial class PreparingStage
 			Devin = (localSettings.Values["Development"]?.ToString().Contains("Devin") ?? false);
 			WinMerge = (localSettings.Values["Development"]?.ToString().Contains("WinMerge") ?? false);
 			Git = (localSettings.Values["Development"]?.ToString().Contains("Git") ?? false);
+			CMake = (localSettings.Values["Development"]?.ToString().Contains("CMake") ?? false);
 			Python = (localSettings.Values["Development"]?.ToString().Contains("Python") ?? false);
 			Nodejs = (localSettings.Values["Development"]?.ToString().Contains("Node.js") ?? false);
+			Java = (localSettings.Values["Development"]?.ToString().Contains("Java") ?? false);
+			Go = (localSettings.Values["Development"]?.ToString().Contains("Go") ?? false);
 			Trello = (localSettings.Values["Development"]?.ToString().Contains("Trello") ?? false);
 
 			Word = (localSettings.Values["Office"]?.ToString().Contains("Word") ?? false);
@@ -261,7 +267,7 @@ public static partial class PreparingStage
 			MinitoolPartitionWizard = (localSettings.Values["Miscellaneous"]?.ToString().Contains("Minitool Partition Wizard") ?? false);
 			AomeiPartitionAssistant = (localSettings.Values["Miscellaneous"]?.ToString().Contains("AOMEI Partition Assistant") ?? false);
 			WizTree = (localSettings.Values["Miscellaneous"]?.ToString().Contains("WizTree") ?? false);
-				  BulkCrapUninstaller = (localSettings.Values["Miscellaneous"]?.ToString().Contains("Bulk Crap Uninstaller") ?? false);
+			BulkCrapUninstaller = (localSettings.Values["Miscellaneous"]?.ToString().Contains("Bulk Crap Uninstaller") ?? false);
 			BluetoothAudioReceiver = (localSettings.Values["Miscellaneous"]?.ToString().Contains("BluetoothAudioReceiver") ?? false);
 
 			var gpuArray = JsonNode.Parse(localSettings.Values["GPUs"]?.ToString() ?? "[]")?.AsArray();
