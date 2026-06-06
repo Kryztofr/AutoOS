@@ -79,35 +79,42 @@ namespace AutoOS.Views.Settings
 				}
 			}
 
-			if (ubr >= 8521 && (Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Windhawk\Engine\Mods\windows-11-start-menu-styler", "disableNewStartMenuLayout", null) as string) == "disableNewLayoutKeepPhoneLink")
+			if (ubr >= 8521 && (Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Windhawk\Engine\Mods\windows-11-start-menu-styler\Settings", "controlStyles[0].target", null) as string) == "")
 			{
-				RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Windhawk\Engine\Mods\windows-11-start-menu-styler\Settings", "theme", "None", RegistryValueKind.String);
+				RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Windhawk\Engine\Mods\windows-11-start-menu-styler\Settings", "theme", "SideBySide2", RegistryValueKind.String);
 				RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Windhawk\Engine\Mods\windows-11-start-menu-styler\Settings", "disableNewStartMenuLayout", "", RegistryValueKind.String);
+				RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Windhawk\Engine\Mods\windows-11-start-menu-styler\Settings", "controlStyles[1].target", "ScrollViewer > ScrollContentPresenter > Border > StartMenu.StartBlendedFlexFrame > Grid#FrameRoot > Grid#AnimationRoot > Grid#MainMenu > Grid#MainContent > Frame#StartFrame > ContentPresenter > StartMenu.StartHome > Grid#PageRoot > SemanticZoom#TopLevelRoot > Grid > ScrollViewer#ScrollViewer > ScrollContentPresenter#ScrollContentPresenter > Grid > ContentPresenter#ZoomedInPresenter > GridView#AllAppsGrid > Border > Grid#SideBySidePinnedWrapper > ScrollViewer#SideBySidePinnedScrollViewer > Border#Root > Grid > ScrollContentPresenter#ScrollContentPresenter > Grid#SideBySidePinnedContent > Grid#TopLevelSuggestionsRoot > Grid#TopLevelSuggestionsContainerParent > Grid#TopLevelSuggestionsContainer > StartMenu.RecommendedReactNativeViewControl > ContentPresenter > ExperienceExtensions.ReactNativeExperienceViewControl > Grid#RootViewContainer > Microsoft.ReactNative.ReactRootView > Microsoft.ReactNative.ViewPanel > Microsoft.ReactNative.ViewPanel > GridView#RecommendedList > Border > ScrollViewer#ScrollViewer > Border#Root > Grid > ScrollContentPresenter#ScrollContentPresenter > ItemsPresenter > ItemsWrapGrid > GridViewItem#RecommendedItemRoot0", RegistryValueKind.String);
+				RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Windhawk\Engine\Mods\windows-11-start-menu-styler\Settings", "controlStyles[1].styles[0]", "MinWidth=220", RegistryValueKind.String);
+				RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Windhawk\Engine\Mods\windows-11-start-menu-styler\Settings", "controlStyles[1].styles[1]", "MaxWidth=220", RegistryValueKind.String);
+				RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Windhawk\Engine\Mods\windows-11-start-menu-styler\Settings", "controlStyles[0].target", "ScrollViewer > ScrollContentPresenter > Border > StartMenu.StartBlendedFlexFrame > Grid#FrameRoot > Grid#AnimationRoot > Grid#MainMenu > Grid#MainContent > Frame#StartFrame > ContentPresenter > StartMenu.StartHome > Grid#PageRoot > SemanticZoom#TopLevelRoot > Grid > ScrollViewer#ScrollViewer > ScrollContentPresenter#ScrollContentPresenter > Grid > ContentPresenter#ZoomedInPresenter > GridView#AllAppsGrid > Border > Grid#SideBySidePinnedWrapper > ScrollViewer#SideBySidePinnedScrollViewer > Border#Root > Grid > ScrollContentPresenter#ScrollContentPresenter > Grid#SideBySidePinnedContent > Grid#TopLevelSuggestionsRoot > Grid#TopLevelSuggestionsContainerParent > Grid#TopLevelSuggestionsContainer > StartMenu.RecommendedReactNativeViewControl > ContentPresenter > ExperienceExtensions.ReactNativeExperienceViewControl > Grid#RootViewContainer > Microsoft.ReactNative.ReactRootView > Microsoft.ReactNative.ViewPanel > Microsoft.ReactNative.ViewPanel > GridView#RecommendedList", RegistryValueKind.String);
+				RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Windhawk\Engine\Mods\windows-11-start-menu-styler\Settings", "controlStyles[0].styles[0]", "Height=170", RegistryValueKind.String);
 				RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Start", "AllAppsViewMode", 2, RegistryValueKind.DWord);
 				RegistryHelper.DeleteKey(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\FeatureManagement\Overrides\8\3036241548");
-				
-				var restartDialog = new ContentDialog
-				{
-					Title = "Restart Required",
-					Content = "A restart is required to fix the start menu.",
-					PrimaryButtonText = "Restart",
-					DefaultButton = ContentDialogButton.Primary,
-					XamlRoot = XamlRoot
-				};
 
-				if (await restartDialog.ShowAsync() == ContentDialogResult.Primary)
+				if (ubr >= 8521 && (Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Windhawk\Engine\Mods\windows-11-start-menu-styler", "Version", null) as string) != "1.6")
 				{
-					ProcessStartInfo processStartInfo = new()
+					var restartDialog = new ContentDialog
 					{
-						FileName = "cmd.exe",
-						Arguments = $"/c shutdown /r /t 0",
-						UseShellExecute = false,
-						CreateNoWindow = true,
+						Title = "Update Windhawk Start Menu Styler Mod",
+						Content = "Open Windhawk and update the Start Menu Styler Mod, then click restart.",
+						PrimaryButtonText = "Restart",
+						DefaultButton = ContentDialogButton.Primary,
+						XamlRoot = XamlRoot
 					};
-					Process.Start(processStartInfo);
-				}
 
-				return;
+					if (await restartDialog.ShowAsync() == ContentDialogResult.Primary)
+					{
+						ProcessStartInfo processStartInfo = new()
+						{
+							FileName = "cmd.exe",
+							Arguments = $"/c shutdown /r /t 0",
+							UseShellExecute = false,
+							CreateNoWindow = true,
+						};
+						Process.Start(processStartInfo);
+					}
+					return;
+				}
 			}
 
 			Version currentVersion = new(ProcessInfoHelper.Version);
