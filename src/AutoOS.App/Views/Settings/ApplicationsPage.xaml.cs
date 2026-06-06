@@ -109,8 +109,11 @@ public sealed partial class ApplicationsPage : Page
 			new() { Text = "Devin", ImageSource = "ms-appx:///Assets/Fluent/Devin.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs", "Devin", "Devin.exe"))},
 			new() { Text = "WinMerge", ImageSource = "ms-appx:///Assets/Fluent/WinMerge.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "WinMerge", "WinMergeU.exe"))},
 			new() { Text = "Git", ImageSource = "ms-appx:///Assets/Fluent/Git.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Git", "bin", "git.exe")) },
+			new() { Text = "CMake", ImageSource = "ms-appx:///Assets/Fluent/CMake.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "CMake", "bin", "cmake-gui.exe")) },
 			new() { Text = "Python", ImageSource = "ms-appx:///Assets/Fluent/Python.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "py.exe")) },
 			new() { Text = "Node.js", ImageSource = "ms-appx:///Assets/Fluent/Nodejs.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "nodejs", "node.exe")) },
+			new() { Text = "Java", ImageSource = "ms-appx:///Assets/Fluent/Java.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Java", "jdk-26.0.1", "bin", "java.exe")) },
+			new() { Text = "Go", ImageSource = "ms-appx:///Assets/Fluent/Go.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Go", "bin", "go.exe")) },
 			new() { Text = "Trello", ImageSource = "ms-appx:///Assets/Fluent/Trello.png", IsInstalled = Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Packages", "45273LiamForsyth.PawsforTrello_7pb5ddty8z1pa")) }
 		};
 		foreach (var item in devList.Where(item => !item.IsInstalled))
@@ -207,8 +210,11 @@ public sealed partial class ApplicationsPage : Page
 		selection.Devin = selectedDev.Contains("Devin");
 		selection.WinMerge = selectedDev.Contains("WinMerge");
 		selection.Git = selectedDev.Contains("Git");
+		selection.CMake = selectedDev.Contains("CMake");
 		selection.Python = selectedDev.Contains("Python");
 		selection.Nodejs = selectedDev.Contains("Node.js");
+		selection.Java = selectedDev.Contains("Java");
+		selection.Go = selectedDev.Contains("Go");
 		selection.Trello = selectedDev.Contains("Trello");
 
 		var selectedOfficeItems = Office.SelectedItems.Cast<GridViewItem>().ToList();
