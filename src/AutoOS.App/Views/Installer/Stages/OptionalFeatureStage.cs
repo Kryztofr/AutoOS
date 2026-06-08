@@ -12,14 +12,11 @@ public static class OptionalFeatureStage
 			(@"Disabling ""WorkFolders-Client"" optional feature", async () => await ProcessActions.RunPowerShell(@"Disable-WindowsOptionalFeature -FeatureName WorkFolders-Client -Online -NoRestart -ErrorAction Stop"), null),
 			(@"Disabling ""WCF-Services45"" optional feature", async () => await ProcessActions.RunPowerShell(@"Disable-WindowsOptionalFeature -FeatureName WCF-Services45 -Online -NoRestart -ErrorAction Stop"), null),
 			(@"Disabling ""WCF-TCP-PortSharing45"" optional feature", async () => await ProcessActions.RunPowerShell(@"Disable-WindowsOptionalFeature -FeatureName WCF-TCP-PortSharing45 -Online -NoRestart -ErrorAction Stop"), null),
-			(@"Disabling ""MediaPlayback"" optional feature", async () => await ProcessActions.RunPowerShell(@"Disable-WindowsOptionalFeature -FeatureName MediaPlayback -Online -NoRestart -ErrorAction Stop"), null),
-			(@"Disabling ""WindowsMediaPlayer"" optional feature", async () => await ProcessActions.RunPowerShell(@"Disable-WindowsOptionalFeature -FeatureName WindowsMediaPlayer -Online -NoRestart -ErrorAction Stop"), null),
 			(@"Disabling ""SmbDirect"" optional feature", async () => await ProcessActions.RunPowerShell(@"Disable-WindowsOptionalFeature -FeatureName SmbDirect -Online -NoRestart -ErrorAction Stop"), null),
 
 			// remove capabilities 
 			(@"Removing ""App.StepsRecorder"" capability", async () => await ProcessActions.RunPowerShell(@"Remove-WindowsCapability -Online -Name (Get-WindowsCapability -Online | Where Name -like ""App.StepsRecorder*"").Name"), null),
 			(@"Removing ""Browser.InternetExplorer"" capability", async () => await ProcessActions.RunPowerShell(@"Remove-WindowsCapability -Online -Name (Get-WindowsCapability -Online | Where Name -like ""Browser.InternetExplorer*"").Name"), null),
-			(@"Removing ""Media.WindowsMediaPlayer"" capability", async () => await ProcessActions.RunPowerShell(@"Remove-WindowsCapability -Online -Name (Get-WindowsCapability -Online | Where Name -like ""Media.WindowsMediaPlayer*"").Name"), null),
 			(@"Removing ""Microsoft.Windows.PowerShell.ISE"" capability", async () => await ProcessActions.RunPowerShell(@"Remove-WindowsCapability -Online -Name (Get-WindowsCapability -Online | Where Name -like ""Microsoft.Windows.PowerShell.ISE*"").Name"), null),
 		};
 	}
