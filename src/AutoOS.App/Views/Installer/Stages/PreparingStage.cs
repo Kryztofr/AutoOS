@@ -105,6 +105,7 @@ public static partial class PreparingStage
 	public static bool CMake;
 	public static bool Python;
 	public static bool Nodejs;
+	public static bool Rust;
 	public static bool Java;
 	public static bool Go;
 	public static bool Trello;
@@ -252,6 +253,7 @@ public static partial class PreparingStage
 			CMake = (localSettings.Values["Development"]?.ToString().Contains("CMake") ?? false);
 			Python = (localSettings.Values["Development"]?.ToString().Contains("Python") ?? false);
 			Nodejs = (localSettings.Values["Development"]?.ToString().Contains("Node.js") ?? false);
+			Rust = (localSettings.Values["Development"]?.ToString().Contains("Rust") ?? false);
 			Java = (localSettings.Values["Development"]?.ToString().Contains("Java") ?? false);
 			Go = (localSettings.Values["Development"]?.ToString().Contains("Go") ?? false);
 			Trello = (localSettings.Values["Development"]?.ToString().Contains("Trello") ?? false);
