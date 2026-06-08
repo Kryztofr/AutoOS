@@ -753,8 +753,8 @@ public static class BrowsersStage
 			("Installing 1Password Extension", async () => UpdatePolicies(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Waterfox", "distribution", "policies.json"), "https://addons.mozilla.org/firefox/downloads/latest/1password-x-password-manager"), () => Waterfox == true && OnePassword == true),
 
 			// download librewolf
-			("Downloading LibreWolf", async () => await DownloadHelper.Download("https://dl.librewolf.net/librewolf/151.0.2-1/librewolf-151.0.2-1-windows-x86_64-setup.exe", Path.GetTempPath(), "librewolf-windows-x86_64-setup.exe", reporter ?? new InstallPageReporter()), () => LibreWolf == true),
-
+			("Downloading LibreWolf", async () => await DownloadHelper.Download(JsonDocument.Parse(await new HttpClient { DefaultRequestHeaders = { { "User-Agent", "AutoOS" } } }.GetStringAsync("https://codeberg.org/api/v1/repos/librewolf/bsys6/releases")).RootElement.EnumerateArray().First(release => release.GetProperty("assets").EnumerateArray().Any(asset => asset.GetProperty("name").GetString().Contains("windows-x86_64-setup.exe"))).GetProperty("assets").EnumerateArray().First(asset => asset.GetProperty("name").GetString().Contains("windows-x86_64-setup.exe")).GetProperty("browser_download_url").GetString(), Path.GetTempPath(), "librewolf-windows-x86_64-setup.exe", reporter: reporter), () => LibreWolf == true),
+			
 			// install librewolf
 			("Installing LibreWolf", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "librewolf-windows-x86_64-setup.exe"), Arguments = "/S /MaintenanceService=false /DesktopShortcut=false /StartMenuShortcut=true", WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => LibreWolf == true),
 			("Cleaning up LibreWolf files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "librewolf-windows-x86_64-setup.exe")), () => LibreWolf == true),

@@ -1169,7 +1169,7 @@ public static class ApplicationStage
 			("Cleaning up Antigravity files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "Antigravity.exe")), () => Antigravity == true),
 
 			// pin antigravity to the taskbar
-			("Pinning Antigravity to the taskbar", async () => await ProcessActions.RunPowerShellScript("taskbarpin.ps1", $@"-Type Link -Path ""{Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), @"Microsoft\Windows\Start Menu\Programs\Antigravity\Antigravity.lnk")}"""), () => Antigravity == true),
+			("Pinning Antigravity to the taskbar", async () => await ProcessActions.RunPowerShellScript("taskbarpin.ps1", $@"-Type Link -Path ""{Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), @"Microsoft\Windows\Start Menu\Programs\Antigravity\Antigravity IDE.lnk")}"""), () => Antigravity == true),
 
 			// download cursor
 			("Downloading Cursor", async () => await DownloadHelper.Download("https://api2.cursor.sh/updates/download/golden/win32-x64/cursor/3.5", Path.GetTempPath(), "CursorSetup-x64.exe", reporter: reporter), () => Cursor == true),

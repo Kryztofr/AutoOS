@@ -1,5 +1,10 @@
 # 🚀 Installation Guide
 
+> [!WARNING]  
+> This guide does **NOT** require a USB drive.<br/> 
+> Installing AutoOS using a USB drive is technically possible using Ventoy with the unattend.xml file but you will need a ventoy config file.<br/> 
+> When installing via USB drive, you will lose out on stripping 8dot3 file names and importing games, etc. from your old installation.
+
 ### Step 1: Join Discord Server
 Join my [Discord Server](https://discord.gg/bZU4dMMWpg) to receive installation support and stay informed about future updates or changes.
 
@@ -73,7 +78,6 @@ Then click "Install AutoOS". This process will take around 15-30 minutes.
 - Once you are in the `Game`, press the `Stop Processes` button. 
 - Press the `Restart Processes` button to restore the taskbar etc.
 - Cap your Game's `frame rate limit` to `a multiple` of your monitor's `refresh rate` (144hz, 72/144/288fps).
-- Use `NVIDIA Reflex Low Latency` set to `Off` in competetive games unless you are GPU bound with a bad GPU.
 - Check the `BIOS Settings` tab for recommendations, click `Merge All` then `Import to NVRAM`.
 - If you don't boot after merging all, reset CMOS and use `Merge Next` until you find the culprit.
 - If you face worse performance, instability or crashes, use `Restore from Backup`.

@@ -22,7 +22,7 @@
 
   <!-- Publish Properties -->
   <PropertyGroup>
-	<PublishAot>True</PublishAot>
+	<PublishAot>False</PublishAot>
 	<PublishReadyToRun Condition="'$(Configuration)' == 'Debug'">False</PublishReadyToRun>
 	<PublishReadyToRun Condition="'$(Configuration)' != 'Debug'">True</PublishReadyToRun>
 	<PublishTrimmed Condition="'$(Configuration)' == 'Debug'">False</PublishTrimmed>
