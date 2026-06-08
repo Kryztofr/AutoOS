@@ -69,6 +69,7 @@ public class ApplicationSelection
 	public bool CMake { get; set; }
 	public bool Python { get; set; }	
 	public bool Nodejs { get; set; }
+	public bool Rust { get; set; }
 	public bool Java { get; set; }
 	public bool Go { get; set; }
 	public bool Trello { get; set; }
@@ -161,6 +162,7 @@ public static class ApplicationStage
 		bool CMake = selection?.CMake ?? PreparingStage.CMake;
 		bool Python = selection?.Python ?? PreparingStage.Python;
 		bool Nodejs = selection?.Nodejs ?? PreparingStage.Nodejs;
+		bool Rust = selection?.Rust ?? PreparingStage.Rust;
 		bool Java = selection?.Java ?? PreparingStage.Java;
 		bool Go = selection?.Go ?? PreparingStage.Go;
 		bool Trello = selection?.Trello ?? PreparingStage.Trello;
@@ -1225,6 +1227,13 @@ public static class ApplicationStage
 			// install nodejs
 			("Installing Node.js", async () => await Process.Start(new ProcessStartInfo { FileName = "msiexec.exe", Arguments = $@"/i ""{Path.Combine(Path.GetTempPath(), "node-v24.12.0-x64.msi")}"" /qn" , WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => Nodejs ==  true),
 			("Cleaning up Node.js files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "node-v24.12.0-x64.msi")), () => Nodejs ==  true),
+
+			// download rust
+			("Downloading Rust", async () => await DownloadHelper.Download("https://static.rust-lang.org/rustup/dist/x86_64-pc-windows-msvc/rustup-init.exe", Path.GetTempPath(), "rustup-init.exe", reporter: reporter), () => Rust == true),
+
+			// install rust
+			("Installing Rust", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "rustup-init.exe"), Arguments = "-y --default-toolchain stable", WindowStyle = ProcessWindowStyle.Hidden, UseShellExecute = false, CreateNoWindow = true, RedirectStandardOutput = true, RedirectStandardError = true })!.WaitForExitAsync(), () => Rust == true),
+			("Cleaning up Rust files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "rustup-init.exe")), () => Rust == true),
 
 			// download java
 			("Downloading Java", async () => await DownloadHelper.Download("https://download.oracle.com/java/26/latest/jdk-26_windows-x64_bin.msi", Path.GetTempPath(), "jdk-26_windows-x64_bin.msi", reporter: reporter), () => Java == true),

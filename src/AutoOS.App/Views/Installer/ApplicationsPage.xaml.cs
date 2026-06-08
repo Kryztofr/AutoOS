@@ -104,6 +104,7 @@ public sealed partial class ApplicationsPage : Page
 			new() { Text = "CMake", ImageSource = "ms-appx:///Assets/Fluent/CMake.png" },
 			new() { Text = "Python", ImageSource = "ms-appx:///Assets/Fluent/Python.png" },
 			new() { Text = "Node.js", ImageSource = "ms-appx:///Assets/Fluent/Nodejs.png" },
+			new() { Text = "Rust", ImageSource = "ms-appx:///Assets/Fluent/Rust.png" },
 			new() { Text = "Java", ImageSource = "ms-appx:///Assets/Fluent/Java.png" },
 			new() { Text = "Go", ImageSource = "ms-appx:///Assets/Fluent/Go.png" },
 			new() { Text = "Trello", ImageSource = "ms-appx:///Assets/Fluent/Trello.png" }
