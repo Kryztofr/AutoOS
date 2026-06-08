@@ -249,6 +249,12 @@ public static partial class DownloadHelper
 
 		using var driver = new EdgeDriver(options);
 
+		var cdpParameters = new Dictionary<string, object>
+		{
+			{ "behavior", "deny" }
+		};
+		driver.ExecuteCdpCommand("Browser.setDownloadBehavior", cdpParameters);
+
 		driver.Navigate().GoToUrl(url);
 
 		var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(15));
