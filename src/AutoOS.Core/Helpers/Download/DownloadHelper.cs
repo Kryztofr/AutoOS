@@ -2,6 +2,8 @@ using AutoOS.Core.Common;
 using AutoOS.Core.Helpers.Logging;
 using DevWinUI;
 using Downloader;
+using OpenQA.Selenium.Edge;
+using OpenQA.Selenium.Support.UI;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
@@ -20,7 +22,7 @@ public static partial class DownloadHelper
 			}
 		}
 	};
-
+	
 	public static async Task Download(string url, string path, string file = null, IStatusReporter reporter = null)
 	{
 		Directory.CreateDirectory(path);
@@ -31,11 +33,9 @@ public static partial class DownloadHelper
 			using (var response = await httpClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead))
 			{
 				response.EnsureSuccessStatusCode();
-				using (var contentStream = await response.Content.ReadAsStreamAsync())
-				using (var fileStream = new FileStream(destination, FileMode.Create, FileAccess.Write, FileShare.None, 8192, true))
-				{
-					await contentStream.CopyToAsync(fileStream);
-				}
+				using var contentStream = await response.Content.ReadAsStreamAsync();
+				using var fileStream = new FileStream(destination, FileMode.Create, FileAccess.Write, FileShare.None, 8192, true);
+				await contentStream.CopyToAsync(fileStream);
 			}
 			reporter?.Report(progress: 100);
 			return;
@@ -63,11 +63,9 @@ public static partial class DownloadHelper
 			}
 		};
 
-		if (url.Contains("dropboxusercontent.com", StringComparison.OrdinalIgnoreCase))
+		if (url.Contains("downloadmirror.intel.com", StringComparison.OrdinalIgnoreCase))
 		{
-			config.ParallelDownload = false;
-			config.ChunkCount = 1;
-			config.ParallelCount = 1;
+			config.RequestConfiguration.Headers.Add("Cookie", string.Join("; ", (await BypassAwsWaf(url)).Select(kvp => $"{kvp.Key}={kvp.Value}")));
 		}
 
 		if (url.Contains("www2.ati.com", StringComparison.OrdinalIgnoreCase))
@@ -212,8 +210,8 @@ public static partial class DownloadHelper
 					fallbackError = ex;
 				}
 			}
-
-			if (File.Exists(fileName))
+			
+			if (File.Exists(fileName) && new FileInfo(fileName).Length != 0)
 			{
 				errorDetails.AppendLine("Fallback download succeeded");
 				await LogHelper.LogError(new Exception(errorDetails.ToString(), downloaderError));
@@ -232,5 +230,38 @@ public static partial class DownloadHelper
 		}
 
 		reporter?.Report(progress: 100, isIndeterminate: true);
+	}
+
+	public static async Task<Dictionary<string, string>> BypassAwsWaf(string url)
+	{
+		var options = new EdgeOptions();
+
+		options.AddArgument("--headless=new");
+		options.AddArgument("--disable-blink-features=AutomationControlled");
+		options.AddArgument("--disable-dev-shm-usage");
+		options.AddArgument("--no-sandbox");
+		options.AddArgument("--disable-gpu");
+		options.AddArgument("--disable-web-security");
+		options.AddArgument("--disable-features=VizDisplayCompositor");
+		options.AddArgument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
+		options.AddArgument("--disable-infobars");
+		options.AddExcludedArgument("enable-automation");
+
+		using var driver = new EdgeDriver(options);
+
+		driver.Navigate().GoToUrl(url);
+
+		var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(15));
+		wait.Until(webDriver => webDriver.Manage().Cookies.GetCookieNamed("aws-waf-token") != null);
+
+		var cookies = driver.Manage().Cookies.AllCookies;
+		var cookieDict = new Dictionary<string, string>();
+
+		foreach (var cookie in cookies)
+		{
+			cookieDict[cookie.Name] = cookie.Value;
+		}
+
+		return cookieDict;
 	}
 }

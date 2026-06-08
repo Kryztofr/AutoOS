@@ -18,6 +18,8 @@
 	<PackageReference Include="Downloader" />
 	<PackageReference Include="Microsoft.Windows.CsWin32" />
 	<PackageReference Include="Newtonsoft.Json" />
+	<PackageReference Include="Selenium.Support" />
+	<PackageReference Include="Selenium.WebDriver" />
 	<PackageReference Include="System.ServiceProcess.ServiceController" />
 	<PackageReference Include="LevelDBSharp" />
 	<PackageReference Include="ValveKeyValue" />

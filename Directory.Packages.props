@@ -18,6 +18,8 @@
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.5-beta1" />
     <PackageVersion Include="nucs.JsonSettings" Version="2.0.2" />
     <PackageVersion Include="nucs.JsonSettings.AutoSaveGenerator" Version="2.0.4" />
+    <PackageVersion Include="Selenium.Support" Version="4.44.0" />
+    <PackageVersion Include="Selenium.WebDriver" Version="4.44.0" />
     <PackageVersion Include="System.ServiceProcess.ServiceController" Version="11.0.0-preview.4.26230.115" />
     <PackageVersion Include="ValveKeyValue" Version="0.70.0.499" />
   </ItemGroup>
