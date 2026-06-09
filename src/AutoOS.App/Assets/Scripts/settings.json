@@ -1,39 +1,41 @@
-﻿{
+{
     "autoUpdate": true,
-    "autoUpdateNotification": false,
+    "autoUpdateNotification": true,
     "useQuickCss": true,
     "themeLinks": [],
+    "eagerPatches": false,
     "enabledThemes": [],
     "enableReactDevtools": false,
     "frameless": false,
     "transparent": false,
     "winCtrlQ": false,
+    "windowsMaterial": "none",
     "disableMinSize": false,
     "winNativeTitleBar": false,
     "plugins": {
         "ChatInputButtonAPI": {
-            "enabled": false
+            "enabled": true
         },
         "CommandsAPI": {
             "enabled": true
         },
         "DynamicImageModalAPI": {
-            "enabled": false
+            "enabled": true
         },
         "MemberListDecoratorsAPI": {
-            "enabled": false
+            "enabled": true
         },
         "MessageAccessoriesAPI": {
             "enabled": true
         },
         "MessageDecorationsAPI": {
-            "enabled": false
+            "enabled": true
         },
         "MessageEventsAPI": {
-            "enabled": false
+            "enabled": true
         },
         "MessagePopoverAPI": {
-            "enabled": false
+            "enabled": true
         },
         "MessageUpdaterAPI": {
             "enabled": false
@@ -54,15 +56,18 @@
             "enabled": true
         },
         "AlwaysTrust": {
-            "enabled": true
+            "enabled": true,
+            "domain": true,
+            "file": true
         },
         "AnonymiseFileNames": {
             "enabled": false
         },
         "AppleMusicRichPresence": {
-            "enabled": true
+            "enabled": true,
+            "refreshInterval": 5
         },
-        "BANger": {
+        "AutoDNDWhilePlaying": {
             "enabled": false
         },
         "BetterFolders": {
@@ -72,9 +77,6 @@
             "enabled": false
         },
         "BetterGifPicker": {
-            "enabled": false
-        },
-        "BetterNotesBox": {
             "enabled": false
         },
         "BetterRoleContext": {
@@ -99,6 +101,10 @@
             "enabled": false
         },
         "CallTimer": {
+            "enabled": true,
+            "format": "stopwatch"
+        },
+        "CharacterCounter": {
             "enabled": true
         },
         "ClearURLs": {
@@ -113,7 +119,9 @@
         "ConsoleJanitor": {
             "enabled": true,
             "disableNoisyLoggers": true,
-            "disableSpotifyLogger": true
+            "disableSpotifyLogger": true,
+            "disableLoggers": false,
+            "whitelistedLoggers": "GatewaySocket; Routing/Utils"
         },
         "ConsoleShortcuts": {
             "enabled": false
@@ -124,20 +132,33 @@
         "CopyFileContents": {
             "enabled": true
         },
+        "CopyStickerLinks": {
+            "enabled": false
+        },
         "CopyUserURLs": {
             "enabled": false
         },
         "CrashHandler": {
             "enabled": true
         },
-        "CtrlEnterSend": {
-            "enabled": false
-        },
-        "CustomRPC": {
+        "CustomCommands": {
             "enabled": false
         },
         "CustomIdle": {
             "enabled": false
+        },
+        "CustomRPC": {
+            "enabled": true,
+            "type": 0,
+            "appID": "1498767465272967278",
+            "details": "tinodin",
+            "state": "",
+            "buttonOneText": "Install AutoOS",
+            "buttonTwoText": "Join Discord",
+            "buttonTwoURL": "https://discord.gg/bZU4dMMWpg",
+            "buttonOneURL": "https://github.com/tinodin/AutoOS/blob/master/docs/INSTALL.md",
+            "timestampMode": 1,
+            "appName": "AutoOS"
         },
         "Dearrow": {
             "enabled": false
@@ -151,17 +172,23 @@
         "DontRoundMyTimestamps": {
             "enabled": false
         },
-        "EmoteCloner": {
+        "Experiments": {
             "enabled": false
         },
-        "Experiments": {
+        "ExpressionCloner": {
             "enabled": false
         },
         "F8Break": {
             "enabled": false
         },
         "FakeNitro": {
-            "enabled": true
+            "enabled": true,
+            "enableStickerBypass": true,
+            "enableStreamQualityBypass": true,
+            "enableEmojiBypass": true,
+            "transformEmojis": true,
+            "transformStickers": true,
+            "transformCompoundSentence": false
         },
         "FakeProfileThemes": {
             "enabled": false
@@ -217,6 +244,9 @@
         "IgnoreActivities": {
             "enabled": false
         },
+        "ImageFilename": {
+            "enabled": false
+        },
         "ImageLink": {
             "enabled": false
         },
@@ -224,9 +254,6 @@
             "enabled": false
         },
         "ImplicitRelationships": {
-            "enabled": false
-        },
-        "InvisibleChat": {
             "enabled": false
         },
         "IrcColors": {
@@ -242,7 +269,10 @@
             "enabled": false
         },
         "MemberCount": {
-            "enabled": true
+            "enabled": true,
+            "memberList": true,
+            "toolTip": true,
+            "voiceActivity": true
         },
         "MentionAvatars": {
             "enabled": false
@@ -259,16 +289,7 @@
         "MessageLogger": {
             "enabled": false
         },
-        "MessageTags": {
-            "enabled": false
-        },
-        "MoreCommands": {
-            "enabled": false
-        },
-        "MoreKaomoji": {
-            "enabled": false
-        },
-        "Moyai": {
+        "MoreQuickReactions": {
             "enabled": false
         },
         "MutualGroupDMs": {
@@ -289,6 +310,9 @@
         "NoMaskedUrlPaste": {
             "enabled": false
         },
+        "NoMiddleClickPaste": {
+            "enabled": false
+        },
         "NoMosaic": {
             "enabled": false
         },
@@ -299,9 +323,6 @@
             "enabled": false
         },
         "NoProfileThemes": {
-            "enabled": false
-        },
-        "NoRPC": {
             "enabled": false
         },
         "NoReplyMention": {
@@ -319,13 +340,7 @@
         "NoUnblockToJump": {
             "enabled": true
         },
-        "NormalizeMessageLinks": {
-            "enabled": false
-        },
         "NotificationVolume": {
-            "enabled": false
-        },
-        "NSFWGateBypass": {
             "enabled": false
         },
         "OnePingPerDM": {
@@ -341,9 +356,6 @@
             "enabled": false
         },
         "OverrideForumDefaults": {
-            "enabled": false
-        },
-        "PartyMode": {
             "enabled": false
         },
         "PauseInvitesForever": {
@@ -362,7 +374,12 @@
             "enabled": false
         },
         "PinDMs": {
-            "enabled": false
+            "enabled": true,
+            "userBasedCategoryList": {
+                "531850334352703498": []
+            },
+            "canCollapseDmSection": false,
+            "pinOrder": 0
         },
         "PlainFolderIcon": {
             "enabled": false
@@ -483,7 +500,8 @@
             "enabled": false
         },
         "Translate": {
-            "enabled": true
+            "enabled": true,
+            "autoTranslate": false
         },
         "TypingIndicator": {
             "enabled": false
@@ -550,7 +568,26 @@
         },
         "BadgeAPI": {
             "enabled": true
+        },
+        "NoTrack": {
+            "enabled": true,
+            "disableAnalytics": true
+        },
+        "Settings": {
+            "enabled": true,
+            "settingsLocation": "aboveNitro",
+            "includeVencordInfoWhenCopying": true
+        },
+        "ConcatenatedComponentExtractor": {
+            "enabled": true
+        },
+        "SupportHelper": {
+            "enabled": true
         }
+    },
+    "uiElements": {
+        "chatBarButtons": {},
+        "messagePopoverButtons": {}
     },
     "notifications": {
         "timeout": 5000,
@@ -562,6 +599,6 @@
         "authenticated": false,
         "url": "https://api.vencord.dev/",
         "settingsSync": false,
-        "settingsSyncVersion": 1739030368963
+        "settingsSyncVersion": 1781006209301
     }
 }

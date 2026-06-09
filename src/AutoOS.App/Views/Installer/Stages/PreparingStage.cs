@@ -443,6 +443,7 @@ public static partial class PreparingStage
 
 			var browserPaths = new Dictionary<string, string>
 			{
+				{ @"AppData\Local\Microsoft\Edge\User Data\Default\Local Storage\leveldb", "Edge" },
 				{ @"AppData\Local\Google\Chrome\User Data\Default\Local Storage\leveldb", "Chrome" },
 				{ @"AppData\Local\Thorium\User Data\Default\Local Storage\leveldb", "Thorium" },
 				{ @"AppData\Local\imput\Helium\User Data\Default\Local Storage\leveldb", "Helium" },

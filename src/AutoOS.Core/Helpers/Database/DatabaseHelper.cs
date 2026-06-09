@@ -27,9 +27,6 @@ public static partial class DatabaseHelper
 		}
 		catch
 		{
-			if (!Directory.Exists(databasePath))
-				return null;
-
 			string tempDatabasePath = databasePath + " - Copy";
 
 			try
@@ -38,7 +35,11 @@ public static partial class DatabaseHelper
 
 				foreach (var file in Directory.GetFiles(databasePath))
 				{
-					File.Copy(file, Path.Combine(tempDatabasePath, Path.GetFileName(file)), true);
+					using (var sourceStream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+					using (var destStream = new FileStream(Path.Combine(tempDatabasePath, Path.GetFileName(file)), FileMode.Create, FileAccess.Write))
+					{
+						sourceStream.CopyTo(destStream);
+					}
 				}
 
 				result = ReadFromDatabase(tempDatabasePath, finalKeyBytes);
