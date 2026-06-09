@@ -60,7 +60,8 @@ public sealed partial class ApplicationsPage : Page
 			new() { Text = "Minecraft Launcher", ImageSource = "ms-appx:///Assets/Fluent/MinecraftLauncher.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "Minecraft Launcher", "MinecraftLauncher.exe")) },
 			new() { Text = "Rockstar Games Launcher", ImageSource = "ms-appx:///Assets/Fluent/RockstarGamesLauncher.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Rockstar Games", "Launcher", "Launcher.exe")) },
 			new() { Text = "FiveM", ImageSource = "ms-appx:///Assets/Fluent/FiveM.jpg", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "FiveM", "FiveM.exe")) },
-			new() { Text = "FACEIT", ImageSource = "ms-appx:///Assets/Fluent/FACEIT.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "FACEIT", "FACEIT.exe")) }
+			new() { Text = "FACEIT", ImageSource = "ms-appx:///Assets/Fluent/FACEIT.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "FACEIT", "FACEIT.exe")) },
+			new() { Text = "Eden", ImageSource = "ms-appx:///Assets/Fluent/Eden.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Eden", "eden.exe")) }
 		};
 		foreach (var item in launchersList.Where(item => !item.IsInstalled))
 			launchersItems.Add(item);
@@ -180,6 +181,7 @@ public sealed partial class ApplicationsPage : Page
 		selection.RockstarGamesLauncher = selectedLaunchers.Contains("Rockstar Games Launcher");
 		selection.FiveM = selectedLaunchers.Contains("FiveM");
 		selection.FACEIT = selectedLaunchers.Contains("FACEIT");
+		selection.Eden = selectedLaunchers.Contains("Eden");
 
 		var selectedMusicItems = Music.SelectedItems.Cast<GridViewItem>().ToList();
 		var selectedMusic = selectedMusicItems.Select(item => item.Text).ToList();
