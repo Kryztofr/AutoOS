@@ -43,7 +43,7 @@ public sealed partial class ApplicationsPage : Page
 			new() { Text = "WhatsApp", ImageSource = "ms-appx:///Assets/Fluent/Whatsapp.png", IsInstalled = Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Packages", "5319275A.WhatsAppDesktop_cv1g1gvanyjgm")) },
 			new() { Text = "Telegram Desktop", ImageSource = "ms-appx:///Assets/Fluent/Telegram.png", IsInstalled = Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Packages", "TelegramMessengerLLP.TelegramDesktop_t4vj0pshhgkwm")) },
 			new() { Text = "Unigram", ImageSource = "ms-appx:///Assets/Fluent/Unigram.png", IsInstalled = Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Packages", "38833FF26BA1D.UnigramPreview_g9c9v27vpyspw")) },
-			new() { Text = "Zoom Workplace", ImageSource = "ms-appx:///Assets/Fluent/Zoom.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Zoom", "bin", "Zoom.exe")) },
+			new() { Text = "Zoom Workplace", ImageSource = "ms-appx:///Assets/Fluent/Zoom.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Zoom", "bin", "Zoom.exe")) },
 			new() { Text = "Thunderbird", ImageSource = "ms-appx:///Assets/Fluent/Thunderbird.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Mozilla Thunderbird", "thunderbird.exe")) }
 		};
 		foreach (var item in messagingList.Where(item => !item.IsInstalled))
@@ -143,7 +143,8 @@ public sealed partial class ApplicationsPage : Page
 			new() { Text = "WizTree", ImageSource = "ms-appx:///Assets/Fluent/WizTree.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "WizTree", "WizTree64.exe")) },
 			new() { Text = "Bulk Crap Uninstaller", ImageSource = "ms-appx:///Assets/Fluent/BulkCrapUninstaller.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "BCUninstaller", "BCUninstaller.exe")) },
 			new() { Text = "Bluetooth Audio Receiver", ImageSource = "ms-appx:///Assets/Fluent/BluetoothAudioReceiver.png", IsInstalled = Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Packages", "55746MarkSmirnov.BluetoothAudioReveicer_xwrbx6997tsfc")) },
-			new() { Text = "AnyDesk", ImageSource = "ms-appx:///Assets/Fluent/AnyDesk.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "AnyDesk", "AnyDesk.exe")) }
+			new() { Text = "AnyDesk", ImageSource = "ms-appx:///Assets/Fluent/AnyDesk.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "AnyDesk", "AnyDesk.exe")) },
+			new() { Text = "Apollo", ImageSource = "ms-appx:///Assets/Fluent/Apollo.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Apollo", "sunshine.exe")) }
 		};
 		foreach (var item in miscellaneousList.Where(item => !item.IsInstalled))
 			miscellaneousItems.Add(item);
@@ -244,6 +245,7 @@ public sealed partial class ApplicationsPage : Page
 		selection.BulkCrapUninstaller = selectedMiscellaneous.Contains("Bulk Crap Uninstaller");
 		selection.BluetoothAudioReceiver = selectedMiscellaneous.Contains("Bluetooth Audio Receiver");
 		selection.AnyDesk = selectedMiscellaneous.Contains("AnyDesk");
+		selection.Apollo = selectedMiscellaneous.Contains("Apollo");
 
 		var updateDialog = new UpdateDialog();
 		var reporter = new UpdateDialogReporter(updateDialog);

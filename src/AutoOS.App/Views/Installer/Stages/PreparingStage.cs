@@ -127,6 +127,7 @@ public static partial class PreparingStage
 	public static bool BulkCrapUninstaller;
 	public static bool BluetoothAudioReceiver;
 	public static bool AnyDesk;
+	public static bool Apollo;
 
 	public static List<GpuInfo> GPUs { get; set; } = [];
 	public static bool MSI;
@@ -279,6 +280,7 @@ public static partial class PreparingStage
 			BulkCrapUninstaller = (localSettings.Values["Miscellaneous"]?.ToString().Contains("Bulk Crap Uninstaller") ?? false);
 			BluetoothAudioReceiver = (localSettings.Values["Miscellaneous"]?.ToString().Contains("BluetoothAudioReceiver") ?? false);
 			AnyDesk = (localSettings.Values["Miscellaneous"]?.ToString().Contains("AnyDesk") ?? false);
+			Apollo = (localSettings.Values["Miscellaneous"]?.ToString().Contains("Apollo") ?? false);
 
 			var gpuArray = JsonNode.Parse(localSettings.Values["GPUs"]?.ToString() ?? "[]")?.AsArray();
 			if (gpuArray != null)

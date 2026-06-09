@@ -131,7 +131,8 @@ public sealed partial class ApplicationsPage : Page
 			new() { Text = "WizTree", ImageSource = "ms-appx:///Assets/Fluent/WizTree.png" },
 			new() { Text = "Bulk Crap Uninstaller", ImageSource = "ms-appx:///Assets/Fluent/BulkCrapUninstaller.png" },
 			new() { Text = "Bluetooth Audio Receiver", ImageSource = "ms-appx:///Assets/Fluent/BluetoothAudioReceiver.png" },
-			new() { Text = "AnyDesk", ImageSource = "ms-appx:///Assets/Fluent/AnyDesk.png" }
+			new() { Text = "AnyDesk", ImageSource = "ms-appx:///Assets/Fluent/AnyDesk.png" },
+			new() { Text = "Apollo", ImageSource = "ms-appx:///Assets/Fluent/Apollo.png" }
 		};
 	}
 
