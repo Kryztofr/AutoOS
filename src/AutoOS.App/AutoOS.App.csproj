@@ -115,25 +115,6 @@
 	</Content>
   </ItemGroup>
 
-  <ItemGroup>
-	<Content Include="..\AutoOS.Core\Helpers\ReadWrite\WinRing0x64.dll">
-	  <Link>WinRing0x64.dll</Link>
-	  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	</Content>
-	<Content Include="..\AutoOS.Core\Helpers\ReadWrite\WinRing0x64.sys">
-	  <Link>WinRing0x64.sys</Link>
-	  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	</Content>
-	<Content Include="..\AutoOS.Core\Helpers\ReadWrite\inpoutx64.dll">
-	  <Link>inpoutx64.dll</Link>
-	  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	</Content>
-	<Content Include="..\AutoOS.Core\Helpers\ReadWrite\inpoutx64.sys">
-	  <Link>inpoutx64.sys</Link>
-	  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	</Content>
-  </ItemGroup>
-
   <!-- 
 	Defining the "HasPackageAndPublishMenuAddedByProject" property here allows the Solution 
 	Explorer "Package and Publish" context menu entry to be enabled for this project even if 

@@ -29,35 +29,32 @@ public static partial class DatabaseHelper
 		{
 			string tempDatabasePath = databasePath + " - Copy";
 
-		try
-		{
-			Directory.CreateDirectory(tempDatabasePath);
-
-			foreach (var file in Directory.GetFiles(databasePath))
+			try
 			{
-				if (Path.GetFileName(file).Equals("LOCK", StringComparison.OrdinalIgnoreCase))
-				{
-					continue;
-				}
+				Directory.CreateDirectory(tempDatabasePath);
 
-				string destFile = Path.Combine(tempDatabasePath, Path.GetFileName(file));
-
-				using (var sourceStream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-				using (var destStream = new FileStream(destFile, FileMode.Create, FileAccess.Write))
+				foreach (var file in Directory.GetFiles(databasePath))
 				{
+					if (Path.GetFileName(file).Equals("LOCK", StringComparison.OrdinalIgnoreCase))
+					{
+						continue;
+					}
+
+					using var sourceStream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+					using var destStream = new FileStream(Path.Combine(tempDatabasePath, Path.GetFileName(file)), FileMode.Create, FileAccess.Write);
 					sourceStream.CopyTo(destStream);
 				}
-			}
 
-			result = ReadFromDatabase(tempDatabasePath, finalKeyBytes);
-		}
-		finally
-		{
-			if (Directory.Exists(tempDatabasePath))
-			{
-				Directory.Delete(tempDatabasePath, true);
+				result = ReadFromDatabase(tempDatabasePath, finalKeyBytes);
 			}
-		}
+			catch { }
+			finally
+			{
+				if (Directory.Exists(tempDatabasePath))
+				{
+					Directory.Delete(tempDatabasePath, true);
+				}
+			}
 		}
 
 		return result;

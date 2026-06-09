@@ -1423,11 +1423,11 @@ public static class ApplicationStage
 			("Disabling AnyDesk startup entries", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\StartupFolder", "AnyDesk.lnk", new byte[] { 0x03 }, RegistryValueKind.Binary), () => AnyDesk == true),
 
 			// download apollo
-			("Downloading Apollo", async () => await DownloadHelper.Download("https://github.com/ClassicOldSong/Apollo/releases/download/v0.4.7-alpha.1/Apollo-0.4.7-alpha.1.exe", Path.GetTempPath(), "Apollo-alpha.1.exe", reporter: reporter), () => Apollo == true),
+			("Downloading Apollo", async () => await DownloadHelper.Download("https://github.com/ClassicOldSong/Apollo/releases/download/v0.4.7-alpha.1/Apollo-0.4.7-alpha.1.exe", Path.GetTempPath(), "Apollo.exe", reporter: reporter), () => Apollo == true),
 
 			// install apollo
-			("Installing Apollo", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "Apollo-alpha.1.exe"), Arguments = "/S", WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => Apollo == true),
-			("Cleaning up Apollo files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "Apollo-alpha.1.exe")), () => Apollo == true)
+			("Installing Apollo", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "Apollo.exe"), Arguments = "/S", WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => Apollo == true),
+			("Cleaning up Apollo files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "Apollo.exe")), () => Apollo == true)
 		};
 
 		if (selection != null)
