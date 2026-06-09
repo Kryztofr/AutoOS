@@ -55,6 +55,7 @@ public class ApplicationSelection
 	public bool SteelSeriesGG { get; set; }
 	public bool RazerSynapse { get; set; }
 	public bool CorsairICue { get; set; }
+	public bool GHelper { get; set; }
 	public bool ViGEmBus { get; set; }
 	public bool HidHide { get; set; }
 	public bool DualSenseY { get; set; }
@@ -87,6 +88,7 @@ public class ApplicationSelection
 	public bool WizTree { get; set; }
 	public bool BulkCrapUninstaller { get; set; }
 	public bool BluetoothAudioReceiver { get; set; }
+	public bool AnyDesk { get; set; }
 }
 
 public static class ApplicationStage
@@ -148,6 +150,7 @@ public static class ApplicationStage
 		bool SteelSeriesGG = selection?.SteelSeriesGG ?? PreparingStage.SteelSeriesGG;
 		bool RazerSynapse = selection?.RazerSynapse ?? PreparingStage.RazerSynapse;
 		bool CorsairICue = selection?.CorsairICue ?? PreparingStage.CorsairICue;
+		bool GHelper = selection?.GHelper ?? PreparingStage.GHelper;
 
 		bool ViGEmBus = selection?.ViGEmBus ?? PreparingStage.ViGEmBus;
 		bool HidHide = selection?.HidHide ?? PreparingStage.HidHide;
@@ -184,6 +187,7 @@ public static class ApplicationStage
 		bool WizTree = selection?.WizTree ?? PreparingStage.WizTree;
 		bool BulkCrapUninstaller = selection?.BulkCrapUninstaller ?? PreparingStage.BulkCrapUninstaller;
 		bool BluetoothAudioReceiver = selection?.BluetoothAudioReceiver ?? PreparingStage.BluetoothAudioReceiver;
+		bool AnyDesk = selection?.AnyDesk ?? PreparingStage.AnyDesk;
 
 		string icloudVersion = "";
 		string bitwardenVersion = "";
@@ -1082,6 +1086,19 @@ public static class ApplicationStage
 			// disable corsair icue startup entry
 			("Disabling Corsair iCUE startup entry", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run", "Corsair iCUE5 Software", new byte[] { 0x01 }, RegistryValueKind.Binary), () => CorsairICue == true),
 
+			// download ghelper
+			("Downloading GHelper", async () => await DownloadHelper.Download("https://github.com/seerge/g-helper/releases/latest/download/GHelper.exe", Path.GetTempPath(), "GHelper.exe"), () => GHelper == true),
+
+			// install ghelper
+			("Installing GHelper", async () => Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "GHelper")), () => GHelper == true),
+			("Installing GHelper", async () => File.Move(Path.Combine(Path.GetTempPath(), "GHelper.exe"), Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "GHelper", "GHelper.exe"), true), () => GHelper == true),
+			("Installing GHelper", async () => await ProcessActions.RunPowerShell(@"$Shell = New-Object -ComObject WScript.Shell; $Shortcut = $Shell.CreateShortcut([System.IO.Path]::Combine($env:ProgramData, 'Microsoft\Windows\Start Menu\Programs\GHelper.lnk')); $Shortcut.TargetPath = [System.IO.Path]::Combine($env:ProgramFiles, 'GHelper\GHelper.exe'); $Shortcut.Save()"), () => GHelper == true),
+			("Installing GHelper", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\GHelper", "DisplayName", "GHelper", RegistryValueKind.String), () => GHelper == true),
+			("Installing GHelper", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\GHelper", "UninstallString", $@"cmd /c rd /s /q ""{Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "GHelper")}"" & del ""{Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), @"Microsoft\Windows\Start Menu\Programs\GHelper.lnk")}"" & reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\GHelper"" /f", RegistryValueKind.String), () => GHelper == true),
+			("Installing GHelper", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\GHelper", "DisplayIcon", Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), @"GHelper\GHelper.exe"), RegistryValueKind.String), () => GHelper == true),
+			("Installing GHelper", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\GHelper", "Publisher", "Seerge", RegistryValueKind.String), () => GHelper == true),
+			("Installing GHelper", async () => await Task.Delay(500), () => GHelper == true),
+
 			//download vigembus
 			("Downloading ViGEmBus", async () => await DownloadHelper.Download(JsonDocument.Parse(await new HttpClient { DefaultRequestHeaders = { { "User-Agent", "AutoOS" } } }.GetStringAsync("https://api.github.com/repos/nefarius/ViGEmBus/releases/latest")).RootElement.GetProperty("assets").EnumerateArray().First(a => a.GetProperty("name").GetString().Contains("x64_x86_arm64.exe")).GetProperty("browser_download_url").GetString(), Path.GetTempPath(), "ViGEmBusx64_x86_arm64.exe", reporter: reporter), () => ViGEmBus == true),
 
@@ -1385,11 +1402,20 @@ public static class ApplicationStage
 			("Installing Bulk Crap Uninstaller", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "BCUninstaller_setup.exe"), Arguments = "/VERYSILENT /SUPPRESSMSGBOXES /NORESTART" , WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => BulkCrapUninstaller == true),
 			("Cleaning up Bulk Crap Uninstaller files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "BCUninstaller_setup.exe")), () => BulkCrapUninstaller == true),
 		  
-			// download bluetooth audio receiver
-			("Downloading Bluetooth Audio Receiver", async () => await StoreHelper.Download("55746MarkSmirnov.BluetoothAudioReveicer_xwrbx6997tsfc", reporter: reporter), () => BluetoothAudioReceiver == true),
-
-			// install bluetooth audio receiver
-			("Installing Bluetooth Audio Receiver", async () => await StoreHelper.Install("55746MarkSmirnov.BluetoothAudioReveicer_xwrbx6997tsfc"), () => BluetoothAudioReceiver == true)
+			// download anydesk
+            ("Downloading AnyDesk", async () => await DownloadHelper.Download("https://download.anydesk.com/AnyDesk.exe", Path.GetTempPath(), "AnyDesk.exe", reporter: reporter), () => AnyDesk == true),
+            
+			// install anydesk
+            ("Installing AnyDesk", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "AnyDesk.exe"), Arguments = @"--install ""C:\Program Files (x86)\AnyDesk"" --start-with-win --silent --create-shortcuts --create-desktop-icon" , WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => AnyDesk == true),
+            ("Installing AnyDesk", async () => await Task.Delay(1000), () => AnyDesk == true),
+            ("Installing AnyDesk", async () => ServicesHelper.StopService("AnyDesk"), () => AnyDesk == true),
+			("Installing AnyDesk", async () => { foreach (Process process in Process.GetProcessesByName("AnyDesk")) { process.Kill(); process.WaitForExit(); } }, () => AnyDesk == true),
+			("Cleaning up AnyDesk files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "AnyDesk.exe")), () => AnyDesk == true),
+		
+			// disable anydesk startup entries 
+			("Disabling AnyDesk startup entries", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\AnyDesk", "Start", 4, RegistryValueKind.DWord), () => AnyDesk == true),
+            ("Disabling AnyDesk startup entries", async () => ServicesHelper.StopService("AnyDesk"), () => AnyDesk == true),
+			("Disabling AnyDesk startup entries", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\StartupFolder", "AnyDesk.lnk", new byte[] { 0x03 }, RegistryValueKind.Binary), () => AnyDesk == true)
 		};
 
 		if (selection != null)

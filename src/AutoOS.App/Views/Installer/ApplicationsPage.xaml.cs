@@ -81,7 +81,8 @@ public sealed partial class ApplicationsPage : Page
 			new() { Text = "Wootility", ImageSource = "ms-appx:///Assets/Fluent/Wootility.png" },
 			new() { Text = "SteelSeries GG", ImageSource = "ms-appx:///Assets/Fluent/SteelSeriesGG.png" },
 			new() { Text = "Razer Synapse", ImageSource = "ms-appx:///Assets/Fluent/RazerSynapse.png" },
-			new() { Text = "Corsair iCUE", ImageSource = "ms-appx:///Assets/Fluent/CorsairICue.png" }
+			new() { Text = "Corsair iCUE", ImageSource = "ms-appx:///Assets/Fluent/CorsairICue.png" },
+			new() { Text = "GHelper", ImageSource = "ms-appx:///Assets/Fluent/GHelper.png" }
 		};
 		
 		Controllers.ItemsSource = new List<GridViewItem>
@@ -129,7 +130,8 @@ public sealed partial class ApplicationsPage : Page
 			new() { Text = "AOMEI Partition Assistant", ImageSource = "ms-appx:///Assets/Fluent/AomeiPartitionAssistant.png" },
 			new() { Text = "WizTree", ImageSource = "ms-appx:///Assets/Fluent/WizTree.png" },
 			new() { Text = "Bulk Crap Uninstaller", ImageSource = "ms-appx:///Assets/Fluent/BulkCrapUninstaller.png" },
-			new() { Text = "Bluetooth Audio Receiver", ImageSource = "ms-appx:///Assets/Fluent/BluetoothAudioReceiver.png" }
+			new() { Text = "Bluetooth Audio Receiver", ImageSource = "ms-appx:///Assets/Fluent/BluetoothAudioReceiver.png" },
+			new() { Text = "AnyDesk", ImageSource = "ms-appx:///Assets/Fluent/AnyDesk.png" }
 		};
 	}
 

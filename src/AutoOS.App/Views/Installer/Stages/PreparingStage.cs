@@ -89,6 +89,7 @@ public static partial class PreparingStage
 	public static bool SteelSeriesGG;
 	public static bool RazerSynapse;
 	public static bool CorsairICue;
+	public static bool GHelper;
 
 	public static bool ViGEmBus;
 	public static bool HidHide;
@@ -125,6 +126,7 @@ public static partial class PreparingStage
 	public static bool WizTree;
 	public static bool BulkCrapUninstaller;
 	public static bool BluetoothAudioReceiver;
+	public static bool AnyDesk;
 
 	public static List<GpuInfo> GPUs { get; set; } = [];
 	public static bool MSI;
@@ -239,6 +241,7 @@ public static partial class PreparingStage
 			LogitechOnboardMemoryManager = (localSettings.Values["Peripherals"]?.ToString().Contains("Logitech Onboard Memory Manager") ?? false);
 			Wootility = (localSettings.Values["Peripherals"]?.ToString().Contains("Wootility") ?? false);
 			CorsairICue = (localSettings.Values["Peripherals"]?.ToString().Contains("Corsair iCUE") ?? false);
+			GHelper = (localSettings.Values["Peripherals"]?.ToString().Contains("GHelper") ?? false);
 
 			ViGEmBus = (localSettings.Values["Controllers"]?.ToString().Contains("ViGEmBus") ?? false);
 			HidHide = (localSettings.Values["Controllers"]?.ToString().Contains("HidHide") ?? false);
@@ -275,6 +278,7 @@ public static partial class PreparingStage
 			WizTree = (localSettings.Values["Miscellaneous"]?.ToString().Contains("WizTree") ?? false);
 			BulkCrapUninstaller = (localSettings.Values["Miscellaneous"]?.ToString().Contains("Bulk Crap Uninstaller") ?? false);
 			BluetoothAudioReceiver = (localSettings.Values["Miscellaneous"]?.ToString().Contains("BluetoothAudioReceiver") ?? false);
+			AnyDesk = (localSettings.Values["Miscellaneous"]?.ToString().Contains("AnyDesk") ?? false);
 
 			var gpuArray = JsonNode.Parse(localSettings.Values["GPUs"]?.ToString() ?? "[]")?.AsArray();
 			if (gpuArray != null)
