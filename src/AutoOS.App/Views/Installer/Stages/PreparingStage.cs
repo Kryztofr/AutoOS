@@ -56,6 +56,8 @@ public static partial class PreparingStage
 	public static bool WhatsApp;
 	public static bool Telegram;
 	public static bool Unigram;
+	public static bool ZoomWorkplace;
+	public static bool Thunderbird;
 
 	public static bool EpicGames;
 	public static bool EpicGamesAccount;
@@ -209,6 +211,8 @@ public static partial class PreparingStage
 			WhatsApp = (localSettings.Values["Messaging"]?.ToString().Contains("WhatsApp") ?? false);
 			Telegram = (localSettings.Values["Messaging"]?.ToString().Contains("Telegram Desktop") ?? false);
 			Unigram = (localSettings.Values["Messaging"]?.ToString().Contains("Unigram") ?? false);
+			ZoomWorkplace = (localSettings.Values["Messaging"]?.ToString().Contains("Zoom Workplace") ?? false);
+			Thunderbird = (localSettings.Values["Messaging"]?.ToString().Contains("Thunderbird") ?? false);
 
 			EpicGames = (localSettings.Values["Launchers"]?.ToString().Contains("Epic Games") ?? false);
 			Steam = (localSettings.Values["Launchers"]?.ToString().Contains("Steam") ?? false);

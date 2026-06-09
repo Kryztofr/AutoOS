@@ -30,6 +30,8 @@ public class ApplicationSelection
 	public bool WhatsApp { get; set; }
 	public bool Telegram { get; set; }
 	public bool Unigram { get; set; }
+	public bool ZoomWorkplace { get; set; }
+	public bool Thunderbird { get; set; }
 	public bool EpicGames { get; set; }
 	public bool Steam { get; set; }
 	public bool RiotClient { get; set; }
@@ -113,6 +115,8 @@ public static class ApplicationStage
 		bool WhatsApp = selection?.WhatsApp ?? PreparingStage.WhatsApp;
 		bool Telegram = selection?.Telegram ?? PreparingStage.Telegram;
 		bool Unigram = selection?.Unigram ?? PreparingStage.Unigram;
+		bool ZoomWorkplace = selection?.ZoomWorkplace ?? PreparingStage.ZoomWorkplace;
+		bool Thunderbird = selection?.Thunderbird ?? PreparingStage.Thunderbird;
 
 		bool EpicGames = selection?.EpicGames ?? PreparingStage.EpicGames;
 		bool EpicGamesAccount = selection != null ? false : PreparingStage.EpicGamesAccount;
@@ -508,6 +512,26 @@ public static class ApplicationStage
 
 			// pin unigram to the taskbar
 			("Pinning Unigram to the taskbar", async () => await ProcessActions.RunPowerShellScript("taskbarpin.ps1", @"-Type UWA -Path 38833FF26BA1D.UnigramPreview_g9c9v27vpyspw!App"), () => Unigram == true),
+
+			// download zoom workplace
+			("Downloading Zoom Workplace", async () => await DownloadHelper.Download("https://cdn.zoom.us/prod/7.0.5.38856/x64/ZoomInstallerFull.msi", Path.GetTempPath(), "ZoomInstallerFull.msi", reporter: reporter), () => ZoomWorkplace == true),
+
+			// install zoom workplace
+			("Installing Zoom Workplace", async () => await Process.Start(new ProcessStartInfo { FileName = "msiexec.exe", Arguments = $@"/i ""{Path.Combine(Path.GetTempPath(), "ZoomInstallerFull.msi")}"" /qn" , WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => ZoomWorkplace ==  true),
+			("Cleaning up Zoom Workplace files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "ZoomInstallerFull.msi")), () => ZoomWorkplace ==  true),
+
+			// pin zoom to taskbar
+			("Pinning Zoom Workplace to the taskbar", async () => await ProcessActions.RunPowerShellScript("taskbarpin.ps1", $@"-Type Link -Path ""{Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), @"Microsoft\Windows\Start Menu\Programs\Zoom\Zoom Workplace.lnk")}"""), () => ZoomWorkplace == true),
+
+			// download thunderbird
+			("Downloading Thunderbird", async () => await DownloadHelper.Download("https://download.mozilla.org/?product=thunderbird-151.0.1-msi-SSL&os=win64&lang=en-US", Path.GetTempPath(), "Thunderbird Setup.msi", reporter: reporter), () => Thunderbird == true),
+
+			// install thunderbird
+			("Installing Thunderbird", async () => await Process.Start(new ProcessStartInfo { FileName = "msiexec.exe", Arguments = $@"/i ""{Path.Combine(Path.GetTempPath(), "Thunderbird Setup.msi")}"" /qn" , WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => Thunderbird ==  true),
+			("Cleaning up Thunderbird files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "Thunderbird Setup.msi")), () => Thunderbird ==  true),
+
+			// pin thunderbird to taskbar
+			("Pinning Thunderbird to the taskbar", async () => await ProcessActions.RunPowerShellScript("taskbarpin.ps1", $@"-Type Link -Path ""{Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), @"Microsoft\Windows\Start Menu\Programs\Thunderbird.lnk")}"""), () => Thunderbird == true),
 
 			// download epic games launcher
 			("Downloading Epic Games Launcher", async () => await DownloadHelper.Download("https://launcher-public-service-prod06.ol.epicgames.com/launcher/api/installer/download/EpicGamesLauncherInstaller.msi", Path.GetTempPath(), "EpicGamesLauncherInstaller.msi", reporter: reporter), () => EpicGames == true),

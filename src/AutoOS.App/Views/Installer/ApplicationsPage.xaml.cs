@@ -44,7 +44,9 @@ public sealed partial class ApplicationsPage : Page
 			new() { Text = "Discord", ImageSource = "ms-appx:///Assets/Fluent/Discord.png" },
 			new() { Text = "WhatsApp", ImageSource = "ms-appx:///Assets/Fluent/Whatsapp.png" },
 			new() { Text = "Telegram Desktop", ImageSource = "ms-appx:///Assets/Fluent/Telegram.png" },
-			new() { Text = "Unigram", ImageSource = "ms-appx:///Assets/Fluent/Unigram.png" }
+			new() { Text = "Unigram", ImageSource = "ms-appx:///Assets/Fluent/Unigram.png" },
+			new() { Text = "Zoom Workplace", ImageSource = "ms-appx:///Assets/Fluent/Zoom.png" },
+			new() { Text = "Thunderbird", ImageSource = "ms-appx:///Assets/Fluent/Thunderbird.png" }
 		};
 
 		Launchers.ItemsSource = new List<GridViewItem>
