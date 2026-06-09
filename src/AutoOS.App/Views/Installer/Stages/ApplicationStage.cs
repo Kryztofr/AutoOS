@@ -1401,13 +1401,17 @@ public static class ApplicationStage
 			("Installing Bulk Crap Uninstaller", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "BCUninstaller_setup.exe"), Arguments = "/VERYSILENT /SUPPRESSMSGBOXES /NORESTART" , WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => BulkCrapUninstaller == true),
 			("Cleaning up Bulk Crap Uninstaller files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "BCUninstaller_setup.exe")), () => BulkCrapUninstaller == true),
 		  
+			// download bluetooth audio receiver
+			("Downloading Bluetooth Audio Receiver", async () => await StoreHelper.Download("55746MarkSmirnov.BluetoothAudioReveicer_xwrbx6997tsfc", reporter: reporter), () => BluetoothAudioReceiver == true),
+
+			// install bluetooth audio receiver
+			("Installing Bluetooth Audio Receiver", async () => await StoreHelper.Install("55746MarkSmirnov.BluetoothAudioReveicer_xwrbx6997tsfc"), () => BluetoothAudioReceiver == true),
+
 			// download anydesk
             ("Downloading AnyDesk", async () => await DownloadHelper.Download("https://download.anydesk.com/AnyDesk.exe", Path.GetTempPath(), "AnyDesk.exe", reporter: reporter), () => AnyDesk == true),
             
 			// install anydesk
             ("Installing AnyDesk", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "AnyDesk.exe"), Arguments = @"--install ""C:\Program Files (x86)\AnyDesk"" --start-with-win --silent --create-shortcuts --create-desktop-icon" , WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => AnyDesk == true),
-            ("Installing AnyDesk", async () => await Task.Delay(1000), () => AnyDesk == true),
-            ("Installing AnyDesk", async () => ServicesHelper.StopService("AnyDesk"), () => AnyDesk == true),
 			("Installing AnyDesk", async () => { foreach (Process process in Process.GetProcessesByName("AnyDesk")) { process.Kill(); process.WaitForExit(); } }, () => AnyDesk == true),
 			("Cleaning up AnyDesk files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "AnyDesk.exe")), () => AnyDesk == true),
 		
