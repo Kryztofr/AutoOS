@@ -74,6 +74,7 @@ public static partial class PreparingStage
 	public static bool RockstarGamesLauncher;
 	public static bool FiveM;
 	public static bool FACEIT;
+	public static bool Eden;
 	
 	public static bool AppleMusic;
 	public static bool Tidal;
@@ -227,6 +228,7 @@ public static partial class PreparingStage
 			RockstarGamesLauncher = (localSettings.Values["Launchers"]?.ToString().Contains("Rockstar Games Launcher") ?? false);
 			FiveM = (localSettings.Values["Launchers"]?.ToString().Contains("FiveM") ?? false);
 			FACEIT = (localSettings.Values["Launchers"]?.ToString().Contains("FACEIT") ?? false);
+			Eden = (localSettings.Values["Launchers"]?.ToString().Contains("Eden") ?? false);
 
 			AppleMusic = (localSettings.Values["Music"]?.ToString().Contains("Apple Music") ?? false);
 			Tidal = (localSettings.Values["Music"]?.ToString().Contains("TIDAL") ?? false);

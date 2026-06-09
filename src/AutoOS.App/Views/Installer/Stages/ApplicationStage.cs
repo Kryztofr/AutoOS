@@ -42,6 +42,7 @@ public class ApplicationSelection
 	public bool RockstarGamesLauncher { get; set; }
 	public bool FiveM { get; set; }
 	public bool FACEIT { get; set; }
+	public bool Eden { get; set; }
 	public bool AppleMusic { get; set; }
 	public bool Tidal { get; set; }
 	public bool Qobuz { get; set; }
@@ -136,6 +137,7 @@ public static class ApplicationStage
 		bool RockstarGamesLauncher = selection?.RockstarGamesLauncher ?? PreparingStage.RockstarGamesLauncher;
 		bool FiveM = selection?.FiveM ?? PreparingStage.FiveM;
 		bool FACEIT = selection?.FACEIT ?? PreparingStage.FACEIT;
+		bool Eden = selection?.Eden ?? PreparingStage.Eden;
 
 		bool AppleMusic = selection?.AppleMusic ?? PreparingStage.AppleMusic;
 		bool Tidal = selection?.Tidal ?? PreparingStage.Tidal;
@@ -832,6 +834,20 @@ public static class ApplicationStage
 
 			// disable faceit startup entry
 			("Disabling FACEIT startup entry", async () => RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run", "FACEIT", new byte[] { 0x01 }, RegistryValueKind.Binary), () => FACEIT == true),
+
+			// download Eden
+			("Downloading Eden", async () => await DownloadHelper.Download("https://stable.eden-emu.dev/v0.2.1/Eden-Windows-v0.2.1-amd64-clang-pgo.zip", Path.GetTempPath(), "Eden-Windows-amd64-clang-pgo.zip"), () => Eden == true),
+
+			// install eden
+			("Installing Eden", async () => await ExtractHelper.Extract(Path.Combine(Path.GetTempPath(), "Eden-Windows-amd64-clang-pgo.zip"), Path.Combine(Path.GetTempPath(), "Eden")), () => Eden == true),
+			("Installing Eden", async () => Directory.Move(Path.Combine(Path.GetTempPath(), "Eden"), Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Eden")), () => Eden == true),
+			("Installing Eden", async () => await ProcessActions.RunPowerShell(@"$Shell = New-Object -ComObject WScript.Shell; $Shortcut = $Shell.CreateShortcut([System.IO.Path]::Combine($env:ProgramData, 'Microsoft\Windows\Start Menu\Programs\Eden.lnk')); $Shortcut.TargetPath = [System.IO.Path]::Combine($env:ProgramFiles, 'Eden\eden.exe'); $Shortcut.Save()"), () => Eden == true),
+			("Installing Eden", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Eden", "DisplayName", "Eden", RegistryValueKind.String), () => Eden == true),
+			("Installing Eden", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Eden", "UninstallString", $@"cmd /c rd /s /q ""{Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Eden")}"" & del ""{Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), @"Microsoft\Windows\Start Menu\Programs\Eden.lnk")}"" & reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Eden"" /f", RegistryValueKind.String), () => Eden == true),
+			("Installing Eden", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Eden", "DisplayIcon", Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), @"Eden\eden.exe"), RegistryValueKind.String), () => Eden == true),
+			("Installing Eden", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Eden", "Publisher", "Eden Emulator Project", RegistryValueKind.String), () => Eden == true),
+			("Installing Eden", async () => await Task.Delay(500), () => Eden == true),
+			("Cleaning up Eden files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "Eden-Windows-amd64-clang-pgo.zip")), () => Eden == true),
 
 			// download dolby access
 			("Downloading Dolby Access", async () => await StoreHelper.Download("DolbyLaboratories.DolbyAccess_rz1tebttyb220", 1, reporter: reporter), () => AppleMusic == true),
