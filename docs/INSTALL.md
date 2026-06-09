@@ -3,7 +3,7 @@
 > [!WARNING]  
 > This guide does **NOT** require a USB drive.<br/> 
 > Installing AutoOS using a USB drive is technically possible using Ventoy with the unattend.xml file but you will need a ventoy config file.<br/> 
-> When installing via USB drive, you will lose out on stripping 8dot3 file names and importing games, etc. from your old installation.
+> When installing via USB drive, you will lose out on stripping 8.3 file names and importing games, etc. from your old installation.
 
 ### Step 1: Join Discord Server
 Join my [Discord Server](https://discord.gg/bZU4dMMWpg) to receive installation support and stay informed about future updates or changes.
