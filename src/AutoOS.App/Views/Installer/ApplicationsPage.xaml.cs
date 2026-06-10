@@ -7,6 +7,7 @@ public sealed partial class ApplicationsPage : Page
 {
 	private bool isInitializingOfficeState = true;
 	private bool isInitializingDevelopmentState = true;
+	private bool isInitializingOverclockingState = true;
 	private bool isInitializingMusicState = true;
 	private bool isInitializingPeripheralsState = true;
 	private bool isInitializingControllersState = true;
@@ -26,6 +27,7 @@ public sealed partial class ApplicationsPage : Page
 		GetPeripherals();
 		GetControllers();
 		GetDevelopment();
+		GetOverclocking();
 		GetOffice();
 		GetMiscellaneous();
 	}
@@ -112,6 +114,13 @@ public sealed partial class ApplicationsPage : Page
 			new() { Text = "Java", ImageSource = "ms-appx:///Assets/Fluent/Java.png" },
 			new() { Text = "Go", ImageSource = "ms-appx:///Assets/Fluent/Go.png" },
 			new() { Text = "Trello", ImageSource = "ms-appx:///Assets/Fluent/Trello.png" }
+		};
+
+		Overclocking.ItemsSource = new List<GridViewItem>
+		{
+			new() { Text = "ZenTimings", ImageSource = "ms-appx:///Assets/Fluent/ZenTimings.png" },
+			new() { Text = "OCCT", ImageSource = "ms-appx:///Assets/Fluent/OCCT.png" },
+			new() { Text = "HWiNFO® 64", ImageSource = "ms-appx:///Assets/Fluent/HWInfo.png" }
 		};
 
 		Office.ItemsSource = new List<GridViewItem>
@@ -215,6 +224,19 @@ public sealed partial class ApplicationsPage : Page
 		isInitializingDevelopmentState = false;
 	}
 
+	private void GetOverclocking()
+	{
+		var selectedOverclocking = localSettings.Values["Overclocking"] as string;
+		var overclockingItems = Overclocking.ItemsSource as List<GridViewItem>;
+		Overclocking.SelectedItems.AddRange(
+			selectedOverclocking?.Split(new[] { ", " }, StringSplitOptions.RemoveEmptyEntries)
+			.Select(e => overclockingItems?.FirstOrDefault(ext => ext.Text == e))
+			.Where(ext => ext != null) ?? Enumerable.Empty<GridViewItem>()
+		);
+
+		isInitializingOverclockingState = false;
+	}
+
 	private void GetOffice()
 	{
 		var selectedOffice = localSettings.Values["Office"] as string;
@@ -311,6 +333,18 @@ public sealed partial class ApplicationsPage : Page
 			.ToArray();
 
 		localSettings.Values["Development"] = string.Join(", ", selectedDevelopment);
+	}
+
+	private void Overclocking_Changed(object sender, SelectionChangedEventArgs e)
+	{
+		if (isInitializingOverclockingState) return;
+
+		var selectedOverclocking = Overclocking.SelectedItems
+			.Cast<GridViewItem>()
+			.Select(item => item.Text)
+			.ToArray();
+
+		localSettings.Values["Overclocking"] = string.Join(", ", selectedOverclocking);
 	}
 
 	private void Office_Changed(object sender, SelectionChangedEventArgs e)
