@@ -79,6 +79,7 @@ public static class BrowsersStage
 		string edgeVersion = "";
 		string chromeVersion = "";
 		string chromeVersion2 = "";
+		string chromePlatformExperienceHelperVersion = "";
 		string thoriumVersion = "";
 		string heliumVersion = "";
 		string braveVersion = "";
@@ -202,11 +203,20 @@ public static class BrowsersStage
 			("Disabling Google Chrome services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Active Setup\Installed Components\AutorunsDisabled\{8A69D345-D564-463c-AFF1-A69D9E530F96}", "Version", "43,0,0,0", RegistryValueKind.String), () => Chrome == true),
 			("Disabling Google Chrome services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Active Setup\Installed Components\AutorunsDisabled\{8A69D345-D564-463c-AFF1-A69D9E530F96}", "IsInstalled", 1, RegistryValueKind.DWord), () => Chrome == true),
 			("Disabling Google Chrome services", async () => RegistryHelper.DeleteKey(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Active Setup\Installed Components\{8A69D345-D564-463c-AFF1-A69D9E530F96}"), () => Chrome == true),
+			("Disabling Google Chrome services", async () => chromePlatformExperienceHelperVersion = FileVersionInfo.GetVersionInfo(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Google", "Chrome", "Application", "PlatformExperienceHelper", "platform_experience_helper.exe")).ProductVersion, () => Chrome == true),
+			("Disabling Google Chrome services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Active Setup\Installed Components\AutorunsDisabled\{49210152-871f-4ffa-961d-a172abcbc09d}", "", "Google Platform Experience Helper", RegistryValueKind.String), () => Chrome == true),
+			("Disabling Google Chrome services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Active Setup\Installed Components\AutorunsDisabled\{49210152-871f-4ffa-961d-a172abcbc09d}", "Localized Name", "Google Platform Experience Helper", RegistryValueKind.String), () => Chrome == true),
+			("Disabling Google Chrome services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, $@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Active Setup\Installed Components\AutorunsDisabled\{{49210152-871f-4ffa-961d-a172abcbc09d}}", "StubPath", $@"""{Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Google", "Chrome", "Application", "PlatformExperienceHelper", "platform_experience_helper.exe")}"" --first-run", RegistryValueKind.String), () => Chrome == true),
+			("Disabling Google Chrome services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Active Setup\Installed Components\AutorunsDisabled\{49210152-871f-4ffa-961d-a172abcbc09d}", "Version", chromePlatformExperienceHelperVersion.Replace('.', ','), RegistryValueKind.String), () => Chrome == true),
+			("Disabling Google Chrome services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Active Setup\Installed Components\AutorunsDisabled\{49210152-871f-4ffa-961d-a172abcbc09d}", "IsInstalled", 1, RegistryValueKind.DWord), () => Chrome == true),
+			("Disabling Google Chrome services", async () => RegistryHelper.DeleteKey(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Active Setup\Installed Components\{49210152-871f-4ffa-961d-a172abcbc09d}"), () => Chrome == true),
 			("Disabling Google Chrome services", async () => TaskSchedulerHelper.Toggle("GoogleUpdaterTaskSystem", false), () => Chrome == true),
+			("Disabling Google Chrome services", async () => TaskSchedulerHelper.Toggle(@"\GoogleUserPEH\RunPlatformExperienceHelper_Daily", false), () => Chrome == true),
+			("Disabling Google Chrome services", async () => TaskSchedulerHelper.Toggle(@"\GoogleUserPEH\RunPlatformExperienceHelper_Metrics", false), () => Chrome == true),
 
 			// download thorium
-			("Downloading Thorium", async () => await DownloadHelper.Download("https://github.com/Alex313031/Thorium-Win/releases/latest/download/thorium_SSE4_mini_installer.exe", Path.GetTempPath(), "ThoriumSetup.exe", reporter ?? new InstallPageReporter()), () => Thorium == true),
-
+			("Downloading Thorium", async () => await DownloadHelper.Download(JsonDocument.Parse(await new HttpClient { DefaultRequestHeaders = { { "User-Agent", "AutoOS" } } }.GetStringAsync("https://api.github.com/repos/Alex313031/Thorium-Win/releases")).RootElement.EnumerateArray().First(r => r.GetProperty("assets").EnumerateArray().Any(a => a.GetProperty("name").GetString().Contains("thorium_SSE4_mini_installer.exe"))).GetProperty("assets").EnumerateArray().First(a => a.GetProperty("name").GetString().Contains("thorium_SSE4_mini_installer.exe")).GetProperty("browser_download_url").GetString(), Path.GetTempPath(), "ThoriumSetup.exe", reporter ?? new InstallPageReporter()), () => Thorium == true),
+			
 			// install thorium
 			("Installing Thorium", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "ThoriumSetup.exe"), Arguments = "--silent --install --system-level --do-not-launch-chrome", WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => Thorium == true),
 			("Installing Thorium", async () => thoriumVersion = FileVersionInfo.GetVersionInfo(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Thorium", "Application", "thorium.exe")).ProductVersion, () => Thorium == true),
@@ -360,7 +370,8 @@ public static class BrowsersStage
 			("Disabling Brave services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Active Setup\Installed Components\AutorunsDisabled\{AFE6A462-C574-4B8A-AF43-4CC60DF4563B}", "Version", "43,0,0,0", RegistryValueKind.String), () => Brave == true),
 			("Disabling Brave services", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Active Setup\Installed Components\AutorunsDisabled\{AFE6A462-C574-4B8A-AF43-4CC60DF4563B}", "IsInstalled", 1, RegistryValueKind.DWord), () => Brave == true),
 			("Disabling Brave services", async () => RegistryHelper.DeleteKey(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Active Setup\Installed Components\{AFE6A462-C574-4B8A-AF43-4CC60DF4563B}"), () => Brave == true),
-			("Disabling Brave services", async () => TaskSchedulerHelper.Toggle("BraveSoftwareUpdateTaskMachine", false), () => Brave == true),
+			("Disabling Brave services", async () => TaskSchedulerHelper.Toggle("BraveSoftwareUpdateTaskMachineCore", false), () => Brave == true),
+			("Disabling Brave services", async () => TaskSchedulerHelper.Toggle("BraveSoftwareUpdateTaskMachineUA", false), () => Brave == true),
 
 			// install ublock origin extension
 			("Installing uBlock Origin Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\BraveSoftware\Brave\ExtensionInstallForcelist", "cjpalhdlnbpafiamejdnhcphjbkeiagm"), () => Brave == true && uBlock == true),
