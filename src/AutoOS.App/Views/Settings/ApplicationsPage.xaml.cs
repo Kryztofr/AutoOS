@@ -129,7 +129,8 @@ public sealed partial class ApplicationsPage : Page
 		{
 			new() { Text = "ZenTimings", ImageSource = "ms-appx:///Assets/Fluent/ZenTimings.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "ZenTimings", "ZenTimings.exe")) },
 			new() { Text = "OCCT", ImageSource = "ms-appx:///Assets/Fluent/OCCT.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "OCCT", "OCCT.exe")) },
-			new() { Text = "HWiNFO® 64", ImageSource = "ms-appx:///Assets/Fluent/HWInfo.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "HWiNFO64", "HWiNFO64.exe")) }
+			new() { Text = "HWiNFO® 64", ImageSource = "ms-appx:///Assets/Fluent/HWInfo.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "HWiNFO64", "HWiNFO64.exe")) },
+			new() { Text = "Prime95", ImageSource = "ms-appx:///Assets/Fluent/Prime95.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Prime95", "prime95.exe")) }
 		};
 		foreach (var item in overclockingList.Where(item => !item.IsInstalled))
 			overclockingItems.Add(item);
@@ -243,6 +244,7 @@ public sealed partial class ApplicationsPage : Page
 		selection.ZenTimings = selectedOverclocking.Contains("ZenTimings");
 		selection.OCCT = selectedOverclocking.Contains("OCCT");
 		selection.HWInfo = selectedOverclocking.Contains("HWiNFO® 64");
+		selection.Prime95 = selectedOverclocking.Contains("Prime95");
 
 		var selectedOfficeItems = Office.SelectedItems.Cast<GridViewItem>().ToList();
 		var selectedOffice = selectedOfficeItems.Select(item => item.Text).ToList();

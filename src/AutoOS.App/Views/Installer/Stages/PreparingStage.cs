@@ -116,6 +116,7 @@ public static partial class PreparingStage
 	public static bool ZenTimings;
 	public static bool OCCT;
 	public static bool HWInfo;
+	public static bool Prime95;
 
 	public static bool Word;
 	public static bool Excel;
@@ -273,6 +274,7 @@ public static partial class PreparingStage
 			ZenTimings = (localSettings.Values["Overclocking"]?.ToString().Contains("ZenTimings") ?? false);
 			OCCT = (localSettings.Values["Overclocking"]?.ToString().Contains("OCCT") ?? false);
 			HWInfo = (localSettings.Values["Overclocking"]?.ToString().Contains("HWiNFO® 64") ?? false);
+			Prime95 = (localSettings.Values["Overclocking"]?.ToString().Contains("Prime95") ?? false);
 
 			Word = (localSettings.Values["Office"]?.ToString().Contains("Word") ?? false);
 			Excel = (localSettings.Values["Office"]?.ToString().Contains("Excel") ?? false);

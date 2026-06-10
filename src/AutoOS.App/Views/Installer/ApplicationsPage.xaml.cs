@@ -119,7 +119,8 @@ public sealed partial class ApplicationsPage : Page
 		{
 			new() { Text = "ZenTimings", ImageSource = "ms-appx:///Assets/Fluent/ZenTimings.png" },
 			new() { Text = "OCCT", ImageSource = "ms-appx:///Assets/Fluent/OCCT.png" },
-			new() { Text = "HWiNFO® 64", ImageSource = "ms-appx:///Assets/Fluent/HWInfo.png" }
+			new() { Text = "HWiNFO® 64", ImageSource = "ms-appx:///Assets/Fluent/HWInfo.png" },
+			new() { Text = "Prime95", ImageSource = "ms-appx:///Assets/Fluent/Prime95.png" },
 		};
 
 		Office.ItemsSource = new List<GridViewItem>

@@ -79,6 +79,7 @@ public class ApplicationSelection
 	public bool ZenTimings {get; set; }
 	public bool OCCT {get; set; }
 	public bool HWInfo {get; set; }
+	public bool Prime95 {get; set; }
 	public bool Word { get; set; }
 	public bool Excel { get; set; }
 	public bool PowerPoint { get; set; }
@@ -181,6 +182,7 @@ public static class ApplicationStage
 		bool ZenTimings = selection?.ZenTimings ?? PreparingStage.ZenTimings;
 		bool OCCT = selection?.OCCT ?? PreparingStage.OCCT;
 		bool HWInfo = selection?.HWInfo ?? PreparingStage.HWInfo;
+		bool Prime95 = selection?.Prime95 ?? PreparingStage.Prime95;
 
 		bool Word = selection?.Word ?? PreparingStage.Word;
 		bool Excel = selection?.Excel ?? PreparingStage.Excel;
@@ -1349,13 +1351,26 @@ public static class ApplicationStage
 			("Installing OCCT", async () => await Task.Delay(500), () => OCCT == true),
 
 			// download hwinfo
-			("Downloading HWiNFO® 64", async () => await DownloadHelper.Download("https://www.hwinfo.com/files/hwi64_848.exe", Path.GetTempPath(), "hwi64.exe", reporter: reporter), () => HWInfo == true),
+            ("Downloading HWiNFO® 64", async () => await DownloadHelper.Download("https://www.hwinfo.com/files/hwi64_848.exe", Path.GetTempPath(), "hwi64.exe", reporter: reporter), () => HWInfo == true),
 
-			// install hwinfo
-			("Installing HWiNFO® 64", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "hwi64.exe"), Arguments = "/SP- /VERYSILENT /SUPPRESSMSGBOXES /NORESTART" , WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => HWInfo == true),
-			("Installing HWiNFO® 64", async () => { foreach (Process process in Process.GetProcessesByName("HWiNFO64")) { process.Kill(); process.WaitForExit(); } }, () => HWInfo == true),
-			("Cleaning up HWiNFO® 64 files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "hwi64.exe")), () => HWInfo == true),
-		
+            // install hwinfo
+            ("Installing HWiNFO® 64", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "hwi64.exe"), Arguments = "" , WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => HWInfo == true),
+			("Installing HWiNFO® 64", async () => { foreach (Process process in Process.GetProcessesByName("hwi64")) { process.Kill(); process.WaitForExit(); } }, () => HWInfo == true),
+            ("Cleaning up HWiNFO® 64", async () => File.Delete(Path.Combine(Path.GetTempPath(), "hwi64.exe")), () => HWInfo == true),
+
+			// download prime95
+			("Downloading Prime95", async () => await DownloadHelper.Download("https://download.mersenne.ca/gimps/v30/30.19/p95v3019b20.win64.zip", Path.GetTempPath(), "Prime95.zip"), () => Prime95 == true),
+
+			// install prime95
+			("Installing Prime95", async () => await ExtractHelper.Extract(Path.Combine(Path.GetTempPath(), "Prime95.zip"), Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Prime95")), () => Prime95 == true),
+			("Installing Prime95", async () => await ProcessActions.RunPowerShell(@"$Shell = New-Object -ComObject WScript.Shell; $Shortcut = $Shell.CreateShortcut([System.IO.Path]::Combine($env:ProgramData, 'Microsoft\Windows\Start Menu\Programs\Prime95.lnk')); $Shortcut.TargetPath = [System.IO.Path]::Combine($env:ProgramFiles, 'Prime95\prime95.exe'); $Shortcut.Save()"), () => Prime95 == true),
+			("Installing Prime95", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Prime95", "DisplayName", "Prime95", RegistryValueKind.String), () => Prime95 == true),
+			("Installing Prime95", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Prime95", "UninstallString", $@"cmd /c rd /s /q ""{Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Prime95")}"" & del ""{Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), @"Microsoft\Windows\Start Menu\Programs\Prime95.lnk")}"" & reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Prime95"" /f", RegistryValueKind.String), () => Prime95 == true),
+			("Installing Prime95", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Prime95", "DisplayIcon", Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), @"Prime95\prime95.exe"), RegistryValueKind.String), () => Prime95 == true),
+			("Installing Prime95", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Prime95", "Publisher", "Mersenne Research, Inc.", RegistryValueKind.String), () => Prime95 == true),
+			("Installing Prime95", async () => await Task.Delay(500), () => Prime95 == true),
+			("Cleaning up Prime95 files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "Prime95.zip")), () => Prime95 == true),
+
 			// download office
 			("Downloading Office", async () => await DownloadHelper.Download("https://officecdn.microsoft.com/pr/wsus/setup.exe", Path.GetTempPath(), "setup.exe", reporter: reporter), () => Word == true || Excel == true || PowerPoint == true || OneNote == true || Teams == true || Outlook == true || OneDrive == true),
 
