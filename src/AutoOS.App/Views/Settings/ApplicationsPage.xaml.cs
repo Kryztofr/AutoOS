@@ -14,6 +14,7 @@ public sealed partial class ApplicationsPage : Page
 	private readonly ObservableCollection<GridViewItem> peripheralsItems = [];
 	private readonly ObservableCollection<GridViewItem> controllersItems = [];
 	private readonly ObservableCollection<GridViewItem> developmentItems = [];
+	private readonly ObservableCollection<GridViewItem> overclockingItems = [];
 	private readonly ObservableCollection<GridViewItem> officeItems = [];
 	private readonly ObservableCollection<GridViewItem> miscellaneousItems = [];
 
@@ -29,6 +30,7 @@ public sealed partial class ApplicationsPage : Page
 		Peripherals.ItemsSource = peripheralsItems;
 		Controllers.ItemsSource = controllersItems;
 		Development.ItemsSource = developmentItems;
+		Overclocking.ItemsSource = overclockingItems;
 		Office.ItemsSource = officeItems;
 		Miscellaneous.ItemsSource = miscellaneousItems;
 	}
@@ -123,6 +125,15 @@ public sealed partial class ApplicationsPage : Page
 		foreach (var item in devList.Where(item => !item.IsInstalled))
 			developmentItems.Add(item);
 
+		var overclockingList = new List<GridViewItem>
+		{
+			new() { Text = "ZenTimings", ImageSource = "ms-appx:///Assets/Fluent/ZenTimings.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "ZenTimings", "ZenTimings.exe")) },
+			new() { Text = "OCCT", ImageSource = "ms-appx:///Assets/Fluent/OCCT.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "OCCT", "OCCT.exe")) },
+			new() { Text = "HWiNFO® 64", ImageSource = "ms-appx:///Assets/Fluent/HWInfo.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "HWiNFO64", "HWiNFO64.exe")) }
+		};
+		foreach (var item in overclockingList.Where(item => !item.IsInstalled))
+			overclockingItems.Add(item);
+
 		var officeList = new List<GridViewItem>
 		{
 			new() { Text = "Word", ImageSource = "ms-appx:///Assets/Fluent/Word.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Microsoft Office", "root", "Office16", "WINWORD.EXE")) },
@@ -152,7 +163,7 @@ public sealed partial class ApplicationsPage : Page
 
 	private void GridView_SelectionChanged(object sender, SelectionChangedEventArgs e) 
 	{
-		InstallButton.IsEnabled = Office.SelectedItems.Count > 0 || Development.SelectedItems.Count > 0 || Music.SelectedItems.Count > 0 || Peripherals.SelectedItems.Count > 0 || Controllers.SelectedItems.Count > 0 || Messaging.SelectedItems.Count > 0 || Launchers.SelectedItems.Count > 0 || Miscellaneous.SelectedItems.Count > 0;
+		InstallButton.IsEnabled = Office.SelectedItems.Count > 0 || Development.SelectedItems.Count > 0 || Overclocking.SelectedItems.Count > 0 || Music.SelectedItems.Count > 0 || Peripherals.SelectedItems.Count > 0 || Controllers.SelectedItems.Count > 0 || Messaging.SelectedItems.Count > 0 || Launchers.SelectedItems.Count > 0 || Miscellaneous.SelectedItems.Count > 0;
 	}
 
 	private async void InstallButton_Click(object sender, RoutedEventArgs e)
@@ -227,6 +238,12 @@ public sealed partial class ApplicationsPage : Page
 		selection.Go = selectedDev.Contains("Go");
 		selection.Trello = selectedDev.Contains("Trello");
 
+		var selectedOverclockingItems = Overclocking.SelectedItems.Cast<GridViewItem>().ToList();
+		var selectedOverclocking = selectedOverclockingItems.Select(item => item.Text).ToList();
+		selection.ZenTimings = selectedOverclocking.Contains("ZenTimings");
+		selection.OCCT = selectedOverclocking.Contains("OCCT");
+		selection.HWInfo = selectedOverclocking.Contains("HWiNFO® 64");
+
 		var selectedOfficeItems = Office.SelectedItems.Cast<GridViewItem>().ToList();
 		var selectedOffice = selectedOfficeItems.Select(item => item.Text).ToList();
 		selection.Word = selectedOffice.Contains("Word");
@@ -291,6 +308,9 @@ public sealed partial class ApplicationsPage : Page
 
 			foreach (var item in selectedDevItems)
 				developmentItems.Remove(item);
+
+			foreach (var item in selectedOverclockingItems)
+				overclockingItems.Remove(item);
 
 			foreach (var item in selectedOfficeItems)
 				officeItems.Remove(item);

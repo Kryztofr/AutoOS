@@ -76,6 +76,9 @@ public class ApplicationSelection
 	public bool Java { get; set; }
 	public bool Go { get; set; }
 	public bool Trello { get; set; }
+	public bool ZenTimings {get; set; }
+	public bool OCCT {get; set; }
+	public bool HWInfo {get; set; }
 	public bool Word { get; set; }
 	public bool Excel { get; set; }
 	public bool PowerPoint { get; set; }
@@ -174,6 +177,10 @@ public static class ApplicationStage
 		bool Java = selection?.Java ?? PreparingStage.Java;
 		bool Go = selection?.Go ?? PreparingStage.Go;
 		bool Trello = selection?.Trello ?? PreparingStage.Trello;
+
+		bool ZenTimings = selection?.ZenTimings ?? PreparingStage.ZenTimings;
+		bool OCCT = selection?.OCCT ?? PreparingStage.OCCT;
+		bool HWInfo = selection?.HWInfo ?? PreparingStage.HWInfo;
 
 		bool Word = selection?.Word ?? PreparingStage.Word;
 		bool Excel = selection?.Excel ?? PreparingStage.Excel;
@@ -1313,6 +1320,41 @@ public static class ApplicationStage
 			// log in to trello
 			("Please log in to your Trello account (Close to continue)", async () => await Task.Delay(1000), () => Trello == true),
 			("Please log in to your Trello account (Close to continue)", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "WindowsApps", $"45273LiamForsyth.PawsforTrello_{trelloVersion}_x64__7pb5ddty8z1pa", "app", "Trello.exe"), WindowStyle = ProcessWindowStyle.Maximized }) !.WaitForExitAsync(), () => Trello == true),
+
+			// download zentimings
+			("Downloading ZenTimings", async () => await DownloadHelper.Download("https://github.com/irusanov/ZenTimings/releases/download/v1.39/ZenTimings_v1.39.zip", Path.GetTempPath(), "ZenTimings.zip"), () => ZenTimings == true),
+
+			// install zentimings
+			("Installing ZenTimings", async () => await ExtractHelper.Extract(Path.Combine(Path.GetTempPath(), "ZenTimings.zip"), Path.Combine(Path.GetTempPath(), "ZenTimings_temp")), () => ZenTimings == true),
+			("Installing ZenTimings", async () => Directory.Move(Path.Combine(Path.GetTempPath(), "ZenTimings_temp", "ZenTimings_v1.39"), Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "ZenTimings")), () => ZenTimings == true),
+			("Installing ZenTimings", async () => await ProcessActions.RunPowerShell(@"$Shell = New-Object -ComObject WScript.Shell; $Shortcut = $Shell.CreateShortcut([System.IO.Path]::Combine($env:ProgramData, 'Microsoft\Windows\Start Menu\Programs\ZenTimings.lnk')); $Shortcut.TargetPath = [System.IO.Path]::Combine($env:ProgramFiles, 'ZenTimings\ZenTimings.exe'); $Shortcut.Save()"), () => ZenTimings == true),
+			("Installing ZenTimings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\ZenTimings", "DisplayName", "ZenTimings", RegistryValueKind.String), () => ZenTimings == true),
+			("Installing ZenTimings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\ZenTimings", "UninstallString", $@"cmd /c rd /s /q ""{Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "ZenTimings")}"" & del ""{Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), @"Microsoft\Windows\Start Menu\Programs\ZenTimings.lnk")}"" & reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\ZenTimings"" /f", RegistryValueKind.String), () => ZenTimings == true),
+			("Installing ZenTimings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\ZenTimings", "DisplayIcon", Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), @"ZenTimings\ZenTimings.exe"), RegistryValueKind.String), () => ZenTimings == true),
+			("Installing ZenTimings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\ZenTimings", "Publisher", "Irusanov", RegistryValueKind.String), () => ZenTimings == true),
+			("Installing ZenTimings", async () => await Task.Delay(500), () => ZenTimings == true),
+			("Cleaning up ZenTimings files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "ZenTimings.zip")), () => ZenTimings == true),
+
+			// download occt
+			("Downloading OCCT", async () => await DownloadHelper.Download("https://www.ocbase.com/download/edition:Personal/os:Windows", Path.GetTempPath(), "OCCT.exe"), () => OCCT == true),
+
+			// install occt
+			("Installing OCCT", async () => Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "OCCT")), () => OCCT == true),
+			("Installing OCCT", async () => File.Move(Path.Combine(Path.GetTempPath(), "OCCT.exe"), Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "OCCT", "OCCT.exe"), true), () => OCCT == true),
+			("Installing OCCT", async () => await ProcessActions.RunPowerShell(@"$Shell = New-Object -ComObject WScript.Shell; $Shortcut = $Shell.CreateShortcut([System.IO.Path]::Combine($env:ProgramData, 'Microsoft\Windows\Start Menu\Programs\OCCT.lnk')); $Shortcut.TargetPath = [System.IO.Path]::Combine($env:ProgramFiles, 'OCCT\OCCT.exe'); $Shortcut.Save()"), () => OCCT == true),
+			("Installing OCCT", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\OCCT", "DisplayName", "OCCT", RegistryValueKind.String), () => OCCT == true),
+			("Installing OCCT", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\OCCT", "UninstallString", $@"cmd /c rd /s /q ""{Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "OCCT")}"" & del ""{Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), @"Microsoft\Windows\Start Menu\Programs\OCCT.lnk")}"" & reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\OCCT"" /f", RegistryValueKind.String), () => OCCT == true),
+			("Installing OCCT", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\OCCT", "DisplayIcon", Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), @"OCCT\OCCT.exe"), RegistryValueKind.String), () => OCCT == true),
+			("Installing OCCT", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\OCCT", "Publisher", "OCBASE", RegistryValueKind.String), () => OCCT == true),
+			("Installing OCCT", async () => await Task.Delay(500), () => OCCT == true),
+
+			// download hwinfo
+			("Downloading HWiNFO® 64", async () => await DownloadHelper.Download("https://www.hwinfo.com/files/hwi64_848.exe", Path.GetTempPath(), "hwi64.exe", reporter: reporter), () => HWInfo == true),
+
+			// install hwinfo
+			("Installing HWiNFO® 64", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "hwi64.exe"), Arguments = "/SP- /VERYSILENT /SUPPRESSMSGBOXES /NORESTART" , WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => HWInfo == true),
+			("Installing HWiNFO® 64", async () => { foreach (Process process in Process.GetProcessesByName("HWiNFO64")) { process.Kill(); process.WaitForExit(); } }, () => HWInfo == true),
+			("Cleaning up HWiNFO® 64 files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "hwi64.exe")), () => HWInfo == true),
 		
 			// download office
 			("Downloading Office", async () => await DownloadHelper.Download("https://officecdn.microsoft.com/pr/wsus/setup.exe", Path.GetTempPath(), "setup.exe", reporter: reporter), () => Word == true || Excel == true || PowerPoint == true || OneNote == true || Teams == true || Outlook == true || OneDrive == true),
