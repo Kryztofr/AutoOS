@@ -2090,7 +2090,7 @@ public partial class HeaderCarousel : ItemsControl
 				Process.Start(startInfo);
 			}
 
-			localSettings.Values[$"LastPlayed_{tile.Title}"] = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+			localSettings.Values[$"LastPlayed_{tile.Title}"] = DateTimeOffset.Now.ToUnixTimeSeconds();
 
 			if (currentSortKey.Equals("Recently Played", StringComparison.OrdinalIgnoreCase))
 			{
@@ -2406,7 +2406,7 @@ public partial class HeaderCarousel : ItemsControl
 				{
 					if (isRunning && !epicGameStartTimes.ContainsKey(ArtifactId))
 					{
-						epicGameStartTimes[ArtifactId] = DateTime.UtcNow;
+						epicGameStartTimes[ArtifactId] = DateTime.Now;
 					}
 					else if (!isRunning && epicGameStartTimes.TryGetValue(ArtifactId, out var startTime))
 					{

@@ -106,8 +106,9 @@ PowerWriteFriendlyName
 PropVariantClear
 QueryFullProcessImageName
 ReadProcessMemory
-RegLoadKeyW
-RegUnLoadKeyW
+RegCloseKey
+RegOpenKeyExW
+RegSetValueExW
 RegisterApplicationRestart
 SC_ACTION
 SC_ACTION_TYPE

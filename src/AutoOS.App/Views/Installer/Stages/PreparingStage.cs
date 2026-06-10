@@ -6,7 +6,6 @@ using AutoOS.Core.Helpers.Device;
 using AutoOS.Core.Helpers.GPU.Models;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.Win32;
-using System.Diagnostics;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using ValveKeyValue;
@@ -246,7 +245,7 @@ public static partial class PreparingStage
 			CorsairICue = (localSettings.Values["Peripherals"]?.ToString().Contains("Corsair iCUE") ?? false);
 			GHelper = (localSettings.Values["Peripherals"]?.ToString().Contains("GHelper") ?? false);
 
-			ViGEmBus = (localSettings.Values["Controllers"]?.ToString().Contains("ViGEmBus") ?? false);
+			ViGEmBus = (localSettings.Values["Controllers"]?.ToString().Contains("ViGEmBus") ?? false) || (localSettings.Values["Miscellaneous"]?.ToString().Contains("Apollo") ?? false);
 			HidHide = (localSettings.Values["Controllers"]?.ToString().Contains("HidHide") ?? false);
 			DualSenseY = (localSettings.Values["Controllers"]?.ToString().Contains("DualSenseY") ?? false);
 			RaceElement = (localSettings.Values["Controllers"]?.ToString().Contains("RaceElement") ?? false);

@@ -55,8 +55,6 @@ public static partial class StoreHelper
 		try
 		{
 			var files = await GetFiles(identifier, category, index);
-			if (files.Count == 0) return;
-
 			var main = files.First();
 			Debug.WriteLine($"[StoreHelper] Selected Package: {main.Name}");
 
@@ -92,7 +90,7 @@ public static partial class StoreHelper
 
 			await manager.StagePackageAsync(packageUri, null);
 			await manager.ProvisionPackageForAllUsersAsync(identifier);
-			await manager.RegisterPackageByFamilyNameAsync(identifier, null, DeploymentOptions.None, null, null);
+			await manager.AddPackageAsync(new Uri(mainPath), null, DeploymentOptions.ForceApplicationShutdown);
 		}
 		catch (Exception ex)
 		{

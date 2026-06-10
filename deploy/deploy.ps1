@@ -427,9 +427,9 @@ foreach ($Image in $Images) {
 		[TrustedInstaller]::Spawn(
 			"cmd /c fsutil 8dot3name strip /f /s `"$MountDirectory`""
 		)
-		reg load HKLM\Mount "$MountDirectory\Windows\System32\config\SYSTEM"
+		reg load HKLM\Mount "$MountDirectory\Windows\System32\config\SYSTEM" | Out-Null
 		Set-ItemProperty -Path "HKLM:\Mount\ControlSet001\Control\FileSystem" -Name "NtfsDisable8dot3NameCreation" -Value 1 -Type DWord -Force
-		reg unload HKLM\Mount
+		reg unload HKLM\Mount | Out-Null
 	} finally {
 		Write-Host "Unmounting install.wim..."
 		try {

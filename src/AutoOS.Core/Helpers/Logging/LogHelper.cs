@@ -247,7 +247,7 @@ public static partial class LogHelper
 			string lastPlayedGame = "";
 			if (localSettings.Values.TryGetValue($"LastPlayed_{game.Title}", out var val) && val is long ts && ts > 0)
 			{
-				DateTimeOffset lastPlayedDate = DateTimeOffset.FromUnixTimeSeconds(ts);
+				DateTimeOffset lastPlayedDate = DateTimeOffset.FromUnixTimeSeconds(ts).ToLocalTime();
 				lastPlayedGame = $" ({lastPlayedDate:dd MMM yyyy — HH:mm:ss})";
 			}
 			return $"{game.Title} ({game.Launcher}) ({game.PlayTime}){lastPlayedGame}";
@@ -263,8 +263,8 @@ public static partial class LogHelper
 		bool startParsed = DateTimeOffset.TryParse(startStr, out DateTimeOffset start);
 		bool endParsed = DateTimeOffset.TryParse(endStr, out DateTimeOffset end);
 
-		string startFormatted = startParsed ? start.ToString("dddd, dd MMM yyyy — HH:mm:ss") : (startStr ?? "N/A");
-		string endFormatted = endParsed ? end.ToString("dddd, dd MMM yyyy — HH:mm:ss") : (endStr ?? "N/A");
+		string startFormatted = startParsed ? start.ToLocalTime().ToString("dddd, dd MMM yyyy — HH:mm:ss") : (startStr ?? "N/A");
+		string endFormatted = endParsed ? end.ToLocalTime().ToString("dddd, dd MMM yyyy — HH:mm:ss") : (endStr ?? "N/A");
 
 		if (startParsed && endParsed)
 		{

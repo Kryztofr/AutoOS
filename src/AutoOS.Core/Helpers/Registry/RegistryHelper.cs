@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
 using System.ServiceProcess;
+using Windows.Win32.System.Registry;
 using Windows.Win32.Foundation;
 using Windows.Win32.Security;
 using Windows.Win32.System.Services;
@@ -16,8 +17,13 @@ namespace AutoOS.Core.Helpers.Registry;
 
 public static partial class RegistryHelper
 {
-	public enum Identity { CurrentUser, TrustedInstaller, System }
 
+	public const uint ApplicationDataBoolean = 0x5f5e10b;
+	public const uint ApplicationDataString = 0x5f5e10c;
+	public const uint ApplicationDataBool = 0x5f5e104;
+	public const uint ApplicationDataInt32 = 0x5f5e107;
+
+	public enum Identity { CurrentUser, TrustedInstaller, System }
 	private static SafeAccessTokenHandle _currentUserToken;
 	private static SafeAccessTokenHandle _trustedInstallerToken;
 	private static SafeAccessTokenHandle _systemToken;
@@ -122,6 +128,45 @@ public static partial class RegistryHelper
 		});
 	}
 
+	public static void SetValue(Identity identity, string keyPath, string valueName, uint type, byte[] data)
+	{
+		RunAs(identity, () =>
+		{
+			string[] parts = keyPath.Split('\\', 2);
+			if (parts.Length < 2)
+				throw new ArgumentException($"Invalid registry key path: {keyPath}");
+
+			string rootName = parts[0].ToUpperInvariant();
+			string subKey = parts[1];
+
+			unsafe
+			{
+				SafeRegistryHandle hRoot = rootName switch
+				{
+					"HKEY_CURRENT_USER" or "HKCU" => new SafeRegistryHandle(unchecked((nint)0x80000001), false),
+					"HKEY_LOCAL_MACHINE" or "HKLM" => new SafeRegistryHandle(unchecked((nint)0x80000002), false),
+					"HKEY_CLASSES_ROOT" or "HKCR" => new SafeRegistryHandle(unchecked((nint)0x80000000), false),
+					"HKEY_USERS" or "HKU" => new SafeRegistryHandle(unchecked((nint)0x80000003), false),
+					"HKEY_CURRENT_CONFIG" or "HKCC" => new SafeRegistryHandle(unchecked((nint)0x80000005), false),
+					_ => throw new ArgumentException($"Unsupported registry root: {rootName}")
+				};
+
+				if (PInvoke.RegOpenKeyEx(hRoot, subKey, 0, REG_SAM_FLAGS.KEY_SET_VALUE, out SafeRegistryHandle hSubKey) != WIN32_ERROR.ERROR_SUCCESS)
+					throw new Win32Exception(Marshal.GetLastWin32Error());
+
+				using (hSubKey)
+				{
+					fixed (char* pValueName = valueName)
+					fixed (byte* pData = data)
+					{
+						if (PInvoke.RegSetValueEx(new HKEY(hSubKey.DangerousGetHandle()), pValueName, 0, (REG_VALUE_TYPE)type, pData, (uint)data.Length) != WIN32_ERROR.ERROR_SUCCESS)
+							throw new Win32Exception(Marshal.GetLastWin32Error());
+					}
+				}
+			}
+		});
+	}
+
 	public static void DeleteValue(Identity identity, string keyPath, string valueName)
 	{
 		RunAs(identity, () =>
@@ -143,7 +188,7 @@ public static partial class RegistryHelper
 
 	public static string[] GetValueNames(Identity identity, string keyPath)
 	{
-		string[] names = Array.Empty<string>();
+		string[] names = [];
 		RunAs(identity, () =>
 		{
 			var (root, subKeyPath) = ParseKeyPath(keyPath);
@@ -157,22 +202,22 @@ public static partial class RegistryHelper
 	}
 
 	private static (RegistryKey root, string subKey) ParseKeyPath(string fullPath)
-	{
+			{
 		int firstBackslash = fullPath.IndexOf('\\');
 		if (firstBackslash == -1) return (null!, fullPath);
 
 		string rootName = fullPath.Substring(0, firstBackslash).ToUpperInvariant();
 		string subKey = fullPath.Substring(firstBackslash + 1);
 
-		RegistryKey root = rootName switch
-		{
-			"HKEY_CURRENT_USER" or "HKCU" => Microsoft.Win32.Registry.CurrentUser,
-			"HKEY_LOCAL_MACHINE" or "HKLM" => Microsoft.Win32.Registry.LocalMachine,
-			"HKEY_CLASSES_ROOT" or "HKCR" => Microsoft.Win32.Registry.ClassesRoot,
-			"HKEY_USERS" or "HKU" => Microsoft.Win32.Registry.Users,
-			"HKEY_CURRENT_CONFIG" or "HKCC" => Microsoft.Win32.Registry.CurrentConfig,
-			_ => throw new ArgumentException($"Unsupported registry root: {rootName}")
-		};
+			RegistryKey root = rootName switch
+			{
+				"HKEY_CURRENT_USER" or "HKCU" => Microsoft.Win32.Registry.CurrentUser,
+				"HKEY_LOCAL_MACHINE" or "HKLM" => Microsoft.Win32.Registry.LocalMachine,
+				"HKEY_CLASSES_ROOT" or "HKCR" => Microsoft.Win32.Registry.ClassesRoot,
+				"HKEY_USERS" or "HKU" => Microsoft.Win32.Registry.Users,
+				"HKEY_CURRENT_CONFIG" or "HKCC" => Microsoft.Win32.Registry.CurrentConfig,
+				_ => throw new ArgumentException($"Unsupported registry root: {rootName}")
+			};
 
 		return (root, subKey);
 	}
@@ -233,21 +278,15 @@ public static partial class RegistryHelper
 		return WindowsIdentity.RunImpersonated(sysToken, () =>
 		{
 			EnablePrivilege("SeDebugPrivilege");
+
 			using (var sc = new ServiceController("TrustedInstaller"))
 			{
-				if (sc.Status == ServiceControllerStatus.Stopped)
+				if (sc.Status != ServiceControllerStatus.Running)
 				{
-					try
-					{
-						sc.Start();
-					}
-					catch
-					{
-						ServicesHelper.SetStartupType("TrustedInstaller", SERVICE_START_TYPE.SERVICE_DEMAND_START);
-						sc.Start();
-					}
+					ServicesHelper.SetStartupType("TrustedInstaller", SERVICE_START_TYPE.SERVICE_DEMAND_START);
+					sc.Start();
+					sc.WaitForStatus(ServiceControllerStatus.Running, TimeSpan.FromSeconds(5));
 				}
-				sc.WaitForStatus(ServiceControllerStatus.Running, TimeSpan.FromSeconds(10));
 			}
 
 			var tiProcess = Process.GetProcessesByName("TrustedInstaller").FirstOrDefault() ?? throw new Exception("TrustedInstaller not found.");

@@ -45,7 +45,7 @@ public static partial class ShortcutHelper
 {
 	private static readonly Guid CLSID_ShellLink = new("00021401-0000-0000-C000-000000000046");
 
-	public static unsafe void Create(string shortcutPath, string targetPath)
+	public static unsafe void Create(string shortcutPath, string targetPath, string? startIn = null)
 	{
 		Guid iidLink = typeof(IShellLinkW).GUID;
 		Marshal.ThrowExceptionForHR((int)PInvoke.CoCreateInstance(in CLSID_ShellLink, null, CLSCTX.CLSCTX_INPROC_SERVER, in iidLink, out void* ppv));
@@ -53,6 +53,8 @@ public static partial class ShortcutHelper
 		var cw = new StrategyBasedComWrappers();
 		var link = (IShellLinkW)cw.GetOrCreateObjectForComInstance((nint)ppv, CreateObjectFlags.UniqueInstance);
 		link.SetPath(targetPath);
+		if (startIn != null)
+			link.SetWorkingDirectory(startIn);
 
 		Guid iidFile = typeof(IPersistFile).GUID;
 		Marshal.ThrowExceptionForHR(Marshal.QueryInterface((nint)ppv, in iidFile, out nint ppvFile));
