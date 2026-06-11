@@ -11,16 +11,16 @@
     <PackageVersion Include="DevWinUI" Version="10.0.0-Preview4" />
     <PackageVersion Include="Downloader" Version="5.8.0" />
     <PackageVersion Include="LevelDBSharp" Version="1.0.0" />
-    <PackageVersion Include="Microsoft.Windows.CsWin32" Version="0.3.275" />
+    <PackageVersion Include="Microsoft.Windows.CsWin32" Version="0.3.287" />
     <PackageVersion Include="Microsoft.Windows.CsWinRT" Version="2.3.0-prerelease.251115.2" />
     <PackageVersion Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.28000.1839" />
-    <PackageVersion Include="Microsoft.WindowsAppSDK" Version="2.1.4-experimental8" />
+    <PackageVersion Include="Microsoft.WindowsAppSDK" Version="2.2.2-experimental9" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.5-beta1" />
     <PackageVersion Include="nucs.JsonSettings" Version="2.0.2" />
     <PackageVersion Include="nucs.JsonSettings.AutoSaveGenerator" Version="2.0.4" />
     <PackageVersion Include="Selenium.Support" Version="4.44.0" />
     <PackageVersion Include="Selenium.WebDriver" Version="4.44.0" />
-    <PackageVersion Include="System.ServiceProcess.ServiceController" Version="11.0.0-preview.4.26230.115" />
+    <PackageVersion Include="System.ServiceProcess.ServiceController" Version="11.0.0-preview.5.26302.115" />
     <PackageVersion Include="ValveKeyValue" Version="0.70.0.499" />
   </ItemGroup>
 </Project>
