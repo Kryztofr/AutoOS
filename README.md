@@ -29,7 +29,7 @@ There are plenty of "Windows Debloat" scripts and apps out there, but most of th
 
 There is also a lot of Discord Servers selling services to apply custom ISOs / playbooks that contain copy pasted tweaks or install poorly coded AI utilities that rely on poor research and public knowledge.
 
-With AutoOS I have completely reimagined the way Windows is installed and used. AutoOS is written in **C#** and **WinUI3** while being fully **NativeAOT** compatible and utilizing **Win32 APIs**. It is tailored towards **competitive gamers** and **power users** while being **fully open source** and receiving **regular updates** that don't require you to reinstall Windows every time. All the changes are also applied to **new user accounts**, making it an **ideal choice** for **you** and **your siblings**.
+With AutoOS I have completely reimagined the way Windows is installed and used. AutoOS is written in **C#** and **WinUI3** while being fully **NativeAOT** compatible and utilizing **Win32 APIs**. It is tailored towards **competitive gamers** and **power users** while being **fully open source** and receiving **regular updates** that don't require you to reinstall Windows every time. All the changes are also applied to **new user accounts**, making it an **ideal choice** for shared PCs.
 
 ### The Installation Process
 For the installation, users are provided with the latest `25H2 Professional ISO` which is built and updated by GitHub Actions using the `uupdump API`. Check out my [uup-dump-get-windows-iso](https://github.com/tinodin/uup-dump-get-windows-iso) repository.

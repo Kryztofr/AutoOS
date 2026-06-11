@@ -118,7 +118,7 @@ namespace AutoOS.Views.Settings
 			}
 
 			// enable "low latency profile"
-			if (ubr >= 8524)
+			if (ubr >= 8524 && Convert.ToInt32(Registry.GetValue(@"HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\FeatureManagement\Overrides\8\3650112648", "EnabledState", 0)) != 2)
 			{
 				RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\FeatureManagement\Overrides\8\3650112648", "EnabledState", 2, RegistryValueKind.DWord);
 				RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\FeatureManagement\Overrides\8\3650112648", "EnabledStateOptions", 0, RegistryValueKind.DWord);
