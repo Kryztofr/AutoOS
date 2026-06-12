@@ -38,7 +38,9 @@ Click on the support page, head to drivers and select Windows 11 (if available),
 <details>
 <summary>If you have an Intel <b>10th Generation and up Prebuilt PC</b> or <b>Laptop</b>, click to expand</summary>
 <br/>
-Open Device Manager (`devmgmt.msc`) and look for anything containing "**Intel**" under the `Storage controllers` section. If there are none, continue with Step 4.<br/>
+
+Open Device Manager (`devmgmt.msc`) and look for anything containing "**Intel**" under the `Storage controllers` section.<br/>
+If there are none, continue with Step 4.<br/>
 
 If there is an "**Intel**" entry, you have **2 options**:
 
