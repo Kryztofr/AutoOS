@@ -76,7 +76,7 @@ public sealed partial class ApplicationsPage : Page
 			new() { Text = "Amazon Music", ImageSource = "ms-appx:///Assets/Fluent/AmazonMusic.png", IsInstalled = Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Packages", "AmazonMobileLLC.AmazonMusic_kc6t79cpj4tp0")) },
 			new() { Text = "Deezer Music", ImageSource = "ms-appx:///Assets/Fluent/DeezerMusic.png", IsInstalled = Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Packages", "Deezer.62021768415AF_q7m17pa7q8kj0")) },
 			new() { Text = "Spotify", ImageSource = "ms-appx:///Assets/Fluent/Spotify.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Spotify", "Spotify.exe")) },
-			new() { Text = "MusicBee", ImageSource = "ms-appx:///Assets/Fluent/MusicBee.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "MusicBee", "MusicBee.exe")) }
+			new() { Text = "MusicBee", ImageSource = "ms-appx:///Assets/Fluent/MusicBee.png", IsInstalled = Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Packages", "50072StevenMayall.MusicBee_kcr266et74avj")) }
 		};
 		foreach (var item in musicList.Where(item => !item.IsInstalled))
 			musicItems.Add(item);

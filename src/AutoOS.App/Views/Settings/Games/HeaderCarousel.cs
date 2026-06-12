@@ -2147,6 +2147,7 @@ public partial class HeaderCarousel : ItemsControl
 				"DataExchangeHost",
 				"EasyAntiCheat_EOS",
 				"EpicGamesLauncher",
+				"EpicOnlineServicesUserHelper",
 				"explorer",
 				"Everything",
 				//"Files",

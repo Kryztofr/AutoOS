@@ -1547,6 +1547,7 @@ public static class ApplicationStage
 			("Disabling Office startup entries", async () => TaskSchedulerHelper.Toggle(@"\Microsoft\Office\Office Feature Updates", false), () => Word || Excel || PowerPoint || OneNote || Teams || Outlook || OneDrive),
 			("Disabling Office startup entries", async () => TaskSchedulerHelper.Toggle(@"\Microsoft\Office\Office Feature Updates Logon", false), () => Word || Excel || PowerPoint || OneNote || Teams || Outlook || OneDrive),
 			("Disabling Office startup entries", async () => TaskSchedulerHelper.Toggle(@"\Microsoft\Office\Office Performance Monitor", false), () => Word || Excel || PowerPoint || OneNote || Teams || Outlook || OneDrive),
+			("Disabling Office startup entries", async () => TaskSchedulerHelper.Toggle(@"\Microsoft\Office\Office Startup Maintenance", false), () => Word || Excel || PowerPoint || OneNote || Teams || Outlook || OneDrive),
 			("Disabling Office startup entries", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_CLASSES_ROOT\PROTOCOLS\Handler\AutorunsDisabled\mso-minsb.16\CLSID", "", "{42089D2D-912D-4018-9087-2B87803E93FB}", RegistryValueKind.String), () => OneDrive == true),
 			("Disabling Office startup entries", async () => RegistryHelper.DeleteKey(RegistryHelper.Identity.TrustedInstaller, @"HKEY_CLASSES_ROOT\PROTOCOLS\Handler\mso-minsb.16"), () => OneDrive == true),
 			("Disabling Office startup entries", async () => TaskSchedulerHelper.Toggle("OneDrive Per-Machine Standalone Update Task", false), () => OneDrive == true),

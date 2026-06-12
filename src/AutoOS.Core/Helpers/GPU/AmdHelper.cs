@@ -102,6 +102,7 @@ public static partial class AmdHelper
 			("Accepting EULA", async () => RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_CURRENT_USER\Software\AMD\CN\DisplayOverride", "EulaAccepted", "true", RegistryValueKind.String, true), null),
 
 			// settings -> system
+			(@"Disabling ""Issue detection""", async () => await Process.Start(new ProcessStartInfo { FileName = "reg.exe", Arguments = $@"load HKU\DefaultUser ""{Path.Combine(Path.GetPathRoot(Environment.SystemDirectory)!, "Users", "Default", "NTUSER.DAT")}""", CreateNoWindow = true })!.WaitForExitAsync(), null),
 			(@"Disabling ""Issue detection""", async () => RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_CURRENT_USER\Software\AMD\AIM", "LaunchBugTool", 0, RegistryValueKind.DWord, true), null),
 
 			// settings -> hotkeys
@@ -128,6 +129,7 @@ public static partial class AmdHelper
 
 			// set theme to system
 			(@"Setting ""Theme"" to ""System""", async () => RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_CURRENT_USER\Software\AMD\CN", "RSXColorScheme", 0, RegistryValueKind.DWord, true), null),
+			(@"Setting ""Theme"" to ""System""", async () => await Process.Start(new ProcessStartInfo { FileName = "reg.exe", Arguments = @"unload HKU\DefaultUser", CreateNoWindow = true })!.WaitForExitAsync(), null),
 
 			// disable "radeon™ super resolution"
 			(@"Disabling ""Radeon™ Super Resolution""", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "KMD_RadeonUpscalingEnabled", 0, RegistryValueKind.DWord), null),
