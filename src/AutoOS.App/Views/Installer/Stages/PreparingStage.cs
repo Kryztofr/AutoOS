@@ -36,6 +36,7 @@ public static partial class PreparingStage
 	public static bool Zen;
 	public static bool Waterfox;
 	public static bool LibreWolf;
+	public static bool Mullvad;
 	public static bool uBlock;
 	public static bool PrivacyBadger;
 	public static bool Decentraleyes;
@@ -201,6 +202,7 @@ public static partial class PreparingStage
 			Zen = (localSettings.Values["Browsers"]?.ToString().Contains("Zen") ?? false);
 			Waterfox = (localSettings.Values["Browsers"]?.ToString().Contains("Waterfox") ?? false);
 			LibreWolf = (localSettings.Values["Browsers"]?.ToString().Contains("LibreWolf") ?? false);
+			Mullvad = (localSettings.Values["Browsers"]?.ToString().Contains("Mullvad Browser") ?? false);
 
 			uBlock = (localSettings.Values["Extensions"]?.ToString().Contains("uBlock Origin") ?? false);
 			PrivacyBadger = (localSettings.Values["Extensions"]?.ToString().Contains("Privacy Badger") ?? false);
@@ -261,7 +263,7 @@ public static partial class PreparingStage
 
 			VisualStudio = (localSettings.Values["Development"]?.ToString().Contains("Visual Studio") ?? false);
 			VisualStudioCode = (localSettings.Values["Development"]?.ToString().Contains("Visual Studio Code") ?? false);
-			Antigravity = (localSettings.Values["Development"]?.ToString().Contains("Antigravity") ?? false);
+			Antigravity = (localSettings.Values["Development"]?.ToString().Contains("Antigravity IDE") ?? false);
 			Cursor = (localSettings.Values["Development"]?.ToString().Contains("Cursor") ?? false);
 			Devin = (localSettings.Values["Development"]?.ToString().Contains("Devin") ?? false);
 			WinMerge = (localSettings.Values["Development"]?.ToString().Contains("WinMerge") ?? false);

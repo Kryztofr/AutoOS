@@ -38,7 +38,8 @@ public sealed partial class BrowsersPage : Page
 			new() { Text = "Firefox", ImageSource = "ms-appx:///Assets/Fluent/Firefox.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Mozilla Firefox", "firefox.exe")) },
 			new() { Text = "Zen", ImageSource = "ms-appx:///Assets/Fluent/Zen.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Zen Browser", "zen.exe")) },
 			new() { Text = "Waterfox", ImageSource = "ms-appx:///Assets/Fluent/Waterfox.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Waterfox", "waterfox.exe")) },
-			new() { Text = "LibreWolf", ImageSource = "ms-appx:///Assets/Fluent/Librewolf.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "LibreWolf", "librewolf.exe")) }
+			new() { Text = "LibreWolf", ImageSource = "ms-appx:///Assets/Fluent/Librewolf.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "LibreWolf", "librewolf.exe")) },
+			new() { Text = "Mullvad Browser", ImageSource = "ms-appx:///Assets/Fluent/Mullvad.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Mullvad", "MullvadBrowser", "Release", "mullvadbrowser.exe")) }
 		};
 		foreach (var item in browsers.Where(item => !item.IsInstalled))
 			browserItems.Add(item);
@@ -92,6 +93,7 @@ public sealed partial class BrowsersPage : Page
 			Zen = selectedBrowsers.Contains("Zen"),
 			Waterfox = selectedBrowsers.Contains("Waterfox"),
 			LibreWolf = selectedBrowsers.Contains("LibreWolf"),
+			Mullvad = selectedBrowsers.Contains("Mullvad Browser"),
 
 			uBlock = selectedExtensions.Contains("uBlock Origin"),
 			SponsorBlock = selectedExtensions.Contains("SponsorBlock"),

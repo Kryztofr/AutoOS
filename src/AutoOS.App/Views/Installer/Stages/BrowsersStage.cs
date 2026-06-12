@@ -27,6 +27,7 @@ public class BrowserSelection
 	public bool Zen { get; set; }
 	public bool Waterfox { get; set; }
 	public bool LibreWolf { get; set; }
+	public bool Mullvad { get; set; }
 	public bool uBlock { get; set; }
 	public bool PrivacyBadger { get; set; }
 	public bool Decentraleyes { get; set; }
@@ -63,6 +64,7 @@ public static class BrowsersStage
 		bool? Zen = selection?.Zen ?? PreparingStage.Zen;
 		bool? Waterfox = selection?.Waterfox ?? PreparingStage.Waterfox;
 		bool? LibreWolf = selection?.LibreWolf ?? PreparingStage.LibreWolf;
+		bool? Mullvad = selection?.Mullvad ?? PreparingStage.Mullvad;
 		bool? uBlock = selection?.uBlock ?? PreparingStage.uBlock;
 		bool? PrivacyBadger = selection?.PrivacyBadger ?? PreparingStage.PrivacyBadger;
 		bool? Decentraleyes = selection?.Decentraleyes ?? PreparingStage.Decentraleyes;
@@ -849,6 +851,61 @@ public static class BrowsersStage
 
 			// install 1password extension
 			("Installing 1Password Extension", async () => UpdatePolicies(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "LibreWolf", "distribution", "policies.json"), "https://addons.mozilla.org/firefox/downloads/latest/1password-x-password-manager"), () => LibreWolf == true && OnePassword == true),
+
+			// download mullvad
+			("Downloading Mullvad Browser", async () => await DownloadHelper.Download("https://mullvad.net/en/download/browser/win64/latest", Path.GetTempPath(), "mullvad-browser-windows-x86_64.exe", reporter ?? new InstallPageReporter()), () => Mullvad == true),
+
+			// install mullvad
+			("Installing Mullvad Browser", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "mullvad-browser-windows-x86_64.exe"), Arguments = "/S /MaintenanceService=false /DesktopShortcut=false /StartMenuShortcut=true", WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => Mullvad == true),
+			("Cleaning up Mullvad Browser files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "mullvad-browser-windows-x86_64.exe")), () => Mullvad == true),
+
+			// pin mullvad to the taskbar
+			("Pinning Mullvad Browser to the taskbar", async () => await ProcessActions.PinToTaskbar("Link", Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Microsoft", "Windows", "Start Menu", "Programs", "Mullvad Browser.lnk")), () => Mullvad == true),
+
+			// optimize mullvad settings
+			("Optimizing Mullvad Browser settings", async () => Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Mullvad", "MullvadBrowser", "Release", "distribution")), () => Mullvad == true),
+			("Optimizing Mullvad Browser settings", async () => File.WriteAllText(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Mullvad", "MullvadBrowser", "Release", "defaults", "pref", "autoconfig.js"), "pref(\"general.config.filename\", \"mullvad.cfg\");\npref(\"general.config.obscure_value\", 0);"), () => Mullvad == true),
+			("Optimizing Mullvad Browser settings", async () => File.WriteAllText(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Mullvad", "MullvadBrowser", "Release", "mullvad.cfg"), "defaultPref(\"app.shield.optoutstudies.enabled\", false);\ndefaultPref(\"browser.search.serpEventTelemetryCategorization.enabled\", false);\ndefaultPref(\"dom.security.unexpected_system_load_telemetry_enabled\", false);\ndefaultPref(\"identity.fxaccounts.telemetry.clientAssociationPing.enabled\", false);\ndefaultPref(\"network.trr.confirmation_telemetry_enabled\", false);\ndefaultPref(\"nimbus.telemetry.targetingContextEnabled\", false);\ndefaultPref(\"reader.parse-on-load.enabled\", false);\ndefaultPref(\"telemetry.fog.init_on_shutdown\", false);\ndefaultPref(\"default-browser-agent.enabled\", false);\ndefaultPref(\"widget.windows.mica\", true);\ndefaultPref(\"widget.windows.mica.popups\", 1);\ndefaultPref(\"widget.windows.mica.toplevel-backdrop\", 0);"), () => Mullvad == true),
+			("Optimizing Mullvad Browser settings", async () => File.WriteAllText(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Mullvad", "MullvadBrowser", "Release", "distribution", "policies.json"), "{\r\n  \"policies\": {}\r\n}"), () => Mullvad == true),
+
+			// install ublock origin extension
+			("Installing uBlock Origin Extension", async () => UpdatePolicies(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Mullvad", "MullvadBrowser", "Release", "distribution", "policies.json"), "https://addons.mozilla.org/firefox/downloads/latest/ublock-origin"), () => Mullvad == true && uBlock == true),
+
+			// install privacy badger extension
+			("Installing Privacy Badger Extension", async () => UpdatePolicies(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Mullvad", "MullvadBrowser", "Release", "distribution", "policies.json"), "https://addons.mozilla.org/firefox/downloads/latest/privacy-badger17"), () => Mullvad == true && PrivacyBadger == true),
+
+			// install decentraleyes extension
+			("Installing Decentraleyes Extension", async () => UpdatePolicies(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Mullvad", "MullvadBrowser", "Release", "distribution", "policies.json"), "https://addons.mozilla.org/firefox/downloads/latest/decentraleyes"), () => Mullvad == true && Decentraleyes == true),
+
+			// install i still don't care about cookies extension
+			("Installing I still don't care about cookies Extension", async () => UpdatePolicies(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Mullvad", "MullvadBrowser", "Release", "distribution", "policies.json"), "https://addons.mozilla.org/firefox/downloads/latest/istilldontcareaboutcookies"), () => Mullvad == true && Cookies == true),
+
+			// install violentmonkey extension
+			("Installing Violentmonkey Extension", async () => UpdatePolicies(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Mullvad", "MullvadBrowser", "Release", "distribution", "policies.json"), "https://addons.mozilla.org/firefox/downloads/latest/violentmonkey"), () => Mullvad == true && Violentmonkey == true),
+
+			// install tampermonkey extension
+			("Installing Tampermonkey Extension", async () => UpdatePolicies(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Mullvad", "MullvadBrowser", "Release", "distribution", "policies.json"), "https://addons.mozilla.org/firefox/downloads/latest/tampermonkey"), () => Mullvad == true && Tampermonkey == true),
+
+			// install sponsorblock extension
+			("Installing SponsorBlock Extension", async () => UpdatePolicies(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Mullvad", "MullvadBrowser", "Release", "distribution", "policies.json"), "https://addons.mozilla.org/firefox/downloads/latest/sponsorblock"), () => Mullvad == true && SponsorBlock == true),
+
+			// install return youtube dislike extension
+			("Installing Return YouTube Dislike Extension", async () => UpdatePolicies(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Mullvad", "MullvadBrowser", "Release", "distribution", "policies.json"), "https://addons.mozilla.org/firefox/downloads/latest/return-youtube-dislikes"), () => Mullvad == true && ReturnYouTubeDislike == true),
+
+			// install dark reader extension
+			("Installing Dark Reader Extension", async () => UpdatePolicies(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Mullvad", "MullvadBrowser", "Release", "distribution", "policies.json"), "https://addons.mozilla.org/firefox/downloads/latest/darkreader"), () => Mullvad == true && DarkReader == true),
+
+			// install wayback machine extension
+			("Installing Wayback Machine Extension", async () => UpdatePolicies(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Mullvad", "MullvadBrowser", "Release", "distribution", "policies.json"), "https://addons.mozilla.org/firefox/downloads/latest/wayback-machine_new"), () => Mullvad == true && WaybackMachine == true),
+
+			// install icloud passwords extension
+			("Installing iCloud Passwords Extension", async () => UpdatePolicies(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Mullvad", "MullvadBrowser", "Release", "distribution", "policies.json"), "https://addons.mozilla.org/firefox/downloads/latest/icloud-passwords"), () => Mullvad == true && iCloud == true),
+
+			// install bitwarden extension
+			("Installing Bitwarden Extension", async () => UpdatePolicies(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Mullvad", "MullvadBrowser", "Release", "distribution", "policies.json"), "https://addons.mozilla.org/firefox/downloads/latest/bitwarden-password-manager"), () => Mullvad == true && Bitwarden == true),
+
+			// install 1password extension
+			("Installing 1Password Extension", async () => UpdatePolicies(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Mullvad", "MullvadBrowser", "Release", "distribution", "policies.json"), "https://addons.mozilla.org/firefox/downloads/latest/1password-x-password-manager"), () => Mullvad == true && OnePassword == true),
 		};
 
 		if (selection != null)

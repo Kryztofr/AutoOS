@@ -228,7 +228,7 @@ public sealed partial class ApplicationsPage : Page
 		var selectedDev = selectedDevItems.Select(item => item.Text).ToList();
 		selection.VisualStudio = selectedDev.Contains("Visual Studio");
 		selection.VisualStudioCode = selectedDev.Contains("Visual Studio Code");
-		selection.Antigravity = selectedDev.Contains("Antigravity");
+		selection.Antigravity = selectedDev.Contains("Antigravity IDE");
 		selection.Cursor = selectedDev.Contains("Cursor");
 		selection.Devin = selectedDev.Contains("Devin");
 		selection.WinMerge = selectedDev.Contains("WinMerge");

@@ -59,7 +59,6 @@ AutoOS/
         Assets/Applications # Third Party Applications
         Assets/Fluent # Icons
         Assets/NavViewMenu # Navigation View
-        Assets/Scripts # Installation Scripts
       Views/Installer # AutoOS Installer pages
         Views/Installer/Stages # AutoOS Installer Stages
       Views/Settings # AutoOS Settings pages
