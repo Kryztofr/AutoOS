@@ -18,7 +18,7 @@ namespace AutoOS.Views.Installer
 		
 		private async void HomeLandingPage_Loaded(object sender, RoutedEventArgs e)
 		{
-			#if !DEBUG
+#if !DEBUG
 			using var key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion");
 
 			if (key.GetValue("InstallDate") is int unixSeconds)
@@ -40,7 +40,7 @@ namespace AutoOS.Views.Installer
 			}
 
 			var (major, minor, build, ubr) = OSHelper.GetWindowsVersion();
-			if (build < 26200 || (build == 26200 && ubr < 8521))
+			if (build < 26200 || (build == 26200 && ubr < 8655))
 			{
 				var dialog = new ContentDialog
 				{
@@ -54,7 +54,7 @@ namespace AutoOS.Views.Installer
 				Application.Current.Exit();
 			}
 				
-			#endif
+#endif
 
 			// enable app access to location
 			await RegistryHelper.RunAs(RegistryHelper.Identity.TrustedInstaller, new ProcessStartInfo { FileName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System), "SystemSettingsAdminFlows.exe"), Arguments = "SetCamSystemGlobal location 1", CreateNoWindow = true });
