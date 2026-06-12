@@ -459,6 +459,7 @@ else {
 Write-Host "`n===== Step 7: Add unattend.xml =====`n"
 Write-Host "Adding unattend.xml..."
 New-Item -ItemType Directory -Path $TargetDrive\Windows\Panther -Force | Out-Null
+Add-MpPreference -ExclusionPath "$TargetDrive\Windows\Panther"
 Invoke-WebRequest -Uri "https://raw.githubusercontent.com/tinodin/AutoOS/master/deploy/unattend.xml" -OutFile $TargetDrive\Windows\Panther\unattend.xml
 
 Write-Host "`n===== Step 8: Create Boot Entry =====`n"
