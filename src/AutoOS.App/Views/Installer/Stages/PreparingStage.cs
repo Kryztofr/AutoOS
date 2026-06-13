@@ -88,6 +88,7 @@ public static partial class PreparingStage
 	public static bool LogitechGHub;
 	public static bool LogitechOnboardMemoryManager;
 	public static bool Wootility;
+	public static bool EndgameGear;
 	public static bool SteelSeriesGG;
 	public static bool RazerSynapse;
 	public static bool CorsairICue;
@@ -122,6 +123,7 @@ public static partial class PreparingStage
 
 	public static bool Reaper;
 	public static bool FlexASIO;
+	public static bool ASIO4ALL;
 
 	public static bool Word;
 	public static bool Excel;
@@ -135,6 +137,7 @@ public static partial class PreparingStage
 	public static bool MinitoolPartitionWizard;
 	public static bool AomeiPartitionAssistant;
 	public static bool WizTree;
+	public static bool CrystalDiskMark;
 	public static bool BulkCrapUninstaller;
 	public static bool BluetoothAudioReceiver;
 	public static bool AnyDesk;
@@ -255,6 +258,7 @@ public static partial class PreparingStage
 			LogitechGHub = (localSettings.Values["Peripherals"]?.ToString().Contains("Logitech G HUB") ?? false);
 			LogitechOnboardMemoryManager = (localSettings.Values["Peripherals"]?.ToString().Contains("Logitech Onboard Memory Manager") ?? false);
 			Wootility = (localSettings.Values["Peripherals"]?.ToString().Contains("Wootility") ?? false);
+			EndgameGear = (localSettings.Values["Peripherals"]?.ToString().Contains("Endgame Gear") ?? false);
 			CorsairICue = (localSettings.Values["Peripherals"]?.ToString().Contains("Corsair iCUE") ?? false);
 			GHelper = (localSettings.Values["Peripherals"]?.ToString().Contains("GHelper") ?? false);
 
@@ -287,6 +291,7 @@ public static partial class PreparingStage
 
 			Reaper = (localSettings.Values["Music Production"]?.ToString().Contains("Reaper") ?? false);
 			FlexASIO = (localSettings.Values["Music Production"]?.ToString().Contains("FlexASIO") ?? false);
+			ASIO4ALL = (localSettings.Values["Music Production"]?.ToString().Contains("ASIO4ALL") ?? false);
 
 			Word = (localSettings.Values["Office"]?.ToString().Contains("Word") ?? false);
 			Excel = (localSettings.Values["Office"]?.ToString().Contains("Excel") ?? false);
@@ -300,6 +305,7 @@ public static partial class PreparingStage
 			MinitoolPartitionWizard = (localSettings.Values["Miscellaneous"]?.ToString().Contains("Minitool Partition Wizard") ?? false);
 			AomeiPartitionAssistant = (localSettings.Values["Miscellaneous"]?.ToString().Contains("AOMEI Partition Assistant") ?? false);
 			WizTree = (localSettings.Values["Miscellaneous"]?.ToString().Contains("WizTree") ?? false);
+			CrystalDiskMark = (localSettings.Values["Miscellaneous"]?.ToString().Contains("CrystalDiskMark") ?? false);
 			BulkCrapUninstaller = (localSettings.Values["Miscellaneous"]?.ToString().Contains("Bulk Crap Uninstaller") ?? false);
 			BluetoothAudioReceiver = (localSettings.Values["Miscellaneous"]?.ToString().Contains("BluetoothAudioReceiver") ?? false);
 			AnyDesk = (localSettings.Values["Miscellaneous"]?.ToString().Contains("AnyDesk") ?? false);

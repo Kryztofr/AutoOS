@@ -55,6 +55,7 @@ public class ApplicationSelection
 	public bool LogitechGHub { get; set; }
 	public bool LogitechOnboardMemoryManager { get; set; }
 	public bool Wootility { get; set; }
+	public bool EndgameGear { get; set; }
 	public bool SteelSeriesGG { get; set; }
 	public bool RazerSynapse { get; set; }
 	public bool CorsairICue { get; set; }
@@ -85,6 +86,7 @@ public class ApplicationSelection
 	public bool OCCT { get; set; }
 	public bool Reaper { get; set; }
 	public bool FlexASIO { get; set; }
+	public bool ASIO4ALL { get; set; }
 	public bool Word { get; set; }
 	public bool Excel { get; set; }
 	public bool PowerPoint { get; set; }
@@ -96,6 +98,7 @@ public class ApplicationSelection
 	public bool MinitoolPartitionWizard { get; set; }
 	public bool AomeiPartitionAssistant { get; set; }
 	public bool WizTree { get; set; }
+	public bool CrystalDiskMark { get; set; }
 	public bool BulkCrapUninstaller { get; set; }
 	public bool BluetoothAudioReceiver { get; set; }
 	public bool AnyDesk { get; set; }
@@ -160,6 +163,7 @@ public static class ApplicationStage
 		bool LogitechGHub = selection?.LogitechGHub ?? PreparingStage.LogitechGHub;
 		bool LogitechOnboardMemoryManager = selection?.LogitechOnboardMemoryManager ?? PreparingStage.LogitechOnboardMemoryManager;
 		bool Wootility = selection?.Wootility ?? PreparingStage.Wootility;
+		bool EndgameGear = selection?.EndgameGear ?? PreparingStage.EndgameGear;
 		bool SteelSeriesGG = selection?.SteelSeriesGG ?? PreparingStage.SteelSeriesGG;
 		bool RazerSynapse = selection?.RazerSynapse ?? PreparingStage.RazerSynapse;
 		bool CorsairICue = selection?.CorsairICue ?? PreparingStage.CorsairICue;
@@ -194,6 +198,7 @@ public static class ApplicationStage
 
 		bool Reaper = selection?.Reaper ?? PreparingStage.Reaper;
 		bool FlexASIO = selection?.FlexASIO ?? PreparingStage.FlexASIO;
+		bool ASIO4ALL = selection?.ASIO4ALL ?? PreparingStage.ASIO4ALL;
 
 		bool Word = selection?.Word ?? PreparingStage.Word;
 		bool Excel = selection?.Excel ?? PreparingStage.Excel;
@@ -207,6 +212,7 @@ public static class ApplicationStage
 		bool MinitoolPartitionWizard = selection?.MinitoolPartitionWizard ?? PreparingStage.MinitoolPartitionWizard;
 		bool AomeiPartitionAssistant = selection?.AomeiPartitionAssistant ?? PreparingStage.AomeiPartitionAssistant;
 		bool WizTree = selection?.WizTree ?? PreparingStage.WizTree;
+		bool CrystalDiskMark = selection?.CrystalDiskMark ?? PreparingStage.CrystalDiskMark;
 		bool BulkCrapUninstaller = selection?.BulkCrapUninstaller ?? PreparingStage.BulkCrapUninstaller;
 		bool BluetoothAudioReceiver = selection?.BluetoothAudioReceiver ?? PreparingStage.BluetoothAudioReceiver;
 		bool AnyDesk = selection?.AnyDesk ?? PreparingStage.AnyDesk;
@@ -1182,6 +1188,16 @@ public static class ApplicationStage
 			("Cleaning up Wootility files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "WootilitySetup.exe")), () => Wootility == true),
 			("Cleaning up Wootility files", async () => Directory.Delete(Path.Combine(Path.GetTempPath(), "WootilitySetup"), true), () => Wootility == true),
 
+			// download endgame gear
+			("Downloading Endgame Gear", async () => await DownloadHelper.Download("https://img.endgamegear.com/downloads/Endgame_Gear_Setup_V1.0.19.06232.exe", Path.GetTempPath(), "Endgame_Gear_Setup.exe", reporter: reporter), () => EndgameGear == true),
+
+			// install endgame gear
+			("Installing Endgame Gear", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "Endgame_Gear_Setup.exe"), Arguments = "/VERYSILENT /SUPPRESSMSGBOXES /NORESTART" , WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => EndgameGear == true),
+			("Cleaning up Endgame Gear files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "Endgame_Gear_Setup.exe")), () => EndgameGear == true),
+
+			// disabling endgame gear startup entries
+			("Disabling Endgame Gear startup entries", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run", "Endgame Gear Utility Startup", new byte[] { 0x03 }, RegistryValueKind.Binary), () => EndgameGear == true),
+
 			// download steelseries gg
 			("Downloading SteelSeries GG", async () => await DownloadHelper.Download("https://steelseries.com/gg/downloads/latest/windows", Path.GetTempPath(), "SteelSeriesGGSetup.exe", reporter: reporter), () => SteelSeriesGG == true),
 
@@ -1532,6 +1548,13 @@ public static class ApplicationStage
 			("Installing FlexASIO GUI", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "FlexASIO.GUIInstaller.exe"), Arguments = "/VERYSILENT /NORESTART", WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => FlexASIO == true),
 			("Cleaning up FlexASIO GUI files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "FlexASIO.GUIInstaller.exe")), () => FlexASIO == true),
 
+			// download asio4all
+            ("Downloading ASIO4ALL", async () => await DownloadHelper.Download("https://asio4all.org/downloads/ASIO4ALL_2_21.exe", Path.GetTempPath(), "ASIO4ALL.exe", reporter: reporter), () => ASIO4ALL == true),
+
+            // install asio4all
+            ("Installing ASIO4ALL", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "ASIO4ALL.exe"), Arguments = "/S", WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => ASIO4ALL == true),
+            ("Cleaning up ASIO4ALL files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "ASIO4ALL.exe")), () => ASIO4ALL == true),
+
 			// download office
 			("Downloading Office", async () => await DownloadHelper.Download("https://officecdn.microsoft.com/pr/wsus/setup.exe", Path.GetTempPath(), "setup.exe", reporter: reporter), () => Word == true || Excel == true || PowerPoint == true || OneNote == true || Teams == true || Outlook == true || OneDrive == true),
 
@@ -1719,6 +1742,13 @@ public static class ApplicationStage
 			// install wiztree
 			("Installing WizTree", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "wiztree_setup.exe"), Arguments = "/VERYSILENT /SUPPRESSMSGBOXES /NORESTART /SP- /MERGETASKS=!desktopicon" , WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => WizTree == true),
 			("Cleaning up WizTree files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "wiztree_setup.exe")), () => WizTree == true),
+
+			// download crystal disk mark
+			("Downloading CrystalDiskMark", async () => await DownloadHelper.Download("https://sf-eu-introserv-3.dl.sourceforge.net/project/crystaldiskmark/9.0.3/CrystalDiskMark9_0_3.exe?viasf=1&fid=3146e97b3c195781", Path.GetTempPath(), "CrystalDiskMark.exe", reporter: reporter), () => CrystalDiskMark == true),
+
+			// install crystal disk mark
+			("Installing CrystalDiskMark", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "CrystalDiskMark.exe"), Arguments = "/VERYSILENT /SUPPRESSMSGBOXES /NORESTART /SP- /MERGETASKS=!desktopicon" , WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => CrystalDiskMark == true),
+			("Cleaning up CrystalDiskMark files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "CrystalDiskMark.exe")), () => CrystalDiskMark == true),
 
 			// download bulk crap uninstaller
 			("Downloading Bulk Crap Uninstaller", async () => await DownloadHelper.Download(JsonDocument.Parse(await new HttpClient { DefaultRequestHeaders = { { "User-Agent", "AutoOS" } } }.GetStringAsync("https://api.github.com/repos/Klocman/Bulk-Crap-Uninstaller/releases/latest")).RootElement.GetProperty("assets").EnumerateArray().First(a => a.GetProperty("name").GetString().Contains("setup.exe")).GetProperty("browser_download_url").GetString(), Path.GetTempPath(), "BCUninstaller_setup.exe", reporter: reporter), () => BulkCrapUninstaller == true),
