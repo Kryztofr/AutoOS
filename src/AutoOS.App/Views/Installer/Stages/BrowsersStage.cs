@@ -860,7 +860,7 @@ public static class BrowsersStage
 			("Cleaning up Mullvad Browser files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "mullvad-browser-windows-x86_64.exe")), () => Mullvad == true),
 
 			// pin mullvad to the taskbar
-			("Pinning Mullvad Browser to the taskbar", async () => await ProcessActions.PinToTaskbar("Link", Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Microsoft", "Windows", "Start Menu", "Programs", "Mullvad Browser.lnk")), () => Mullvad == true),
+			("Pinning Mullvad Browser to the taskbar", async () => await ProcessActions.PinToTaskbar("Link", Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Mullvad", "MullvadBrowser", "Release", "Mullvad Browser.lnk")), () => Mullvad == true),
 
 			// optimize mullvad settings
 			("Optimizing Mullvad Browser settings", async () => Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Mullvad", "MullvadBrowser", "Release", "distribution")), () => Mullvad == true),

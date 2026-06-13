@@ -26,7 +26,7 @@ public static class PackageStage
 			}
 			store.Add(cert);
 		}
-
+		await Task.Delay(150);
 		await dialog.Download(downloadUrl, tempFolderPath, "AutoOS.msix", "Downloading Update", 50, 75);
 
 		dialog.SetStatus("Installing Update...");
