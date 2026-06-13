@@ -45,7 +45,7 @@ namespace AutoOS.Core.Helpers.GPU
 			string[] intel6 = ["Skylake", "Apollo Lake"];
 			string[] intel7to10 = ["Kaby Lake", "Coffee Lake", "Whiskey Lake", "Comet Lake", "Ice Lake", "Lakefield", "Elkhart Lake"];
 			string[] intel11to14 = ["Tiger Lake", "Rocket Lake", "Alder Lake", "Raptor Lake", "DG1"];
-			string[] intelArc = ["Arc", "Battlemage", "Meteor Lake", "Lunar Lake", "Arrow Lake", "Panther Lake"];
+			string[] intelArc = ["Arc", "Battlemage", "Meteor Lake", "Lunar Lake", "Arrow Lake", "Panther Lake", "DG2"];
 
 			bool is3rd = intel3.Any(c => Normalize(codename).Contains(Normalize(c)));
 			bool is4to5 = intel4to5.Any(c => Normalize(codename).Contains(Normalize(c)));

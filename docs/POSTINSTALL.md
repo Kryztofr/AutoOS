@@ -20,7 +20,7 @@
 ### What **NOT** to do after the installation is finished?
 - Run other `tweaks` or `optimizers` like `CTT` etc. for obvious reasons.
 - Apply `timer resolution` because it does more harm than good.
-- Use `external frame rate limiters` like `NVCP` or `RTSS` because they trade `better 1% lows` for `added latency`.
+- Use `external frame rate limiters` like `NVCP` or `RTSS` because they trade `better 1% lows` for `added latency` (unless non competitive).
 - Set `visual effects` to `Best Performance`, `disable animations / transparency / paging file`.
 - `Uninstall` `MSI Afterburner, OBS, Everything, Windhawk, StartAllBack` or any of the `runtimes`.
 - `Install` `7-Zip`, because `NanaZip` is already installed.

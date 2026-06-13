@@ -1655,7 +1655,9 @@ public static class ApplicationStage
 			("Cleaning up MiniTool Partition Wizard files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "pw-free-offline.exe")), () => MinitoolPartitionWizard == true),
 
 			// disable minitool partition wizard notifications
+			("Disabling MiniTool Partition Wizard notifications", async () => await Process.Start(new ProcessStartInfo { FileName = "reg.exe", Arguments = $@"load HKU\DefaultUser ""{Path.Combine(Path.GetPathRoot(Environment.SystemDirectory)!, "Users", "Default", "NTUSER.DAT")}""", CreateNoWindow = true })!.WaitForExitAsync(), () => MinitoolPartitionWizard == true),
 			("Disabling MiniTool Partition Wizard notifications", async () => RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_CURRENT_USER\Software\MiniTool Software Limited\MiniTool Partition Wizard", "00cfb691-7786-46e4-a4af-7e2cb0eb10c5", "2", RegistryValueKind.DWord), () => MinitoolPartitionWizard == true),
+			("Disabling MiniTool Partition Wizard notifications", async () => await Process.Start(new ProcessStartInfo { FileName = "reg.exe", Arguments = @"unload HKU\DefaultUser", CreateNoWindow = true })!.WaitForExitAsync(), () => MinitoolPartitionWizard == true),
 
 			// disable minitool partition wizard startup entries
 			("Disabling MiniTool Partition Wizard startup entries", async () => TaskSchedulerHelper.Toggle(@"MiniToolPartitionWizard", false), () => MinitoolPartitionWizard == true),
