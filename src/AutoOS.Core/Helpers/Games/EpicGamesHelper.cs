@@ -354,9 +354,10 @@ public static partial class EpicGamesHelper
 	{
 		var url = $"https://library-service.live.use1a.on.epicgames.com/library/api/public/playtime/account/{GetAccountData(ActiveEpicGamesAccountPath).AccountId}";
 		var endTime = DateTime.UtcNow;
+		var startTimeUtc = startTime.ToUniversalTime();
 
-		string startTimeStr = startTime.ToString("o");
-		string endTimeStr = endTime.ToString("o");
+		string startTimeStr = startTimeUtc.ToString("yyyy-MM-ddTHH:mm:ss.fffZ");
+		string endTimeStr = endTime.ToString("yyyy-MM-ddTHH:mm:ss.fffZ");
 
 		var payload = new PlaytimePayload(
 			Guid.NewGuid().ToString(),
@@ -374,7 +375,7 @@ public static partial class EpicGamesHelper
 
 		if (response.IsSuccessStatusCode)
 		{
-			var duration = endTime - startTime;
+			var duration = endTime - startTimeUtc;
 
 			var playTimeResponse = loginClient
 				.GetAsync($"https://library-service.live.use1a.on.epicgames.com/library/api/public/playtime/account/{GetAccountData(ActiveEpicGamesAccountPath).AccountId}/artifact/{artifactId}")
