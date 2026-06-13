@@ -12,6 +12,7 @@ public sealed partial class ApplicationsPage : Page
 	private bool isInitializingControllersState = true;
 	private bool isInitializingDevelopmentState = true;
 	private bool isInitializingOverclockingState = true;
+	private bool isInitializingMusicProductionState = true;
 	private bool isInitializingOfficeState = true;
 	private bool isInitializingMiscellaneousState = true;
 
@@ -28,6 +29,7 @@ public sealed partial class ApplicationsPage : Page
 		GetControllers();
 		GetDevelopment();
 		GetOverclocking();
+		GetMusicProduction();
 		GetOffice();
 		GetMiscellaneous();
 	}
@@ -124,6 +126,12 @@ public sealed partial class ApplicationsPage : Page
 			new() { Text = "OCCT", ImageSource = "ms-appx:///Assets/Fluent/OCCT.png" }
 		};
 
+		MusicProduction.ItemsSource = new List<GridViewItem>
+		{
+			new() { Text = "Reaper", ImageSource = "ms-appx:///Assets/Fluent/Reaper.png" },
+			new() { Text = "FlexASIO", ImageSource = "ms-appx:///Assets/Fluent/FlexASIO.png" }
+		};
+
 		Office.ItemsSource = new List<GridViewItem>
 		{
 			new() { Text = "Word", ImageSource = "ms-appx:///Assets/Fluent/Word.png" },
@@ -139,6 +147,7 @@ public sealed partial class ApplicationsPage : Page
 		{
 			new() { Text = "MiniTool Partition Wizard", ImageSource = "ms-appx:///Assets/Fluent/MiniToolPartitionWizard.png" },
 			new() { Text = "AOMEI Partition Assistant", ImageSource = "ms-appx:///Assets/Fluent/AomeiPartitionAssistant.png" },
+			new() { Text = "CapFrameX", ImageSource = "ms-appx:///Assets/Fluent/CapFrameX.png" },
 			new() { Text = "WizTree", ImageSource = "ms-appx:///Assets/Fluent/WizTree.png" },
 			new() { Text = "Bulk Crap Uninstaller", ImageSource = "ms-appx:///Assets/Fluent/BulkCrapUninstaller.png" },
 			new() { Text = "Bluetooth Audio Receiver", ImageSource = "ms-appx:///Assets/Fluent/BluetoothAudioReceiver.png" },
@@ -236,6 +245,19 @@ public sealed partial class ApplicationsPage : Page
 		);
 
 		isInitializingOverclockingState = false;
+	}
+
+	private void GetMusicProduction()
+	{
+		var selectedMusicProduction = localSettings.Values["MusicProduction"] as string;
+		var musicProductionItems = MusicProduction.ItemsSource as List<GridViewItem>;
+		MusicProduction.SelectedItems.AddRange(
+			selectedMusicProduction?.Split(new[] { ", " }, StringSplitOptions.RemoveEmptyEntries)
+			.Select(e => musicProductionItems?.FirstOrDefault(ext => ext.Text == e))
+			.Where(ext => ext != null) ?? Enumerable.Empty<GridViewItem>()
+		);
+
+		isInitializingMusicProductionState = false;
 	}
 
 	private void GetOffice()
@@ -346,6 +368,18 @@ public sealed partial class ApplicationsPage : Page
 			.ToArray();
 
 		localSettings.Values["Overclocking"] = string.Join(", ", selectedOverclocking);
+	}
+
+	private void MusicProduction_Changed(object sender, SelectionChangedEventArgs e)
+	{
+		if (isInitializingMusicProductionState) return;
+
+		var selectedMusicProduction = MusicProduction.SelectedItems
+			.Cast<GridViewItem>()
+			.Select(item => item.Text)
+			.ToArray();
+
+		localSettings.Values["MusicProduction"] = string.Join(", ", selectedMusicProduction);
 	}
 
 	private void Office_Changed(object sender, SelectionChangedEventArgs e)

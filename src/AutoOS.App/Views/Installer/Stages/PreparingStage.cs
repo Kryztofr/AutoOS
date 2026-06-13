@@ -119,6 +119,9 @@ public static partial class PreparingStage
 	public static bool Prime95;
 	public static bool OCCT;
 
+	public static bool Reaper;
+	public static bool FlexASIO;
+
 	public static bool Word;
 	public static bool Excel;
 	public static bool PowerPoint;
@@ -129,6 +132,7 @@ public static partial class PreparingStage
 
 	public static bool MinitoolPartitionWizard;
 	public static bool AomeiPartitionAssistant;
+	public static bool CapFrameX;
 	public static bool WizTree;
 	public static bool BulkCrapUninstaller;
 	public static bool BluetoothAudioReceiver;
@@ -279,6 +283,9 @@ public static partial class PreparingStage
 			Prime95 = (localSettings.Values["Overclocking"]?.ToString().Contains("Prime95") ?? false);
 			OCCT = (localSettings.Values["Overclocking"]?.ToString().Contains("OCCT") ?? false);
 
+			Reaper = (localSettings.Values["Music Production"]?.ToString().Contains("Reaper") ?? false);
+			FlexASIO = (localSettings.Values["Music Production"]?.ToString().Contains("FlexASIO") ?? false);
+
 			Word = (localSettings.Values["Office"]?.ToString().Contains("Word") ?? false);
 			Excel = (localSettings.Values["Office"]?.ToString().Contains("Excel") ?? false);
 			PowerPoint = (localSettings.Values["Office"]?.ToString().Contains("PowerPoint") ?? false);
@@ -289,6 +296,7 @@ public static partial class PreparingStage
 
 			MinitoolPartitionWizard = (localSettings.Values["Miscellaneous"]?.ToString().Contains("Minitool Partition Wizard") ?? false);
 			AomeiPartitionAssistant = (localSettings.Values["Miscellaneous"]?.ToString().Contains("AOMEI Partition Assistant") ?? false);
+			CapFrameX = (localSettings.Values["Miscellaneous"]?.ToString().Contains("CapFrameX") ?? false);
 			WizTree = (localSettings.Values["Miscellaneous"]?.ToString().Contains("WizTree") ?? false);
 			BulkCrapUninstaller = (localSettings.Values["Miscellaneous"]?.ToString().Contains("Bulk Crap Uninstaller") ?? false);
 			BluetoothAudioReceiver = (localSettings.Values["Miscellaneous"]?.ToString().Contains("BluetoothAudioReceiver") ?? false);

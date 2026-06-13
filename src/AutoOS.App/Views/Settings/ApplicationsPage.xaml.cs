@@ -15,6 +15,7 @@ public sealed partial class ApplicationsPage : Page
 	private readonly ObservableCollection<GridViewItem> controllersItems = [];
 	private readonly ObservableCollection<GridViewItem> developmentItems = [];
 	private readonly ObservableCollection<GridViewItem> overclockingItems = [];
+	private readonly ObservableCollection<GridViewItem> musicProductionItems = [];
 	private readonly ObservableCollection<GridViewItem> officeItems = [];
 	private readonly ObservableCollection<GridViewItem> miscellaneousItems = [];
 
@@ -31,6 +32,7 @@ public sealed partial class ApplicationsPage : Page
 		Controllers.ItemsSource = controllersItems;
 		Development.ItemsSource = developmentItems;
 		Overclocking.ItemsSource = overclockingItems;
+		MusicProduction.ItemsSource = musicProductionItems;
 		Office.ItemsSource = officeItems;
 		Miscellaneous.ItemsSource = miscellaneousItems;
 	}
@@ -136,6 +138,14 @@ public sealed partial class ApplicationsPage : Page
 		foreach (var item in overclockingList.Where(item => !item.IsInstalled))
 			overclockingItems.Add(item);
 
+		var musicProductionList = new List<GridViewItem>
+		{
+			new() { Text = "Reaper", ImageSource = "ms-appx:///Assets/Fluent/Reaper.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "REAPER (x64)", "reaper.exe")) },
+			new() { Text = "FlexASIO", ImageSource = "ms-appx:///Assets/Fluent/FlexASIO.png", IsInstalled = Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "FlexASIO")) },
+		};
+		foreach (var item in musicProductionList.Where(item => !item.IsInstalled))
+			musicProductionItems.Add(item);
+
 		var officeList = new List<GridViewItem>
 		{
 			new() { Text = "Word", ImageSource = "ms-appx:///Assets/Fluent/Word.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Microsoft Office", "root", "Office16", "WINWORD.EXE")) },
@@ -153,6 +163,7 @@ public sealed partial class ApplicationsPage : Page
 		{
 			new() { Text = "Minitool Partition Wizard", ImageSource = "ms-appx:///Assets/Fluent/MinitoolPartitionWizard.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "MiniTool Partition Wizard 13", "partitionwizard.exe")) },
 			new() { Text = "AOMEI Partition Assistant", ImageSource = "ms-appx:///Assets/Fluent/AomeiPartitionAssistant.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "AOMEI Partition Assistant", "PartAssist.exe")) },
+			new() { Text = "CapFrameX", ImageSource = "ms-appx:///Assets/Fluent/CapFrameX.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "CapFrameX", "CapFrameX.exe")) },
 			new() { Text = "WizTree", ImageSource = "ms-appx:///Assets/Fluent/WizTree.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "WizTree", "WizTree64.exe")) },
 			new() { Text = "Bulk Crap Uninstaller", ImageSource = "ms-appx:///Assets/Fluent/BulkCrapUninstaller.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "BCUninstaller", "BCUninstaller.exe")) },
 			new() { Text = "Bluetooth Audio Receiver", ImageSource = "ms-appx:///Assets/Fluent/BluetoothAudioReceiver.png", IsInstalled = Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Packages", "55746MarkSmirnov.BluetoothAudioReveicer_xwrbx6997tsfc")) },
@@ -165,7 +176,7 @@ public sealed partial class ApplicationsPage : Page
 
 	private void GridView_SelectionChanged(object sender, SelectionChangedEventArgs e) 
 	{
-		InstallButton.IsEnabled = Office.SelectedItems.Count > 0 || Development.SelectedItems.Count > 0 || Overclocking.SelectedItems.Count > 0 || Music.SelectedItems.Count > 0 || Peripherals.SelectedItems.Count > 0 || Controllers.SelectedItems.Count > 0 || Messaging.SelectedItems.Count > 0 || Launchers.SelectedItems.Count > 0 || Miscellaneous.SelectedItems.Count > 0;
+		InstallButton.IsEnabled = Office.SelectedItems.Count > 0 || Development.SelectedItems.Count > 0 || Overclocking.SelectedItems.Count > 0 || Music.SelectedItems.Count > 0 || Peripherals.SelectedItems.Count > 0 || Controllers.SelectedItems.Count > 0 || Messaging.SelectedItems.Count > 0 || Launchers.SelectedItems.Count > 0 || Miscellaneous.SelectedItems.Count > 0 || MusicProduction.SelectedItems.Count > 0;
 	}
 
 	private async void InstallButton_Click(object sender, RoutedEventArgs e)
@@ -248,6 +259,11 @@ public sealed partial class ApplicationsPage : Page
 		selection.Prime95 = selectedOverclocking.Contains("Prime95");
 		selection.OCCT = selectedOverclocking.Contains("OCCT");
 
+		var selectedMusicProductionItems = MusicProduction.SelectedItems.Cast<GridViewItem>().ToList();
+		var selectedMusicProduction = selectedMusicProductionItems.Select(item => item.Text).ToList();
+		selection.Reaper = selectedMusicProduction.Contains("Reaper");
+		selection.FlexASIO = selectedMusicProduction.Contains("FlexASIO");
+
 		var selectedOfficeItems = Office.SelectedItems.Cast<GridViewItem>().ToList();
 		var selectedOffice = selectedOfficeItems.Select(item => item.Text).ToList();
 		selection.Word = selectedOffice.Contains("Word");
@@ -262,6 +278,7 @@ public sealed partial class ApplicationsPage : Page
 		var selectedMiscellaneous = selectedMiscellaneousItems.Select(item => item.Text).ToList();
 		selection.MinitoolPartitionWizard = selectedMiscellaneous.Contains("Minitool Partition Wizard");
 		selection.AomeiPartitionAssistant = selectedMiscellaneous.Contains("AOMEI Partition Assistant");
+		selection.CapFrameX = selectedMiscellaneous.Contains("CapFrameX");
 		selection.WizTree = selectedMiscellaneous.Contains("WizTree");
 		selection.BulkCrapUninstaller = selectedMiscellaneous.Contains("Bulk Crap Uninstaller");
 		selection.BluetoothAudioReceiver = selectedMiscellaneous.Contains("Bluetooth Audio Receiver");
@@ -315,6 +332,9 @@ public sealed partial class ApplicationsPage : Page
 
 			foreach (var item in selectedOverclockingItems)
 				overclockingItems.Remove(item);
+
+			foreach (var item in selectedMusicProductionItems)
+				musicProductionItems.Remove(item);
 
 			foreach (var item in selectedOfficeItems)
 				officeItems.Remove(item);

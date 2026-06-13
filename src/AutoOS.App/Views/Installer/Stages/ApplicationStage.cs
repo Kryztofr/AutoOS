@@ -83,6 +83,8 @@ public class ApplicationSelection
 	public bool ZenTimings {get; set; }
 	public bool Prime95 {get; set; }
 	public bool OCCT { get; set; }
+	public bool Reaper { get; set; }
+	public bool FlexASIO { get; set; }
 	public bool Word { get; set; }
 	public bool Excel { get; set; }
 	public bool PowerPoint { get; set; }
@@ -92,6 +94,7 @@ public class ApplicationSelection
 	public bool OneDrive { get; set; }
 	public bool MinitoolPartitionWizard { get; set; }
 	public bool AomeiPartitionAssistant { get; set; }
+	public bool CapFrameX { get; set; }
 	public bool WizTree { get; set; }
 	public bool BulkCrapUninstaller { get; set; }
 	public bool BluetoothAudioReceiver { get; set; }
@@ -189,6 +192,9 @@ public static class ApplicationStage
 		bool Prime95 = selection?.Prime95 ?? PreparingStage.Prime95;
 		bool OCCT = selection?.OCCT ?? PreparingStage.OCCT;
 
+		bool Reaper = selection?.Reaper ?? PreparingStage.Reaper;
+		bool FlexASIO = selection?.FlexASIO ?? PreparingStage.FlexASIO;
+
 		bool Word = selection?.Word ?? PreparingStage.Word;
 		bool Excel = selection?.Excel ?? PreparingStage.Excel;
 		bool PowerPoint = selection?.PowerPoint ?? PreparingStage.PowerPoint;
@@ -199,6 +205,7 @@ public static class ApplicationStage
 
 		bool MinitoolPartitionWizard = selection?.MinitoolPartitionWizard ?? PreparingStage.MinitoolPartitionWizard;
 		bool AomeiPartitionAssistant = selection?.AomeiPartitionAssistant ?? PreparingStage.AomeiPartitionAssistant;
+		bool CapFrameX = selection?.CapFrameX ?? PreparingStage.CapFrameX;
 		bool WizTree = selection?.WizTree ?? PreparingStage.WizTree;
 		bool BulkCrapUninstaller = selection?.BulkCrapUninstaller ?? PreparingStage.BulkCrapUninstaller;
 		bool BluetoothAudioReceiver = selection?.BluetoothAudioReceiver ?? PreparingStage.BluetoothAudioReceiver;
@@ -1501,6 +1508,30 @@ public static class ApplicationStage
 			("Installing OCCT", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\OCCT", "DisplayIcon", Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), @"OCCT\OCCT.exe"), RegistryValueKind.String), () => OCCT == true),
 			("Installing OCCT", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\OCCT", "Publisher", "OCBASE", RegistryValueKind.String), () => OCCT == true),
 
+			// download reaper
+			("Downloading Reaper", async () => await DownloadHelper.Download("https://www.reaper.fm/files/7.x/reaper774_x64-install.exe", Path.GetTempPath(), "reaper_x64-install.exe", reporter: reporter), () => Reaper == true),
+
+			// install reaper
+			("Installing Reaper", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "reaper_x64-install.exe"), Arguments = "/S" , WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => Reaper == true),
+			("Cleaning up Reaper files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "reaper_x64-install.exe")), () => Reaper == true),
+
+			// pin reaper to the taskbar
+			("Pinning Reaper to the taskbar", async () => await ProcessActions.PinToTaskbar("Link", Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Microsoft", "Windows", "Start Menu", "Programs", "REAPER (x64)", "REAPER (x64).lnk")), () => Reaper == true),
+
+			// download flexasio
+			("Downloading FlexASIO", async () => await DownloadHelper.Download("https://github.com/dechamps/FlexASIO/releases/download/flexasio-1.10b/FlexASIO-1.10b.exe", Path.GetTempPath(), "FlexASIO.exe", reporter: reporter), () => FlexASIO == true),
+
+			// install flexasio
+			("Installing FlexASIO", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "FlexASIO.exe"), Arguments = "/VERYSILENT /NORESTART", WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => FlexASIO == true),
+			("Cleaning up FlexASIO files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "FlexASIO.exe")), () => FlexASIO == true),
+
+			// download flexasio gui
+			("Downloading FlexASIO GUI", async () => await DownloadHelper.Download("https://github.com/flipswitchingmonkey/FlexASIO_GUI/releases/download/v0.35/FlexASIO.GUIInstaller_0.35.exe", Path.GetTempPath(), "FlexASIO.GUIInstaller.exe", reporter: reporter), () => FlexASIO == true),
+
+			// install flexasio gui
+			("Installing FlexASIO GUI", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "FlexASIO.GUIInstaller.exe"), Arguments = "/VERYSILENT /NORESTART", WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => FlexASIO == true),
+			("Cleaning up FlexASIO GUI files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "FlexASIO.GUIInstaller.exe")), () => FlexASIO == true),
+
 			// download office
 			("Downloading Office", async () => await DownloadHelper.Download("https://officecdn.microsoft.com/pr/wsus/setup.exe", Path.GetTempPath(), "setup.exe", reporter: reporter), () => Word == true || Excel == true || PowerPoint == true || OneNote == true || Teams == true || Outlook == true || OneDrive == true),
 
@@ -1669,6 +1700,15 @@ public static class ApplicationStage
 
 			// activate aomei partition assistant
 			("Activating AOMEI Partition Assistant", async () => { var iniHelper = new InIHelper(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "AOMEI Partition Assistant", "cfg.ini")); iniHelper.AddValue("KEY", "AOPR-CM948-83ZJZ-4NQW1", "CONFIG"); }, () => AomeiPartitionAssistant == true),
+
+			// download capframex
+			("Downloading CapFrameX", async () => await DownloadHelper.Download("https://cxblobs.blob.core.windows.net/releases/release_1.8.5_installer.zip", Path.GetTempPath(), "release_installer.zip"), () => CapFrameX == true),
+
+			// install capframex
+			("Installing CapFrameX", async () => await ExtractHelper.Extract(Path.Combine(Path.GetTempPath(), "release_installer.zip"), Path.Combine(Path.GetTempPath(), "CapFrameX")), () => CapFrameX == true),
+			("Installing CapFrameX", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "CapFrameX", "CapFrameXBootstrapper.exe"), Arguments = "/quiet /norestart" , WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => CapFrameX == true),
+			("Cleaning up CapFrameX files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "release_installer.zip")), () => CapFrameX == true),
+			("Cleaning up CapFrameX files", async () => Directory.Delete(Path.Combine(Path.GetTempPath(), "CapFrameX"), true), () => CapFrameX == true),
 			
 			// download wiztree
 			("Downloading WizTree", async () => await DownloadHelper.Download("https://diskanalyzer.com/files/wiztree_4_31_setup.exe", Path.GetTempPath(), "wiztree_setup.exe", reporter: reporter), () => WizTree == true),
