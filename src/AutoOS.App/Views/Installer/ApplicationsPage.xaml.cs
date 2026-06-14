@@ -88,6 +88,7 @@ public sealed partial class ApplicationsPage : Page
 			new() { Text = "SteelSeries GG", ImageSource = "ms-appx:///Assets/Fluent/SteelSeriesGG.png" },
 			new() { Text = "Razer Synapse", ImageSource = "ms-appx:///Assets/Fluent/RazerSynapse.png" },
 			new() { Text = "Corsair iCUE", ImageSource = "ms-appx:///Assets/Fluent/CorsairICue.png" },
+			new() { Text = "FanControl", ImageSource = "ms-appx:///Assets/Fluent/FanControl.png" },
 			new() { Text = "GHelper", ImageSource = "ms-appx:///Assets/Fluent/GHelper.png" }
 		};
 		
@@ -130,6 +131,7 @@ public sealed partial class ApplicationsPage : Page
 		MusicProduction.ItemsSource = new List<GridViewItem>
 		{
 			new() { Text = "Reaper", ImageSource = "ms-appx:///Assets/Fluent/Reaper.png" },
+			new() { Text = "FL Studio", ImageSource = "ms-appx:///Assets/Fluent/FLStudio.png" },
 			new() { Text = "FlexASIO", ImageSource = "ms-appx:///Assets/Fluent/FlexASIO.png" },
 			new() { Text = "ASIO4ALL", ImageSource = "ms-appx:///Assets/Fluent/ASIO4ALL.png" }
 		};
