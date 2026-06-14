@@ -92,6 +92,7 @@ public sealed partial class ApplicationsPage : Page
 			new() { Text = "SteelSeries GG", ImageSource = "ms-appx:///Assets/Fluent/SteelSeriesGG.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "SteelSeries", "GG", "SteelSeriesGGEZ.exe")) },
 			new() { Text = "Razer Synapse", ImageSource = "ms-appx:///Assets/Fluent/RazerSynapse.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Razer", "RazerAppEngine", "RazerAppEngine.exe")) },
 			new() { Text = "Corsair iCUE", ImageSource = "ms-appx:///Assets/Fluent/CorsairICue.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Corsair", "Corsair iCUE5 Software", "iCUE.exe")) },
+			new() { Text = "FanControl", ImageSource = "ms-appx:///Assets/Fluent/FanControl.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "FanControl", "FanControl.exe")) },
 			new() { Text = "GHelper", ImageSource = "ms-appx:///Assets/Fluent/GHelper.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "GHelper", "GHelper.exe")) }
 		};
 		foreach (var item in peripheralsList.Where(item => !item.IsInstalled))
@@ -142,6 +143,7 @@ public sealed partial class ApplicationsPage : Page
 		var musicProductionList = new List<GridViewItem>
 		{
 			new() { Text = "Reaper", ImageSource = "ms-appx:///Assets/Fluent/Reaper.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "REAPER (x64)", "reaper.exe")) },
+			new() { Text = "FL Studio", ImageSource = "ms-appx:///Assets/Fluent/FLStudio.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Image-Line", "FL Studio 2025", "FL64.exe")) },
 			new() { Text = "FlexASIO", ImageSource = "ms-appx:///Assets/Fluent/FlexASIO.png", IsInstalled = Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "FlexASIO")) },
 			new() { Text = "ASIO4ALL", ImageSource = "ms-appx:///Assets/Fluent/ASIO4ALL.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "ASIO4ALL v2", "a4apanel.exe")) }
 		};
@@ -228,6 +230,7 @@ public sealed partial class ApplicationsPage : Page
 		selection.Wootility = selectedPeripherals.Contains("Wootility");
 		selection.EndgameGear = selectedPeripherals.Contains("Endgame Gear");
 		selection.CorsairICue = selectedPeripherals.Contains("Corsair iCUE");
+		selection.FanControl = selectedPeripherals.Contains("FanControl");
 		selection.GHelper = selectedPeripherals.Contains("GHelper");
 
 		var selectedControllersItems = Controllers.SelectedItems.Cast<GridViewItem>().ToList();
@@ -266,6 +269,7 @@ public sealed partial class ApplicationsPage : Page
 		var selectedMusicProductionItems = MusicProduction.SelectedItems.Cast<GridViewItem>().ToList();
 		var selectedMusicProduction = selectedMusicProductionItems.Select(item => item.Text).ToList();
 		selection.Reaper = selectedMusicProduction.Contains("Reaper");
+		selection.FLStudio = selectedMusicProduction.Contains("FL Studio");
 		selection.FlexASIO = selectedMusicProduction.Contains("FlexASIO");
 		selection.ASIO4ALL = selectedMusicProduction.Contains("ASIO4ALL");
 

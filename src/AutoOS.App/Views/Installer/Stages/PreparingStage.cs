@@ -92,6 +92,7 @@ public static partial class PreparingStage
 	public static bool SteelSeriesGG;
 	public static bool RazerSynapse;
 	public static bool CorsairICue;
+	public static bool FanControl;
 	public static bool GHelper;
 
 	public static bool ViGEmBus;
@@ -122,6 +123,7 @@ public static partial class PreparingStage
 	public static bool OCCT;
 
 	public static bool Reaper;
+	public static bool FLStudio;
 	public static bool FlexASIO;
 	public static bool ASIO4ALL;
 
@@ -260,6 +262,7 @@ public static partial class PreparingStage
 			Wootility = (localSettings.Values["Peripherals"]?.ToString().Contains("Wootility") ?? false);
 			EndgameGear = (localSettings.Values["Peripherals"]?.ToString().Contains("Endgame Gear") ?? false);
 			CorsairICue = (localSettings.Values["Peripherals"]?.ToString().Contains("Corsair iCUE") ?? false);
+			FanControl = (localSettings.Values["Peripherals"]?.ToString().Contains("FanControl") ?? false);
 			GHelper = (localSettings.Values["Peripherals"]?.ToString().Contains("GHelper") ?? false);
 
 			ViGEmBus = (localSettings.Values["Controllers"]?.ToString().Contains("ViGEmBus") ?? false) || (localSettings.Values["Miscellaneous"]?.ToString().Contains("Apollo") ?? false);
@@ -290,6 +293,7 @@ public static partial class PreparingStage
 			OCCT = (localSettings.Values["Overclocking"]?.ToString().Contains("OCCT") ?? false);
 
 			Reaper = (localSettings.Values["Music Production"]?.ToString().Contains("Reaper") ?? false);
+			FLStudio = (localSettings.Values["Music Production"]?.ToString().Contains("FL Studio") ?? false);
 			FlexASIO = (localSettings.Values["Music Production"]?.ToString().Contains("FlexASIO") ?? false);
 			ASIO4ALL = (localSettings.Values["Music Production"]?.ToString().Contains("ASIO4ALL") ?? false);
 

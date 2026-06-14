@@ -59,6 +59,7 @@ public class ApplicationSelection
 	public bool SteelSeriesGG { get; set; }
 	public bool RazerSynapse { get; set; }
 	public bool CorsairICue { get; set; }
+	public bool FanControl { get; set; }
 	public bool GHelper { get; set; }
 	public bool ViGEmBus { get; set; }
 	public bool HidHide { get; set; }
@@ -85,6 +86,7 @@ public class ApplicationSelection
 	public bool Prime95 {get; set; }
 	public bool OCCT { get; set; }
 	public bool Reaper { get; set; }
+	public bool FLStudio { get; set; }
 	public bool FlexASIO { get; set; }
 	public bool ASIO4ALL { get; set; }
 	public bool Word { get; set; }
@@ -167,6 +169,7 @@ public static class ApplicationStage
 		bool SteelSeriesGG = selection?.SteelSeriesGG ?? PreparingStage.SteelSeriesGG;
 		bool RazerSynapse = selection?.RazerSynapse ?? PreparingStage.RazerSynapse;
 		bool CorsairICue = selection?.CorsairICue ?? PreparingStage.CorsairICue;
+		bool FanControl = selection?.FanControl ?? PreparingStage.FanControl;
 		bool GHelper = selection?.GHelper ?? PreparingStage.GHelper;
 
 		bool ViGEmBus = selection?.ViGEmBus ?? PreparingStage.ViGEmBus;
@@ -197,6 +200,7 @@ public static class ApplicationStage
 		bool OCCT = selection?.OCCT ?? PreparingStage.OCCT;
 
 		bool Reaper = selection?.Reaper ?? PreparingStage.Reaper;
+		bool FLStudio = selection?.FLStudio ?? PreparingStage.FLStudio;
 		bool FlexASIO = selection?.FlexASIO ?? PreparingStage.FlexASIO;
 		bool ASIO4ALL = selection?.ASIO4ALL ?? PreparingStage.ASIO4ALL;
 
@@ -1257,6 +1261,13 @@ public static class ApplicationStage
 			// disable corsair icue startup entry
 			("Disabling Corsair iCUE startup entry", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run", "Corsair iCUE5 Software", new byte[] { 0x01 }, RegistryValueKind.Binary), () => CorsairICue == true),
 
+			// download fancontrol
+			("Downloading FanControl", async () => await DownloadHelper.Download(JsonDocument.Parse(await new HttpClient { DefaultRequestHeaders = { { "User-Agent", "AutoOS" } } }.GetStringAsync("https://api.github.com/repos/Rem0o/FanControl.Releases/releases")).RootElement.EnumerateArray().First(release => !release.GetProperty("prerelease").GetBoolean() && release.GetProperty("assets").EnumerateArray().Any(asset => asset.GetProperty("name").GetString().Contains("Installer.exe"))).GetProperty("assets").EnumerateArray().First(asset => asset.GetProperty("name").GetString().Contains("Installer.exe")).GetProperty("browser_download_url").GetString(), Path.GetTempPath(), "FanControl.exe", reporter: reporter), () => FanControl == true),
+
+			// install fancontrol
+			("Installing FanControl", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "FanControl.exe"), Arguments = "/VERYSILENT /SUPPRESSMSGBOXES /NORESTART", WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => FanControl == true),
+			("Cleaning up FanControl files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "FanControl.exe")), () => FanControl == true),
+
 			// download ghelper
 			("Downloading GHelper", async () => await DownloadHelper.Download("https://github.com/seerge/g-helper/releases/latest/download/GHelper.exe", Path.GetTempPath(), "GHelper.exe"), () => GHelper == true),
 
@@ -1487,7 +1498,7 @@ public static class ApplicationStage
 			("Cleaning up HWiNFO® 64", async () => File.Delete(Path.Combine(Path.GetTempPath(), "hwi64.exe")), () => HWInfo == true),
 
 			// download zentimings
-			("Downloading ZenTimings", async () => await DownloadHelper.Download("https://github.com/irusanov/ZenTimings/releases/download/v1.39/ZenTimings_v1.39.zip", Path.GetTempPath(), "ZenTimings.zip"), () => ZenTimings == true),
+			("Downloading ZenTimings", async () => await DownloadHelper.Download(JsonDocument.Parse(await new HttpClient { DefaultRequestHeaders = { { "User-Agent", "AutoOS" } } }.GetStringAsync("https://api.github.com/repos/irusanov/ZenTimings/releases")).RootElement.EnumerateArray().First(release => !release.GetProperty("prerelease").GetBoolean() && release.GetProperty("assets").EnumerateArray().Any(asset => asset.GetProperty("name").GetString().EndsWith(".zip"))).GetProperty("assets").EnumerateArray().First(asset => asset.GetProperty("name").GetString().EndsWith(".zip")).GetProperty("browser_download_url").GetString(), Path.GetTempPath(), "ZenTimings.zip"), () => ZenTimings == true),
 
 			// install zentimings
 			("Installing ZenTimings", async () => await ExtractHelper.Extract(Path.Combine(Path.GetTempPath(), "ZenTimings.zip"), Path.Combine(Path.GetTempPath(), "ZenTimings")), () => ZenTimings == true),
@@ -1534,15 +1545,25 @@ public static class ApplicationStage
 			// pin reaper to the taskbar
 			("Pinning Reaper to the taskbar", async () => await ProcessActions.PinToTaskbar("Link", Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Microsoft", "Windows", "Start Menu", "Programs", "REAPER (x64)", "REAPER (x64).lnk")), () => Reaper == true),
 
+			// download fl studio
+			("Downloading FL Studio", async () => await DownloadHelper.Download("https://support.image-line.com/redirect/flstudio_win_installer", Path.GetTempPath(), "flstudio_win64.exe", reporter: reporter), () => FLStudio == true),
+
+			// install fl studio
+			("Installing FL Studio", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "flstudio_win64.exe"), Arguments = "/S /ALLUSERS=1" , WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => FLStudio == true),
+			("Cleaning up FL Studio files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "flstudio_win64.exe")), () => FLStudio == true),
+
+			// pin fl studio to the taskbar
+			("Pinning FL Studio to the taskbar", async () => await ProcessActions.PinToTaskbar("Link", Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Microsoft", "Windows", "Start Menu", "Programs", "Image-Line", "FL Studio 2025.lnk")), () => FLStudio == true),
+
 			// download flexasio
-			("Downloading FlexASIO", async () => await DownloadHelper.Download("https://github.com/dechamps/FlexASIO/releases/download/flexasio-1.10b/FlexASIO-1.10b.exe", Path.GetTempPath(), "FlexASIO.exe", reporter: reporter), () => FlexASIO == true),
+			("Downloading FlexASIO", async () => await DownloadHelper.Download(JsonDocument.Parse(await new HttpClient { DefaultRequestHeaders = { { "User-Agent", "AutoOS" } } }.GetStringAsync("https://api.github.com/repos/dechamps/FlexASIO/releases")).RootElement.EnumerateArray().First(release => !release.GetProperty("prerelease").GetBoolean() && release.GetProperty("assets").EnumerateArray().Any(asset => asset.GetProperty("name").GetString().EndsWith(".exe"))).GetProperty("assets").EnumerateArray().First(asset => asset.GetProperty("name").GetString().EndsWith(".exe")).GetProperty("browser_download_url").GetString(), Path.GetTempPath(), "FlexASIO.exe", reporter: reporter), () => FlexASIO == true),
 
 			// install flexasio
 			("Installing FlexASIO", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "FlexASIO.exe"), Arguments = "/VERYSILENT /NORESTART", WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => FlexASIO == true),
 			("Cleaning up FlexASIO files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "FlexASIO.exe")), () => FlexASIO == true),
 
 			// download flexasio gui
-			("Downloading FlexASIO GUI", async () => await DownloadHelper.Download("https://github.com/flipswitchingmonkey/FlexASIO_GUI/releases/download/v0.35/FlexASIO.GUIInstaller_0.35.exe", Path.GetTempPath(), "FlexASIO.GUIInstaller.exe", reporter: reporter), () => FlexASIO == true),
+			("Downloading FlexASIO GUI", async () => await DownloadHelper.Download(JsonDocument.Parse(await new HttpClient { DefaultRequestHeaders = { { "User-Agent", "AutoOS" } } }.GetStringAsync("https://api.github.com/repos/flipswitchingmonkey/FlexASIO_GUI/releases")).RootElement.EnumerateArray().First(release => !release.GetProperty("prerelease").GetBoolean() && release.GetProperty("assets").EnumerateArray().Any(asset => asset.GetProperty("name").GetString().EndsWith(".exe"))).GetProperty("assets").EnumerateArray().First(asset => asset.GetProperty("name").GetString().EndsWith(".exe")).GetProperty("browser_download_url").GetString(), Path.GetTempPath(), "FlexASIO.GUIInstaller.exe", reporter: reporter), () => FlexASIO == true),
 
 			// install flexasio gui
 			("Installing FlexASIO GUI", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "FlexASIO.GUIInstaller.exe"), Arguments = "/VERYSILENT /NORESTART", WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => FlexASIO == true),
@@ -1777,7 +1798,7 @@ public static class ApplicationStage
 			("Disabling AnyDesk startup entries", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\StartupFolder", "AnyDesk.lnk", new byte[] { 0x03 }, RegistryValueKind.Binary), () => AnyDesk == true),
 
 			// download apollo
-			("Downloading Apollo", async () => await DownloadHelper.Download("https://github.com/ClassicOldSong/Apollo/releases/download/v0.4.7-alpha.1/Apollo-0.4.7-alpha.1.exe", Path.GetTempPath(), "Apollo.exe", reporter: reporter), () => Apollo == true),
+			("Downloading Apollo", async () => await DownloadHelper.Download(JsonDocument.Parse(await new HttpClient { DefaultRequestHeaders = { { "User-Agent", "AutoOS" } } }.GetStringAsync("https://api.github.com/repos/ClassicOldSong/Apollo/releases")).RootElement.EnumerateArray().First(release => !release.GetProperty("prerelease").GetBoolean() && release.GetProperty("assets").EnumerateArray().Any(asset => asset.GetProperty("name").GetString().EndsWith(".exe"))).GetProperty("assets").EnumerateArray().First(asset => asset.GetProperty("name").GetString().EndsWith(".exe")).GetProperty("browser_download_url").GetString(), Path.GetTempPath(), "Apollo.exe", reporter: reporter), () => Apollo == true),
 
 			// install apollo
 			("Installing Apollo", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "Apollo.exe"), Arguments = "/S", WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => Apollo == true),
