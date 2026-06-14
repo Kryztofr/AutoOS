@@ -82,6 +82,7 @@ public class ApplicationSelection
 	public bool Go { get; set; }
 	public bool Trello { get; set; }
 	public bool HWInfo {get; set; }
+	public bool TimingConfigurator { get; set; }
 	public bool ZenTimings {get; set; }
 	public bool Prime95 {get; set; }
 	public bool OCCT { get; set; }
@@ -195,6 +196,7 @@ public static class ApplicationStage
 		bool Trello = selection?.Trello ?? PreparingStage.Trello;
 
 		bool HWInfo = selection?.HWInfo ?? PreparingStage.HWInfo;
+		bool TimingConfigurator = selection?.TimingConfigurator ?? PreparingStage.TimingConfigurator;
 		bool ZenTimings = selection?.ZenTimings ?? PreparingStage.ZenTimings;
 		bool Prime95 = selection?.Prime95 ?? PreparingStage.Prime95;
 		bool OCCT = selection?.OCCT ?? PreparingStage.OCCT;
@@ -1496,6 +1498,15 @@ public static class ApplicationStage
             ("Installing HWiNFO® 64", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "hwi64.exe"), Arguments = "/SP- /VERYSILENT /SUPPRESSMSGBOXES /NORESTART" , WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => HWInfo == true),
 			("Installing HWiNFO® 64", async () => { while (Process.GetProcessesByName("HWiNFO64").Length == 0) await Task.Delay(100); foreach (Process process in Process.GetProcessesByName("HWiNFO64")) { process.Kill(); process.WaitForExit(); } }, () => HWInfo == true),
 			("Cleaning up HWiNFO® 64", async () => File.Delete(Path.Combine(Path.GetTempPath(), "hwi64.exe")), () => HWInfo == true),
+
+			// download timing configurator
+			("Downloading ASRock Timing Configurator", async () => await DownloadHelper.Download("https://download.asrock.com/Utility/Formula/TimingConfigurator(v4.1.7).zip", Path.GetTempPath(), "TimingConfigurator.zip"), () => TimingConfigurator == true),
+
+			// install timing configurator
+			("Installing ASRock Timing Configurator", async () => await ExtractHelper.Extract(Path.Combine(Path.GetTempPath(), "TimingConfigurator.zip"), Path.Combine(Path.GetTempPath(), "TimingConfigurator")), () => TimingConfigurator == true),
+			("Installing ASRock Timing Configurator", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "TimingConfigurator", "TimingConfigurator(v4.1.7)", "AsrTCSetup(v4.1.7).exe"), Arguments = "/VERYSILENT /SUPPRESSMSGBOXES /NORESTART /NOCLOSEAPPLICATIONS" , WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => TimingConfigurator == true),
+			("Cleaning up ASRock Timing Configurator files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "TimingConfigurator.zip")), () => TimingConfigurator == true),
+			("Cleaning up ASRock Timing Configurator files", async () => Directory.Delete(Path.Combine(Path.GetTempPath(), "TimingConfigurator"), true), () => TimingConfigurator == true),
 
 			// download zentimings
 			("Downloading ZenTimings", async () => await DownloadHelper.Download(JsonDocument.Parse(await new HttpClient { DefaultRequestHeaders = { { "User-Agent", "AutoOS" } } }.GetStringAsync("https://api.github.com/repos/irusanov/ZenTimings/releases")).RootElement.EnumerateArray().First(release => !release.GetProperty("prerelease").GetBoolean() && release.GetProperty("assets").EnumerateArray().Any(asset => asset.GetProperty("name").GetString().EndsWith(".zip"))).GetProperty("assets").EnumerateArray().First(asset => asset.GetProperty("name").GetString().EndsWith(".zip")).GetProperty("browser_download_url").GetString(), Path.GetTempPath(), "ZenTimings.zip"), () => ZenTimings == true),

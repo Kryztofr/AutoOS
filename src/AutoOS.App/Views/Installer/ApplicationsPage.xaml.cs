@@ -123,6 +123,7 @@ public sealed partial class ApplicationsPage : Page
 		Overclocking.ItemsSource = new List<GridViewItem>
 		{
 			new() { Text = "HWiNFO® 64", ImageSource = "ms-appx:///Assets/Fluent/HWInfo.png" },
+			new() { Text = "ASRock Timing Configurator", ImageSource = "ms-appx:///Assets/Fluent/TimingConfigurator.png" },
 			new() { Text = "ZenTimings", ImageSource = "ms-appx:///Assets/Fluent/ZenTimings.png" },
 			new() { Text = "Prime95", ImageSource = "ms-appx:///Assets/Fluent/Prime95.png" },
 			new() { Text = "OCCT", ImageSource = "ms-appx:///Assets/Fluent/OCCT.png" }
