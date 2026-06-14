@@ -85,6 +85,7 @@ public sealed partial class ApplicationsPage : Page
 			new() { Text = "Logitech Onboard Memory Manager", ImageSource = "ms-appx:///Assets/Fluent/Logitech.png" },
 			new() { Text = "Wootility", ImageSource = "ms-appx:///Assets/Fluent/Wootility.png" },
 			new() { Text = "Endgame Gear", ImageSource = "ms-appx:///Assets/Fluent/EndgameGear.png" },
+			new() { Text = "MCHOSE HUB", ImageSource = "ms-appx:///Assets/Fluent/MCHOSE.png" },
 			new() { Text = "SteelSeries GG", ImageSource = "ms-appx:///Assets/Fluent/SteelSeriesGG.png" },
 			new() { Text = "Razer Synapse", ImageSource = "ms-appx:///Assets/Fluent/RazerSynapse.png" },
 			new() { Text = "Corsair iCUE", ImageSource = "ms-appx:///Assets/Fluent/CorsairICue.png" },

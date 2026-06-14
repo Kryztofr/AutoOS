@@ -89,6 +89,7 @@ public sealed partial class ApplicationsPage : Page
 			new() { Text = "Logitech Onboard Memory Manager", ImageSource = "ms-appx:///Assets/Fluent/Logitech.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Logitech Onboard Memory Manager", "OnboardMemoryManager.exe")) },
 			new() { Text = "Wootility", ImageSource = "ms-appx:///Assets/Fluent/Wootility.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs", "wootility", "Wootility.exe")) },
 			new() { Text = "Endgame Gear", ImageSource = "ms-appx:///Assets/Fluent/EndgameGear.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Endgame", "GamingUtility", "ENDGAME GEAR.exe")) },
+			new() { Text = "MCHOSE HUB", ImageSource = "ms-appx:///Assets/Fluent/MCHOSE.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "MCHOSE HUB", "MCHOSE HUB.exe")) },
 			new() { Text = "SteelSeries GG", ImageSource = "ms-appx:///Assets/Fluent/SteelSeriesGG.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "SteelSeries", "GG", "SteelSeriesGGEZ.exe")) },
 			new() { Text = "Razer Synapse", ImageSource = "ms-appx:///Assets/Fluent/RazerSynapse.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Razer", "RazerAppEngine", "RazerAppEngine.exe")) },
 			new() { Text = "Corsair iCUE", ImageSource = "ms-appx:///Assets/Fluent/CorsairICue.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Corsair", "Corsair iCUE5 Software", "iCUE.exe")) },
@@ -227,6 +228,7 @@ public sealed partial class ApplicationsPage : Page
 		selection.LogitechOnboardMemoryManager = selectedPeripherals.Contains("Logitech Onboard Memory Manager");
 		selection.Wootility = selectedPeripherals.Contains("Wootility");
 		selection.EndgameGear = selectedPeripherals.Contains("Endgame Gear");
+		selection.MCHOSE = selectedPeripherals.Contains("MCHOSE HUB");
 		selection.CorsairICue = selectedPeripherals.Contains("Corsair iCUE");
 		selection.GHelper = selectedPeripherals.Contains("GHelper");
 

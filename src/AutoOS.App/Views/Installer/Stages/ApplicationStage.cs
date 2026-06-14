@@ -56,6 +56,7 @@ public class ApplicationSelection
 	public bool LogitechOnboardMemoryManager { get; set; }
 	public bool Wootility { get; set; }
 	public bool EndgameGear { get; set; }
+	public bool MCHOSE { get; set; }
 	public bool SteelSeriesGG { get; set; }
 	public bool RazerSynapse { get; set; }
 	public bool CorsairICue { get; set; }
@@ -164,6 +165,7 @@ public static class ApplicationStage
 		bool LogitechOnboardMemoryManager = selection?.LogitechOnboardMemoryManager ?? PreparingStage.LogitechOnboardMemoryManager;
 		bool Wootility = selection?.Wootility ?? PreparingStage.Wootility;
 		bool EndgameGear = selection?.EndgameGear ?? PreparingStage.EndgameGear;
+		bool MCHOSE = selection?.MCHOSE ?? PreparingStage.MCHOSE;
 		bool SteelSeriesGG = selection?.SteelSeriesGG ?? PreparingStage.SteelSeriesGG;
 		bool RazerSynapse = selection?.RazerSynapse ?? PreparingStage.RazerSynapse;
 		bool CorsairICue = selection?.CorsairICue ?? PreparingStage.CorsairICue;
@@ -1197,6 +1199,13 @@ public static class ApplicationStage
 
 			// disabling endgame gear startup entries
 			("Disabling Endgame Gear startup entries", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run", "Endgame Gear Utility Startup", new byte[] { 0x03 }, RegistryValueKind.Binary), () => EndgameGear == true),
+
+			// download mchose hub
+			("Downloading MCHOSE HUB", async () => await DownloadHelper.Download("https://github.com/tinodin/AutoOS-Resources/releases/download/v1.0.0.0/MCHOSE.HUB.installer.exe", Path.GetTempPath(), "MCHOSE.HUB.installer.exe", reporter: reporter), () => MCHOSE == true),
+
+			// install mchose hub
+			("Installing MCHOSE HUB", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "MCHOSE.HUB.installer.exe"), Arguments = "/S" , WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => MCHOSE == true),
+			("Cleaning up MCHOSE HUB files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "MCHOSE.HUB.installer.exe")), () => MCHOSE == true),
 
 			// download steelseries gg
 			("Downloading SteelSeries GG", async () => await DownloadHelper.Download("https://steelseries.com/gg/downloads/latest/windows", Path.GetTempPath(), "SteelSeriesGGSetup.exe", reporter: reporter), () => SteelSeriesGG == true),

@@ -89,6 +89,7 @@ public static partial class PreparingStage
 	public static bool LogitechOnboardMemoryManager;
 	public static bool Wootility;
 	public static bool EndgameGear;
+	public static bool MCHOSE;
 	public static bool SteelSeriesGG;
 	public static bool RazerSynapse;
 	public static bool CorsairICue;
