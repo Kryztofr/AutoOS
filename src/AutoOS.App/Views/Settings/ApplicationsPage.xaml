@@ -394,6 +394,51 @@
 						</GridView>
 					</dev:Card.Content>
 				</dev:Card>
+				<dev:Card Title="Multimedia"
+						  Margin="0,0,0,8"
+						  Padding="24,24,24,12"
+						  Visibility="{x:Bind GetVisibility(multimediaItems.Count), Mode=OneWay}">
+					<dev:Card.Content>
+						<GridView x:Name="Multimedia"
+								  IsMultiSelectCheckBoxEnabled="False"
+								  SelectionChanged="GridView_SelectionChanged"
+								  SelectionMode="Multiple">
+							<GridView.ItemTemplate>
+								<DataTemplate x:DataType="views:GridViewItem">
+									<Grid Height="85"
+										  Margin="4">
+										<Grid.RowDefinitions>
+											<RowDefinition Height="*" />
+										</Grid.RowDefinitions>
+										<StackPanel VerticalAlignment="Center">
+											<Image Height="36"
+												   Margin="0,0,0,4">
+												<Image.Source>
+													<BitmapImage DecodePixelHeight="36"
+																 DecodePixelType="Logical"
+																 UriSource="{x:Bind ImageSource, Mode=OneTime}" />
+												</Image.Source>
+											</Image>
+											<TextBlock HorizontalAlignment="Center"
+													   FontSize="14"
+													   Text="{x:Bind Text, Mode=OneTime}"
+													   TextAlignment="Center"
+													   TextTrimming="CharacterEllipsis"
+													   TextWrapping="Wrap" />
+										</StackPanel>
+									</Grid>
+								</DataTemplate>
+							</GridView.ItemTemplate>
+							<GridView.ItemsPanel>
+								<ItemsPanelTemplate>
+									<controls:StaggeredPanel ColumnSpacing="4"
+															 DesiredColumnWidth="145"
+															 RowSpacing="12" />
+								</ItemsPanelTemplate>
+							</GridView.ItemsPanel>
+						</GridView>
+					</dev:Card.Content>
+				</dev:Card>
 				<dev:Card Title="Office"
 						  Margin="0,0,0,8"
 						  Padding="24,24,24,12"

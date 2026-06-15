@@ -129,6 +129,11 @@ public static partial class PreparingStage
 	public static bool FlexASIO;
 	public static bool ASIO4ALL;
 
+	public static bool MediaInfo;
+	public static bool MpcQt;
+	public static bool MPV;
+	public static bool VLC;
+
 	public static bool Word;
 	public static bool Excel;
 	public static bool PowerPoint;
@@ -146,6 +151,8 @@ public static partial class PreparingStage
 	public static bool BluetoothAudioReceiver;
 	public static bool AnyDesk;
 	public static bool Apollo;
+	public static bool AutoHotkey;
+	public static bool EmEditor;
 
 	public static List<GpuInfo> GPUs { get; set; } = [];
 	public static bool MSI;
@@ -300,6 +307,11 @@ public static partial class PreparingStage
 			FlexASIO = (localSettings.Values["Music Production"]?.ToString().Contains("FlexASIO") ?? false);
 			ASIO4ALL = (localSettings.Values["Music Production"]?.ToString().Contains("ASIO4ALL") ?? false);
 
+			MediaInfo = (localSettings.Values["Multimedia"]?.ToString().Contains("MediaInfo") ?? false);
+			MpcQt = (localSettings.Values["Multimedia"]?.ToString().Contains("MPC-QT") ?? false);
+			MPV = (localSettings.Values["Multimedia"]?.ToString().Contains("MPV") ?? false);
+			VLC = (localSettings.Values["Multimedia"]?.ToString().Contains("VLC") ?? false);
+
 			Word = (localSettings.Values["Office"]?.ToString().Contains("Word") ?? false);
 			Excel = (localSettings.Values["Office"]?.ToString().Contains("Excel") ?? false);
 			PowerPoint = (localSettings.Values["Office"]?.ToString().Contains("PowerPoint") ?? false);
@@ -317,6 +329,8 @@ public static partial class PreparingStage
 			BluetoothAudioReceiver = (localSettings.Values["Miscellaneous"]?.ToString().Contains("BluetoothAudioReceiver") ?? false);
 			AnyDesk = (localSettings.Values["Miscellaneous"]?.ToString().Contains("AnyDesk") ?? false);
 			Apollo = (localSettings.Values["Miscellaneous"]?.ToString().Contains("Apollo") ?? false);
+			AutoHotkey = (localSettings.Values["Miscellaneous"]?.ToString().Contains("AutoHotkey") ?? false);
+			EmEditor = (localSettings.Values["Miscellaneous"]?.ToString().Contains("EmEditor") ?? false);
 
 			var gpuArray = JsonNode.Parse(localSettings.Values["GPUs"]?.ToString() ?? "[]")?.AsArray();
 			if (gpuArray != null)
