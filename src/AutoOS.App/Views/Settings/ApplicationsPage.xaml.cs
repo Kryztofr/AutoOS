@@ -156,10 +156,10 @@ public sealed partial class ApplicationsPage : Page
 
 		var multimediaList = new List<GridViewItem>
 		{
-			new() { Text = "MediaInfo", ImageSource = "ms-appx:///Assets/Fluent/MediaInfo.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "MediaInfo", "MediaInfo.exe")) },
 			new() { Text = "MPC-QT", ImageSource = "ms-appx:///Assets/Fluent/MpcQt.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "MPC-QT", "mpc-qt.exe")) },
-			new() { Text = "MPV", ImageSource = "ms-appx:///Assets/Fluent/MPV.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "mpv", "mpv.exe")) },
-			new() { Text = "VLC", ImageSource = "ms-appx:///Assets/Fluent/VLC.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "VideoLAN", "VLC", "vlc.exe")) }
+			new() { Text = "mpv", ImageSource = "ms-appx:///Assets/Fluent/MPV.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "mpv", "mpv.exe")) },
+			new() { Text = "VLC", ImageSource = "ms-appx:///Assets/Fluent/VLC.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "VideoLAN", "VLC", "vlc.exe")) },
+			new() { Text = "MediaInfo", ImageSource = "ms-appx:///Assets/Fluent/MediaInfo.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "MediaInfo", "MediaInfo.exe")) || Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Packages", "MediaArea.net.MediaInfo_9bzbd7xajy7ar")) }
 		};
 		foreach (var item in multimediaList.Where(item => !item.IsInstalled))
 			multimediaItems.Add(item);
@@ -295,7 +295,7 @@ public sealed partial class ApplicationsPage : Page
 		var selectedMultimedia = selectedMultimediaItems.Select(item => item.Text).ToList();
 		selection.MediaInfo = selectedMultimedia.Contains("MediaInfo");
 		selection.MpcQt = selectedMultimedia.Contains("MPC-QT");
-		selection.MPV = selectedMultimedia.Contains("MPV");
+		selection.MPV = selectedMultimedia.Contains("mpv");
 		selection.VLC = selectedMultimedia.Contains("VLC");
 
 		var selectedOfficeItems = Office.SelectedItems.Cast<GridViewItem>().ToList();

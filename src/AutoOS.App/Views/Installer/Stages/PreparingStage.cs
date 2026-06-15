@@ -129,10 +129,10 @@ public static partial class PreparingStage
 	public static bool FlexASIO;
 	public static bool ASIO4ALL;
 
-	public static bool MediaInfo;
 	public static bool MpcQt;
 	public static bool MPV;
 	public static bool VLC;
+	public static bool MediaInfo;
 
 	public static bool Word;
 	public static bool Excel;
@@ -307,10 +307,10 @@ public static partial class PreparingStage
 			FlexASIO = (localSettings.Values["Music Production"]?.ToString().Contains("FlexASIO") ?? false);
 			ASIO4ALL = (localSettings.Values["Music Production"]?.ToString().Contains("ASIO4ALL") ?? false);
 
-			MediaInfo = (localSettings.Values["Multimedia"]?.ToString().Contains("MediaInfo") ?? false);
 			MpcQt = (localSettings.Values["Multimedia"]?.ToString().Contains("MPC-QT") ?? false);
-			MPV = (localSettings.Values["Multimedia"]?.ToString().Contains("MPV") ?? false);
+			MPV = (localSettings.Values["Multimedia"]?.ToString().Contains("mpv") ?? false);
 			VLC = (localSettings.Values["Multimedia"]?.ToString().Contains("VLC") ?? false);
+			MediaInfo = (localSettings.Values["Multimedia"]?.ToString().Contains("MediaInfo") ?? false);
 
 			Word = (localSettings.Values["Office"]?.ToString().Contains("Word") ?? false);
 			Excel = (localSettings.Values["Office"]?.ToString().Contains("Excel") ?? false);

@@ -91,10 +91,10 @@ public class ApplicationSelection
 	public bool FLStudio { get; set; }
 	public bool FlexASIO { get; set; }
 	public bool ASIO4ALL { get; set; }
-	public bool MediaInfo { get; set; }
 	public bool MpcQt { get; set; }
 	public bool MPV { get; set; }
 	public bool VLC { get; set; }
+	public bool MediaInfo { get; set; }
 	public bool Word { get; set; }
 	public bool Excel { get; set; }
 	public bool PowerPoint { get; set; }
@@ -214,10 +214,10 @@ public static class ApplicationStage
 		bool FlexASIO = selection?.FlexASIO ?? PreparingStage.FlexASIO;
 		bool ASIO4ALL = selection?.ASIO4ALL ?? PreparingStage.ASIO4ALL;
 
-		bool MediaInfo = selection?.MediaInfo ?? PreparingStage.MediaInfo;
 		bool MpcQt = selection?.MpcQt ?? PreparingStage.MpcQt;
 		bool MPV = selection?.MPV ?? PreparingStage.MPV;
 		bool VLC = selection?.VLC ?? PreparingStage.VLC;
+		bool MediaInfo = selection?.MediaInfo ?? PreparingStage.MediaInfo;
 
 		bool Word = selection?.Word ?? PreparingStage.Word;
 		bool Excel = selection?.Excel ?? PreparingStage.Excel;
@@ -1609,39 +1609,34 @@ public static class ApplicationStage
             ("Installing ASIO4ALL", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "ASIO4ALL.exe"), Arguments = "/S", WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => ASIO4ALL == true),
             ("Cleaning up ASIO4ALL files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "ASIO4ALL.exe")), () => ASIO4ALL == true),
 
-			// download mediainfo
-			("Downloading MediaInfo", async () => await DownloadHelper.Download("https://mediaarea.net/download/binary/mediainfo-gui/26.05/MediaInfo_GUI_26.05_Windows.exe", Path.GetTempPath(), "MediaInfo_GUI.exe", reporter: reporter), () => MediaInfo == true),
-
-			// install mediainfo
-			("Installing MediaInfo", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "MediaInfo_GUI.exe"), Arguments = "/S" , WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => MediaInfo == true),
-			("Cleaning up MediaInfo files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "MediaInfo_GUI.exe")), () => MediaInfo == true),
-
 			// download mpc-qt
-			("Downloading MPC-QT", async () => await DownloadHelper.Download(JsonDocument.Parse(await new HttpClient { DefaultRequestHeaders = { { "User-Agent", "AutoOS" } } }.GetStringAsync("https://api.github.com/repos/mpc-qt/mpc-qt/releases")).RootElement.EnumerateArray().First(release => !release.GetProperty("prerelease").GetBoolean() && release.GetProperty("assets").EnumerateArray().Any(asset => asset.GetProperty("name").GetString().EndsWith(".exe"))).GetProperty("assets").EnumerateArray().First(asset => asset.GetProperty("name").GetString().EndsWith(".exe")).GetProperty("browser_download_url").GetString(), Path.GetTempPath(), "MPC-QT.exe", reporter: reporter), () => MpcQt == true),
+			("Downloading MPC-QT", async () => await DownloadHelper.Download(JsonDocument.Parse(await new HttpClient { DefaultRequestHeaders = { { "User-Agent", "AutoOS" } } }.GetStringAsync("https://api.github.com/repos/mpc-qt/mpc-qt/releases")).RootElement.EnumerateArray().First(release => !release.GetProperty("prerelease").GetBoolean() && release.GetProperty("assets").EnumerateArray().Any(asset => asset.GetProperty("name").GetString().StartsWith("mpc-qt-win-x64-") && asset.GetProperty("name").GetString().EndsWith("-installer.exe"))).GetProperty("assets").EnumerateArray().First(asset => asset.GetProperty("name").GetString().StartsWith("mpc-qt-win-x64-") && asset.GetProperty("name").GetString().EndsWith("-installer.exe")).GetProperty("browser_download_url").GetString(), Path.GetTempPath(), "mpc-qt-win-x64-installer.exe", reporter: reporter), () => MpcQt == true),
 
 			// install mpc-qt
-			("Installing MPC-QT", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "MPC-QT.exe"), Arguments = "/VERYSILENT /NORESTART", WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => MpcQt == true),
-			("Cleaning up MPC-QT files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "MPC-QT.exe")), () => MpcQt == true),
+			("Installing MPC-QT", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "mpc-qt-win-x64-installer.exe"), Arguments = "/S", WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => MpcQt == true),
+			("Cleaning up MPC-QT files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "mpc-qt-win-x64-installer.exe")), () => MpcQt == true),
 
 			// download mpv
-			("Downloading MPV", async () => await DownloadHelper.Download("https://github.com/mpv-player/mpv/releases/download/v0.41.0/mpv-v0.41.0-x86_64-pc-windows-msvc.zip", Path.GetTempPath(), "mpv-x86_64-pc-windows-msvc.zip"), () => MPV == true),
+			("Downloading mpv", async () => await DownloadHelper.Download(JsonDocument.Parse(await new HttpClient { DefaultRequestHeaders = { { "User-Agent", "AutoOS" } } }.GetStringAsync("https://api.github.com/repos/zhongfly/mpv-winbuild/releases")).RootElement.EnumerateArray().First(release => !release.GetProperty("prerelease").GetBoolean() && release.GetProperty("assets").EnumerateArray().Any(asset => asset.GetProperty("name").GetString().StartsWith("mpv-x86_64-v3-") && asset.GetProperty("name").GetString().EndsWith(".7z"))).GetProperty("assets").EnumerateArray().First(asset => asset.GetProperty("name").GetString().StartsWith("mpv-x86_64-v3-") && asset.GetProperty("name").GetString().EndsWith(".7z")).GetProperty("browser_download_url").GetString(), Path.GetTempPath(), "mpv-x86_64-v3.7z"), () => MPV == true),
 
 			// install mpv
-			("Installing MPV", async () => await ExtractHelper.Extract(Path.Combine(Path.GetTempPath(), "mpv-x86_64-pc-windows-msvc.zip"), Path.Combine(Path.GetTempPath(), "MPV")), () => MPV == true),
-			("Installing MPV", async () => Directory.Move(Path.Combine(Path.GetTempPath(), "mpv"), Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "MPV")), () => MPV == true),
-			("Installing MPV", async () => ShortcutHelper.Create(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Microsoft", "Windows", "Start Menu", "Programs", "MPV.lnk"), Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "MPV", "mpv.exe")), () => MPV == true),
-			("Installing MPV", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\MPV", "DisplayName", "MPV", RegistryValueKind.String), () => MPV == true),
-			("Installing MPV", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\MPV", "UninstallString", $@"cmd /c rd /s /q ""{Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "MPV")}"" & del ""{Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), @"Microsoft\Windows\Start Menu\Programs\MPV.lnk")}"" & reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\MPV"" /f", RegistryValueKind.String), () => MPV == true),
-			("Installing MPV", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\MPV", "DisplayIcon", Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), @"MPV\mpv.exe"), RegistryValueKind.String), () => MPV == true),
-			("Installing MPV", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\MPV", "Publisher", "mpv-player", RegistryValueKind.String), () => MPV == true),
-			("Cleaning up MPV files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "mpv-x86_64-pc-windows-msvc.zip")), () => MPV == true),
+			("Installing mpv", async () => await ExtractHelper.Extract(Path.Combine(Path.GetTempPath(), "mpv-x86_64-v3.7z"), Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "mpv")), () => MPV == true),
+			("Installing mpv", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "mpv", "mpv.exe"), Arguments = "--register", WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => MPV == true),
+			("Installing mpv", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\mpv", "UninstallString", $@"cmd.exe /c """"{Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)}\mpv\mpv.exe"" --no-config --unregister && rmdir /s /q ""{Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)}\mpv""""", RegistryValueKind.String), () => MPV == true),
+			("Cleaning up mpv files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "mpv-x86_64-v3.7z")), () => MPV == true),
 
 			// download vlc
-			("Downloading VLC", async () => await DownloadHelper.Download("https://get.videolan.org/vlc/3.0.23/win64/vlc-3.0.23-win64.exe", Path.GetTempPath(), "vlc-win64.exe", reporter: reporter), () => VLC == true),
+			("Downloading VLC", async () => await DownloadHelper.Download("https://mirror.solnet.ch/videolan/vlc/3.0.23/win64/vlc-3.0.23-win64.exe", Path.GetTempPath(), "vlc-win64.exe", reporter: reporter), () => VLC == true),
 
 			// install vlc
 			("Installing VLC", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "vlc-win64.exe"), Arguments = "/L=1033 /S", WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => VLC == true),
 			("Cleaning up VLC files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "vlc-win64.exe")), () => VLC == true),
+
+			// download mediainfo
+			("Downloading MediaInfo", async () => await StoreHelper.Download("MediaArea.net.MediaInfo_9bzbd7xajy7ar", reporter: reporter), () => MediaInfo == true),
+
+			// install mediainfo
+			("Installing MediaInfo", async () => await StoreHelper.Install("MediaArea.net.MediaInfo_9bzbd7xajy7ar"), () => MediaInfo == true),
 
 			// download office
 			("Downloading Office", async () => await DownloadHelper.Download("https://officecdn.microsoft.com/pr/wsus/setup.exe", Path.GetTempPath(), "setup.exe", reporter: reporter), () => Word == true || Excel == true || PowerPoint == true || OneNote == true || Teams == true || Outlook == true || OneDrive == true),

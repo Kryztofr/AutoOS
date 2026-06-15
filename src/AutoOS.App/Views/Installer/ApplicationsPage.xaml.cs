@@ -142,10 +142,10 @@ public sealed partial class ApplicationsPage : Page
 
 		Multimedia.ItemsSource = new List<GridViewItem>
 		{
-			new() { Text = "MediaInfo", ImageSource = "ms-appx:///Assets/Fluent/MediaInfo.png" },
 			new() { Text = "MPC-QT", ImageSource = "ms-appx:///Assets/Fluent/MpcQt.png" },
-			new() { Text = "MPV", ImageSource = "ms-appx:///Assets/Fluent/MPV.png" },
-			new() { Text = "VLC", ImageSource = "ms-appx:///Assets/Fluent/VLC.png" }
+			new() { Text = "mpv", ImageSource = "ms-appx:///Assets/Fluent/MPV.png" },
+			new() { Text = "VLC", ImageSource = "ms-appx:///Assets/Fluent/VLC.png" },
+			new() { Text = "MediaInfo", ImageSource = "ms-appx:///Assets/Fluent/MediaInfo.png" }
 		};
 
 		Office.ItemsSource = new List<GridViewItem>
