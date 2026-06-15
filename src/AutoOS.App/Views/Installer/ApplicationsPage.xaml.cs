@@ -52,7 +52,8 @@ public sealed partial class ApplicationsPage : Page
 			new() { Text = "Telegram Desktop", ImageSource = "ms-appx:///Assets/Fluent/Telegram.png" },
 			new() { Text = "Unigram", ImageSource = "ms-appx:///Assets/Fluent/Unigram.png" },
 			new() { Text = "Zoom Workplace", ImageSource = "ms-appx:///Assets/Fluent/Zoom.png" },
-			new() { Text = "Thunderbird", ImageSource = "ms-appx:///Assets/Fluent/Thunderbird.png" }
+			new() { Text = "Thunderbird", ImageSource = "ms-appx:///Assets/Fluent/Thunderbird.png" },
+			new() { Text = "Signal", ImageSource = "ms-appx:///Assets/Fluent/Signal.png" }
 		};
 
 		Launchers.ItemsSource = new List<GridViewItem>
@@ -91,6 +92,7 @@ public sealed partial class ApplicationsPage : Page
 			new() { Text = "SteelSeries GG", ImageSource = "ms-appx:///Assets/Fluent/SteelSeriesGG.png" },
 			new() { Text = "Razer Synapse", ImageSource = "ms-appx:///Assets/Fluent/RazerSynapse.png" },
 			new() { Text = "Corsair iCUE", ImageSource = "ms-appx:///Assets/Fluent/CorsairICue.png" },
+			new() { Text = "OpenRGB", ImageSource = "ms-appx:///Assets/Fluent/OpenRGB.png" },
 			new() { Text = "FanControl", ImageSource = "ms-appx:///Assets/Fluent/FanControl.png" },
 			new() { Text = "GHelper", ImageSource = "ms-appx:///Assets/Fluent/GHelper.png" }
 		};

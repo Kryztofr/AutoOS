@@ -50,7 +50,8 @@ public sealed partial class ApplicationsPage : Page
 			new() { Text = "Telegram Desktop", ImageSource = "ms-appx:///Assets/Fluent/Telegram.png", IsInstalled = Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Packages", "TelegramMessengerLLP.TelegramDesktop_t4vj0pshhgkwm")) },
 			new() { Text = "Unigram", ImageSource = "ms-appx:///Assets/Fluent/Unigram.png", IsInstalled = Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Packages", "38833FF26BA1D.UnigramPreview_g9c9v27vpyspw")) },
 			new() { Text = "Zoom Workplace", ImageSource = "ms-appx:///Assets/Fluent/Zoom.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Zoom", "bin", "Zoom.exe")) },
-			new() { Text = "Thunderbird", ImageSource = "ms-appx:///Assets/Fluent/Thunderbird.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Mozilla Thunderbird", "thunderbird.exe")) }
+			new() { Text = "Thunderbird", ImageSource = "ms-appx:///Assets/Fluent/Thunderbird.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Mozilla Thunderbird", "thunderbird.exe")) },
+			new() { Text = "Signal", ImageSource = "ms-appx:///Assets/Fluent/Signal.png", IsInstalled = Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs", "signal-desktop", "Signal.exe")) }
 		};
 		foreach (var item in messagingList.Where(item => !item.IsInstalled))
 			messagingItems.Add(item);
@@ -95,6 +96,7 @@ public sealed partial class ApplicationsPage : Page
 			new() { Text = "SteelSeries GG", ImageSource = "ms-appx:///Assets/Fluent/SteelSeriesGG.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "SteelSeries", "GG", "SteelSeriesGGEZ.exe")) },
 			new() { Text = "Razer Synapse", ImageSource = "ms-appx:///Assets/Fluent/RazerSynapse.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Razer", "RazerAppEngine", "RazerAppEngine.exe")) },
 			new() { Text = "Corsair iCUE", ImageSource = "ms-appx:///Assets/Fluent/CorsairICue.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Corsair", "Corsair iCUE5 Software", "iCUE.exe")) },
+			new() { Text = "OpenRGB", ImageSource = "ms-appx:///Assets/Fluent/OpenRGB.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "OpenRGB", "OpenRGB.exe")) },
 			new() { Text = "FanControl", ImageSource = "ms-appx:///Assets/Fluent/FanControl.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "FanControl", "FanControl.exe")) },
 			new() { Text = "GHelper", ImageSource = "ms-appx:///Assets/Fluent/GHelper.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "GHelper", "GHelper.exe")) }
 		};
@@ -212,6 +214,7 @@ public sealed partial class ApplicationsPage : Page
 		selection.Unigram = selectedMessaging.Contains("Unigram");
 		selection.ZoomWorkplace = selectedMessaging.Contains("Zoom Workplace");
 		selection.Thunderbird = selectedMessaging.Contains("Thunderbird");
+		selection.Signal = selectedMessaging.Contains("Signal");
 
 		var selectedLaunchersItems = Launchers.SelectedItems.Cast<GridViewItem>().ToList();
 		var selectedLaunchers = selectedLaunchersItems.Select(item => item.Text).ToList();
@@ -247,6 +250,7 @@ public sealed partial class ApplicationsPage : Page
 		selection.EndgameGear = selectedPeripherals.Contains("Endgame Gear");
 		selection.MCHOSE = selectedPeripherals.Contains("MCHOSE HUB");
 		selection.CorsairICue = selectedPeripherals.Contains("Corsair iCUE");
+		selection.OpenRGB = selectedPeripherals.Contains("OpenRGB");
 		selection.FanControl = selectedPeripherals.Contains("FanControl");
 		selection.GHelper = selectedPeripherals.Contains("GHelper");
 

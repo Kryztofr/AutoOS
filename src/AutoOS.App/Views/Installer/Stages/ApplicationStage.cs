@@ -34,6 +34,7 @@ public class ApplicationSelection
 	public bool Unigram { get; set; }
 	public bool ZoomWorkplace { get; set; }
 	public bool Thunderbird { get; set; }
+	public bool Signal { get; set; }
 	public bool EpicGames { get; set; }
 	public bool Steam { get; set; }
 	public bool RiotClient { get; set; }
@@ -60,6 +61,7 @@ public class ApplicationSelection
 	public bool SteelSeriesGG { get; set; }
 	public bool RazerSynapse { get; set; }
 	public bool CorsairICue { get; set; }
+	public bool OpenRGB { get; set; }
 	public bool FanControl { get; set; }
 	public bool GHelper { get; set; }
 	public bool ViGEmBus { get; set; }
@@ -144,6 +146,7 @@ public static class ApplicationStage
 		bool Unigram = selection?.Unigram ?? PreparingStage.Unigram;
 		bool ZoomWorkplace = selection?.ZoomWorkplace ?? PreparingStage.ZoomWorkplace;
 		bool Thunderbird = selection?.Thunderbird ?? PreparingStage.Thunderbird;
+		bool Signal = selection?.Signal ?? PreparingStage.Signal;
 
 		bool EpicGames = selection?.EpicGames ?? PreparingStage.EpicGames;
 		bool EpicGamesAccount = selection != null ? false : PreparingStage.EpicGamesAccount;
@@ -178,6 +181,7 @@ public static class ApplicationStage
 		bool SteelSeriesGG = selection?.SteelSeriesGG ?? PreparingStage.SteelSeriesGG;
 		bool RazerSynapse = selection?.RazerSynapse ?? PreparingStage.RazerSynapse;
 		bool CorsairICue = selection?.CorsairICue ?? PreparingStage.CorsairICue;
+		bool OpenRGB = selection?.OpenRGB ?? PreparingStage.OpenRGB;
 		bool FanControl = selection?.FanControl ?? PreparingStage.FanControl;
 		bool GHelper = selection?.GHelper ?? PreparingStage.GHelper;
 
@@ -698,6 +702,13 @@ public static class ApplicationStage
 			// disable thunderbird service
 			("Disabling Thunderbird service", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\MozillaMaintenance", "Start", 4, RegistryValueKind.DWord), () => Thunderbird == true),
 			("Disabling Thunderbird service", async () => ServicesHelper.StopService("MozillaMaintenance"), () => Thunderbird == true),
+
+			// download signal
+			("Downloading Signal", async () => await DownloadHelper.Download("https://updates.signal.org/desktop/signal-desktop-win-8.14.0.exe", Path.GetTempPath(), "SignalSetup.exe", reporter: reporter), () => Signal == true),
+
+			// install signal
+			("Installing Signal", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "SignalSetup.exe"), Arguments = "/S" , WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => Signal == true),
+			("Cleaning up Signal files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "SignalSetup.exe")), () => Signal == true),
 
 			// download epic games launcher
 			("Downloading Epic Games Launcher", async () => await DownloadHelper.Download("https://launcher-public-service-prod06.ol.epicgames.com/launcher/api/installer/download/EpicGamesLauncherInstaller.msi", Path.GetTempPath(), "EpicGamesLauncherInstaller.msi", reporter: reporter), () => EpicGames == true),
@@ -1284,6 +1295,13 @@ public static class ApplicationStage
 
 			// disable corsair icue startup entry
 			("Disabling Corsair iCUE startup entry", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run", "Corsair iCUE5 Software", new byte[] { 0x01 }, RegistryValueKind.Binary), () => CorsairICue == true),
+
+			// download openrgb
+			("Downloading OpenRGB", async () => await DownloadHelper.Download("https://codeberg.org/OpenRGB/OpenRGB/releases/download/release_candidate_1.0rc2/OpenRGB_1.0rc2_Windows_64_0fca93e.msi", Path.GetTempPath(), "OpenRGB_Windows_64_0fca93e.msi", reporter: reporter), () => OpenRGB == true),
+
+			// install openrgb
+			("Installing OpenRGB", async () => await Process.Start(new ProcessStartInfo { FileName = "msiexec.exe", Arguments = $@"/i ""{Path.Combine(Path.GetTempPath(), "OpenRGB_Windows_64_0fca93e.msi")}"" /qn" , WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => OpenRGB ==  true),
+			("Cleaning up OpenRGB files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "OpenRGB_Windows_64_0fca93e.msi")), () => OpenRGB ==  true),
 
 			// download fancontrol
 			("Downloading FanControl", async () => await DownloadHelper.Download(JsonDocument.Parse(await new HttpClient { DefaultRequestHeaders = { { "User-Agent", "AutoOS" } } }.GetStringAsync("https://api.github.com/repos/Rem0o/FanControl.Releases/releases")).RootElement.EnumerateArray().First(release => !release.GetProperty("prerelease").GetBoolean() && release.GetProperty("assets").EnumerateArray().Any(asset => asset.GetProperty("name").GetString().Contains("Installer.exe"))).GetProperty("assets").EnumerateArray().First(asset => asset.GetProperty("name").GetString().Contains("Installer.exe")).GetProperty("browser_download_url").GetString(), Path.GetTempPath(), "FanControl.exe", reporter: reporter), () => FanControl == true),
