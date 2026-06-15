@@ -59,6 +59,7 @@ public static partial class PreparingStage
 	public static bool Unigram;
 	public static bool ZoomWorkplace;
 	public static bool Thunderbird;
+	public static bool Signal;
 
 	public static bool EpicGames;
 	public static bool EpicGamesAccount;
@@ -92,6 +93,7 @@ public static partial class PreparingStage
 	public static bool SteelSeriesGG;
 	public static bool RazerSynapse;
 	public static bool CorsairICue;
+	public static bool OpenRGB;
 	public static bool FanControl;
 	public static bool GHelper;
 
@@ -241,6 +243,7 @@ public static partial class PreparingStage
 			Unigram = (localSettings.Values["Messaging"]?.ToString().Contains("Unigram") ?? false);
 			ZoomWorkplace = (localSettings.Values["Messaging"]?.ToString().Contains("Zoom Workplace") ?? false);
 			Thunderbird = (localSettings.Values["Messaging"]?.ToString().Contains("Thunderbird") ?? false);
+			Signal = (localSettings.Values["Messaging"]?.ToString().Contains("Signal") ?? false);
 
 			EpicGames = (localSettings.Values["Launchers"]?.ToString().Contains("Epic Games") ?? false);
 			Steam = (localSettings.Values["Launchers"]?.ToString().Contains("Steam") ?? false);
@@ -269,6 +272,7 @@ public static partial class PreparingStage
 			Wootility = (localSettings.Values["Peripherals"]?.ToString().Contains("Wootility") ?? false);
 			EndgameGear = (localSettings.Values["Peripherals"]?.ToString().Contains("Endgame Gear") ?? false);
 			CorsairICue = (localSettings.Values["Peripherals"]?.ToString().Contains("Corsair iCUE") ?? false);
+			OpenRGB = (localSettings.Values["Peripherals"]?.ToString().Contains("OpenRGB") ?? false);
 			FanControl = (localSettings.Values["Peripherals"]?.ToString().Contains("FanControl") ?? false);
 			GHelper = (localSettings.Values["Peripherals"]?.ToString().Contains("GHelper") ?? false);
 
