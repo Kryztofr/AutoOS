@@ -107,6 +107,7 @@ PropVariantClear
 QueryFullProcessImageName
 ReadProcessMemory
 RegCloseKey
+RegCreateKeyEx
 RegOpenKeyExW
 RegSetValueExW
 RegisterApplicationRestart
