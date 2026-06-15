@@ -13,6 +13,7 @@ public sealed partial class ApplicationsPage : Page
 	private bool isInitializingDevelopmentState = true;
 	private bool isInitializingOverclockingState = true;
 	private bool isInitializingMusicProductionState = true;
+	private bool isInitializingMultimediaState = true;
 	private bool isInitializingOfficeState = true;
 	private bool isInitializingMiscellaneousState = true;
 
@@ -30,6 +31,7 @@ public sealed partial class ApplicationsPage : Page
 		GetDevelopment();
 		GetOverclocking();
 		GetMusicProduction();
+		GetMultimedia();
 		GetOffice();
 		GetMiscellaneous();
 	}
@@ -136,6 +138,14 @@ public sealed partial class ApplicationsPage : Page
 			new() { Text = "ASIO4ALL", ImageSource = "ms-appx:///Assets/Fluent/ASIO4ALL.png" }
 		};
 
+		Multimedia.ItemsSource = new List<GridViewItem>
+		{
+			new() { Text = "MediaInfo", ImageSource = "ms-appx:///Assets/Fluent/MediaInfo.png" },
+			new() { Text = "MPC-QT", ImageSource = "ms-appx:///Assets/Fluent/MpcQt.png" },
+			new() { Text = "MPV", ImageSource = "ms-appx:///Assets/Fluent/MPV.png" },
+			new() { Text = "VLC", ImageSource = "ms-appx:///Assets/Fluent/VLC.png" }
+		};
+
 		Office.ItemsSource = new List<GridViewItem>
 		{
 			new() { Text = "Word", ImageSource = "ms-appx:///Assets/Fluent/Word.png" },
@@ -157,7 +167,9 @@ public sealed partial class ApplicationsPage : Page
 			new() { Text = "Bulk Crap Uninstaller", ImageSource = "ms-appx:///Assets/Fluent/BulkCrapUninstaller.png" },
 			new() { Text = "Bluetooth Audio Receiver", ImageSource = "ms-appx:///Assets/Fluent/BluetoothAudioReceiver.png" },
 			new() { Text = "AnyDesk", ImageSource = "ms-appx:///Assets/Fluent/AnyDesk.png" },
-			new() { Text = "Apollo", ImageSource = "ms-appx:///Assets/Fluent/Apollo.png" }
+			new() { Text = "Apollo", ImageSource = "ms-appx:///Assets/Fluent/Apollo.png" },
+			new() { Text = "AutoHotkey", ImageSource = "ms-appx:///Assets/Fluent/AutoHotkey.png" },
+			new() { Text = "EmEditor", ImageSource = "ms-appx:///Assets/Fluent/EmEditor.png" }
 		};
 	}
 
@@ -263,6 +275,19 @@ public sealed partial class ApplicationsPage : Page
 		);
 
 		isInitializingMusicProductionState = false;
+	}
+
+	private void GetMultimedia()
+	{
+		var selectedMultimedia = localSettings.Values["Multimedia"] as string;
+		var multimediaItems = Multimedia.ItemsSource as List<GridViewItem>;
+		Multimedia.SelectedItems.AddRange(
+			selectedMultimedia?.Split(new[] { ", " }, StringSplitOptions.RemoveEmptyEntries)
+			.Select(e => multimediaItems?.FirstOrDefault(ext => ext.Text == e))
+			.Where(ext => ext != null) ?? Enumerable.Empty<GridViewItem>()
+		);
+
+		isInitializingMultimediaState = false;
 	}
 
 	private void GetOffice()
@@ -385,6 +410,18 @@ public sealed partial class ApplicationsPage : Page
 			.ToArray();
 
 		localSettings.Values["MusicProduction"] = string.Join(", ", selectedMusicProduction);
+	}
+
+	private void Multimedia_Changed(object sender, SelectionChangedEventArgs e)
+	{
+		if (isInitializingMultimediaState) return;
+
+		var selectedMultimedia = Multimedia.SelectedItems
+			.Cast<GridViewItem>()
+			.Select(item => item.Text)
+			.ToArray();
+
+		localSettings.Values["Multimedia"] = string.Join(", ", selectedMultimedia);
 	}
 
 	private void Office_Changed(object sender, SelectionChangedEventArgs e)

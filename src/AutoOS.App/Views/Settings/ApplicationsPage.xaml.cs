@@ -16,6 +16,7 @@ public sealed partial class ApplicationsPage : Page
 	private readonly ObservableCollection<GridViewItem> developmentItems = [];
 	private readonly ObservableCollection<GridViewItem> overclockingItems = [];
 	private readonly ObservableCollection<GridViewItem> musicProductionItems = [];
+	private readonly ObservableCollection<GridViewItem> multimediaItems = [];
 	private readonly ObservableCollection<GridViewItem> officeItems = [];
 	private readonly ObservableCollection<GridViewItem> miscellaneousItems = [];
 
@@ -33,6 +34,7 @@ public sealed partial class ApplicationsPage : Page
 		Development.ItemsSource = developmentItems;
 		Overclocking.ItemsSource = overclockingItems;
 		MusicProduction.ItemsSource = musicProductionItems;
+		Multimedia.ItemsSource = multimediaItems;
 		Office.ItemsSource = officeItems;
 		Miscellaneous.ItemsSource = miscellaneousItems;
 	}
@@ -150,6 +152,16 @@ public sealed partial class ApplicationsPage : Page
 		foreach (var item in musicProductionList.Where(item => !item.IsInstalled))
 			musicProductionItems.Add(item);
 
+		var multimediaList = new List<GridViewItem>
+		{
+			new() { Text = "MediaInfo", ImageSource = "ms-appx:///Assets/Fluent/MediaInfo.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "MediaInfo", "MediaInfo.exe")) },
+			new() { Text = "MPC-QT", ImageSource = "ms-appx:///Assets/Fluent/MpcQt.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "MPC-QT", "mpc-qt.exe")) },
+			new() { Text = "MPV", ImageSource = "ms-appx:///Assets/Fluent/MPV.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "mpv", "mpv.exe")) },
+			new() { Text = "VLC", ImageSource = "ms-appx:///Assets/Fluent/VLC.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "VideoLAN", "VLC", "vlc.exe")) }
+		};
+		foreach (var item in multimediaList.Where(item => !item.IsInstalled))
+			multimediaItems.Add(item);
+
 		var officeList = new List<GridViewItem>
 		{
 			new() { Text = "Word", ImageSource = "ms-appx:///Assets/Fluent/Word.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Microsoft Office", "root", "Office16", "WINWORD.EXE")) },
@@ -173,7 +185,9 @@ public sealed partial class ApplicationsPage : Page
 			new() { Text = "Bulk Crap Uninstaller", ImageSource = "ms-appx:///Assets/Fluent/BulkCrapUninstaller.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "BCUninstaller", "BCUninstaller.exe")) },
 			new() { Text = "Bluetooth Audio Receiver", ImageSource = "ms-appx:///Assets/Fluent/BluetoothAudioReceiver.png", IsInstalled = Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Packages", "55746MarkSmirnov.BluetoothAudioReveicer_xwrbx6997tsfc")) },
 			new() { Text = "AnyDesk", ImageSource = "ms-appx:///Assets/Fluent/AnyDesk.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "AnyDesk", "AnyDesk.exe")) },
-			new() { Text = "Apollo", ImageSource = "ms-appx:///Assets/Fluent/Apollo.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Apollo", "sunshine.exe")) }
+			new() { Text = "Apollo", ImageSource = "ms-appx:///Assets/Fluent/Apollo.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Apollo", "sunshine.exe")) },
+			new() { Text = "AutoHotkey", ImageSource = "ms-appx:///Assets/Fluent/AutoHotkey.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "AutoHotkey", "UX", "AutoHotkeyUX.exe")) },
+			new() { Text = "EmEditor", ImageSource = "ms-appx:///Assets/Fluent/EmEditor.png", IsInstalled = Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Packages", "Emurasoft.EmEditor64UWP_ws7rg9hnwrpxm")) }
 		};
 		foreach (var item in miscellaneousList.Where(item => !item.IsInstalled))
 			miscellaneousItems.Add(item);
@@ -181,7 +195,7 @@ public sealed partial class ApplicationsPage : Page
 
 	private void GridView_SelectionChanged(object sender, SelectionChangedEventArgs e) 
 	{
-		InstallButton.IsEnabled = Office.SelectedItems.Count > 0 || Development.SelectedItems.Count > 0 || Overclocking.SelectedItems.Count > 0 || Music.SelectedItems.Count > 0 || Peripherals.SelectedItems.Count > 0 || Controllers.SelectedItems.Count > 0 || Messaging.SelectedItems.Count > 0 || Launchers.SelectedItems.Count > 0 || Miscellaneous.SelectedItems.Count > 0 || MusicProduction.SelectedItems.Count > 0;
+		InstallButton.IsEnabled = Office.SelectedItems.Count > 0 || Development.SelectedItems.Count > 0 || Overclocking.SelectedItems.Count > 0 || Music.SelectedItems.Count > 0 || Peripherals.SelectedItems.Count > 0 || Controllers.SelectedItems.Count > 0 || Messaging.SelectedItems.Count > 0 || Launchers.SelectedItems.Count > 0 || Miscellaneous.SelectedItems.Count > 0 || MusicProduction.SelectedItems.Count > 0 || Multimedia.SelectedItems.Count > 0;
 	}
 
 	private async void InstallButton_Click(object sender, RoutedEventArgs e)
@@ -273,6 +287,13 @@ public sealed partial class ApplicationsPage : Page
 		selection.FlexASIO = selectedMusicProduction.Contains("FlexASIO");
 		selection.ASIO4ALL = selectedMusicProduction.Contains("ASIO4ALL");
 
+		var selectedMultimediaItems = Multimedia.SelectedItems.Cast<GridViewItem>().ToList();
+		var selectedMultimedia = selectedMultimediaItems.Select(item => item.Text).ToList();
+		selection.MediaInfo = selectedMultimedia.Contains("MediaInfo");
+		selection.MpcQt = selectedMultimedia.Contains("MPC-QT");
+		selection.MPV = selectedMultimedia.Contains("MPV");
+		selection.VLC = selectedMultimedia.Contains("VLC");
+
 		var selectedOfficeItems = Office.SelectedItems.Cast<GridViewItem>().ToList();
 		var selectedOffice = selectedOfficeItems.Select(item => item.Text).ToList();
 		selection.Word = selectedOffice.Contains("Word");
@@ -294,6 +315,8 @@ public sealed partial class ApplicationsPage : Page
 		selection.BluetoothAudioReceiver = selectedMiscellaneous.Contains("Bluetooth Audio Receiver");
 		selection.AnyDesk = selectedMiscellaneous.Contains("AnyDesk");
 		selection.Apollo = selectedMiscellaneous.Contains("Apollo");
+		selection.AutoHotkey = selectedMiscellaneous.Contains("AutoHotkey");
+		selection.EmEditor = selectedMiscellaneous.Contains("EmEditor");
 
 		var updateDialog = new UpdateDialog();
 		var reporter = new UpdateDialogReporter(updateDialog);
@@ -345,6 +368,9 @@ public sealed partial class ApplicationsPage : Page
 
 			foreach (var item in selectedMusicProductionItems)
 				musicProductionItems.Remove(item);
+
+			foreach (var item in selectedMultimediaItems)
+				multimediaItems.Remove(item);
 
 			foreach (var item in selectedOfficeItems)
 				officeItems.Remove(item);
