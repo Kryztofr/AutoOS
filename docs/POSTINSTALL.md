@@ -12,7 +12,7 @@
 - If you don't boot after merging all, reset CMOS and use `Merge Next` until you find the culprit.
 - If you face worse performance, instability or crashes, use `Restore from Backup`.
 - If you are `unstable` on `Intel`, lower your `Max Turbo Ratios`, disable `E-Cores` and enable `Hyper-Threading`.
-- If your output supports a lower buffer size in the `Sound` tab, you may lower it in exchange for higher CPU usage.
+- If your output supports a lower `buffer size` in the `Sound` tab, you may lower it in exchange for higher CPU usage.
 - Leave a `review`, share `suggestions`, or report `issues` on the `Discord Server`.
 - [Donate](https://www.paypal.com/donate/?hosted_button_id=GVEVUSHUWXEAG) if you appreciate the immense time and effort I have put into creating and providing this project for free.
 - If you have experience with `C# and WinUI3` and want to become a part of the project, let me know.
