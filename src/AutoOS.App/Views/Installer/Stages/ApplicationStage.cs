@@ -1899,6 +1899,10 @@ public static class ApplicationStage
 			("Installing RustDesk", async () => await Process.Start(new ProcessStartInfo { FileName = "msiexec.exe", Arguments = $@"/i ""{Path.Combine(Path.GetTempPath(), "rustdesk-x86_64.msi")}"" /qn" , WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => RustDesk == true),
 			("Cleaning up RustDesk files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "rustdesk-x86_64.msi")), () => RustDesk == true),
 
+			// disable rustdesk startup entry
+			("Disabling RustDesk startup entry", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\RustDesk", "Start", 4, RegistryValueKind.DWord), () => RustDesk == true),
+			("Disabling RustDesk startup entry", async () => ServicesHelper.StopService("RustDesk"), () => RustDesk == true),
+
 			// download apollo
 			("Downloading Apollo", async () => await DownloadHelper.Download(JsonDocument.Parse(await new HttpClient { DefaultRequestHeaders = { { "User-Agent", "AutoOS" } } }.GetStringAsync("https://api.github.com/repos/ClassicOldSong/Apollo/releases")).RootElement.EnumerateArray().First(release => release.GetProperty("assets").EnumerateArray().Any(asset => asset.GetProperty("name").GetString().EndsWith(".exe"))).GetProperty("assets").EnumerateArray().First(asset => asset.GetProperty("name").GetString().EndsWith(".exe")).GetProperty("browser_download_url").GetString(), Path.GetTempPath(), "Apollo.exe", reporter: reporter), () => Apollo == true),
 			
