@@ -59,6 +59,7 @@ public static partial class PreparingStage
 	public static bool Unigram;
 	public static bool ZoomWorkplace;
 	public static bool Thunderbird;
+	public static bool Signal;
 
 	public static bool EpicGames;
 	public static bool EpicGamesAccount;
@@ -90,9 +91,11 @@ public static partial class PreparingStage
 	public static bool Wootility;
 	public static bool EndgameGear;
 	public static bool GloriousCORE;
+	public static bool MCHOSE;
 	public static bool SteelSeriesGG;
 	public static bool RazerSynapse;
 	public static bool CorsairICue;
+	public static bool OpenRGB;
 	public static bool FanControl;
 	public static bool GHelper;
 
@@ -119,6 +122,7 @@ public static partial class PreparingStage
 	public static bool Trello;
 
 	public static bool HWInfo;
+	public static bool TimingConfigurator;
 	public static bool ZenTimings;
 	public static bool Prime95;
 	public static bool OCCT;
@@ -127,6 +131,11 @@ public static partial class PreparingStage
 	public static bool FLStudio;
 	public static bool FlexASIO;
 	public static bool ASIO4ALL;
+
+	public static bool MpcQt;
+	public static bool MPV;
+	public static bool VLC;
+	public static bool MediaInfo;
 
 	public static bool Word;
 	public static bool Excel;
@@ -145,6 +154,8 @@ public static partial class PreparingStage
 	public static bool BluetoothAudioReceiver;
 	public static bool AnyDesk;
 	public static bool Apollo;
+	public static bool AutoHotkey;
+	public static bool EmEditor;
 	public static bool WinDbg;
 
 	public static List<GpuInfo> GPUs { get; set; } = [];
@@ -236,6 +247,7 @@ public static partial class PreparingStage
 			Unigram = (localSettings.Values["Messaging"]?.ToString().Contains("Unigram") ?? false);
 			ZoomWorkplace = (localSettings.Values["Messaging"]?.ToString().Contains("Zoom Workplace") ?? false);
 			Thunderbird = (localSettings.Values["Messaging"]?.ToString().Contains("Thunderbird") ?? false);
+			Signal = (localSettings.Values["Messaging"]?.ToString().Contains("Signal") ?? false);
 
 			EpicGames = (localSettings.Values["Launchers"]?.ToString().Contains("Epic Games") ?? false);
 			Steam = (localSettings.Values["Launchers"]?.ToString().Contains("Steam") ?? false);
@@ -265,6 +277,7 @@ public static partial class PreparingStage
 			EndgameGear = (localSettings.Values["Peripherals"]?.ToString().Contains("Endgame Gear") ?? false);
 			GloriousCORE = (localSettings.Values["Peripherals"]?.ToString().Contains("Glorious CORE") ?? false);
 			CorsairICue = (localSettings.Values["Peripherals"]?.ToString().Contains("Corsair iCUE") ?? false);
+			OpenRGB = (localSettings.Values["Peripherals"]?.ToString().Contains("OpenRGB") ?? false);
 			FanControl = (localSettings.Values["Peripherals"]?.ToString().Contains("FanControl") ?? false);
 			GHelper = (localSettings.Values["Peripherals"]?.ToString().Contains("GHelper") ?? false);
 
@@ -291,6 +304,7 @@ public static partial class PreparingStage
 			Trello = (localSettings.Values["Development"]?.ToString().Contains("Trello") ?? false);
 
 			HWInfo = (localSettings.Values["Overclocking"]?.ToString().Contains("HWiNFO® 64") ?? false);
+			TimingConfigurator = (localSettings.Values["Overclocking"]?.ToString().Contains("ASRock Timing Configurator") ?? false);
 			ZenTimings = (localSettings.Values["Overclocking"]?.ToString().Contains("ZenTimings") ?? false);
 			Prime95 = (localSettings.Values["Overclocking"]?.ToString().Contains("Prime95") ?? false);
 			OCCT = (localSettings.Values["Overclocking"]?.ToString().Contains("OCCT") ?? false);
@@ -299,6 +313,11 @@ public static partial class PreparingStage
 			FLStudio = (localSettings.Values["Music Production"]?.ToString().Contains("FL Studio") ?? false);
 			FlexASIO = (localSettings.Values["Music Production"]?.ToString().Contains("FlexASIO") ?? false);
 			ASIO4ALL = (localSettings.Values["Music Production"]?.ToString().Contains("ASIO4ALL") ?? false);
+
+			MpcQt = (localSettings.Values["Multimedia"]?.ToString().Contains("MPC-QT") ?? false);
+			MPV = (localSettings.Values["Multimedia"]?.ToString().Contains("mpv") ?? false);
+			VLC = (localSettings.Values["Multimedia"]?.ToString().Contains("VLC") ?? false);
+			MediaInfo = (localSettings.Values["Multimedia"]?.ToString().Contains("MediaInfo") ?? false);
 
 			Word = (localSettings.Values["Office"]?.ToString().Contains("Word") ?? false);
 			Excel = (localSettings.Values["Office"]?.ToString().Contains("Excel") ?? false);
@@ -317,6 +336,8 @@ public static partial class PreparingStage
 			BluetoothAudioReceiver = (localSettings.Values["Miscellaneous"]?.ToString().Contains("BluetoothAudioReceiver") ?? false);
 			AnyDesk = (localSettings.Values["Miscellaneous"]?.ToString().Contains("AnyDesk") ?? false);
 			Apollo = (localSettings.Values["Miscellaneous"]?.ToString().Contains("Apollo") ?? false);
+			AutoHotkey = (localSettings.Values["Miscellaneous"]?.ToString().Contains("AutoHotkey") ?? false);
+			EmEditor = (localSettings.Values["Miscellaneous"]?.ToString().Contains("EmEditor") ?? false);
 			WinDbg = (localSettings.Values["Miscellaneous"]?.ToString().Contains("WinDbg") ?? false);
 
 			var gpuArray = JsonNode.Parse(localSettings.Values["GPUs"]?.ToString() ?? "[]")?.AsArray();

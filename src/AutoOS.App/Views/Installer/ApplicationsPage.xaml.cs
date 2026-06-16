@@ -13,6 +13,7 @@ public sealed partial class ApplicationsPage : Page
 	private bool isInitializingDevelopmentState = true;
 	private bool isInitializingOverclockingState = true;
 	private bool isInitializingMusicProductionState = true;
+	private bool isInitializingMultimediaState = true;
 	private bool isInitializingOfficeState = true;
 	private bool isInitializingMiscellaneousState = true;
 
@@ -30,6 +31,7 @@ public sealed partial class ApplicationsPage : Page
 		GetDevelopment();
 		GetOverclocking();
 		GetMusicProduction();
+		GetMultimedia();
 		GetOffice();
 		GetMiscellaneous();
 	}
@@ -50,7 +52,8 @@ public sealed partial class ApplicationsPage : Page
 			new() { Text = "Telegram Desktop", ImageSource = "ms-appx:///Assets/Fluent/Telegram.png" },
 			new() { Text = "Unigram", ImageSource = "ms-appx:///Assets/Fluent/Unigram.png" },
 			new() { Text = "Zoom Workplace", ImageSource = "ms-appx:///Assets/Fluent/Zoom.png" },
-			new() { Text = "Thunderbird", ImageSource = "ms-appx:///Assets/Fluent/Thunderbird.png" }
+			new() { Text = "Thunderbird", ImageSource = "ms-appx:///Assets/Fluent/Thunderbird.png" },
+			new() { Text = "Signal", ImageSource = "ms-appx:///Assets/Fluent/Signal.png" }
 		};
 
 		Launchers.ItemsSource = new List<GridViewItem>
@@ -86,9 +89,11 @@ public sealed partial class ApplicationsPage : Page
 			new() { Text = "Wootility", ImageSource = "ms-appx:///Assets/Fluent/Wootility.png" },
 			new() { Text = "Endgame Gear", ImageSource = "ms-appx:///Assets/Fluent/EndgameGear.png" },
 			new() { Text = "Glorious CORE", ImageSource = "ms-appx:///Assets/Fluent/GloriousCORE.png" },
+			new() { Text = "MCHOSE HUB", ImageSource = "ms-appx:///Assets/Fluent/MCHOSE.png" },
 			new() { Text = "SteelSeries GG", ImageSource = "ms-appx:///Assets/Fluent/SteelSeriesGG.png" },
 			new() { Text = "Razer Synapse", ImageSource = "ms-appx:///Assets/Fluent/RazerSynapse.png" },
 			new() { Text = "Corsair iCUE", ImageSource = "ms-appx:///Assets/Fluent/CorsairICue.png" },
+			new() { Text = "OpenRGB", ImageSource = "ms-appx:///Assets/Fluent/OpenRGB.png" },
 			new() { Text = "FanControl", ImageSource = "ms-appx:///Assets/Fluent/FanControl.png" },
 			new() { Text = "GHelper", ImageSource = "ms-appx:///Assets/Fluent/GHelper.png" }
 		};
@@ -124,6 +129,7 @@ public sealed partial class ApplicationsPage : Page
 		Overclocking.ItemsSource = new List<GridViewItem>
 		{
 			new() { Text = "HWiNFO® 64", ImageSource = "ms-appx:///Assets/Fluent/HWInfo.png" },
+			new() { Text = "ASRock Timing Configurator", ImageSource = "ms-appx:///Assets/Fluent/TimingConfigurator.png" },
 			new() { Text = "ZenTimings", ImageSource = "ms-appx:///Assets/Fluent/ZenTimings.png" },
 			new() { Text = "Prime95", ImageSource = "ms-appx:///Assets/Fluent/Prime95.png" },
 			new() { Text = "OCCT", ImageSource = "ms-appx:///Assets/Fluent/OCCT.png" }
@@ -135,6 +141,14 @@ public sealed partial class ApplicationsPage : Page
 			new() { Text = "FL Studio", ImageSource = "ms-appx:///Assets/Fluent/FLStudio.png" },
 			new() { Text = "FlexASIO", ImageSource = "ms-appx:///Assets/Fluent/FlexASIO.png" },
 			new() { Text = "ASIO4ALL", ImageSource = "ms-appx:///Assets/Fluent/ASIO4ALL.png" }
+		};
+
+		Multimedia.ItemsSource = new List<GridViewItem>
+		{
+			new() { Text = "MPC-QT", ImageSource = "ms-appx:///Assets/Fluent/MpcQt.png" },
+			new() { Text = "mpv", ImageSource = "ms-appx:///Assets/Fluent/MPV.png" },
+			new() { Text = "VLC", ImageSource = "ms-appx:///Assets/Fluent/VLC.png" },
+			new() { Text = "MediaInfo", ImageSource = "ms-appx:///Assets/Fluent/MediaInfo.png" }
 		};
 
 		Office.ItemsSource = new List<GridViewItem>
@@ -159,6 +173,8 @@ public sealed partial class ApplicationsPage : Page
 			new() { Text = "Bluetooth Audio Receiver", ImageSource = "ms-appx:///Assets/Fluent/BluetoothAudioReceiver.png" },
 			new() { Text = "AnyDesk", ImageSource = "ms-appx:///Assets/Fluent/AnyDesk.png" },
 			new() { Text = "Apollo", ImageSource = "ms-appx:///Assets/Fluent/Apollo.png" },
+			new() { Text = "AutoHotkey", ImageSource = "ms-appx:///Assets/Fluent/AutoHotkey.png" },
+			new() { Text = "EmEditor", ImageSource = "ms-appx:///Assets/Fluent/EmEditor.png" },
 			new() { Text = "WinDbg", ImageSource = "ms-appx:///Assets/Fluent/WinDbg.png" }
 		};
 	}
@@ -265,6 +281,19 @@ public sealed partial class ApplicationsPage : Page
 		);
 
 		isInitializingMusicProductionState = false;
+	}
+
+	private void GetMultimedia()
+	{
+		var selectedMultimedia = localSettings.Values["Multimedia"] as string;
+		var multimediaItems = Multimedia.ItemsSource as List<GridViewItem>;
+		Multimedia.SelectedItems.AddRange(
+			selectedMultimedia?.Split(new[] { ", " }, StringSplitOptions.RemoveEmptyEntries)
+			.Select(e => multimediaItems?.FirstOrDefault(ext => ext.Text == e))
+			.Where(ext => ext != null) ?? Enumerable.Empty<GridViewItem>()
+		);
+
+		isInitializingMultimediaState = false;
 	}
 
 	private void GetOffice()
@@ -387,6 +416,18 @@ public sealed partial class ApplicationsPage : Page
 			.ToArray();
 
 		localSettings.Values["MusicProduction"] = string.Join(", ", selectedMusicProduction);
+	}
+
+	private void Multimedia_Changed(object sender, SelectionChangedEventArgs e)
+	{
+		if (isInitializingMultimediaState) return;
+
+		var selectedMultimedia = Multimedia.SelectedItems
+			.Cast<GridViewItem>()
+			.Select(item => item.Text)
+			.ToArray();
+
+		localSettings.Values["Multimedia"] = string.Join(", ", selectedMultimedia);
 	}
 
 	private void Office_Changed(object sender, SelectionChangedEventArgs e)

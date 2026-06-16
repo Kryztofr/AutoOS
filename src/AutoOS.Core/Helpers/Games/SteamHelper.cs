@@ -346,16 +346,17 @@ public static partial class SteamHelper
 		using var stream = File.OpenRead(localConfigPath);
 		var kv = KVSerializer.Create(KVSerializationFormat.KeyValues1Text).Deserialize(stream, options);
 		
-		var software = kv.Root["Software"];
-		if (software == null) return (playtimeData, ownedAppIds);
+		var softwareNode = kv.Root.Children.FirstOrDefault(children => string.Equals(children.Key, "Software", StringComparison.OrdinalIgnoreCase));
+		if (softwareNode.Equals(default(KeyValuePair<string, KVObject>))) return (playtimeData, ownedAppIds);
 
+		var software = softwareNode.Value;
 		var valve = software["Valve"];
 		if (valve == null) return (playtimeData, ownedAppIds);
 
 		var steam = valve["Steam"];
 		if (steam == null) return (playtimeData, ownedAppIds);
 
-		var appsChild = steam.Children.FirstOrDefault(c => string.Equals(c.Key, "apps", StringComparison.OrdinalIgnoreCase));
+		var appsChild = steam.Children.FirstOrDefault(children => string.Equals(children.Key, "apps", StringComparison.OrdinalIgnoreCase));
 		var apps = !appsChild.Equals(default(KeyValuePair<string, KVObject>)) ? appsChild.Value : steam["apps"];
 		if (apps == null) return (playtimeData, ownedAppIds);
 
@@ -364,7 +365,7 @@ public static partial class SteamHelper
 			string gameId = app.Key;
 			ownedAppIds.Add(gameId);
 
-			var playtimeNode = app.Value.Children.FirstOrDefault(c => c.Key == "Playtime");
+			var playtimeNode = app.Value.Children.FirstOrDefault(children => children.Key == "Playtime");
 			string playtimeValue = playtimeNode.Value?.ToString();
 			if (!string.IsNullOrEmpty(playtimeValue) && int.TryParse(playtimeValue, out var playtimeMinutes))
 			{

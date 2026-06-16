@@ -16,6 +16,7 @@ public sealed partial class ApplicationsPage : Page
 	private readonly ObservableCollection<GridViewItem> developmentItems = [];
 	private readonly ObservableCollection<GridViewItem> overclockingItems = [];
 	private readonly ObservableCollection<GridViewItem> musicProductionItems = [];
+	private readonly ObservableCollection<GridViewItem> multimediaItems = [];
 	private readonly ObservableCollection<GridViewItem> officeItems = [];
 	private readonly ObservableCollection<GridViewItem> miscellaneousItems = [];
 
@@ -33,6 +34,7 @@ public sealed partial class ApplicationsPage : Page
 		Development.ItemsSource = developmentItems;
 		Overclocking.ItemsSource = overclockingItems;
 		MusicProduction.ItemsSource = musicProductionItems;
+		Multimedia.ItemsSource = multimediaItems;
 		Office.ItemsSource = officeItems;
 		Miscellaneous.ItemsSource = miscellaneousItems;
 	}
@@ -48,7 +50,8 @@ public sealed partial class ApplicationsPage : Page
 			new() { Text = "Telegram Desktop", ImageSource = "ms-appx:///Assets/Fluent/Telegram.png", IsInstalled = Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Packages", "TelegramMessengerLLP.TelegramDesktop_t4vj0pshhgkwm")) },
 			new() { Text = "Unigram", ImageSource = "ms-appx:///Assets/Fluent/Unigram.png", IsInstalled = Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Packages", "38833FF26BA1D.UnigramPreview_g9c9v27vpyspw")) },
 			new() { Text = "Zoom Workplace", ImageSource = "ms-appx:///Assets/Fluent/Zoom.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Zoom", "bin", "Zoom.exe")) },
-			new() { Text = "Thunderbird", ImageSource = "ms-appx:///Assets/Fluent/Thunderbird.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Mozilla Thunderbird", "thunderbird.exe")) }
+			new() { Text = "Thunderbird", ImageSource = "ms-appx:///Assets/Fluent/Thunderbird.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Mozilla Thunderbird", "thunderbird.exe")) },
+			new() { Text = "Signal", ImageSource = "ms-appx:///Assets/Fluent/Signal.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs", "signal-desktop", "Signal.exe")) }
 		};
 		foreach (var item in messagingList.Where(item => !item.IsInstalled))
 			messagingItems.Add(item);
@@ -90,9 +93,11 @@ public sealed partial class ApplicationsPage : Page
 			new() { Text = "Wootility", ImageSource = "ms-appx:///Assets/Fluent/Wootility.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs", "wootility", "Wootility.exe")) },
 			new() { Text = "Endgame Gear", ImageSource = "ms-appx:///Assets/Fluent/EndgameGear.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Endgame", "GamingUtility", "ENDGAME GEAR.exe")) },
 			new() { Text = "Glorious CORE", ImageSource = "ms-appx:///Assets/Fluent/GloriousCORE.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "Glorious CORE", "Glorious Core.exe")) },
+			new() { Text = "MCHOSE HUB", ImageSource = "ms-appx:///Assets/Fluent/MCHOSE.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "MCHOSE HUB", "MCHOSE HUB.exe")) },
 			new() { Text = "SteelSeries GG", ImageSource = "ms-appx:///Assets/Fluent/SteelSeriesGG.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "SteelSeries", "GG", "SteelSeriesGGEZ.exe")) },
 			new() { Text = "Razer Synapse", ImageSource = "ms-appx:///Assets/Fluent/RazerSynapse.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Razer", "RazerAppEngine", "RazerAppEngine.exe")) },
 			new() { Text = "Corsair iCUE", ImageSource = "ms-appx:///Assets/Fluent/CorsairICue.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Corsair", "Corsair iCUE5 Software", "iCUE.exe")) },
+			new() { Text = "OpenRGB", ImageSource = "ms-appx:///Assets/Fluent/OpenRGB.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "OpenRGB", "OpenRGB.exe")) },
 			new() { Text = "FanControl", ImageSource = "ms-appx:///Assets/Fluent/FanControl.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "FanControl", "FanControl.exe")) },
 			new() { Text = "GHelper", ImageSource = "ms-appx:///Assets/Fluent/GHelper.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "GHelper", "GHelper.exe")) }
 		};
@@ -134,6 +139,7 @@ public sealed partial class ApplicationsPage : Page
 		var overclockingList = new List<GridViewItem>
 		{
 			new() { Text = "HWiNFO® 64", ImageSource = "ms-appx:///Assets/Fluent/HWInfo.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "HWiNFO64", "HWiNFO64.exe")) },
+			new() { Text = "ASRock Timing Configurator", ImageSource = "ms-appx:///Assets/Fluent/TimingConfigurator.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "ASRock Utility", "Timing Configurator", "AsrTC.exe")) },
 			new() { Text = "ZenTimings", ImageSource = "ms-appx:///Assets/Fluent/ZenTimings.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "ZenTimings", "ZenTimings.exe")) },
 			new() { Text = "Prime95", ImageSource = "ms-appx:///Assets/Fluent/Prime95.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Prime95", "prime95.exe")) },
 			new() { Text = "OCCT", ImageSource = "ms-appx:///Assets/Fluent/OCCT.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "OCCT", "OCCT.exe")) }
@@ -150,6 +156,16 @@ public sealed partial class ApplicationsPage : Page
 		};
 		foreach (var item in musicProductionList.Where(item => !item.IsInstalled))
 			musicProductionItems.Add(item);
+
+		var multimediaList = new List<GridViewItem>
+		{
+			new() { Text = "MPC-QT", ImageSource = "ms-appx:///Assets/Fluent/MpcQt.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "MPC-QT", "mpc-qt.exe")) },
+			new() { Text = "mpv", ImageSource = "ms-appx:///Assets/Fluent/MPV.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "mpv", "mpv.exe")) },
+			new() { Text = "VLC", ImageSource = "ms-appx:///Assets/Fluent/VLC.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "VideoLAN", "VLC", "vlc.exe")) },
+			new() { Text = "MediaInfo", ImageSource = "ms-appx:///Assets/Fluent/MediaInfo.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "MediaInfo", "MediaInfo.exe")) || Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Packages", "MediaArea.net.MediaInfo_9bzbd7xajy7ar")) }
+		};
+		foreach (var item in multimediaList.Where(item => !item.IsInstalled))
+			multimediaItems.Add(item);
 
 		var officeList = new List<GridViewItem>
 		{
@@ -175,6 +191,8 @@ public sealed partial class ApplicationsPage : Page
 			new() { Text = "Bluetooth Audio Receiver", ImageSource = "ms-appx:///Assets/Fluent/BluetoothAudioReceiver.png", IsInstalled = Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Packages", "55746MarkSmirnov.BluetoothAudioReveicer_xwrbx6997tsfc")) },
 			new() { Text = "AnyDesk", ImageSource = "ms-appx:///Assets/Fluent/AnyDesk.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "AnyDesk", "AnyDesk.exe")) },
 			new() { Text = "Apollo", ImageSource = "ms-appx:///Assets/Fluent/Apollo.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Apollo", "sunshine.exe")) },
+			new() { Text = "AutoHotkey", ImageSource = "ms-appx:///Assets/Fluent/AutoHotkey.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "AutoHotkey", "UX", "AutoHotkeyUX.exe")) },
+			new() { Text = "EmEditor", ImageSource = "ms-appx:///Assets/Fluent/EmEditor.png", IsInstalled = Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Packages", "Emurasoft.EmEditor64UWP_ws7rg9hnwrpxm")) },
 			new() { Text = "WinDbg", ImageSource = "ms-appx:///Assets/Fluent/WinDbg.png", IsInstalled = Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Packages", "Microsoft.WinDbg_8wekyb3d8bbwe")) }
 		};
 		foreach (var item in miscellaneousList.Where(item => !item.IsInstalled))
@@ -183,7 +201,7 @@ public sealed partial class ApplicationsPage : Page
 
 	private void GridView_SelectionChanged(object sender, SelectionChangedEventArgs e) 
 	{
-		InstallButton.IsEnabled = Office.SelectedItems.Count > 0 || Development.SelectedItems.Count > 0 || Overclocking.SelectedItems.Count > 0 || Music.SelectedItems.Count > 0 || Peripherals.SelectedItems.Count > 0 || Controllers.SelectedItems.Count > 0 || Messaging.SelectedItems.Count > 0 || Launchers.SelectedItems.Count > 0 || Miscellaneous.SelectedItems.Count > 0 || MusicProduction.SelectedItems.Count > 0;
+		InstallButton.IsEnabled = Office.SelectedItems.Count > 0 || Development.SelectedItems.Count > 0 || Overclocking.SelectedItems.Count > 0 || Music.SelectedItems.Count > 0 || Peripherals.SelectedItems.Count > 0 || Controllers.SelectedItems.Count > 0 || Messaging.SelectedItems.Count > 0 || Launchers.SelectedItems.Count > 0 || Miscellaneous.SelectedItems.Count > 0 || MusicProduction.SelectedItems.Count > 0 || Multimedia.SelectedItems.Count > 0;
 	}
 
 	private async void InstallButton_Click(object sender, RoutedEventArgs e)
@@ -198,6 +216,7 @@ public sealed partial class ApplicationsPage : Page
 		selection.Unigram = selectedMessaging.Contains("Unigram");
 		selection.ZoomWorkplace = selectedMessaging.Contains("Zoom Workplace");
 		selection.Thunderbird = selectedMessaging.Contains("Thunderbird");
+		selection.Signal = selectedMessaging.Contains("Signal");
 
 		var selectedLaunchersItems = Launchers.SelectedItems.Cast<GridViewItem>().ToList();
 		var selectedLaunchers = selectedLaunchersItems.Select(item => item.Text).ToList();
@@ -232,7 +251,9 @@ public sealed partial class ApplicationsPage : Page
 		selection.Wootility = selectedPeripherals.Contains("Wootility");
 		selection.EndgameGear = selectedPeripherals.Contains("Endgame Gear");
 		selection.GloriousCORE = selectedPeripherals.Contains("Glorious CORE");
+		selection.MCHOSE = selectedPeripherals.Contains("MCHOSE HUB");
 		selection.CorsairICue = selectedPeripherals.Contains("Corsair iCUE");
+		selection.OpenRGB = selectedPeripherals.Contains("OpenRGB");
 		selection.FanControl = selectedPeripherals.Contains("FanControl");
 		selection.GHelper = selectedPeripherals.Contains("GHelper");
 
@@ -265,6 +286,7 @@ public sealed partial class ApplicationsPage : Page
 		var selectedOverclockingItems = Overclocking.SelectedItems.Cast<GridViewItem>().ToList();
 		var selectedOverclocking = selectedOverclockingItems.Select(item => item.Text).ToList();
 		selection.HWInfo = selectedOverclocking.Contains("HWiNFO® 64");
+		selection.TimingConfigurator = selectedOverclocking.Contains("ASRock Timing Configurator");
 		selection.ZenTimings = selectedOverclocking.Contains("ZenTimings");
 		selection.Prime95 = selectedOverclocking.Contains("Prime95");
 		selection.OCCT = selectedOverclocking.Contains("OCCT");
@@ -275,6 +297,13 @@ public sealed partial class ApplicationsPage : Page
 		selection.FLStudio = selectedMusicProduction.Contains("FL Studio");
 		selection.FlexASIO = selectedMusicProduction.Contains("FlexASIO");
 		selection.ASIO4ALL = selectedMusicProduction.Contains("ASIO4ALL");
+
+		var selectedMultimediaItems = Multimedia.SelectedItems.Cast<GridViewItem>().ToList();
+		var selectedMultimedia = selectedMultimediaItems.Select(item => item.Text).ToList();
+		selection.MediaInfo = selectedMultimedia.Contains("MediaInfo");
+		selection.MpcQt = selectedMultimedia.Contains("MPC-QT");
+		selection.MPV = selectedMultimedia.Contains("mpv");
+		selection.VLC = selectedMultimedia.Contains("VLC");
 
 		var selectedOfficeItems = Office.SelectedItems.Cast<GridViewItem>().ToList();
 		var selectedOffice = selectedOfficeItems.Select(item => item.Text).ToList();
@@ -297,6 +326,8 @@ public sealed partial class ApplicationsPage : Page
 		selection.BluetoothAudioReceiver = selectedMiscellaneous.Contains("Bluetooth Audio Receiver");
 		selection.AnyDesk = selectedMiscellaneous.Contains("AnyDesk");
 		selection.Apollo = selectedMiscellaneous.Contains("Apollo");
+		selection.AutoHotkey = selectedMiscellaneous.Contains("AutoHotkey");
+		selection.EmEditor = selectedMiscellaneous.Contains("EmEditor");
 		selection.WinDbg = selectedMiscellaneous.Contains("WinDbg");
 
 		var updateDialog = new UpdateDialog();
@@ -349,6 +380,9 @@ public sealed partial class ApplicationsPage : Page
 
 			foreach (var item in selectedMusicProductionItems)
 				musicProductionItems.Remove(item);
+
+			foreach (var item in selectedMultimediaItems)
+				multimediaItems.Remove(item);
 
 			foreach (var item in selectedOfficeItems)
 				officeItems.Remove(item);

@@ -122,7 +122,7 @@ public sealed partial class InstallPage : Page
 					
 					var payload = new JsonObject
 					{
-						["content"] = $"Logging failure: {ex.Message}"
+						["content"] = $"Logging failure: {ex.Message}, AutoOS {ProcessInfoHelper.Version}"
 					};
 					multipart.Add(new StringContent(payload.ToJsonString(), Encoding.UTF8, "application/json"), "payload_json");
 					

@@ -1,4 +1,5 @@
 using AutoOS.Core.Common;
+using AutoOS.Core.Helpers.Logging;
 using System.Collections.Concurrent;
 using DevWinUI;
 using System.Diagnostics;
@@ -863,6 +864,8 @@ public static partial class EpicGamesHelper
 
 					// return if not a game
 					if (itemJson?["bIsApplication"]?.GetValue<bool>() != true) return;
+					var appCategories = itemJson?["AppCategories"]?.AsArray();
+					if (appCategories == null || !appCategories.Any(children => children?.GetValue<string>()?.Equals("games", StringComparison.OrdinalIgnoreCase) == true)) return;
 					string catalogItemId = itemJson["CatalogItemId"]?.GetValue<string>();
 					string catalogNamespace = itemJson["CatalogNamespace"]?.GetValue<string>();
 					string appName = itemJson["AppName"]?.GetValue<string>();
@@ -884,7 +887,11 @@ public static partial class EpicGamesHelper
 					{
 						itemOfferData = JsonNode.Parse(await httpClient.GetStringAsync($"https://api.egdata.app/items/{catalogItemId}/offer", token).ConfigureAwait(false));
 					}
-					catch { }
+					catch (Exception ex)
+					{
+						await LogHelper.LogError(ex, null, $"Failed to load offer data for game {itemJson?["DisplayName"]?.ToString()}, {catalogItemId}, https://api.egdata.app/items/{catalogItemId}/offer");
+						return;
+					}
 
 					var offerId = itemOfferData?["id"]?.GetValue<string>();
 
@@ -921,27 +928,92 @@ public static partial class EpicGamesHelper
 					// get metadata
 					//var itemTask = httpClient.GetStringAsync($"https://api.egdata.app/items/{itemJson["MainGameCatalogItemId"]?.GetValue<string>()}", token);
 					//var offerTask = httpClient.GetStringAsync($"https://api.egdata.app/offers/{offerId}", token);
-					var manifestTask = loginClient.GetStringAsync($"https://catalog-public-service-prod06.ol.epicgames.com/catalog/api/shared/namespace/{catalogNamespace}/bulk/items?id={catalogItemId}&includeDLCDetails=false&includeMainGameDetails=true&country=US&locale=en-US", token);
-					var offerTask = loginClient.GetStringAsync($"https://catalog-public-service-prod06.ol.epicgames.com/catalog/api/shared/bulk/offers?id={offerId}&returnItemDetails=true&country=US&locale=en-US", token);
-					var ratingTask = httpClient.GetStringAsync($"https://api.egdata.app/offers/{offerId}/polls", token);
-					var genresTask = httpClient.GetStringAsync($"https://api.egdata.app/offers/{(offerId == "6e02cab6e82243858462ba7f93c82e9d" ? "d546d9a3e9fe4ba093d3a3fdae020760" : offerId)}/genres", token);
-					var featuresTask = httpClient.GetStringAsync($"https://api.egdata.app/offers/{(offerId == "6e02cab6e82243858462ba7f93c82e9d" ? "d546d9a3e9fe4ba093d3a3fdae020760" : offerId)}/features", token);
-					var ageRatingTask = httpClient.GetStringAsync($"https://api.egdata.app/offers/{offerId}/age-rating", token);
-					var mediaTask = httpClient.GetAsync($"https://api.egdata.app/offers/{offerId}/media", token);
+					string manifestUrl = $"https://catalog-public-service-prod06.ol.epicgames.com/catalog/api/shared/namespace/{catalogNamespace}/bulk/items?id={catalogItemId}&includeDLCDetails=false&includeMainGameDetails=true&country=US&locale=en-US";
+					string offerUrl = $"https://catalog-public-service-prod06.ol.epicgames.com/catalog/api/shared/bulk/offers?id={offerId}&returnItemDetails=true&country=US&locale=en-US";
+					string ratingUrl = $"https://api.egdata.app/offers/{offerId}/polls";
+					string genresUrl = $"https://api.egdata.app/offers/{(offerId == "6e02cab6e82243858462ba7f93c82e9d" ? "d546d9a3e9fe4ba093d3a3fdae020760" : offerId)}/genres";
+					string featuresUrl = $"https://api.egdata.app/offers/{(offerId == "6e02cab6e82243858462ba7f93c82e9d" ? "d546d9a3e9fe4ba093d3a3fdae020760" : offerId)}/features";
+					string ageRatingUrl = $"https://api.egdata.app/offers/{offerId}/age-rating";
+					string mediaUrl = $"https://api.egdata.app/offers/{offerId}/media";
 
-					//await Task.WhenAll(manifestTask, offerTask, ratingTask, genresTask, featuresTask, ageRatingTask, mediaTask).ConfigureAwait(false);
+					JsonNode manifestData = null;
+					JsonNode offerData = null;
+					JsonNode ratingData = null;
+					JsonNode genresData = null;
+					JsonNode featuresData = null;
+					JsonNode ageRatingData = null;
+					JsonNode mediaData = null;
 
-					//var itemData = JsonNode.Parse(await itemTask.ConfigureAwait(false));
-					//var offerData = JsonNode.Parse(await offerTask.ConfigureAwait(false));
-					var manifestData = JsonNode.Parse(await manifestTask.ConfigureAwait(false));
-					var offerData = JsonNode.Parse(await offerTask.ConfigureAwait(false));
-					var ratingData = JsonNode.Parse(await ratingTask.ConfigureAwait(false));
-					var genresData = JsonNode.Parse(await genresTask.ConfigureAwait(false));
-					var featuresData = JsonNode.Parse(await featuresTask.ConfigureAwait(false));
-					var ageRatingData = JsonNode.Parse(await ageRatingTask.ConfigureAwait(false));
+					try
+					{
+						manifestData = JsonNode.Parse(await loginClient.GetStringAsync(manifestUrl, token).ConfigureAwait(false));
+					}
+					catch (Exception ex)
+					{
+						await LogHelper.LogError(ex, null, $"Failed to load manifest data for game {itemJson?["DisplayName"]?.ToString()}, {catalogItemId}, {manifestUrl}");
+						return;
+					}
 
-					var mediaResponse = await mediaTask.ConfigureAwait(false);
-					var mediaData = mediaResponse.IsSuccessStatusCode ? JsonNode.Parse(await mediaResponse.Content.ReadAsStringAsync(token).ConfigureAwait(false)) : JsonNode.Parse("{}");
+					try
+					{
+						offerData = JsonNode.Parse(await loginClient.GetStringAsync(offerUrl, token).ConfigureAwait(false));
+					}
+					catch (Exception ex)
+					{
+						await LogHelper.LogError(ex, null, $"Failed to load offer data for game {itemJson?["DisplayName"]?.ToString()}, {offerId}, {offerUrl}");
+						return;
+					}
+
+					try
+					{
+						ratingData = JsonNode.Parse(await httpClient.GetStringAsync(ratingUrl, token).ConfigureAwait(false));
+					}
+					catch (Exception ex)
+					{
+						await LogHelper.LogError(ex, null, $"Failed to load rating data for game {itemJson?["DisplayName"]?.ToString()}, {offerId}, {ratingUrl}");
+						ratingData = JsonNode.Parse("{}");
+					}
+
+					try
+					{
+						genresData = JsonNode.Parse(await httpClient.GetStringAsync(genresUrl, token).ConfigureAwait(false));
+					}
+					catch (Exception ex)
+					{
+						await LogHelper.LogError(ex, null, $"Failed to load genres data for game {itemJson?["DisplayName"]?.ToString()}, {offerId}, {genresUrl}");
+						genresData = JsonNode.Parse("[]");
+					}
+
+					try
+					{
+						featuresData = JsonNode.Parse(await httpClient.GetStringAsync(featuresUrl, token).ConfigureAwait(false));
+					}
+					catch (Exception ex)
+					{
+						await LogHelper.LogError(ex, null, $"Failed to load features data for game {itemJson?["DisplayName"]?.ToString()}, {offerId}, {featuresUrl}");
+						featuresData = JsonNode.Parse("{}");
+					}
+
+					try
+					{
+						ageRatingData = JsonNode.Parse(await httpClient.GetStringAsync(ageRatingUrl, token).ConfigureAwait(false));
+					}
+					catch (Exception ex)
+					{
+						await LogHelper.LogError(ex, null, $"Failed to load age rating data for game {itemJson?["DisplayName"]?.ToString()}, {offerId}, {ageRatingUrl}");
+						ageRatingData = JsonNode.Parse("{}");
+					}
+
+					try
+					{
+						var mediaResponse = await httpClient.GetAsync(mediaUrl, token).ConfigureAwait(false);
+						mediaData = mediaResponse.IsSuccessStatusCode ? JsonNode.Parse(await mediaResponse.Content.ReadAsStringAsync(token).ConfigureAwait(false)) : JsonNode.Parse("{}");
+					}
+					catch (Exception ex)
+					{
+						await LogHelper.LogError(ex, null, $"Failed to load media data for game {itemJson?["DisplayName"]?.ToString()}, {offerId}, {mediaUrl}");
+						mediaData = JsonNode.Parse("{}");
+					}
 
 					// get images
 					//var itemModified = DateTime.TryParse(itemData["lastModifiedDate"]?.GetValue<string>(), out var itemDate) ? itemDate : DateTime.MinValue;
@@ -1040,7 +1112,7 @@ public static partial class EpicGamesHelper
 				}
 				catch (Exception ex)
 				{
-					Debug.WriteLine($"Failed to load game: {itemJson?["DisplayName"]?.ToString()}: {ex}");
+					await LogHelper.LogError(ex, null);
 				}
 			});
 		}

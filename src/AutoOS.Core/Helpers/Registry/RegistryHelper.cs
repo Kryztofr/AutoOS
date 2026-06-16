@@ -157,16 +157,22 @@ public static partial class RegistryHelper
 					_ => throw new ArgumentException($"Unsupported registry root: {rootName}")
 				};
 
-				if (PInvoke.RegOpenKeyEx(hRoot, subKey, 0, REG_SAM_FLAGS.KEY_SET_VALUE, out SafeRegistryHandle hSubKey) != WIN32_ERROR.ERROR_SUCCESS)
-					throw new Win32Exception(Marshal.GetLastWin32Error());
+				WIN32_ERROR keyResult = PInvoke.RegCreateKeyEx(hRoot, subKey, default, REG_OPEN_CREATE_OPTIONS.REG_OPTION_NON_VOLATILE, REG_SAM_FLAGS.KEY_WRITE, null, out SafeRegistryHandle hSubKey, out _);
+				if (keyResult != WIN32_ERROR.ERROR_SUCCESS)
+				{
+					throw new Win32Exception((int)keyResult);
+				}
 
 				using (hSubKey)
 				{
 					fixed (char* pValueName = valueName)
 					fixed (byte* pData = data)
 					{
-						if (PInvoke.RegSetValueEx(new HKEY(hSubKey.DangerousGetHandle()), pValueName, 0, (REG_VALUE_TYPE)type, pData, (uint)data.Length) != WIN32_ERROR.ERROR_SUCCESS)
-							throw new Win32Exception(Marshal.GetLastWin32Error());
+						WIN32_ERROR setResult = PInvoke.RegSetValueEx(new HKEY(hSubKey.DangerousGetHandle()), pValueName, 0, (REG_VALUE_TYPE)type, pData, (uint)data.Length);
+						if (setResult != WIN32_ERROR.ERROR_SUCCESS)
+						{
+							throw new Win32Exception((int)setResult);
+						}
 					}
 				}
 			}

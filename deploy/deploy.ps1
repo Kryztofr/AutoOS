@@ -208,14 +208,16 @@ public class TrustedInstaller
 }
 "@
 
+Write-Host "`n===== Prerequisites =====`n"  -ForegroundColor Yellow
+
 $admin = [Security.Principal.WindowsPrincipal]::new([Security.Principal.WindowsIdentity]::GetCurrent())
 if (-not $admin.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
-	Write-Host "This script must be run as Administrator."
+	Write-Host "This script must be run as Administrator." -ForegroundColor Red
 	return
 }
 
 if (-not [Environment]::Is64BitProcess) {
-	Write-Host "This script must be run in 64-bit PowerShell."
+	Write-Host "This script must be run in 64-bit PowerShell." -ForegroundColor Red
 	return
 }
 
@@ -232,7 +234,7 @@ $services = @(
 foreach ($service in $services) {
 	$serviceName = Split-Path $service.Path -Leaf
 	if (-not (Test-Path $service.Path)) {
-		Write-Host "Your OS has the $serviceName removed. Either use an existing dual boot or install a default Windows and run the script there."
+		Write-Host "Your OS has the $serviceName removed. Either use an existing dual boot or install a default Windows and run the script there." -ForegroundColor Red
 		return
 	}
 	$current = (Get-ItemProperty -Path $service.Path -Name $service.Name -ErrorAction SilentlyContinue).$($service.Name)
@@ -255,46 +257,116 @@ if ($restartRequired) {
 	return
 }
 
-Write-Host "Please select the Windows ISO..."
+Write-Host "Please select the 25H2.iso file you downloaded in Step 2..."
+Add-Type -AssemblyName System.Windows.Forms
 $IsoPicker = New-Object System.Windows.Forms.OpenFileDialog
 $IsoPicker.Filter = "ISO Files (*.iso)|*.iso"
 $IsoPicker.Title = "Select the Windows ISO file"
 $IsoPicker.Multiselect = $false
 if ($IsoPicker.ShowDialog() -ne [System.Windows.Forms.DialogResult]::OK) {
-	Write-Host "No ISO selected. Exiting."
-	return
+    Write-Host "No ISO selected. Exiting." -ForegroundColor Red
+    return
+}
+if ([System.IO.Path]::GetFileName($IsoPicker.FileName) -ne "25H2.iso") {
+    Write-Host "Invalid file. Please select 25H2.iso you downloaded in Step 2." -ForegroundColor Red
+    return
 }
 
-Write-Host "Do you want to install drivers? (y/n) " -NoNewline
-do {
-	$key = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
-	$InstallDrivers = $key.Character
-} while ($InstallDrivers -notmatch '^[YyNn]$')
-Write-Host $InstallDrivers
+Write-Host "Please select your drivers folder you created in Step 3..."
+$DriverPicker = New-Object System.Windows.Forms.FolderBrowserDialog
+$DriverPicker.Description = "Select the drivers folder"
+if ($DriverPicker.ShowDialog() -ne [System.Windows.Forms.DialogResult]::OK) { return }
+$DriversDir = $DriverPicker.SelectedPath
 
-if ($InstallDrivers -match '^[Yy]') {
-	Write-Host "Please select your drivers folder..."
-	$DriverPicker = New-Object System.Windows.Forms.FolderBrowserDialog
-	$DriverPicker.Description = "Select the drivers folder"
-	if ($DriverPicker.ShowDialog() -ne [System.Windows.Forms.DialogResult]::OK) { return }
-	$DriversDir = $DriverPicker.SelectedPath
+$physicalDisks = Get-PhysicalDisk | Where-Object { $_.BusType -ne 'USB' -and $_.MediaType -ne 'Removable' }
+if ($physicalDisks.Count -gt 1) {
+	Write-Host "Getting disk information and measuring speed..."
+	$diskList = $physicalDisks | ForEach-Object {
+		$media = $_.MediaType
+		$bus = $_.BusType
+
+		$calculatedType =
+			if ($media -eq 'SSD') { "SSD ($bus)" }
+			else { "HDD ($bus)" }
+
+		$disk = Get-Disk | Where-Object FriendlyName -eq $_.FriendlyName | Select-Object -First 1
+
+		$partitions = if ($disk) {
+			Get-Partition -DiskNumber $disk.Number -ErrorAction SilentlyContinue
+		}
+
+		$volumes = $partitions | Get-Volume -ErrorAction SilentlyContinue
+		$freeBytes = ($volumes.SizeRemaining | Measure-Object -Sum).Sum
+
+		$driveLetter = ($partitions | Where-Object DriveLetter).DriveLetter | Select-Object -First 1
+
+		$readSpeed = "N/A"
+		$writeSpeed = "N/A"
+
+		if ($driveLetter) {
+			$readOutput = winsat disk -drive $driveLetter -seq -read 2>$null
+			$readMatch = $readOutput | Select-String 'Sequential 64\.0 Read\s+([\d\.]+)\s+MB/s'
+
+			if ($readMatch) {
+				$readSpeed = "$($readMatch.Matches[0].Groups[1].Value) MB/s"
+			}
+
+			$writeOutput = winsat disk -drive $driveLetter -seq -write 2>$null
+			$writeMatch = $writeOutput | Select-String 'Sequential 64\.0 Write\s+([\d\.]+)\s+MB/s'
+
+			if ($writeMatch) {
+				$writeSpeed = "$($writeMatch.Matches[0].Groups[1].Value) MB/s"
+			}
+		}
+
+		[PSCustomObject]@{
+			Disk  = if ($disk) { $disk.Number } else { $_.DeviceId }
+			Name  = $_.FriendlyName
+			Type  = $calculatedType
+			Size  = "$([Math]::Round($_.Size / 1GB, 2)) GB"
+			Free  = "$([Math]::Round($freeBytes / 1GB, 2)) GB"
+			Read  = $readSpeed
+			Write = $writeSpeed
+		}
+	}
+	$diskList | Sort-Object Disk | Format-Table -AutoSize
+
+	$recommendedDisk = $diskList | ForEach-Object {
+		$speedVal = 0.0
+		if ($_.Read -match '([\d\.]+)') { $speedVal = [double]$Matches[1] }
+		[PSCustomObject]@{
+			Disk     = $_.Disk
+			SpeedVal = $speedVal
+		}
+	} | Sort-Object SpeedVal -Descending | Select-Object -First 1
+
+	Write-Host "Enter the disk number that will be checked for available space for AutoOS (Recommendation: $($recommendedDisk.Disk)): " -NoNewline
+	$validDisks = $diskList.Disk | ForEach-Object { [string]$_ }
+	do {
+		$key = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+		$selectedDisk = $key.Character
+	} while ($selectedDisk -notin $validDisks)
+	Write-Host $selectedDisk
+	$DiskNumber = [int][string]$selectedDisk
+} else {
+	$DiskNumber = (Get-Partition -DriveLetter C | Get-Disk).Number
 }
 
-Write-Host "`n===== Step 1: Check Partition Style =====`n"
-$DiskNumber = (Get-Partition -DriveLetter C | Get-Disk).Number
-if ((Get-Partition -DriveLetter "C" | Get-Disk).PartitionStyle -eq 'MBR') {
+Write-Host "`n===== Step 1: Check Partition Style =====`n" -ForegroundColor Yellow
+if ((Get-Disk -Number $DiskNumber).PartitionStyle -eq 'MBR') {
 	Write-Host "Partition style is MBR. Converting to GPT..."
 	mbr2gpt /convert /disk:$DiskNumber /allowFullOS
-	Write-Host "Please set Boot Mode to UEFI in BIOS after conversion, then rerun this script."
+	Write-Host "Please set Boot Mode to UEFI in BIOS after conversion, then rerun this script." -ForegroundColor Yellow
 	return
 } else {
 	Write-Host "Partition style is GPT"
 }
 
-Write-Host "`n===== Step 2: Check BitLocker State =====`n"
+Write-Host "`n===== Step 2: Check BitLocker State =====`n" -ForegroundColor Yellow
 try {
 	if ((Get-BitLockerVolume -MountPoint C:).VolumeStatus -ne "FullyDecrypted") {
 		Write-Host "BitLocker is enabled"
+		Clear-BitLockerAutoUnlock -ErrorAction SilentlyContinue | Out-Null
 		Disable-BitLocker -MountPoint "C:" | Out-Null
 
 		while ($true) {
@@ -319,7 +391,7 @@ try {
 	Write-Host "BitLocker is disabled"
 }
 
-Write-Host "`n===== Step 3: Check Partitions =====`n"
+Write-Host "`n===== Step 3: Check Partitions =====`n" -ForegroundColor Yellow
 $Partitions = Get-Partition -DiskNumber $DiskNumber | Where-Object { $_.Type -eq 'Basic' -and $_.Size -gt 0 }
 $ShrinkTargetsMB = @(1048576, 524288, 262144, 131072, 65536)
 
@@ -352,7 +424,7 @@ else {
 		try {
 			$Supported = Get-PartitionSupportedSize -DriveLetter $Partition.DriveLetter
 		} catch {
-			Write-Host "Failed to query supported partition sizes.`nDownload Minitool Partition Wizard from here (https://cdn2.minitool.com/?p=pw&e=pw-free-offline) and use the 'Split' function with at least 64GB then rerun this script."
+			Write-Host "Failed to query supported partition sizes.`nDownload Minitool Partition Wizard from here (https://cdn2.minitool.com/?p=pw&e=pw-free-offline) and use the 'Split' function with at least 64GB then rerun this script." -ForegroundColor Red
 			if ($Host.Name -eq 'ConsoleHost') {
 				[void][System.Console]::ReadLine()
 			}
@@ -382,7 +454,7 @@ else {
 		$TargetDrive  = "$($NewPartition.DriveLetter):"
 	}
 	else {
-		Write-Host "No partition with at least 64GB of free space or shrinkable space found.`nDownload Minitool Partition Wizard from here (https://cdn2.minitool.com/?p=pw&e=pw-free-offline) and use the 'Split' function with at least 64GB then rerun this script."
+		Write-Host "No partition with at least 64GB of free space or shrinkable space found.`nDownload Minitool Partition Wizard from here (https://cdn2.minitool.com/?p=pw&e=pw-free-offline) and use the 'Split' function with at least 64GB then rerun this script." -ForegroundColor Red
 		Write-Host "Press Enter to exit..."
 		if ($Host.Name -eq 'ConsoleHost') {
 			[void][System.Console]::ReadLine()
@@ -391,11 +463,11 @@ else {
 	}
 }
 
-Write-Host "`n===== Step 4: Prepare Target Partition =====`n"
+Write-Host "`n===== Step 4: Prepare Target Partition =====`n" -ForegroundColor Yellow
 Write-Host "Formatting partition $TargetDrive..."
 Start-Process -FilePath "cmd.exe" -ArgumentList "/c ""format $TargetDrive /fs:ntfs /q /y /v:AutoOS > nul 2> nul""" -NoNewWindow -Wait
 
-Write-Host "`n===== Step 5: Apply Windows Image =====`n"
+Write-Host "`n===== Step 5: Apply Windows Image =====`n" -ForegroundColor Yellow
 try {
 	Write-Host "Mounting ISO..." 
 	$MountedIso = (Mount-DiskImage -ImagePath $IsoPicker.FileName -PassThru | Get-Volume).DriveLetter + ":"
@@ -403,7 +475,8 @@ try {
 	$WimPath = Join-Path $MountedIso "sources\install.wim"
 	$Images = Get-WindowsImage -ImagePath $WimPath
 	if ($Images.Count -ne 1 -or $Images[0].ImageName -notmatch "Pro") {
-		throw "The selected ISO is not supported, please use the ISO linked in Step 2."
+		Write-Host "The selected ISO is not supported, please use the ISO linked in Step 2." -ForegroundColor Red
+		return
 	}
 
 	Write-Host "Copying install.wim..."
@@ -447,7 +520,7 @@ Write-Host "Applying Windows image to $TargetDrive..."
 DISM /Apply-Image /ImageFile:$TempWim /Index:1 /ApplyDir:$TargetDrive
 Remove-Item $TempWim -Force
 
-Write-Host "`n===== Step 6: Install Drivers =====`n"
+Write-Host "`n===== Step 6: Install Drivers =====`n" -ForegroundColor Yellow
 if ($InstallDrivers -match '^[Yy]') {
 	Write-Host "Installing drivers from $DriversDir..."
 	DISM /Image:$TargetDrive /Add-Driver /Driver:$DriversDir /Recurse
@@ -456,18 +529,18 @@ else {
 	Write-Host "Skipping driver installation..."
 }
 
-Write-Host "`n===== Step 7: Add unattend.xml =====`n"
+Write-Host "`n===== Step 7: Add unattend.xml =====`n" -ForegroundColor Yellow
 Write-Host "Adding unattend.xml..."
 New-Item -ItemType Directory -Path $TargetDrive\Windows\Panther -Force | Out-Null
 try { Add-MpPreference -ExclusionPath "$TargetDrive\Windows\Panther" | Out-Null } catch {	}
 Invoke-WebRequest -Uri "https://raw.githubusercontent.com/tinodin/AutoOS/master/deploy/unattend.xml" -OutFile $TargetDrive\Windows\Panther\unattend.xml
 
-Write-Host "`n===== Step 8: Create Boot Entry =====`n"
+Write-Host "`n===== Step 8: Create Boot Entry =====`n" -ForegroundColor Yellow
 Write-Host "Creating boot entry..."
 bcdedit /set "{current}" bootmenupolicy legacy
 bcdboot $TargetDrive\Windows
 bcdedit /set "{default}" description "AutoOS"
 bcdedit /set "{default}" bootmenupolicy legacy
 bcdedit /timeout 6
-Write-Host "`n===== AutoOS Deployment Completed Successfully! ====="
-Write-Host "Open the installation guide on your phone and continue with Step 5."
+Write-Host "`n===== AutoOS Deployment Completed Successfully! =====" -ForegroundColor Green
+Write-Host "Open the installation guide on your phone and continue with Step 5." -ForegroundColor Yellow

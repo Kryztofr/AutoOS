@@ -34,6 +34,7 @@ public class ApplicationSelection
 	public bool Unigram { get; set; }
 	public bool ZoomWorkplace { get; set; }
 	public bool Thunderbird { get; set; }
+	public bool Signal { get; set; }
 	public bool EpicGames { get; set; }
 	public bool Steam { get; set; }
 	public bool RiotClient { get; set; }
@@ -57,9 +58,11 @@ public class ApplicationSelection
 	public bool Wootility { get; set; }
 	public bool EndgameGear { get; set; }
 	public bool GloriousCORE { get; set; }
+	public bool MCHOSE { get; set; }
 	public bool SteelSeriesGG { get; set; }
 	public bool RazerSynapse { get; set; }
 	public bool CorsairICue { get; set; }
+	public bool OpenRGB { get; set; }
 	public bool FanControl { get; set; }
 	public bool GHelper { get; set; }
 	public bool ViGEmBus { get; set; }
@@ -83,6 +86,7 @@ public class ApplicationSelection
 	public bool Go { get; set; }
 	public bool Trello { get; set; }
 	public bool HWInfo {get; set; }
+	public bool TimingConfigurator { get; set; }
 	public bool ZenTimings {get; set; }
 	public bool Prime95 {get; set; }
 	public bool OCCT { get; set; }
@@ -90,6 +94,10 @@ public class ApplicationSelection
 	public bool FLStudio { get; set; }
 	public bool FlexASIO { get; set; }
 	public bool ASIO4ALL { get; set; }
+	public bool MpcQt { get; set; }
+	public bool MPV { get; set; }
+	public bool VLC { get; set; }
+	public bool MediaInfo { get; set; }
 	public bool Word { get; set; }
 	public bool Excel { get; set; }
 	public bool PowerPoint { get; set; }
@@ -106,6 +114,8 @@ public class ApplicationSelection
 	public bool BluetoothAudioReceiver { get; set; }
 	public bool AnyDesk { get; set; }
 	public bool Apollo { get; set; }
+	public bool AutoHotkey { get; set; }
+	public bool EmEditor { get; set; }
 	public bool WinDbg { get; set; }
 }
 
@@ -138,6 +148,7 @@ public static class ApplicationStage
 		bool Unigram = selection?.Unigram ?? PreparingStage.Unigram;
 		bool ZoomWorkplace = selection?.ZoomWorkplace ?? PreparingStage.ZoomWorkplace;
 		bool Thunderbird = selection?.Thunderbird ?? PreparingStage.Thunderbird;
+		bool Signal = selection?.Signal ?? PreparingStage.Signal;
 
 		bool EpicGames = selection?.EpicGames ?? PreparingStage.EpicGames;
 		bool EpicGamesAccount = selection != null ? false : PreparingStage.EpicGamesAccount;
@@ -169,9 +180,11 @@ public static class ApplicationStage
 		bool Wootility = selection?.Wootility ?? PreparingStage.Wootility;
 		bool EndgameGear = selection?.EndgameGear ?? PreparingStage.EndgameGear;
 		bool GloriousCORE = selection?.GloriousCORE ?? PreparingStage.GloriousCORE;
+		bool MCHOSE = selection?.MCHOSE ?? PreparingStage.MCHOSE;
 		bool SteelSeriesGG = selection?.SteelSeriesGG ?? PreparingStage.SteelSeriesGG;
 		bool RazerSynapse = selection?.RazerSynapse ?? PreparingStage.RazerSynapse;
 		bool CorsairICue = selection?.CorsairICue ?? PreparingStage.CorsairICue;
+		bool OpenRGB = selection?.OpenRGB ?? PreparingStage.OpenRGB;
 		bool FanControl = selection?.FanControl ?? PreparingStage.FanControl;
 		bool GHelper = selection?.GHelper ?? PreparingStage.GHelper;
 
@@ -198,6 +211,7 @@ public static class ApplicationStage
 		bool Trello = selection?.Trello ?? PreparingStage.Trello;
 
 		bool HWInfo = selection?.HWInfo ?? PreparingStage.HWInfo;
+		bool TimingConfigurator = selection?.TimingConfigurator ?? PreparingStage.TimingConfigurator;
 		bool ZenTimings = selection?.ZenTimings ?? PreparingStage.ZenTimings;
 		bool Prime95 = selection?.Prime95 ?? PreparingStage.Prime95;
 		bool OCCT = selection?.OCCT ?? PreparingStage.OCCT;
@@ -206,6 +220,11 @@ public static class ApplicationStage
 		bool FLStudio = selection?.FLStudio ?? PreparingStage.FLStudio;
 		bool FlexASIO = selection?.FlexASIO ?? PreparingStage.FlexASIO;
 		bool ASIO4ALL = selection?.ASIO4ALL ?? PreparingStage.ASIO4ALL;
+
+		bool MpcQt = selection?.MpcQt ?? PreparingStage.MpcQt;
+		bool MPV = selection?.MPV ?? PreparingStage.MPV;
+		bool VLC = selection?.VLC ?? PreparingStage.VLC;
+		bool MediaInfo = selection?.MediaInfo ?? PreparingStage.MediaInfo;
 
 		bool Word = selection?.Word ?? PreparingStage.Word;
 		bool Excel = selection?.Excel ?? PreparingStage.Excel;
@@ -224,6 +243,8 @@ public static class ApplicationStage
 		bool BluetoothAudioReceiver = selection?.BluetoothAudioReceiver ?? PreparingStage.BluetoothAudioReceiver;
 		bool AnyDesk = selection?.AnyDesk ?? PreparingStage.AnyDesk;
 		bool Apollo = selection?.Apollo ?? PreparingStage.Apollo;
+		bool AutoHotkey = selection?.AutoHotkey ?? PreparingStage.AutoHotkey;
+		bool EmEditor = selection?.EmEditor ?? PreparingStage.EmEditor;
 		bool WinDbg = selection?.WinDbg ?? PreparingStage.WinDbg;
 
 		string icloudVersion = "";
@@ -685,6 +706,13 @@ public static class ApplicationStage
 			// disable thunderbird service
 			("Disabling Thunderbird service", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\MozillaMaintenance", "Start", 4, RegistryValueKind.DWord), () => Thunderbird == true),
 			("Disabling Thunderbird service", async () => ServicesHelper.StopService("MozillaMaintenance"), () => Thunderbird == true),
+
+			// download signal
+			("Downloading Signal", async () => await DownloadHelper.Download("https://updates.signal.org/desktop/signal-desktop-win-8.14.0.exe", Path.GetTempPath(), "SignalSetup.exe", reporter: reporter), () => Signal == true),
+
+			// install signal
+			("Installing Signal", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "SignalSetup.exe"), Arguments = "/S" , WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => Signal == true),
+			("Cleaning up Signal files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "SignalSetup.exe")), () => Signal == true),
 
 			// download epic games launcher
 			("Downloading Epic Games Launcher", async () => await DownloadHelper.Download("https://launcher-public-service-prod06.ol.epicgames.com/launcher/api/installer/download/EpicGamesLauncherInstaller.msi", Path.GetTempPath(), "EpicGamesLauncherInstaller.msi", reporter: reporter), () => EpicGames == true),
@@ -1214,6 +1242,13 @@ public static class ApplicationStage
 			("Installing Glorious CORE", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "GloriousCORE_Setup", "GloriousCORE_2.1.15_Setup.exe"), Arguments = "/VERYSILENT /SUPPRESSMSGBOXES /NORESTART" , WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => GloriousCORE == true),
 			("Cleaning up Glorious CORE files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "GloriousCORE_Setup.zip")), () => GloriousCORE == true),
 			("Cleaning up Glorious CORE files", async () => Directory.Delete(Path.Combine(Path.GetTempPath(), "GloriousCORE_Setup"), true), () => GloriousCORE == true),
+			
+      // download mchose hub
+			("Downloading MCHOSE HUB", async () => await DownloadHelper.Download("https://github.com/tinodin/AutoOS-Resources/releases/download/v1.0.0.0/MCHOSE.HUB.installer.exe", Path.GetTempPath(), "MCHOSE.HUB.installer.exe", reporter: reporter), () => MCHOSE == true),
+
+			// install mchose hub
+			("Installing MCHOSE HUB", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "MCHOSE.HUB.installer.exe"), Arguments = "/S" , WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => MCHOSE == true),
+			("Cleaning up MCHOSE HUB files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "MCHOSE.HUB.installer.exe")), () => MCHOSE == true),
 
 			// download steelseries gg
 			("Downloading SteelSeries GG", async () => await DownloadHelper.Download("https://steelseries.com/gg/downloads/latest/windows", Path.GetTempPath(), "SteelSeriesGGSetup.exe", reporter: reporter), () => SteelSeriesGG == true),
@@ -1273,6 +1308,13 @@ public static class ApplicationStage
 
 			// disable corsair icue startup entry
 			("Disabling Corsair iCUE startup entry", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run", "Corsair iCUE5 Software", new byte[] { 0x01 }, RegistryValueKind.Binary), () => CorsairICue == true),
+
+			// download openrgb
+			("Downloading OpenRGB", async () => await DownloadHelper.Download("https://codeberg.org/OpenRGB/OpenRGB/releases/download/release_candidate_1.0rc2/OpenRGB_1.0rc2_Windows_64_0fca93e.msi", Path.GetTempPath(), "OpenRGB_Windows_64.msi", reporter: reporter), () => OpenRGB == true),
+
+			// install openrgb
+			("Installing OpenRGB", async () => await Process.Start(new ProcessStartInfo { FileName = "msiexec.exe", Arguments = $@"/i ""{Path.Combine(Path.GetTempPath(), "OpenRGB_Windows_64.msi")}"" /qn" , WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => OpenRGB ==  true),
+			("Cleaning up OpenRGB files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "OpenRGB_Windows_64.msi")), () => OpenRGB ==  true),
 
 			// download fancontrol
 			("Downloading FanControl", async () => await DownloadHelper.Download(JsonDocument.Parse(await new HttpClient { DefaultRequestHeaders = { { "User-Agent", "AutoOS" } } }.GetStringAsync("https://api.github.com/repos/Rem0o/FanControl.Releases/releases")).RootElement.EnumerateArray().First(release => !release.GetProperty("prerelease").GetBoolean() && release.GetProperty("assets").EnumerateArray().Any(asset => asset.GetProperty("name").GetString().Contains("Installer.exe"))).GetProperty("assets").EnumerateArray().First(asset => asset.GetProperty("name").GetString().Contains("Installer.exe")).GetProperty("browser_download_url").GetString(), Path.GetTempPath(), "FanControl.exe", reporter: reporter), () => FanControl == true),
@@ -1503,12 +1545,21 @@ public static class ApplicationStage
 			("Please log in to your Trello account (Close to continue)", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "WindowsApps", $"45273LiamForsyth.PawsforTrello_{trelloVersion}_x64__7pb5ddty8z1pa", "app", "Trello.exe"), WindowStyle = ProcessWindowStyle.Maximized }) !.WaitForExitAsync(), () => Trello == true),
 			
 			// download hwinfo
-            ("Downloading HWiNFO® 64", async () => await DownloadHelper.Download("https://www.sac.sk/download/utildiag/hwi_848x.exe", Path.GetTempPath(), "hwi64.exe", reporter: reporter), () => HWInfo == true),
+      ("Downloading HWiNFO® 64", async () => await DownloadHelper.Download("https://www.sac.sk/download/utildiag/hwi_848x.exe", Path.GetTempPath(), "hwi64.exe", reporter: reporter), () => HWInfo == true),
 
-            // install hwinfo
-            ("Installing HWiNFO® 64", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "hwi64.exe"), Arguments = "/SP- /VERYSILENT /SUPPRESSMSGBOXES /NORESTART" , WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => HWInfo == true),
-			("Installing HWiNFO® 64", async () => { while (Process.GetProcessesByName("HWiNFO64").Length == 0) await Task.Delay(100); foreach (Process process in Process.GetProcessesByName("HWiNFO64")) { process.Kill(); process.WaitForExit(); } }, () => HWInfo == true),
+      // install hwinfo
+      ("Installing HWiNFO® 64", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "hwi64.exe"), Arguments = "/SP- /VERYSILENT /SUPPRESSMSGBOXES /NORESTART" , WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => HWInfo == true),
+      ("Installing HWiNFO® 64", async () => { while (Process.GetProcessesByName("HWiNFO64").Length == 0) await Task.Delay(100); foreach (Process process in Process.GetProcessesByName("HWiNFO64")) { process.Kill(); process.WaitForExit(); } }, () => HWInfo == true),
 			("Cleaning up HWiNFO® 64", async () => File.Delete(Path.Combine(Path.GetTempPath(), "hwi64.exe")), () => HWInfo == true),
+
+			// download timing configurator
+			("Downloading ASRock Timing Configurator", async () => await DownloadHelper.Download("https://download.asrock.com/Utility/Formula/TimingConfigurator(v4.1.7).zip", Path.GetTempPath(), "TimingConfigurator.zip"), () => TimingConfigurator == true),
+
+			// install timing configurator
+			("Installing ASRock Timing Configurator", async () => await ExtractHelper.Extract(Path.Combine(Path.GetTempPath(), "TimingConfigurator.zip"), Path.Combine(Path.GetTempPath(), "TimingConfigurator")), () => TimingConfigurator == true),
+			("Installing ASRock Timing Configurator", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "TimingConfigurator", "TimingConfigurator(v4.1.7)", "AsrTCSetup(v4.1.7).exe"), Arguments = "/VERYSILENT /SUPPRESSMSGBOXES /NORESTART /NOCLOSEAPPLICATIONS" , WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => TimingConfigurator == true),
+			("Cleaning up ASRock Timing Configurator files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "TimingConfigurator.zip")), () => TimingConfigurator == true),
+			("Cleaning up ASRock Timing Configurator files", async () => Directory.Delete(Path.Combine(Path.GetTempPath(), "TimingConfigurator"), true), () => TimingConfigurator == true),
 
 			// download zentimings
 			("Downloading ZenTimings", async () => await DownloadHelper.Download(JsonDocument.Parse(await new HttpClient { DefaultRequestHeaders = { { "User-Agent", "AutoOS" } } }.GetStringAsync("https://api.github.com/repos/irusanov/ZenTimings/releases")).RootElement.EnumerateArray().First(release => !release.GetProperty("prerelease").GetBoolean() && release.GetProperty("assets").EnumerateArray().Any(asset => asset.GetProperty("name").GetString().EndsWith(".zip"))).GetProperty("assets").EnumerateArray().First(asset => asset.GetProperty("name").GetString().EndsWith(".zip")).GetProperty("browser_download_url").GetString(), Path.GetTempPath(), "ZenTimings.zip"), () => ZenTimings == true),
@@ -1583,11 +1634,40 @@ public static class ApplicationStage
 			("Cleaning up FlexASIO GUI files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "FlexASIO.GUIInstaller.exe")), () => FlexASIO == true),
 
 			// download asio4all
-            ("Downloading ASIO4ALL", async () => await DownloadHelper.Download("https://asio4all.org/downloads/ASIO4ALL_2_21.exe", Path.GetTempPath(), "ASIO4ALL.exe", reporter: reporter), () => ASIO4ALL == true),
+      ("Downloading ASIO4ALL", async () => await DownloadHelper.Download("https://asio4all.org/downloads/ASIO4ALL_2_21.exe", Path.GetTempPath(), "ASIO4ALL.exe", reporter: reporter), () => ASIO4ALL == true),
 
-            // install asio4all
-            ("Installing ASIO4ALL", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "ASIO4ALL.exe"), Arguments = "/S", WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => ASIO4ALL == true),
-            ("Cleaning up ASIO4ALL files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "ASIO4ALL.exe")), () => ASIO4ALL == true),
+      // install asio4all
+      ("Installing ASIO4ALL", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "ASIO4ALL.exe"), Arguments = "/S", WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => ASIO4ALL == true),
+      ("Cleaning up ASIO4ALL files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "ASIO4ALL.exe")), () => ASIO4ALL == true),
+
+			// download mpc-qt
+			("Downloading MPC-QT", async () => await DownloadHelper.Download(JsonDocument.Parse(await new HttpClient { DefaultRequestHeaders = { { "User-Agent", "AutoOS" } } }.GetStringAsync("https://api.github.com/repos/mpc-qt/mpc-qt/releases")).RootElement.EnumerateArray().First(release => !release.GetProperty("prerelease").GetBoolean() && release.GetProperty("assets").EnumerateArray().Any(asset => asset.GetProperty("name").GetString().StartsWith("mpc-qt-win-x64-") && asset.GetProperty("name").GetString().EndsWith("-installer.exe"))).GetProperty("assets").EnumerateArray().First(asset => asset.GetProperty("name").GetString().StartsWith("mpc-qt-win-x64-") && asset.GetProperty("name").GetString().EndsWith("-installer.exe")).GetProperty("browser_download_url").GetString(), Path.GetTempPath(), "mpc-qt-win-x64-installer.exe", reporter: reporter), () => MpcQt == true),
+
+			// install mpc-qt
+			("Installing MPC-QT", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "mpc-qt-win-x64-installer.exe"), Arguments = "/S", WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => MpcQt == true),
+			("Cleaning up MPC-QT files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "mpc-qt-win-x64-installer.exe")), () => MpcQt == true),
+
+			// download mpv
+			("Downloading mpv", async () => await DownloadHelper.Download(JsonDocument.Parse(await new HttpClient { DefaultRequestHeaders = { { "User-Agent", "AutoOS" } } }.GetStringAsync("https://api.github.com/repos/zhongfly/mpv-winbuild/releases")).RootElement.EnumerateArray().First(release => !release.GetProperty("prerelease").GetBoolean() && release.GetProperty("assets").EnumerateArray().Any(asset => asset.GetProperty("name").GetString().StartsWith("mpv-x86_64-v3-") && asset.GetProperty("name").GetString().EndsWith(".7z"))).GetProperty("assets").EnumerateArray().First(asset => asset.GetProperty("name").GetString().StartsWith("mpv-x86_64-v3-") && asset.GetProperty("name").GetString().EndsWith(".7z")).GetProperty("browser_download_url").GetString(), Path.GetTempPath(), "mpv-x86_64-v3.7z"), () => MPV == true),
+
+			// install mpv
+			("Installing mpv", async () => await ExtractHelper.Extract(Path.Combine(Path.GetTempPath(), "mpv-x86_64-v3.7z"), Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "mpv")), () => MPV == true),
+			("Installing mpv", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "mpv", "mpv.exe"), Arguments = "--register", WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => MPV == true),
+			("Installing mpv", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\mpv", "UninstallString", $@"cmd.exe /c """"{Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)}\mpv\mpv.exe"" --no-config --unregister && rmdir /s /q ""{Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)}\mpv""""", RegistryValueKind.String), () => MPV == true),
+			("Cleaning up mpv files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "mpv-x86_64-v3.7z")), () => MPV == true),
+
+			// download vlc
+			("Downloading VLC", async () => await DownloadHelper.Download("https://mirror.solnet.ch/videolan/vlc/3.0.23/win64/vlc-3.0.23-win64.exe", Path.GetTempPath(), "vlc-win64.exe", reporter: reporter), () => VLC == true),
+
+			// install vlc
+			("Installing VLC", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "vlc-win64.exe"), Arguments = "/L=1033 /S", WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => VLC == true),
+			("Cleaning up VLC files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "vlc-win64.exe")), () => VLC == true),
+
+			// download mediainfo
+			("Downloading MediaInfo", async () => await StoreHelper.Download("MediaArea.net.MediaInfo_9bzbd7xajy7ar", reporter: reporter), () => MediaInfo == true),
+
+			// install mediainfo
+			("Installing MediaInfo", async () => await StoreHelper.Install("MediaArea.net.MediaInfo_9bzbd7xajy7ar"), () => MediaInfo == true),
 
 			// download office
 			("Downloading Office", async () => await DownloadHelper.Download("https://officecdn.microsoft.com/pr/wsus/setup.exe", Path.GetTempPath(), "setup.exe", reporter: reporter), () => Word == true || Excel == true || PowerPoint == true || OneNote == true || Teams == true || Outlook == true || OneDrive == true),
@@ -1798,10 +1878,10 @@ public static class ApplicationStage
 			("Installing Bluetooth Audio Receiver", async () => await StoreHelper.Install("55746MarkSmirnov.BluetoothAudioReveicer_xwrbx6997tsfc"), () => BluetoothAudioReceiver == true),
 
 			// download anydesk
-            ("Downloading AnyDesk", async () => await DownloadHelper.Download("https://download.anydesk.com/AnyDesk.exe", Path.GetTempPath(), "AnyDesk.exe", reporter: reporter), () => AnyDesk == true),
+      ("Downloading AnyDesk", async () => await DownloadHelper.Download("https://download.anydesk.com/AnyDesk.exe", Path.GetTempPath(), "AnyDesk.exe", reporter: reporter), () => AnyDesk == true),
             
 			// install anydesk
-            ("Installing AnyDesk", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "AnyDesk.exe"), Arguments = @"--install ""C:\Program Files (x86)\AnyDesk"" --start-with-win --silent --create-shortcuts --create-desktop-icon" , WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => AnyDesk == true),
+      ("Installing AnyDesk", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "AnyDesk.exe"), Arguments = @"--install ""C:\Program Files (x86)\AnyDesk"" --start-with-win --silent --create-shortcuts --create-desktop-icon" , WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => AnyDesk == true),
 			("Installing AnyDesk", async () => { foreach (Process process in Process.GetProcessesByName("AnyDesk")) { process.Kill(); process.WaitForExit(); } }, () => AnyDesk == true),
 			("Cleaning up AnyDesk files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "AnyDesk.exe")), () => AnyDesk == true),
 		
@@ -1816,8 +1896,24 @@ public static class ApplicationStage
 			// install apollo
 			("Installing Apollo", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "Apollo.exe"), Arguments = "/S", WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => Apollo == true),
 			("Cleaning up Apollo files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "Apollo.exe")), () => Apollo == true),
+			
+      // download autohotkey
+			("Downloading AutoHotkey", async () => await DownloadHelper.Download("https://github.com/AutoHotkey/AutoHotkey/releases/download/v2.0.26/AutoHotkey_2.0.26_setup.exe", Path.GetTempPath(), "AutoHotkey_setup.exe", reporter: reporter), () => AutoHotkey == true),
+			
+			// install autohotkey
+			("Installing AutoHotkey", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "AutoHotkey_setup.exe"), Arguments = "/silent", WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => AutoHotkey == true),
+			("Cleaning up AutoHotkey files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "AutoHotkey_setup.exe")), () => AutoHotkey == true),
 
-			// download windbg
+			// download emeditor
+			("Downloading EmEditor", async () => await StoreHelper.Download("Emurasoft.EmEditor64UWP_ws7rg9hnwrpxm", reporter: reporter), () => EmEditor == true),
+
+			// install emeditor
+			("Installing EmEditor", async () => await StoreHelper.Install("Emurasoft.EmEditor64UWP_ws7rg9hnwrpxm"), () => EmEditor == true),
+
+			// disable emeditor startup entry
+			("Disabling EmEditor startup entry", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\StartupFolder", "EmEditor.lnk", new byte[] { 0x03 }, RegistryValueKind.Binary), () => EmEditor == true),
+      
+      // download windbg
 			("Downloading WinDbg", async () => await StoreHelper.Download("Microsoft.WinDbg_8wekyb3d8bbwe", reporter: reporter), () => WinDbg == true),
 
 			// install windbg

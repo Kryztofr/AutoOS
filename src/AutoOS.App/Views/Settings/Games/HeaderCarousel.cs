@@ -2154,6 +2154,7 @@ public partial class HeaderCarousel : ItemsControl
 				"FortniteClient-Win64-Shipping_EAC_EOS",
 				"GameBar",
 				"GameBarFTServer",
+				"gamingservicesnet",
 				"LeagueCrashHandler64",
 				"LsaIso",
 				"mobsync",

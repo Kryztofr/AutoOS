@@ -42,7 +42,7 @@ public static partial class LogHelper
 
 	public static async Task Log(IEnumerable<GpuInfo> selectedGpus = null, bool bios = false)
 	{
-		var embed = await GetOverview(selectedGpus);
+		var embed = await GetOverview(selectedGpus, null, null, true);
 		var webhookPayload = new JsonObject
 		{
 			["embeds"] = new JsonArray { (JsonNode)embed }
@@ -111,7 +111,7 @@ public static partial class LogHelper
 
 	public static async Task LogNetworkSettings(IEnumerable<GpuInfo> selectedGpus = null)
 	{
-		var embed = await GetOverview(selectedGpus);
+		var embed = await GetOverview(selectedGpus, null, null, true);
 		var webhookPayload = new JsonObject
 		{
 			["embeds"] = new JsonArray { (JsonNode)embed }
@@ -181,7 +181,7 @@ public static partial class LogHelper
 		}
 	}
 
-	private static async Task<JsonObject> GetOverview(IEnumerable<GpuInfo> selectedGpus = null, Exception ex = null, string actionTitle = null)
+	private static async Task<JsonObject> GetOverview(IEnumerable<GpuInfo> selectedGpus = null, Exception ex = null, string actionTitle = null, bool includeGames = false)
 	{
 		var discordAccounts = DiscordHelper.GetLocalAccounts();
 		if (discordAccounts.Count == 0)
@@ -235,11 +235,14 @@ public static partial class LogHelper
 		string audioInfo = audioParts.Count > 0 ? string.Join("\n", audioParts) : "N/A";
 
 		var allGames = new List<GameModel>();
-		try { allGames.AddRange(await EpicGamesHelper.GetGames()); } catch { }
-		try { allGames.AddRange(await SteamHelper.GetGames()); } catch { }
-		try { allGames.AddRange(await EdenHelper.GetGames(localSettings.Values["EdenLocation"]?.ToString(), localSettings.Values["EdenDataLocation"]?.ToString())); } catch { }
-		try { allGames.AddRange(await CitronHelper.GetGames(localSettings.Values["CitronLocation"]?.ToString(), localSettings.Values["CitronDataLocation"]?.ToString())); } catch { }
-		try { allGames.AddRange(await RyujinxHelper.GetGames(localSettings.Values["RyujinxLocation"]?.ToString(), localSettings.Values["RyujinxDataLocation"]?.ToString())); } catch { }
+		if (includeGames)
+		{
+			try { allGames.AddRange(await EpicGamesHelper.GetGames()); } catch { }
+			try { allGames.AddRange(await SteamHelper.GetGames()); } catch { }
+			try { allGames.AddRange(await EdenHelper.GetGames(localSettings.Values["EdenLocation"]?.ToString(), localSettings.Values["EdenDataLocation"]?.ToString())); } catch { }
+			try { allGames.AddRange(await CitronHelper.GetGames(localSettings.Values["CitronLocation"]?.ToString(), localSettings.Values["CitronDataLocation"]?.ToString())); } catch { }
+			try { allGames.AddRange(await RyujinxHelper.GetGames(localSettings.Values["RyujinxLocation"]?.ToString(), localSettings.Values["RyujinxDataLocation"]?.ToString())); } catch { }
+		}
 
 		var sortedGames = allGames.OrderByDescending(g => ParsePlaytimeMinutes(g.PlayTime)).ToList();
 		var gamesList = sortedGames.Select(game =>

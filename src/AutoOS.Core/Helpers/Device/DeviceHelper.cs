@@ -24,8 +24,6 @@ public static partial class DeviceHelper
 	private static readonly Guid GUID_DEVCLASS_AUDIOENDPOINT = new("c166523c-fe0c-4a94-a586-f1a80cfbbf3e");
 	private static readonly Guid GUID_DEVCLASS_SYSTEM = new("4d36e97d-e325-11ce-bfc1-08002be10318");
 
-
-
 	public unsafe static List<DeviceInfo> GetDevices(DeviceType type)
 	{
 		var devices = new List<DeviceInfo>();
