@@ -152,6 +152,7 @@ public static partial class PreparingStage
 	public static bool BulkCrapUninstaller;
 	public static bool BluetoothAudioReceiver;
 	public static bool AnyDesk;
+	public static bool RustDesk;
 	public static bool Apollo;
 	public static bool AutoHotkey;
 	public static bool EmEditor;
@@ -332,6 +333,7 @@ public static partial class PreparingStage
 			BulkCrapUninstaller = (localSettings.Values["Miscellaneous"]?.ToString().Contains("Bulk Crap Uninstaller") ?? false);
 			BluetoothAudioReceiver = (localSettings.Values["Miscellaneous"]?.ToString().Contains("BluetoothAudioReceiver") ?? false);
 			AnyDesk = (localSettings.Values["Miscellaneous"]?.ToString().Contains("AnyDesk") ?? false);
+			RustDesk = (localSettings.Values["Miscellaneous"]?.ToString().Contains("RustDesk") ?? false);
 			Apollo = (localSettings.Values["Miscellaneous"]?.ToString().Contains("Apollo") ?? false);
 			AutoHotkey = (localSettings.Values["Miscellaneous"]?.ToString().Contains("AutoHotkey") ?? false);
 			EmEditor = (localSettings.Values["Miscellaneous"]?.ToString().Contains("EmEditor") ?? false);

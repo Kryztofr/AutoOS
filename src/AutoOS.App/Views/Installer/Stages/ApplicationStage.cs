@@ -112,6 +112,7 @@ public class ApplicationSelection
 	public bool BulkCrapUninstaller { get; set; }
 	public bool BluetoothAudioReceiver { get; set; }
 	public bool AnyDesk { get; set; }
+	public bool RustDesk { get; set; }
 	public bool Apollo { get; set; }
 	public bool AutoHotkey { get; set; }
 	public bool EmEditor { get; set; }
@@ -239,6 +240,7 @@ public static class ApplicationStage
 		bool BulkCrapUninstaller = selection?.BulkCrapUninstaller ?? PreparingStage.BulkCrapUninstaller;
 		bool BluetoothAudioReceiver = selection?.BluetoothAudioReceiver ?? PreparingStage.BluetoothAudioReceiver;
 		bool AnyDesk = selection?.AnyDesk ?? PreparingStage.AnyDesk;
+		bool RustDesk = selection?.RustDesk ?? PreparingStage.RustDesk;
 		bool Apollo = selection?.Apollo ?? PreparingStage.Apollo;
 		bool AutoHotkey = selection?.AutoHotkey ?? PreparingStage.AutoHotkey;
 		bool EmEditor = selection?.EmEditor ?? PreparingStage.EmEditor;
@@ -1876,6 +1878,13 @@ public static class ApplicationStage
 			("Disabling AnyDesk startup entries", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\AnyDesk", "Start", 4, RegistryValueKind.DWord), () => AnyDesk == true),
 			("Disabling AnyDesk startup entries", async () => ServicesHelper.StopService("AnyDesk"), () => AnyDesk == true),
 			("Disabling AnyDesk startup entries", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\StartupFolder", "AnyDesk.lnk", new byte[] { 0x03 }, RegistryValueKind.Binary), () => AnyDesk == true),
+
+			// download rustdesk
+			("Downloading RustDesk", async () => await DownloadHelper.Download("https://github.com/rustdesk/rustdesk/releases/download/1.4.7/rustdesk-1.4.7-x86_64.msi", Path.GetTempPath(), "rustdesk.msi", reporter: reporter), () => RustDesk == true),
+
+			// install rustdesk
+			("Installing RustDesk", async () => await Process.Start(new ProcessStartInfo { FileName = "msiexec.exe", Arguments = $@"/i ""{Path.Combine(Path.GetTempPath(), "rustdesk.msi")}"" /qn" , WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => RustDesk == true),
+			("Cleaning up RustDesk files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "rustdesk.msi")), () => RustDesk == true),
 
 			// download apollo
 			("Downloading Apollo", async () => await DownloadHelper.Download(JsonDocument.Parse(await new HttpClient { DefaultRequestHeaders = { { "User-Agent", "AutoOS" } } }.GetStringAsync("https://api.github.com/repos/ClassicOldSong/Apollo/releases")).RootElement.EnumerateArray().First(release => release.GetProperty("assets").EnumerateArray().Any(asset => asset.GetProperty("name").GetString().EndsWith(".exe"))).GetProperty("assets").EnumerateArray().First(asset => asset.GetProperty("name").GetString().EndsWith(".exe")).GetProperty("browser_download_url").GetString(), Path.GetTempPath(), "Apollo.exe", reporter: reporter), () => Apollo == true),

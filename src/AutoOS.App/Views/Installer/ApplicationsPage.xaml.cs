@@ -171,6 +171,7 @@ public sealed partial class ApplicationsPage : Page
 			new() { Text = "Bulk Crap Uninstaller", ImageSource = "ms-appx:///Assets/Fluent/BulkCrapUninstaller.png" },
 			new() { Text = "Bluetooth Audio Receiver", ImageSource = "ms-appx:///Assets/Fluent/BluetoothAudioReceiver.png" },
 			new() { Text = "AnyDesk", ImageSource = "ms-appx:///Assets/Fluent/AnyDesk.png" },
+			new() { Text = "RustDesk", ImageSource = "ms-appx:///Assets/Fluent/RustDesk.png" },
 			new() { Text = "Apollo", ImageSource = "ms-appx:///Assets/Fluent/Apollo.png" },
 			new() { Text = "AutoHotkey", ImageSource = "ms-appx:///Assets/Fluent/AutoHotkey.png" },
 			new() { Text = "EmEditor", ImageSource = "ms-appx:///Assets/Fluent/EmEditor.png" }
