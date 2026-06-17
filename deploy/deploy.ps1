@@ -532,13 +532,8 @@ DISM /Apply-Image /ImageFile:$TempWim /Index:1 /ApplyDir:$TargetDrive
 Remove-Item $TempWim -Force
 
 Write-Host "`n===== Step 6: Install Drivers =====`n" -ForegroundColor Yellow
-if ($InstallDrivers -match '^[Yy]') {
-	Write-Host "Installing drivers from $DriversDir..."
-	DISM /Image:$TargetDrive /Add-Driver /Driver:$DriversDir /Recurse
-}
-else {
-	Write-Host "Skipping driver installation..."
-}
+Write-Host "Installing drivers from $DriversDir..."
+DISM /Image:$TargetDrive /Add-Driver /Driver:$DriversDir /Recurse
 
 Write-Host "`n===== Step 7: Add unattend.xml =====`n" -ForegroundColor Yellow
 Write-Host "Adding unattend.xml..."
