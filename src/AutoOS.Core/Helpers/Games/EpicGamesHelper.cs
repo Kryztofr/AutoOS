@@ -2,6 +2,7 @@
 using AutoOS.Core.Helpers.Logging;
 using System.Collections.Concurrent;
 using DevWinUI;
+using Microsoft.VisualBasic.FileIO;
 using System.Diagnostics;
 using System.Globalization;
 using System.Net.Http.Headers;
@@ -100,7 +101,7 @@ public static partial class EpicGamesHelper
 			return accounts;
 
 		// get all configs
-		foreach (var file in Directory.GetFiles(EpicGamesAccountDir, "GameUserSettings.ini", SearchOption.AllDirectories))
+		foreach (var file in Directory.GetFiles(EpicGamesAccountDir, "GameUserSettings.ini", System.IO.SearchOption.AllDirectories))
 		{
 			// check if data is valid
 			if (!ValidateData(file))
@@ -152,41 +153,6 @@ public static partial class EpicGamesHelper
 		var (_, _, token, _) = GetAccountData(file);
 
 		return !string.IsNullOrWhiteSpace(token);
-	}
-
-	public static void CloseEpicGames()
-	{
-		foreach (var name in new[] { "EpicGamesLauncher", "EpicWebHelper" })
-		{
-			Process.GetProcessesByName(name).ToList().ForEach(process =>
-			{
-				try
-				{
-					process.Kill();
-					process.WaitForExit(2000);
-				}
-				catch { }
-			});
-		}
-	}
-
-	public static void DisableMinimizeToTray(string file)
-	{
-		var (accountId, _, _, _) = GetAccountData(file);
-
-		var iniHelper = new InIHelper(file);
-
-		iniHelper.AddValue("MinimiseToSystemTray", "False", accountId + "_General");
-	}
-
-	public static void DisableNotifications(string file)
-	{
-		var (accountId, _, _, _) = GetAccountData(file);
-
-		var iniHelper = new InIHelper(file);
-
-		iniHelper.AddValue("NotificationsEnabled_FreeGame", "False", accountId + "_General");
-		iniHelper.AddValue("NotificationsEnabled_Adverts", "False", accountId + "_General");
 	}
 
 	public static string Decrypt(string base64)
@@ -351,6 +317,41 @@ public static partial class EpicGamesHelper
 		return newAccessToken;
 	}
 
+	public static void CloseEpicGames()
+	{
+		foreach (var name in new[] { "EpicGamesLauncher", "EpicWebHelper" })
+		{
+			Process.GetProcessesByName(name).ToList().ForEach(process =>
+			{
+				try
+				{
+					process.Kill();
+					process.WaitForExit(2000);
+				}
+				catch { }
+			});
+		}
+	}
+
+	public static void DisableMinimizeToTray(string file)
+	{
+		var (accountId, _, _, _) = GetAccountData(file);
+
+		var iniHelper = new InIHelper(file);
+
+		iniHelper.AddValue("MinimiseToSystemTray", "False", accountId + "_General");
+	}
+
+	public static void DisableNotifications(string file)
+	{
+		var (accountId, _, _, _) = GetAccountData(file);
+
+		var iniHelper = new InIHelper(file);
+
+		iniHelper.AddValue("NotificationsEnabled_FreeGame", "False", accountId + "_General");
+		iniHelper.AddValue("NotificationsEnabled_Adverts", "False", accountId + "_General");
+	}
+
 	public static void AddPlaytime(string artifactId, DateTime startTime, Action<string, string> onPlayTimeUpdated = null)
 	{
 		var url = $"https://library-service.live.use1a.on.epicgames.com/library/api/public/playtime/account/{GetAccountData(ActiveEpicGamesAccountPath).AccountId}";
@@ -468,6 +469,110 @@ public static partial class EpicGamesHelper
 		}
 	}
 
+	public static async Task ImportGames()
+	{
+		// get the newest install list from other drives
+		var systemDrive = Path.GetPathRoot(Environment.GetFolderPath(Environment.SpecialFolder.System));
+		var foundFiles = DriveInfo.GetDrives()
+			.Where(d => d.DriveType == DriveType.Fixed && d.Name != systemDrive)
+			.Select(d => Path.Combine(d.Name, "ProgramData", "Epic", "UnrealEngineLauncher", "LauncherInstalled.dat"))
+			.Where(File.Exists)
+			.Select(path => new FileInfo(path))
+			.OrderByDescending(f => f.LastWriteTime)
+			.ToList();
+
+		if (foundFiles.Count == 0)
+			return;
+
+		FileInfo newestFile = foundFiles.First();
+		string oldDrive = Path.GetPathRoot(newestFile.FullName);
+
+		var jsonContent = await File.ReadAllTextAsync(newestFile.FullName);
+
+		if (string.IsNullOrWhiteSpace(jsonContent))
+			return;
+
+		var jsonObject = JsonNode.Parse(jsonContent);
+
+		// return if install list is empty
+		if (jsonObject?["InstallationList"] is not JsonArray installationList || installationList.Count == 0)
+			return;
+
+		// check and set new game paths in LauncherInstalled.dat
+		foreach (var game in installationList)
+		{
+			if (game is JsonObject gameObj && gameObj.ContainsKey("InstallLocation"))
+			{
+				string originalPath = gameObj["InstallLocation"]!.ToString();
+				string relativePath = originalPath[Path.GetPathRoot(originalPath).Length..];
+
+				foreach (var drive in DriveInfo.GetDrives().Where(drive => drive.DriveType == DriveType.Fixed && drive.Name != systemDrive))
+				{
+					if (Directory.Exists(Path.Combine(drive.Name, relativePath)))
+					{
+						gameObj["InstallLocation"] = drive.Name[0] + originalPath[1..];
+						break;
+					}
+				}
+			}
+		}
+
+		// write updated install list to new drive
+		Directory.CreateDirectory(Path.GetDirectoryName(EpicGamesInstalledGamesPath)!);
+		await File.WriteAllTextAsync(EpicGamesInstalledGamesPath, jsonObject.ToJsonString(new JsonSerializerOptions { WriteIndented = true, Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping }));
+
+		// copy manifests folder to new drive
+		FileSystem.CopyDirectory(Path.Combine(oldDrive, EpicGamesManifestDir[Path.GetPathRoot(EpicGamesManifestDir).Length..]), EpicGamesManifestDir);
+		FileSystem.CopyDirectory(Path.Combine(oldDrive, EpicGamesThirdPartyManifestDir[Path.GetPathRoot(EpicGamesThirdPartyManifestDir).Length..]), EpicGamesThirdPartyManifestDir);
+
+		// set new game paths in manifests
+		foreach (var file in Directory.GetFiles(EpicGamesManifestDir, "*.item", System.IO.SearchOption.AllDirectories))
+		{
+			var itemJson = JsonNode.Parse(await File.ReadAllTextAsync(file));
+
+			if (itemJson is JsonObject itemObj && itemObj.ContainsKey("InstallLocation"))
+			{
+				string originalPath = itemObj["InstallLocation"]!.ToString();
+				string relativePath = originalPath[Path.GetPathRoot(originalPath)!.Length..];
+
+				foreach (var drive in DriveInfo.GetDrives().Where(drive => drive.DriveType == DriveType.Fixed && drive.Name != systemDrive))
+				{
+					if (Directory.Exists(Path.Combine(drive.Name, relativePath)))
+					{
+						// store found drive
+						char newDrive = drive.Name[0];
+
+						// update install location
+						itemObj["InstallLocation"] = newDrive + originalPath[1..];
+
+						// update other paths
+						foreach (var prop in new[] { "ManifestLocation", "StagingLocation", "CompleteManifestPath", "PendingManifestPath" })
+						{
+							if (itemObj.ContainsKey(prop) && itemObj[prop]!.ToString() is string val && val.Length >= 2 && val[1] == ':')
+								itemObj[prop] = newDrive + val[1..];
+						}
+
+						// write updated manifest files
+						await File.WriteAllTextAsync(file, itemObj.ToJsonString(new JsonSerializerOptions { WriteIndented = true, Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping }));
+						break;
+					}
+				}
+			}
+		}
+
+		// launch epic games to get new token
+		Process.Start(new ProcessStartInfo(EpicGamesPath) { WindowStyle = ProcessWindowStyle.Hidden });
+
+		// wait for token to get used
+		await Task.Delay(5000);
+
+		// close epic games launcher
+		CloseEpicGames();
+
+		// update the backed up config
+		File.Copy(ActiveEpicGamesAccountPath, Path.Combine(EpicGamesAccountDir, GetAccountData(ActiveEpicGamesAccountPath).AccountId, "GameUserSettings.ini"), true);
+	}
+
 	public static async Task EpicGamesLogin(IStatusReporter reporter = null)
 	{
 		// launch epic games launcher
@@ -547,169 +652,6 @@ public static partial class EpicGamesHelper
 		await Task.Delay(1000);
 	}
 
-	public static async Task ImportGames()
-	{
-		// get all install lists from other drives
-		var systemDrive = Path.GetPathRoot(Environment.GetFolderPath(Environment.SpecialFolder.System));
-		var foundFiles = DriveInfo.GetDrives()
-			.Where(d => d.DriveType == DriveType.Fixed && d.Name != systemDrive)
-			.Select(d => Path.Combine(d.Name, "ProgramData", "Epic", "UnrealEngineLauncher", "LauncherInstalled.dat"))
-			.Where(File.Exists)
-			.Select(path => new FileInfo(path))
-			.OrderByDescending(f => f.LastWriteTime)
-			.ToList();
-
-		if (foundFiles.Count == 0)
-			return;
-
-		FileInfo newestFile = foundFiles.First();
-
-		var jsonContent = await File.ReadAllTextAsync(newestFile.FullName);
-
-		if (string.IsNullOrWhiteSpace(jsonContent))
-			return;
-
-		var jsonObject = JsonNode.Parse(jsonContent);
-
-		// return if install list is empty
-		if (jsonObject?["InstallationList"] is not JsonArray installationList || installationList.Count == 0)
-			return;
-
-		Directory.CreateDirectory(Path.GetDirectoryName(EpicGamesInstalledGamesPath)!);
-
-		var jsonOptions = new JsonSerializerOptions
-		{
-			WriteIndented = true,
-			Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
-		};
-
-		// set new game paths
-		foreach (var game in installationList)
-		{
-			if (game is JsonObject gameObj && gameObj.ContainsKey("InstallLocation"))
-			{
-				string originalPath = gameObj["InstallLocation"]!.ToString();
-				string originalDrive = Path.GetPathRoot(originalPath) ?? "";
-				string relativePath = originalPath[originalDrive.Length..];
-
-				foreach (var drive in DriveInfo.GetDrives().Where(d => d.DriveType == DriveType.Fixed && d.Name != systemDrive))
-				{
-					string testPath = Path.Combine(drive.Name, relativePath);
-					if (Directory.Exists(testPath))
-					{
-						gameObj["InstallLocation"] = testPath.Replace('\\', '/');
-						break;
-					}
-				}
-			}
-		}
-
-		await File.WriteAllTextAsync(EpicGamesInstalledGamesPath, jsonObject.ToJsonString(jsonOptions));
-
-		// copy over the manifest folder
-		string sourceManifestsFolder = Path.Combine(Path.GetPathRoot(newestFile.FullName)!, "ProgramData", "Epic", "EpicGamesLauncher", "Data", "Manifests");
-
-		if (!Directory.Exists(sourceManifestsFolder))
-			return;
-
-		Directory.CreateDirectory(EpicGamesManifestDir);
-
-		foreach (var directory in Directory.GetDirectories(sourceManifestsFolder, "*", SearchOption.AllDirectories))
-		{
-			string subDirPath = directory.Replace(sourceManifestsFolder, EpicGamesManifestDir);
-			Directory.CreateDirectory(subDirPath);
-		}
-
-		foreach (var file in Directory.GetFiles(sourceManifestsFolder, "*.*", SearchOption.AllDirectories))
-		{
-			string destFilePath = file.Replace(sourceManifestsFolder, EpicGamesManifestDir);
-			File.Copy(file, destFilePath, true);
-		}
-
-		// set new game paths
-		foreach (var file in Directory.GetFiles(EpicGamesManifestDir, "*.item", SearchOption.AllDirectories))
-		{
-			var itemJson = JsonNode.Parse(await File.ReadAllTextAsync(file));
-
-			if (itemJson is JsonObject itemObj && itemObj.ContainsKey("InstallLocation"))
-			{
-				string originalInstallLocation = itemObj["InstallLocation"]!.ToString().Replace('\\', '/');
-				string originalDrive = Path.GetPathRoot(originalInstallLocation)?.Replace('\\', '/') ?? "";
-				string relativePath = originalInstallLocation[originalDrive.Length..];
-
-				string newInstallLocation = null;
-
-				foreach (var drive in DriveInfo.GetDrives().Where(d => d.DriveType == DriveType.Fixed && d.Name != systemDrive))
-				{
-					string testPath = Path.Combine(drive.Name, relativePath);
-					if (Directory.Exists(testPath))
-					{
-						newInstallLocation = testPath.Replace('\\', '/');
-						break;
-					}
-				}
-
-				if (newInstallLocation != null)
-				{
-					itemObj["InstallLocation"] = newInstallLocation;
-
-					string oldRoot = originalDrive;
-					string newRoot = Path.GetPathRoot(newInstallLocation)!.Replace('\\', '/');
-
-					if (itemObj.ContainsKey("ManifestLocation"))
-					{
-						string manifest = itemObj["ManifestLocation"]!.ToString().Replace('\\', '/');
-						itemObj["ManifestLocation"] = manifest.Replace(oldRoot, newRoot);
-					}
-
-					if (itemObj.ContainsKey("StagingLocation"))
-					{
-						string staging = itemObj["StagingLocation"]!.ToString().Replace('\\', '/');
-						itemObj["StagingLocation"] = staging.Replace(oldRoot, newRoot);
-					}
-
-					if (itemObj.ContainsKey("CompleteManifestPath"))
-					{
-						string completeManifest = itemObj["CompleteManifestPath"]!.ToString();
-						if (!string.IsNullOrWhiteSpace(completeManifest))
-						{
-							completeManifest = completeManifest.Replace('\\', '/');
-							itemObj["CompleteManifestPath"] = completeManifest.Replace(oldRoot, newRoot);
-						}
-					}
-
-					if (itemObj.ContainsKey("PendingManifestPath"))
-					{
-						string pendingManifest = itemObj["PendingManifestPath"]!.ToString();
-						if (!string.IsNullOrWhiteSpace(pendingManifest))
-						{
-							pendingManifest = pendingManifest.Replace('\\', '/');
-							itemObj["PendingManifestPath"] = pendingManifest.Replace(oldRoot, newRoot);
-						}
-					}
-
-					await File.WriteAllTextAsync(file, itemObj.ToJsonString(new JsonSerializerOptions
-					{
-						WriteIndented = true,
-						Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
-					}));
-				}
-			}
-		}
-
-		// launch epic games to get new token
-		Process.Start(new ProcessStartInfo(EpicGamesPath) { WindowStyle = ProcessWindowStyle.Hidden });
-
-		// wait for token to get used
-		await Task.Delay(4000);
-
-		// close epic games launcher
-		CloseEpicGames();
-
-		// update the backed up config
-		File.Copy(ActiveEpicGamesAccountPath, Path.Combine(EpicGamesAccountDir, GetAccountData(ActiveEpicGamesAccountPath).AccountId, "GameUserSettings.ini"), true);
-	}
-
 	public static async Task<List<GameModel>> GetGames()
 	{
 		var games = new ConcurrentBag<GameModel>();
@@ -720,7 +662,10 @@ public static partial class EpicGamesHelper
 			string AccessToken = await UpdateEpicGamesToken(ActiveEpicGamesAccountPath);
 
 			if (AccessToken == null)
+			{
+				await LogHelper.LogError(new UnauthorizedAccessException("Failed to retrieve the Epic Games access token."));
 				return [.. games];
+			}
 
 			loginClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", AccessToken);
 
@@ -774,7 +719,7 @@ public static partial class EpicGamesHelper
 				_ => "PEGI"
 			};
 
-			var manifestFiles = Directory.Exists(EpicGamesManifestDir) ? Directory.GetFiles(EpicGamesManifestDir, "*.item", SearchOption.TopDirectoryOnly).Select(file => new FileInfo(file)).ToList() : [];
+			var manifestFiles = Directory.Exists(EpicGamesManifestDir) ? Directory.GetFiles(EpicGamesManifestDir, "*.item", System.IO.SearchOption.TopDirectoryOnly).Select(file => new FileInfo(file)).ToList() : [];
 
 			var latestManifests = new Dictionary<string, FileInfo>();
 
@@ -1069,7 +1014,7 @@ public static partial class EpicGamesHelper
 					long? sizeBytes = itemJson["InstallSize"]?.GetValue<long>();
 
 					if (!sizeBytes.HasValue)
-						sizeBytes = new DirectoryInfo(installLocation).EnumerateFiles("*", SearchOption.AllDirectories).Sum(fi => fi.Length);
+						sizeBytes = new DirectoryInfo(installLocation).EnumerateFiles("*", System.IO.SearchOption.AllDirectories).Sum(fi => fi.Length);
 
 					games.Add(new GameModel
 					{
@@ -1088,10 +1033,8 @@ public static partial class EpicGamesHelper
 						BackgroundImageUrl = keyImages.FirstOrDefault(img => img?["type"]?.GetValue<string>() == "DieselGameBox")?["url"]?.GetValue<string>(),
 						Title = offerData[offerId]?["title"]?.GetValue<string>(),
 						Developers = offerData[offerId]?["seller"]?["name"]?.GetValue<string>(),
-						Genres = genresData?.AsArray()?.Select(g => g?["name"]?.GetValue<string>())
-											.Where(n => !string.IsNullOrWhiteSpace(n)).ToList() ?? [],
-						Features = featuresData?["features"]?.AsArray()?.Select(f => f?.GetValue<string>())
-							.Where(f => !string.IsNullOrWhiteSpace(f)).ToList() ?? [],
+						Genres = genresData?.AsArray()?.Select(g => g?["name"]?.GetValue<string>()).Where(n => !string.IsNullOrWhiteSpace(n)).ToList() ?? [],
+						Features = featuresData?["features"]?.AsArray()?.Select(f => f?.GetValue<string>()).Where(f => !string.IsNullOrWhiteSpace(f)).ToList() ?? [],
 						Rating = ratingData["averageRating"]?.GetValue<double?>() ?? 0.0,
 						PlayTime = playTime,
 						AgeRatingUrl = ageRatingData[ratingKey]?["ratingImage"]?.ToString(),
@@ -1099,14 +1042,9 @@ public static partial class EpicGamesHelper
 						AgeRatingDescription = ageRatingData[ratingKey]?["descriptor"]?.ToString()?.Replace(",", ", "),
 						Elements = ageRatingData[ratingKey]?["element"]?.ToString()?.Replace(",", ", "),
 						Description = description,
-						Screenshots = [.. (mediaData["images"]?
-								.AsArray()
-								.Select(img => img["src"]?.ToString())
-								.Where(src => !string.IsNullOrWhiteSpace(src)) ?? [])],
+						Screenshots = [.. (mediaData["images"]?.AsArray().Select(img => img["src"]?.ToString()).Where(src => !string.IsNullOrWhiteSpace(src)) ?? [])],
 						ReleaseDate = releaseDate.ToString("d"),
-						Size = sizeBytes >= 1_000_000_000
-							? $"{sizeBytes.Value / 1_000_000_000d:F1} GB"
-							: $"{sizeBytes.Value / 1_000_000d:F2} MB",
+						Size = sizeBytes >= 1_000_000_000 ? $"{sizeBytes.Value / 1_000_000_000d:F1} GB" : $"{sizeBytes.Value / 1_000_000d:F2} MB",
 						Version = currentVersion
 					});
 				}
