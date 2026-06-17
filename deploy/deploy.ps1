@@ -275,8 +275,19 @@ if ([System.IO.Path]::GetFileName($IsoPicker.FileName) -ne "25H2.iso") {
 Write-Host "Please select your drivers folder you created in Step 3..."
 $DriverPicker = New-Object System.Windows.Forms.FolderBrowserDialog
 $DriverPicker.Description = "Select the drivers folder"
-if ($DriverPicker.ShowDialog() -ne [System.Windows.Forms.DialogResult]::OK) { return }
+if ($DriverPicker.ShowDialog() -ne [System.Windows.Forms.DialogResult]::OK) {
+	Write-Host "No folder selected. Exiting." -ForegroundColor Red
+	return
+}
 $DriversDir = $DriverPicker.SelectedPath
+if ((Get-ChildItem -Path $DriversDir -Filter "*.zip" -Recurse -File).Count -gt 0) {
+	Write-Host "The selected folder contains .zip files. Please extract all drivers first." -ForegroundColor Red
+	return
+}
+if ((Get-ChildItem -Path $DriversDir -Filter "*.inf" -Recurse -File).Count -eq 0) {
+	Write-Host "The selected folder does not contain any .inf files. Please select a valid drivers folder." -ForegroundColor Red
+	return
+}
 
 $physicalDisks = Get-PhysicalDisk | Where-Object { $_.BusType -ne 'USB' -and $_.MediaType -ne 'Removable' }
 if ($physicalDisks.Count -gt 1) {
