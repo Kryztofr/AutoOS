@@ -89,9 +89,9 @@ Once the script finished, restart your PC and boot into the `default option` by 
 
 ### Step 6: AutoOS Installer
 Once the OOBE has finished, wait for AutoOS Installer to open up.<br/>
-Then click "Install AutoOS". This process will take around 15-30 minutes.
 Carefully look through every tab and select your preferences and apps.<br/>
 You can take inspiration from my selection in **[Screenshots](SCREENSHOTS.md)**.<br/>
+Then click "Install AutoOS". This process will take around 15-30 minutes.
 
 > [!NOTE]  
 > You may experience a blank screen in the App after installing the Graphics Driver.<br/>

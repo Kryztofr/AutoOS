@@ -285,7 +285,7 @@ if ((Get-ChildItem -Path $DriversDir -Filter "*.zip" -Recurse -File).Count -gt 0
 	return
 }
 if ((Get-ChildItem -Path $DriversDir -Filter "*.inf" -Recurse -File).Count -eq 0) {
-	Write-Host "The selected folder does not contain any .inf files. Please select a valid drivers folder." -ForegroundColor Red
+	Write-Host "The selected folder does not contain any .inf files. Please extract all drivers first." -ForegroundColor Red
 	return
 }
 
