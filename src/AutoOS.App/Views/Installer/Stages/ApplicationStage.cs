@@ -1,4 +1,4 @@
-﻿using AutoOS.Common;
+using AutoOS.Common;
 using AutoOS.Core.Common;
 using AutoOS.Core.Helpers.Database;
 using AutoOS.Core.Helpers.Download;
@@ -88,6 +88,7 @@ public class ApplicationSelection
 	public bool HWInfo { get; set; }
 	public bool TimingConfigurator { get; set; }
 	public bool ZenTimings { get; set; }
+	public bool TestMem5 { get; set; }
 	public bool Prime95 { get; set; }
 	public bool OCCT { get; set; }
 	public bool Reaper { get; set; }
@@ -214,6 +215,7 @@ public static class ApplicationStage
 		bool HWInfo = selection?.HWInfo ?? PreparingStage.HWInfo;
 		bool TimingConfigurator = selection?.TimingConfigurator ?? PreparingStage.TimingConfigurator;
 		bool ZenTimings = selection?.ZenTimings ?? PreparingStage.ZenTimings;
+		bool TestMem5 = selection?.TestMem5 ?? PreparingStage.TestMem5;
 		bool Prime95 = selection?.Prime95 ?? PreparingStage.Prime95;
 		bool OCCT = selection?.OCCT ?? PreparingStage.OCCT;
 
@@ -1576,6 +1578,18 @@ public static class ApplicationStage
 			("Installing ZenTimings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\ZenTimings", "Publisher", "Irusanov", RegistryValueKind.String), () => ZenTimings == true),
 			("Cleaning up ZenTimings files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "ZenTimings.zip")), () => ZenTimings == true),
 			("Cleaning up ZenTimings files", async () => Directory.Delete(Path.Combine(Path.GetTempPath(), "ZenTimings")), () => ZenTimings == true),
+
+			// download testmem5
+			("Downloading TestMem5", async () => await DownloadHelper.Download(JsonDocument.Parse(await new HttpClient { DefaultRequestHeaders = { { "User-Agent", "AutoOS" } } }.GetStringAsync("https://api.github.com/repos/CoolCmd/TestMem5/releases")).RootElement.EnumerateArray().First(release => !release.GetProperty("prerelease").GetBoolean() && release.GetProperty("assets").EnumerateArray().Any(asset => asset.GetProperty("name").GetString().EndsWith(".7z"))).GetProperty("assets").EnumerateArray().First(asset => asset.GetProperty("name").GetString().EndsWith(".7z")).GetProperty("browser_download_url").GetString(), Path.GetTempPath(), "TestMem5.7z"), () => TestMem5 == true),
+
+			// install testmem5
+			("Installing TestMem5", async () => await ExtractHelper.Extract(Path.Combine(Path.GetTempPath(), "TestMem5.7z"), Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "TestMem5")), () => TestMem5 == true),
+			("Installing TestMem5", async () => ShortcutHelper.Create(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Microsoft", "Windows", "Start Menu", "Programs", "TestMem5.lnk"), Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "TestMem5", "TM5.exe")), () => TestMem5 == true),
+			("Installing TestMem5", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\TestMem5", "DisplayName", "TestMem5", RegistryValueKind.String), () => TestMem5 == true),
+			("Installing TestMem5", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\TestMem5", "UninstallString", $@"cmd /c rd /s /q ""{Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "TestMem5")}"" & del ""{Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), @"Microsoft\Windows\Start Menu\Programs\TestMem5.lnk")}"" & reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\TestMem5"" /f", RegistryValueKind.String), () => TestMem5 == true),
+			("Installing TestMem5", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\TestMem5", "DisplayIcon", Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), @"TestMem5\TM5.exe"), RegistryValueKind.String), () => TestMem5 == true),
+			("Installing TestMem5", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\TestMem5", "Publisher", "CoolCmd", RegistryValueKind.String), () => TestMem5 == true),
+			("Cleaning up TestMem5 files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "TestMem5.7z")), () => TestMem5 == true),
 
 			// download prime95
 			("Downloading Prime95", async () => await DownloadHelper.Download("https://download.mersenne.ca/gimps/v30/30.19/p95v3019b20.win64.zip", Path.GetTempPath(), "Prime95.zip"), () => Prime95 == true),

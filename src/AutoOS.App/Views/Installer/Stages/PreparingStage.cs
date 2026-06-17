@@ -124,6 +124,7 @@ public static partial class PreparingStage
 	public static bool HWInfo;
 	public static bool TimingConfigurator;
 	public static bool ZenTimings;
+	public static bool TestMem5;
 	public static bool Prime95;
 	public static bool OCCT;
 
@@ -307,6 +308,7 @@ public static partial class PreparingStage
 			HWInfo = (localSettings.Values["Overclocking"]?.ToString().Contains("HWiNFO® 64") ?? false);
 			TimingConfigurator = (localSettings.Values["Overclocking"]?.ToString().Contains("ASRock Timing Configurator") ?? false);
 			ZenTimings = (localSettings.Values["Overclocking"]?.ToString().Contains("ZenTimings") ?? false);
+			TestMem5 = (localSettings.Values["Overclocking"]?.ToString().Contains("TestMem5") ?? false);
 			Prime95 = (localSettings.Values["Overclocking"]?.ToString().Contains("Prime95") ?? false);
 			OCCT = (localSettings.Values["Overclocking"]?.ToString().Contains("OCCT") ?? false);
 

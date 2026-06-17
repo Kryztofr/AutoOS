@@ -141,6 +141,7 @@ public sealed partial class ApplicationsPage : Page
 			new() { Text = "HWiNFO® 64", ImageSource = "ms-appx:///Assets/Fluent/HWInfo.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "HWiNFO64", "HWiNFO64.exe")) },
 			new() { Text = "ASRock Timing Configurator", ImageSource = "ms-appx:///Assets/Fluent/TimingConfigurator.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "ASRock Utility", "Timing Configurator", "AsrTC.exe")) },
 			new() { Text = "ZenTimings", ImageSource = "ms-appx:///Assets/Fluent/ZenTimings.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "ZenTimings", "ZenTimings.exe")) },
+			new() { Text = "TestMem5", ImageSource = "ms-appx:///Assets/Fluent/TestMem5.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "TestMem5", "TM5.exe")) },
 			new() { Text = "Prime95", ImageSource = "ms-appx:///Assets/Fluent/Prime95.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Prime95", "prime95.exe")) },
 			new() { Text = "OCCT", ImageSource = "ms-appx:///Assets/Fluent/OCCT.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "OCCT", "OCCT.exe")) }
 		};
@@ -289,6 +290,7 @@ public sealed partial class ApplicationsPage : Page
 		selection.HWInfo = selectedOverclocking.Contains("HWiNFO® 64");
 		selection.TimingConfigurator = selectedOverclocking.Contains("ASRock Timing Configurator");
 		selection.ZenTimings = selectedOverclocking.Contains("ZenTimings");
+		selection.TestMem5 = selectedOverclocking.Contains("TestMem5");
 		selection.Prime95 = selectedOverclocking.Contains("Prime95");
 		selection.OCCT = selectedOverclocking.Contains("OCCT");
 
