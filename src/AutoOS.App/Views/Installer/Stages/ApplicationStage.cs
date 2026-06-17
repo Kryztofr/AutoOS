@@ -1,4 +1,4 @@
-﻿using AutoOS.Common;
+using AutoOS.Common;
 using AutoOS.Core.Common;
 using AutoOS.Core.Helpers.Database;
 using AutoOS.Core.Helpers.Download;
@@ -1580,7 +1580,7 @@ public static class ApplicationStage
 			("Cleaning up ZenTimings files", async () => Directory.Delete(Path.Combine(Path.GetTempPath(), "ZenTimings")), () => ZenTimings == true),
 
 			// download testmem5
-			("Downloading TestMem5", async () => await DownloadHelper.Download("https://github.com/CoolCmd/TestMem5/releases/download/v0.13.1/TestMem5.7z", Path.GetTempPath(), "TestMem5.7z"), () => TestMem5 == true),
+			("Downloading TestMem5", async () => await DownloadHelper.Download(JsonDocument.Parse(await new HttpClient { DefaultRequestHeaders = { { "User-Agent", "AutoOS" } } }.GetStringAsync("https://api.github.com/repos/CoolCmd/TestMem5/releases")).RootElement.EnumerateArray().First(release => !release.GetProperty("prerelease").GetBoolean() && release.GetProperty("assets").EnumerateArray().Any(asset => asset.GetProperty("name").GetString().EndsWith(".7z"))).GetProperty("assets").EnumerateArray().First(asset => asset.GetProperty("name").GetString().EndsWith(".7z")).GetProperty("browser_download_url").GetString(), Path.GetTempPath(), "TestMem5.7z"), () => TestMem5 == true),
 
 			// install testmem5
 			("Installing TestMem5", async () => await ExtractHelper.Extract(Path.Combine(Path.GetTempPath(), "TestMem5.7z"), Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "TestMem5")), () => TestMem5 == true),
