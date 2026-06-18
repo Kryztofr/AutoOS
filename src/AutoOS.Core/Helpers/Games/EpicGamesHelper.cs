@@ -602,77 +602,86 @@ public static partial class EpicGamesHelper
 		await File.WriteAllTextAsync(EpicGamesInstalledGamesPath, jsonObject.ToJsonString(new JsonSerializerOptions { WriteIndented = true, IndentCharacter = '\t', IndentSize = 1, Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping }));
 
 		// copy manifests folder to new drive
-		FileSystem.CopyDirectory(Path.Combine(oldDrive, EpicGamesManifestDir[Path.GetPathRoot(EpicGamesManifestDir).Length..]), EpicGamesManifestDir);
-		FileSystem.CopyDirectory(Path.Combine(oldDrive, EpicGamesThirdPartyManifestDir[Path.GetPathRoot(EpicGamesThirdPartyManifestDir).Length..]), EpicGamesThirdPartyManifestDir);
+		string srcThirdParty = Path.Combine(oldDrive, EpicGamesThirdPartyManifestDir[Path.GetPathRoot(EpicGamesThirdPartyManifestDir).Length..]);
+		if (Directory.Exists(srcThirdParty))
+			FileSystem.CopyDirectory(srcThirdParty, EpicGamesThirdPartyManifestDir);
 
-		// set new game paths in manifests
-		foreach (var file in Directory.GetFiles(EpicGamesManifestDir, "*.item", System.IO.SearchOption.AllDirectories))
+		string srcManifest = Path.Combine(oldDrive, EpicGamesManifestDir[Path.GetPathRoot(EpicGamesManifestDir).Length..]);
+		if (Directory.Exists(srcManifest))
 		{
-			var itemJson = JsonNode.Parse(await File.ReadAllTextAsync(file));
-
-			if (itemJson is JsonObject itemObj && itemObj.ContainsKey("InstallLocation"))
+			// set new game paths in manifests
+			FileSystem.CopyDirectory(srcManifest, EpicGamesManifestDir);
+			foreach (var file in Directory.GetFiles(EpicGamesManifestDir, "*.item", System.IO.SearchOption.AllDirectories))
 			{
-				string originalPath = itemObj["InstallLocation"]!.ToString();
-				string relativePath = originalPath[Path.GetPathRoot(originalPath)!.Length..];
+				var itemJson = JsonNode.Parse(await File.ReadAllTextAsync(file));
 
-				foreach (var drive in DriveInfo.GetDrives().Where(drive => drive.DriveType == DriveType.Fixed && drive.Name != systemDrive))
+				if (itemJson is JsonObject itemObj && itemObj.ContainsKey("InstallLocation"))
 				{
-					if (Directory.Exists(Path.Combine(drive.Name, relativePath)))
+					string originalPath = itemObj["InstallLocation"]!.ToString();
+					string relativePath = originalPath[Path.GetPathRoot(originalPath)!.Length..];
+
+					foreach (var drive in DriveInfo.GetDrives().Where(drive => drive.DriveType == DriveType.Fixed && drive.Name != systemDrive))
 					{
-						// store found drive
-						char newDrive = drive.Name[0];
-
-						// update install location
-						itemObj["InstallLocation"] = newDrive + originalPath[1..];
-
-						// update other paths
-						foreach (var prop in new[] { "ManifestLocation", "StagingLocation", "CompleteManifestPath", "PendingManifestPath" })
+						if (Directory.Exists(Path.Combine(drive.Name, relativePath)))
 						{
-							if (itemObj.ContainsKey(prop) && itemObj[prop]!.ToString() is string val && val.Length >= 2 && val[1] == ':')
-								itemObj[prop] = newDrive + val[1..];
-						}
+							// store found drive
+							char newDrive = drive.Name[0];
 
-						// write updated manifest files
-						await File.WriteAllTextAsync(file, itemObj.ToJsonString(new JsonSerializerOptions { WriteIndented = true, IndentCharacter = '\t', IndentSize = 1, Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping }));
-						break;
+							// update install location
+							itemObj["InstallLocation"] = newDrive + originalPath[1..];
+
+							// update other paths
+							foreach (var prop in new[] { "ManifestLocation", "StagingLocation", "CompleteManifestPath", "PendingManifestPath" })
+							{
+								if (itemObj.ContainsKey(prop) && itemObj[prop]!.ToString() is string val && val.Length >= 2 && val[1] == ':')
+									itemObj[prop] = newDrive + val[1..];
+							}
+
+							// write updated manifest files
+							await File.WriteAllTextAsync(file, itemObj.ToJsonString(new JsonSerializerOptions { WriteIndented = true, IndentCharacter = '\t', IndentSize = 1, Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping }));
+							break;
+						}
 					}
 				}
 			}
 		}
 
 		// copy install dir to new drive
-		FileSystem.CopyDirectory(Path.Combine(oldDrive, EpicGamesInstalledItemsDir[Path.GetPathRoot(EpicGamesInstalledItemsDir).Length..]), EpicGamesInstalledItemsDir, true);
-
-		// set new game paths in installed items manifests
-		foreach (var file in Directory.GetFiles(EpicGamesInstalledItemsDir, "*.egi", System.IO.SearchOption.AllDirectories))
+		string srcInstalled = Path.Combine(oldDrive, EpicGamesInstalledItemsDir[Path.GetPathRoot(EpicGamesInstalledItemsDir).Length..]);
+		if (Directory.Exists(srcInstalled))
 		{
-			var egiJson = JsonNode.Parse(await File.ReadAllTextAsync(file));
-
-			if (egiJson is JsonObject egiObj && egiObj["v4"] is JsonObject v4Obj)
+			// set new game paths in installed items manifests
+			FileSystem.CopyDirectory(srcInstalled, EpicGamesInstalledItemsDir, true);
+			foreach (var file in Directory.GetFiles(EpicGamesInstalledItemsDir, "*.egi", System.IO.SearchOption.AllDirectories))
 			{
-				string originalPath = v4Obj["dir"]!.ToString();
-				string relativePath = originalPath[Path.GetPathRoot(originalPath)!.Length..];
+				var egiJson = JsonNode.Parse(await File.ReadAllTextAsync(file));
 
-				foreach (var drive in DriveInfo.GetDrives().Where(drive => drive.DriveType == DriveType.Fixed && drive.Name != systemDrive))
+				if (egiJson is JsonObject egiObj && egiObj["v4"] is JsonObject v4Obj)
 				{
-					if (Directory.Exists(Path.Combine(drive.Name, relativePath)))
+					string originalPath = v4Obj["dir"]!.ToString();
+					string relativePath = originalPath[Path.GetPathRoot(originalPath)!.Length..];
+
+					foreach (var drive in DriveInfo.GetDrives().Where(drive => drive.DriveType == DriveType.Fixed && drive.Name != systemDrive))
 					{
-						// store found drive
-						char newDrive = drive.Name[0];
-
-						// update dir
-						v4Obj["dir"] = newDrive + originalPath[1..];
-
-						// update other paths
-						foreach (var prop in new[] { "metaDir", "manifestPath", "pendingManifestPath" })
+						if (Directory.Exists(Path.Combine(drive.Name, relativePath)))
 						{
-							if (v4Obj.ContainsKey(prop) && v4Obj[prop]!.ToString() is string val && val.Length >= 2 && val[1] == ':')
-								v4Obj[prop] = newDrive + val[1..];
-						}
+							// store found drive
+							char newDrive = drive.Name[0];
 
-						// write updated egi files as a single line
-						await File.WriteAllTextAsync(file, egiObj.ToJsonString(new JsonSerializerOptions { Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping }));
-						break;
+							// update dir
+							v4Obj["dir"] = newDrive + originalPath[1..];
+
+							// update other paths
+							foreach (var prop in new[] { "metaDir", "manifestPath", "pendingManifestPath" })
+							{
+								if (v4Obj.ContainsKey(prop) && v4Obj[prop]!.ToString() is string val && val.Length >= 2 && val[1] == ':')
+									v4Obj[prop] = newDrive + val[1..];
+							}
+
+							// write updated egi files as a single line
+							await File.WriteAllTextAsync(file, egiObj.ToJsonString(new JsonSerializerOptions { Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping }));
+							break;
+						}
 					}
 				}
 			}
