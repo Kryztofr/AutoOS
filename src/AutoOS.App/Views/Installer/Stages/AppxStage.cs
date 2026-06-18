@@ -19,7 +19,7 @@ public static class AppxStage
 			("Uninstalling OneDrive", async () => { foreach (Process process in new[] { "OneDrive", "OneDrive.Sync.Service", "UserOOBEBroker", "FileCoAuth", "OneDrivePatcher" }.SelectMany(Process.GetProcessesByName)) { process.Kill(); process.WaitForExit(); }}, null),
 			("Uninstalling OneDrive", async () => await RegistryHelper.RunAs(RegistryHelper.Identity.TrustedInstaller, async () => File.Move(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System), "OneDriveSetup.exe"), Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System), "OneDriveSetup.exee"))), null),
 			("Uninstalling OneDrive", async () => Directory.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Microsoft OneDrive"), true), null),
-			("Uninstalling OneDrive", async () => Directory.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), @"Microsoft\OneDrive"), true), null),
+			("Uninstalling OneDrive", async () => Directory.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Microsoft", "OneDrive"), true), null),
 			("Uninstalling OneDrive", async () => TaskSchedulerHelper.Unregister("OneDrive Startup Task"), null)
 		};
 

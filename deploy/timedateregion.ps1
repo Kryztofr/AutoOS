@@ -631,9 +631,9 @@ if ($list.Count -gt 1) {
 }
 
 # Sync time
-net start w32time
+Start-Service -Name w32time
 w32tm /resync
-net stop w32time
+Stop-Service -Name w32time
 
 # Hide language bar
 # New-Item -Path "HKCU:\Software\Microsoft\CTF" -Name "LangBar" -Force | Out-Null

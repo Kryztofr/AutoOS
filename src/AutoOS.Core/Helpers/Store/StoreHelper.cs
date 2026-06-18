@@ -48,8 +48,7 @@ public static partial class StoreHelper
 			return;
 		}
 
-		var workspacePath = Path.Combine(Path.GetTempPath(), "StoreHelper");
-		var folderPath = Path.Combine(workspacePath, identifier);
+		var folderPath = Path.Combine(Path.Combine(Path.GetTempPath(), "StoreHelper"), identifier);
 		Directory.CreateDirectory(folderPath);
 
 		try
@@ -73,8 +72,7 @@ public static partial class StoreHelper
 
 	public static async Task Install(string identifier)
 	{
-		var workspacePath = Path.Combine(Path.GetTempPath(), "StoreHelper");
-		var folderPath = Path.Combine(workspacePath, identifier);
+		var folderPath = Path.Combine(Path.Combine(Path.GetTempPath(), "StoreHelper"), identifier);
 
 		try
 		{
@@ -85,17 +83,11 @@ public static partial class StoreHelper
 							f.EndsWith(".msixbundle", StringComparison.OrdinalIgnoreCase))
 				.ToList();
 
-			if (allFiles.Count == 0) return;
+			var mainPath = allFiles.FirstOrDefault(f => Path.GetFileName(f).StartsWith(identifier.Split('_')[0], StringComparison.OrdinalIgnoreCase)) ?? allFiles.First();
 
-			var namePart = identifier.Split('_')[0];
-			var mainPath = allFiles.FirstOrDefault(f => Path.GetFileName(f).StartsWith(namePart, StringComparison.OrdinalIgnoreCase)) ?? allFiles.First();
-
-			var manager = new PackageManager();
-			var packageUri = new Uri(mainPath);
-
-			await manager.StagePackageAsync(packageUri, null);
-			await manager.ProvisionPackageForAllUsersAsync(identifier);
-			await manager.AddPackageAsync(new Uri(mainPath), null, DeploymentOptions.ForceApplicationShutdown);
+			await new PackageManager().StagePackageAsync(new Uri(mainPath), null);
+			await new PackageManager().ProvisionPackageForAllUsersAsync(identifier);
+			await new PackageManager().AddPackageAsync(new Uri(mainPath), null, DeploymentOptions.ForceApplicationShutdown);
 		}
 		catch (Exception ex)
 		{

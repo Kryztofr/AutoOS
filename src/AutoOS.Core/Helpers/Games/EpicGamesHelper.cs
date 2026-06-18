@@ -240,17 +240,52 @@ public static partial class EpicGamesHelper
 
 			loginClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", AccessToken);
 
-			var response = await loginClient.GetAsync("https://account-public-service-prod.ol.epicgames.com/account/api/oauth/exchange");
+			var exchangeUrl = "https://account-public-service-prod.ol.epicgames.com/account/api/oauth/exchange";
+			var exchangeFallbackUrl = "https://account-public-service-prod03.ol.epicgames.com/account/api/oauth/exchange";
+			HttpResponseMessage response;
+			try
+			{
+				response = await loginClient.GetAsync(exchangeUrl);
+			}
+			catch (Exception)
+			{
+				try
+				{
+					response = await loginClient.GetAsync(exchangeFallbackUrl);
+				}
+				catch (Exception fallbackEx)
+				{
+					await LogHelper.LogError(fallbackEx, null, $"Failed to exchange Epic Games token from both {exchangeUrl} and {exchangeFallbackUrl}");
+					return null;
+				}
+			}
 
 			if (!response.IsSuccessStatusCode)
-				return null;
+			{
+				try
+				{
+					response = await loginClient.GetAsync(exchangeFallbackUrl);
+				}
+				catch (Exception)
+				{
+					await LogHelper.LogError(new HttpRequestException($"Exchange request failed with status {response.StatusCode}"), null, $"Failed to exchange Epic Games token from both {exchangeUrl} and {exchangeFallbackUrl}");
+					return null;
+				}
+
+				if (!response.IsSuccessStatusCode)
+				{
+					await LogHelper.LogError(new HttpRequestException($"Exchange request failed with status {response.StatusCode}"), null, $"Failed to exchange Epic Games token from both {exchangeUrl} and {exchangeFallbackUrl}");
+					return null;
+				}
+			}
 
 			var responseJson = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
 
 			return responseJson.RootElement.GetProperty("code").GetString();
 		}
-		catch
+		catch (Exception ex)
 		{
+			await LogHelper.LogError(ex, null, "Failed to exchange Epic Games token");
 			return null;
 		}
 	}
@@ -286,10 +321,44 @@ public static partial class EpicGamesHelper
 			new KeyValuePair<string, string>("token_type", "eg1"),
 		]);
 
-		var response = await httpClient.PostAsync("https://account-public-service-prod.ol.epicgames.com/account/api/oauth/token", content);
+		var authUrl = "https://account-public-service-prod.ol.epicgames.com/account/api/oauth/token";
+		var authFallbackUrl = "https://account-public-service-prod03.ol.epicgames.com/account/api/oauth/token";
+		HttpResponseMessage response;
+		try
+		{
+			response = await httpClient.PostAsync(authUrl, content);
+		}
+		catch (Exception)
+		{
+			try
+			{
+				response = await httpClient.PostAsync(authFallbackUrl, content);
+			}
+			catch (Exception fallbackEx)
+			{
+				await LogHelper.LogError(fallbackEx, null, $"Failed to update Epic Games token from both {authUrl} and {authFallbackUrl}");
+				return null;
+			}
+		}
 
 		if (!response.IsSuccessStatusCode)
-			return null;
+		{
+			try
+			{
+				response = await httpClient.PostAsync(authFallbackUrl, content);
+			}
+			catch (Exception)
+			{
+				await LogHelper.LogError(new HttpRequestException($"Auth request failed with status {response.StatusCode}"), null, $"Failed to update Epic Games token from both {authUrl} and {authFallbackUrl}");
+				return null;
+			}
+
+			if (!response.IsSuccessStatusCode)
+			{
+				await LogHelper.LogError(new HttpRequestException($"Auth request failed with status {response.StatusCode}"), null, $"Failed to update Epic Games token from both {authUrl} and {authFallbackUrl}");
+				return null;
+			}
+		}
 
 		var responseJson = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
 
@@ -373,15 +442,32 @@ public static partial class EpicGamesHelper
 		var json = JsonSerializer.Serialize(payload, PlaytimeJsonContext.Default.PlaytimePayload);
 		var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-		using var response = loginClient.PutAsync(url, content).GetAwaiter().GetResult();
+		HttpResponseMessage response;
+		try
+		{
+			response = loginClient.PutAsync(url, content).GetAwaiter().GetResult();
+		}
+		catch (Exception ex)
+		{
+			LogHelper.LogError(ex, null, $"Failed to submit playtime to {url}").GetAwaiter().GetResult();
+			return;
+		}
 
 		if (response.IsSuccessStatusCode)
 		{
 			var duration = endTime - startTimeUtc;
 
-			var playTimeResponse = loginClient
-				.GetAsync($"https://library-service.live.use1a.on.epicgames.com/library/api/public/playtime/account/{GetAccountData(ActiveEpicGamesAccountPath).AccountId}/artifact/{artifactId}")
-				.GetAwaiter().GetResult();
+			var playTimeUrl = $"https://library-service.live.use1a.on.epicgames.com/library/api/public/playtime/account/{GetAccountData(ActiveEpicGamesAccountPath).AccountId}/artifact/{artifactId}";
+			HttpResponseMessage playTimeResponse;
+			try
+			{
+				playTimeResponse = loginClient.GetAsync(playTimeUrl).GetAwaiter().GetResult();
+			}
+			catch (Exception ex)
+			{
+				LogHelper.LogError(ex, null, $"Failed to get playtime from {playTimeUrl}").GetAwaiter().GetResult();
+				return;
+			}
 
 			if (playTimeResponse.StatusCode == System.Net.HttpStatusCode.Unauthorized)
 			{
@@ -519,7 +605,7 @@ public static partial class EpicGamesHelper
 
 		// write updated install list to new drive
 		Directory.CreateDirectory(Path.GetDirectoryName(EpicGamesInstalledGamesPath)!);
-		await File.WriteAllTextAsync(EpicGamesInstalledGamesPath, jsonObject.ToJsonString(new JsonSerializerOptions { WriteIndented = true, Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping }));
+		await File.WriteAllTextAsync(EpicGamesInstalledGamesPath, jsonObject.ToJsonString(new JsonSerializerOptions { WriteIndented = true, IndentCharacter = '\t', IndentSize = 1, Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping }));
 
 		// copy manifests folder to new drive
 		FileSystem.CopyDirectory(Path.Combine(oldDrive, EpicGamesManifestDir[Path.GetPathRoot(EpicGamesManifestDir).Length..]), EpicGamesManifestDir);
@@ -553,7 +639,7 @@ public static partial class EpicGamesHelper
 						}
 
 						// write updated manifest files
-						await File.WriteAllTextAsync(file, itemObj.ToJsonString(new JsonSerializerOptions { WriteIndented = true, Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping }));
+						await File.WriteAllTextAsync(file, itemObj.ToJsonString(new JsonSerializerOptions { WriteIndented = true, IndentCharacter = '\t', IndentSize = 1, Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping }));
 						break;
 					}
 				}
@@ -679,7 +765,16 @@ public static partial class EpicGamesHelper
 				if (nextCursor != null)
 					url += $"&cursor={nextCursor}";
 
-				var json = JsonNode.Parse(await loginClient.GetStringAsync(url));
+				JsonNode json;
+				try
+				{
+					json = JsonNode.Parse(await loginClient.GetStringAsync(url));
+				}
+				catch (Exception ex)
+				{
+					await LogHelper.LogError(ex, null, $"Failed to load library data from {url}");
+					break;
+				}
 
 				var records = json?["records"]?.AsArray();
 				if (records != null)
@@ -691,16 +786,57 @@ public static partial class EpicGamesHelper
 
 			// get build data
 			JsonArray buildData = null;
-			var buildResponse = await loginClient.GetAsync("https://launcher-public-service-prod06.ol.epicgames.com/launcher/api/public/assets/Windows?label=Live");
+			var buildUrl = "https://launcher-public-service-prod.ol.epicgames.com/launcher/api/public/assets/Windows?label=Live";
+			var buildFallbackUrl = "https://launcher-public-service-prod06.ol.epicgames.com/launcher/api/public/assets/Windows?label=Live";
+			HttpResponseMessage buildResponse;
+			try
+			{
+				buildResponse = await loginClient.GetAsync(buildUrl);
+			}
+			catch (Exception)
+			{
+				try
+				{
+					buildResponse = await loginClient.GetAsync(buildFallbackUrl);
+				}
+				catch (Exception fallbackEx)
+				{
+					await LogHelper.LogError(fallbackEx, null, $"Failed to load build data from both {buildUrl} and {buildFallbackUrl}");
+					buildResponse = null;
+				}
+			}
 
-			if (buildResponse.IsSuccessStatusCode)
+			if (buildResponse != null && !buildResponse.IsSuccessStatusCode)
+			{
+				try
+				{
+					buildResponse = await loginClient.GetAsync(buildFallbackUrl);
+				}
+				catch (Exception fallbackEx)
+				{
+					await LogHelper.LogError(fallbackEx, null, $"Failed to load build data from both {buildUrl} and {buildFallbackUrl}");
+					buildResponse = null;
+				}
+			}
+
+			if (buildResponse != null && buildResponse.IsSuccessStatusCode)
 				buildData = JsonNode.Parse(await buildResponse.Content.ReadAsStringAsync()) as JsonArray;
 
 			// get playtime data
 			Dictionary<string, int> playTimeData = null;
-			var playTimeResponse = await loginClient.GetAsync($"https://library-service.live.use1a.on.epicgames.com/library/api/public/playtime/account/{GetAccountData(ActiveEpicGamesAccountPath).AccountId}/all");
+			var playTimeUrl = $"https://library-service.live.use1a.on.epicgames.com/library/api/public/playtime/account/{GetAccountData(ActiveEpicGamesAccountPath).AccountId}/all";
+			HttpResponseMessage playTimeResponse;
+			try
+			{
+				playTimeResponse = await loginClient.GetAsync(playTimeUrl);
+			}
+			catch (Exception ex)
+			{
+				await LogHelper.LogError(ex, null, $"Failed to load playtime data from {playTimeUrl}");
+				playTimeResponse = null;
+			}
 
-			if (playTimeResponse.IsSuccessStatusCode)
+			if (playTimeResponse != null && playTimeResponse.IsSuccessStatusCode)
 			{
 				playTimeData = (JsonNode.Parse(await playTimeResponse.Content.ReadAsStringAsync()) as JsonArray)?.ToDictionary(
 					p => p["artifactId"]?.GetValue<string>(),
@@ -873,8 +1009,10 @@ public static partial class EpicGamesHelper
 					// get metadata
 					//var itemTask = httpClient.GetStringAsync($"https://api.egdata.app/items/{itemJson["MainGameCatalogItemId"]?.GetValue<string>()}", token);
 					//var offerTask = httpClient.GetStringAsync($"https://api.egdata.app/offers/{offerId}", token);
-					string manifestUrl = $"https://catalog-public-service-prod06.ol.epicgames.com/catalog/api/shared/namespace/{catalogNamespace}/bulk/items?id={catalogItemId}&includeDLCDetails=false&includeMainGameDetails=true&country=US&locale=en-US";
-					string offerUrl = $"https://catalog-public-service-prod06.ol.epicgames.com/catalog/api/shared/bulk/offers?id={offerId}&returnItemDetails=true&country=US&locale=en-US";
+					string manifestUrl = $"https://catalog-public-service-prod.ol.epicgames.com/catalog/api/shared/namespace/{catalogNamespace}/bulk/items?id={catalogItemId}&includeDLCDetails=false&includeMainGameDetails=true&country=US&locale=en-US";
+					string manifestFallbackUrl = $"https://catalog-public-service-prod06.ol.epicgames.com/catalog/api/shared/namespace/{catalogNamespace}/bulk/items?id={catalogItemId}&includeDLCDetails=false&includeMainGameDetails=true&country=US&locale=en-US";
+					string offerUrl = $"https://catalog-public-service-prod.ol.epicgames.com/catalog/api/shared/bulk/offers?id={offerId}&returnItemDetails=true&country=US&locale=en-US";
+					string offerFallbackUrl = $"https://catalog-public-service-prod06.ol.epicgames.com/catalog/api/shared/bulk/offers?id={offerId}&returnItemDetails=true&country=US&locale=en-US";
 					string ratingUrl = $"https://api.egdata.app/offers/{offerId}/polls";
 					string genresUrl = $"https://api.egdata.app/offers/{(offerId == "6e02cab6e82243858462ba7f93c82e9d" ? "d546d9a3e9fe4ba093d3a3fdae020760" : offerId)}/genres";
 					string featuresUrl = $"https://api.egdata.app/offers/{(offerId == "6e02cab6e82243858462ba7f93c82e9d" ? "d546d9a3e9fe4ba093d3a3fdae020760" : offerId)}/features";
@@ -893,20 +1031,34 @@ public static partial class EpicGamesHelper
 					{
 						manifestData = JsonNode.Parse(await loginClient.GetStringAsync(manifestUrl, token).ConfigureAwait(false));
 					}
-					catch (Exception ex)
+					catch (Exception)
 					{
-						await LogHelper.LogError(ex, null, $"Failed to load manifest data for game {itemJson?["DisplayName"]?.ToString()}, {catalogItemId}, {manifestUrl}");
-						return;
+						try
+						{
+							manifestData = JsonNode.Parse(await loginClient.GetStringAsync(manifestFallbackUrl, token).ConfigureAwait(false));
+						}
+						catch (Exception fallbackEx)
+						{
+							await LogHelper.LogError(fallbackEx, null, $"Failed to load manifest data for game {itemJson?["DisplayName"]?.ToString()}, {catalogItemId}, both {manifestUrl} and {manifestFallbackUrl}");
+							return;
+						}
 					}
 
 					try
 					{
 						offerData = JsonNode.Parse(await loginClient.GetStringAsync(offerUrl, token).ConfigureAwait(false));
 					}
-					catch (Exception ex)
+					catch (Exception)
 					{
-						await LogHelper.LogError(ex, null, $"Failed to load offer data for game {itemJson?["DisplayName"]?.ToString()}, {offerId}, {offerUrl}");
-						return;
+						try
+						{
+							offerData = JsonNode.Parse(await loginClient.GetStringAsync(offerFallbackUrl, token).ConfigureAwait(false));
+						}
+						catch (Exception fallbackEx)
+						{
+							await LogHelper.LogError(fallbackEx, null, $"Failed to load offer data for game {itemJson?["DisplayName"]?.ToString()}, {offerId}, both {offerUrl} and {offerFallbackUrl}");
+							return;
+						}
 					}
 
 					try

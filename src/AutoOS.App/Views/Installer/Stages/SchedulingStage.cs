@@ -22,10 +22,7 @@ public static class SchedulingStage
 			("Disabling interrupt steering", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\kernel", "InterruptSteeringFlags", 1, RegistryValueKind.DWord), null),
 		
 			// enable timer serialization
-			("Enabling Timer Serialization", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\kernel", "SerializeTimerExpiration", 1, RegistryValueKind.DWord), null),
-
-			// disable thread dpcs
-			("Disabling Thread DPCs", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\Session Manager\kernel", "ThreadDpcEnable", 0, RegistryValueKind.DWord), null),
+			("Enabling Timer Serialization", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\kernel", "SerializeTimerExpiration", 1, RegistryValueKind.DWord), null)
 		};
 
 		return actions;
