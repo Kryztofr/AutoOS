@@ -57,7 +57,7 @@ If there is an "**Intel**" entry, you have **2 options**:
 **Notes:**
 - **Option 1** will result in **better disk speeds**.
 - If you get a **BSOD** on your **old Windows** after **disabling VMD Controller**, boot into **safe mode** once, then restart.
-- If you keep `VMD Controller` **enabled** and **didn't download the RST driver**, you will get `Inaccessible boot device` BSOD
+- If you keep `VMD Controller` **enabled** and **didn't download the RST driver**, you will get `Inaccessible boot device` **BSOD**.
 </details>
 
 ---
@@ -66,7 +66,7 @@ After downloading your drivers, extract all `.zip` files.<br/>
 For `.exe` files, run them and select the `Extract` (if available).<br/>
 If they don't have that option, use `7-Zip, NanaZip, or WinRAR` to extract them.
 
-Finally, create a `New Folder` and move all extracted folders into it. The folder should contain each driver and their `.inf` files.
+Finally, create a `New Folder` and move all extracted folders into it.
 
 ### Step 4: Run the deployment script
 Open PowerShell **as Administrator**.<br/>
@@ -78,20 +78,20 @@ Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
 irm https://raw.githubusercontent.com/tinodin/AutoOS/master/deploy/deploy.ps1 | iex
 ```
 Then select the **ISO** file you downloaded in Step 2 and your **drivers folder** you created in Step 3.<br/>
-If you get any errors during the script, please leave a message in my [Discord Server](https://discord.gg/bZU4dMMWpg).
+If you get any errors during the script, please leave a message on my [Discord Server](https://discord.gg/bZU4dMMWpg).
 
 ### Step 5: Restarting into AutoOS
-Once the script finished, restart your PC and boot into the `default option` by pressing `Enter`.<br/>
+Once the script finished, restart your PC and boot into `AutoOS` by pressing `Enter` after every following restart.<br/>
 
 > [!WARNING]  
 > Make sure to `keep your ethernet cable connected` or `connect to your WiFi in the setup`.<br/>
 > **DO NOT BYPASS THE NETWORK REQUIREMENT!**
 
 ### Step 6: AutoOS Installer
-Once the OOBE has finished, wait for AutoOS Installer to open up.<br/>
+Once the OOBE has finished, wait for Windows to restart and AutoOS Installer to open up.<br/>
 Carefully look through every tab and select your preferences and apps.<br/>
 You can take inspiration from my selection in **[Screenshots](SCREENSHOTS.md)**.<br/>
-Then click "Install AutoOS". This process will take around 15-30 minutes.
+Then click "Install AutoOS". This process will take around 15-45 minutes depending on your internet speed.
 
 > [!NOTE]  
 > You may experience a blank screen in the App after installing the Graphics Driver.<br/>
