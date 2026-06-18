@@ -31,8 +31,9 @@ To delete your old Windows partition and merge the unallocated space with the Au
 
 - Move your Games to the AutoOS partition and replace the drive letters in the Game Launchers config files:
   - Epic Games 
-    - `C:\ProgramData\Epic\UnrealEngineLauncher\LauncherInstalled.dat"`
-    - `C:\ProgramData\Epic\EpicGamesLauncher\Data\Manifests"`
+    - `C:\ProgramData\Epic\UnrealEngineLauncher\LauncherInstalled.dat`
+    - `C:\ProgramData\Epic\EpicGamesLauncher\Data\Manifests`
+    - `C:\ProgramData\Epic\EpicOnlineServicesShared\InstallHelper\InstalledItems`
   - Steam 
     - `C:\Program Files (x86)\Steam\steamapps\libraryfolders.vdf`
 - Open Command Prompt and paste:
