@@ -65,6 +65,7 @@ public sealed partial class ApplicationsPage : Page
 			new() { Text = "EA", ImageSource = "ms-appx:///Assets/Fluent/EA.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Electronic Arts", "EA Desktop", "EA Desktop", "EADesktop.exe")) },
 			new() { Text = "Battle.Net", ImageSource = "ms-appx:///Assets/Fluent/BattleNet.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "Battle.net", "Battle.net.exe")) },
 			new() { Text = "Minecraft Launcher", ImageSource = "ms-appx:///Assets/Fluent/MinecraftLauncher.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "Minecraft Launcher", "MinecraftLauncher.exe")) },
+			new() { Text = "Lunar Client", ImageSource = "ms-appx:///Assets/Fluent/LunarClient.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs", "launcher", "Lunar Client.exe")) },
 			new() { Text = "Rockstar Games Launcher", ImageSource = "ms-appx:///Assets/Fluent/RockstarGamesLauncher.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Rockstar Games", "Launcher", "Launcher.exe")) },
 			new() { Text = "FiveM", ImageSource = "ms-appx:///Assets/Fluent/FiveM.jpg", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "FiveM", "FiveM.exe")) },
 			new() { Text = "FACEIT", ImageSource = "ms-appx:///Assets/Fluent/FACEIT.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "FACEIT", "FACEIT.exe")) },
@@ -229,6 +230,7 @@ public sealed partial class ApplicationsPage : Page
 		selection.EA = selectedLaunchers.Contains("EA");
 		selection.BattleNet = selectedLaunchers.Contains("Battle.Net");
 		selection.MinecraftLauncher = selectedLaunchers.Contains("Minecraft Launcher");
+		selection.LunarClient = selectedLaunchers.Contains("Lunar Client");
 		selection.RockstarGamesLauncher = selectedLaunchers.Contains("Rockstar Games Launcher");
 		selection.FiveM = selectedLaunchers.Contains("FiveM");
 		selection.FACEIT = selectedLaunchers.Contains("FACEIT");

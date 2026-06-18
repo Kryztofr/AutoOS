@@ -73,6 +73,7 @@ public static partial class PreparingStage
 	public static bool EA;
 	public static bool BattleNet;
 	public static bool MinecraftLauncher;
+	public static bool LunarClient;
 	public static bool RockstarGamesLauncher;
 	public static bool FiveM;
 	public static bool FACEIT;
@@ -258,6 +259,7 @@ public static partial class PreparingStage
 			EA = (localSettings.Values["Launchers"]?.ToString().Contains("EA") ?? false);
 			BattleNet = (localSettings.Values["Launchers"]?.ToString().Contains("Battle.Net") ?? false);
 			MinecraftLauncher = (localSettings.Values["Launchers"]?.ToString().Contains("Minecraft Launcher") ?? false);
+			LunarClient = (localSettings.Values["Launchers"]?.ToString().Contains("Lunar Client") ?? false);
 			RockstarGamesLauncher = (localSettings.Values["Launchers"]?.ToString().Contains("Rockstar Games Launcher") ?? false);
 			FiveM = (localSettings.Values["Launchers"]?.ToString().Contains("FiveM") ?? false);
 			FACEIT = (localSettings.Values["Launchers"]?.ToString().Contains("FACEIT") ?? false);

@@ -42,6 +42,7 @@ public class ApplicationSelection
 	public bool EA { get; set; }
 	public bool BattleNet { get; set; }
 	public bool MinecraftLauncher { get; set; }
+	public bool LunarClient { get; set; }
 	public bool RockstarGamesLauncher { get; set; }
 	public bool FiveM { get; set; }
 	public bool FACEIT { get; set; }
@@ -164,6 +165,7 @@ public static class ApplicationStage
 		bool EA = selection?.EA ?? PreparingStage.EA;
 		bool BattleNet = selection?.BattleNet ?? PreparingStage.BattleNet;
 		bool MinecraftLauncher = selection?.MinecraftLauncher ?? PreparingStage.MinecraftLauncher;
+		bool LunarClient = selection?.LunarClient ?? PreparingStage.LunarClient;
 		bool RockstarGamesLauncher = selection?.RockstarGamesLauncher ?? PreparingStage.RockstarGamesLauncher;
 		bool FiveM = selection?.FiveM ?? PreparingStage.FiveM;
 		bool FACEIT = selection?.FACEIT ?? PreparingStage.FACEIT;
@@ -872,6 +874,13 @@ public static class ApplicationStage
 
 			// remove minecraft launcher desktop shortcut
 			("Removing Minecraft Launcher desktop shortcut", async () => File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonDesktopDirectory), "Minecraft Launcher.lnk")), () => MinecraftLauncher == true),
+
+			// download lunar client
+			("Downloading Lunar Client", async () => await DownloadHelper.Download("https://launcherupdates.lunarclientcdn.com/Lunar%20Client%20v3.1.3.exe", Path.GetTempPath(), "Lunar Client.exe", reporter: reporter), () => LunarClient == true),
+
+			// install lunar client
+			("Installing Lunar Client", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "Lunar Client.exe"), Arguments = "/S" , WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => LunarClient == true),
+			("Cleaning up Lunar Client files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "Lunar Client.exe")), () => LunarClient == true),
 
 			// download rockstar games launcher
 			("Downloading Rockstar Games Launcher", async () => await DownloadHelper.Download("https://gamedownloads.rockstargames.com/public/installer/Rockstar-Games-Launcher.exe", Path.GetTempPath(), "Rockstar-Games-Launcher.exe", reporter: reporter), () => RockstarGamesLauncher == true),
