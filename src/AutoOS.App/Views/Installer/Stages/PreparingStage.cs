@@ -133,6 +133,7 @@ public static partial class PreparingStage
 	public static bool FLStudio;
 	public static bool FlexASIO;
 	public static bool ASIO4ALL;
+	public static bool MidiControlCenter;
 
 	public static bool MpcQt;
 	public static bool MPV;
@@ -318,6 +319,7 @@ public static partial class PreparingStage
 			FLStudio = (localSettings.Values["Music Production"]?.ToString().Contains("FL Studio") ?? false);
 			FlexASIO = (localSettings.Values["Music Production"]?.ToString().Contains("FlexASIO") ?? false);
 			ASIO4ALL = (localSettings.Values["Music Production"]?.ToString().Contains("ASIO4ALL") ?? false);
+			MidiControlCenter = (localSettings.Values["Music Production"]?.ToString().Contains("MIDI Control Center") ?? false);
 
 			MpcQt = (localSettings.Values["Multimedia"]?.ToString().Contains("MPC-QT") ?? false);
 			MPV = (localSettings.Values["Multimedia"]?.ToString().Contains("mpv") ?? false);

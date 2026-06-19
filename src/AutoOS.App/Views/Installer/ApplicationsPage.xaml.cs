@@ -142,7 +142,8 @@ public sealed partial class ApplicationsPage : Page
 			new() { Text = "Reaper", ImageSource = "ms-appx:///Assets/Fluent/Reaper.png" },
 			new() { Text = "FL Studio", ImageSource = "ms-appx:///Assets/Fluent/FLStudio.png" },
 			new() { Text = "FlexASIO", ImageSource = "ms-appx:///Assets/Fluent/FlexASIO.png" },
-			new() { Text = "ASIO4ALL", ImageSource = "ms-appx:///Assets/Fluent/ASIO4ALL.png" }
+			new() { Text = "ASIO4ALL", ImageSource = "ms-appx:///Assets/Fluent/ASIO4ALL.png" },
+			new() { Text = "MIDI Control Center", ImageSource = "ms-appx:///Assets/Fluent/MidiControlCenter.png" }
 		};
 
 		Multimedia.ItemsSource = new List<GridViewItem>

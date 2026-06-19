@@ -96,6 +96,7 @@ public class ApplicationSelection
 	public bool FLStudio { get; set; }
 	public bool FlexASIO { get; set; }
 	public bool ASIO4ALL { get; set; }
+	public bool MidiControlCenter { get; set; }
 	public bool MpcQt { get; set; }
 	public bool MPV { get; set; }
 	public bool VLC { get; set; }
@@ -225,6 +226,7 @@ public static class ApplicationStage
 		bool FLStudio = selection?.FLStudio ?? PreparingStage.FLStudio;
 		bool FlexASIO = selection?.FlexASIO ?? PreparingStage.FlexASIO;
 		bool ASIO4ALL = selection?.ASIO4ALL ?? PreparingStage.ASIO4ALL;
+		bool MidiControlCenter = selection?.MidiControlCenter ?? PreparingStage.MidiControlCenter;
 
 		bool MpcQt = selection?.MpcQt ?? PreparingStage.MpcQt;
 		bool MPV = selection?.MPV ?? PreparingStage.MPV;
@@ -1664,6 +1666,22 @@ public static class ApplicationStage
 			// install asio4all
 			("Installing ASIO4ALL", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "ASIO4ALL.exe"), Arguments = "/S", WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => ASIO4ALL == true),
 			("Cleaning up ASIO4ALL files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "ASIO4ALL.exe")), () => ASIO4ALL == true),
+
+			// download midi control center
+			("Downloading MIDI Control Center", async () => await DownloadHelper.Download("https://dl.arturia.net/products/mccu/soft/MIDI_Control_Center__1_23_0_134.exe", Path.GetTempPath(), "MIDI_Control_Center.exe", reporter: reporter), () => MidiControlCenter == true),
+
+			// install midi control center
+			("Installing MIDI Control Center", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "MIDI_Control_Center.exe"), Arguments = "/VERYSILENT /SUPPRESSMSGBOXES /NORESTART /COMPONENTS=\"mcc\"", WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => MidiControlCenter == true),
+			("Cleaning up MIDI Control Center files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "MIDI_Control_Center.exe")), () => MidiControlCenter == true),
+
+			// download arturia midi driver
+			("Downloading Arturia MIDI Driver", async () => await DownloadHelper.Download("https://dl.arturia.net/products/midi-driver/soft/Arturia_USBMidi_v1.7.0_2025-08-20_setup__1_7_0_0.exe", Path.GetTempPath(), "Arturia_USBMidi.exe", reporter: reporter), () => MidiControlCenter == true),
+
+			// install arturia midi driver
+			("Installing Arturia MIDI Driver", async () => await ExtractHelper.Extract(Path.Combine(Path.GetTempPath(), "Arturia_USBMidi.exe"), Path.Combine(Path.GetTempPath(), "Arturia_USBMidi")), () => MidiControlCenter == true),
+			("Installing Arturia MIDI Driver", async () => await Process.Start(new ProcessStartInfo { FileName = "msiexec.exe", Arguments = $@"/i ""{Path.Combine(Path.GetTempPath(), "Arturia_USBMidi", "x64", "Arturia_USBMidi_v1.7.0_2025-08-20.msi")}"" /qn", WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => MidiControlCenter == true),
+			("Cleaning up Arturia MIDI Driver files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "Arturia_USBMidi.exe")), () => MidiControlCenter == true),
+			("Cleaning up Arturia MIDI Driver files", async () => Directory.Delete(Path.Combine(Path.GetTempPath(), "Arturia_USBMidi"), true), () => MidiControlCenter == true),
 
 			// download mpc-qt
 			("Downloading MPC-QT", async () => await DownloadHelper.Download(JsonDocument.Parse(await new HttpClient { DefaultRequestHeaders = { { "User-Agent", "AutoOS" } } }.GetStringAsync("https://api.github.com/repos/mpc-qt/mpc-qt/releases")).RootElement.EnumerateArray().First(release => !release.GetProperty("prerelease").GetBoolean() && release.GetProperty("assets").EnumerateArray().Any(asset => asset.GetProperty("name").GetString().StartsWith("mpc-qt-win-x64-") && asset.GetProperty("name").GetString().EndsWith("-installer.exe"))).GetProperty("assets").EnumerateArray().First(asset => asset.GetProperty("name").GetString().StartsWith("mpc-qt-win-x64-") && asset.GetProperty("name").GetString().EndsWith("-installer.exe")).GetProperty("browser_download_url").GetString(), Path.GetTempPath(), "mpc-qt-win-x64-installer.exe", reporter: reporter), () => MpcQt == true),

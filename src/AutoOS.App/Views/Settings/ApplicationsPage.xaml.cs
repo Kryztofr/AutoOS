@@ -154,7 +154,8 @@ public sealed partial class ApplicationsPage : Page
 			new() { Text = "Reaper", ImageSource = "ms-appx:///Assets/Fluent/Reaper.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "REAPER (x64)", "reaper.exe")) },
 			new() { Text = "FL Studio", ImageSource = "ms-appx:///Assets/Fluent/FLStudio.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Image-Line", "FL Studio 2025", "FL64.exe")) },
 			new() { Text = "FlexASIO", ImageSource = "ms-appx:///Assets/Fluent/FlexASIO.png", IsInstalled = Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "FlexASIO")) },
-			new() { Text = "ASIO4ALL", ImageSource = "ms-appx:///Assets/Fluent/ASIO4ALL.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "ASIO4ALL v2", "a4apanel.exe")) }
+			new() { Text = "ASIO4ALL", ImageSource = "ms-appx:///Assets/Fluent/ASIO4ALL.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "ASIO4ALL v2", "a4apanel.exe")) },
+			new() { Text = "MIDI Control Center", ImageSource = "ms-appx:///Assets/Fluent/MidiControlCenter.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "Arturia", "MIDI Control Center", "MIDI Control Center.exe")) }
 		};
 		foreach (var item in musicProductionList.Where(item => !item.IsInstalled))
 			musicProductionItems.Add(item);
@@ -302,6 +303,7 @@ public sealed partial class ApplicationsPage : Page
 		selection.FLStudio = selectedMusicProduction.Contains("FL Studio");
 		selection.FlexASIO = selectedMusicProduction.Contains("FlexASIO");
 		selection.ASIO4ALL = selectedMusicProduction.Contains("ASIO4ALL");
+		selection.MidiControlCenter = selectedMusicProduction.Contains("MIDI Control Center");
 
 		var selectedMultimediaItems = Multimedia.SelectedItems.Cast<GridViewItem>().ToList();
 		var selectedMultimedia = selectedMultimediaItems.Select(item => item.Text).ToList();
