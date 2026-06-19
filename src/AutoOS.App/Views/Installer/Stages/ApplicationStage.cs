@@ -627,6 +627,9 @@ public static class ApplicationStage
 			("Installing Signal", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "SignalSetup.exe"), Arguments = "/S" , WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => Signal == true),
 			("Cleaning up Signal files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "SignalSetup.exe")), () => Signal == true),
 
+			// remove signal desktop shortcut
+			("Removing Signal desktop shortcut", async () => File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "Signal.lnk")), () => Signal == true),
+
 			// download epic games launcher
 			("Downloading Epic Games Launcher", async () => await DownloadHelper.Download("https://launcher-public-service-prod06.ol.epicgames.com/launcher/api/installer/download/EpicGamesLauncherInstaller.msi", Path.GetTempPath(), "EpicGamesLauncherInstaller.msi", reporter: reporter), () => EpicGames == true),
 
@@ -1611,6 +1614,9 @@ public static class ApplicationStage
 			("Cleaning up ASRock Timing Configurator files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "TimingConfigurator.zip")), () => TimingConfigurator == true),
 			("Cleaning up ASRock Timing Configurator files", async () => Directory.Delete(Path.Combine(Path.GetTempPath(), "TimingConfigurator"), true), () => TimingConfigurator == true),
 
+			// remove asrock timing configurator desktop shortcut
+			("Removing ASRock Timing Configurator desktop shortcut", async () => File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonDesktopDirectory), "ASRock Timing Configurator.lnk")), () => TimingConfigurator == true),
+
 			// download zentimings
 			("Downloading ZenTimings", async () => await DownloadHelper.Download(JsonDocument.Parse(await new HttpClient { DefaultRequestHeaders = { { "User-Agent", "AutoOS" } } }.GetStringAsync("https://api.github.com/repos/irusanov/ZenTimings/releases")).RootElement.EnumerateArray().First(release => !release.GetProperty("prerelease").GetBoolean() && release.GetProperty("assets").EnumerateArray().Any(asset => asset.GetProperty("name").GetString().EndsWith(".zip"))).GetProperty("assets").EnumerateArray().First(asset => asset.GetProperty("name").GetString().EndsWith(".zip")).GetProperty("browser_download_url").GetString(), Path.GetTempPath(), "ZenTimings.zip"), () => ZenTimings == true),
 
@@ -1668,6 +1674,9 @@ public static class ApplicationStage
 			("Installing Reaper", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "reaper_x64-install.exe"), Arguments = "/S" , WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => Reaper == true),
 			("Cleaning up Reaper files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "reaper_x64-install.exe")), () => Reaper == true),
 
+			// remove reaper desktop shortcut
+			("Removing Reaper desktop shortcut", async () => File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonDesktopDirectory), "REAPER (x64).lnk")), () => Reaper == true),
+
 			// pin reaper to the taskbar
 			("Pinning Reaper to the taskbar", async () => await ProcessActions.PinToTaskbar("Link", Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Microsoft", "Windows", "Start Menu", "Programs", "REAPER (x64)", "REAPER (x64).lnk")), () => Reaper == true),
 
@@ -1677,6 +1686,9 @@ public static class ApplicationStage
 			// install fl studio
 			("Installing FL Studio", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "flstudio_win64.exe"), Arguments = "/S /ALLUSERS=1" , WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => FLStudio == true),
 			("Cleaning up FL Studio files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "flstudio_win64.exe")), () => FLStudio == true),
+
+			// remove fl studio desktop shortcut
+			("Removing FL Studio desktop shortcut", async () => File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonDesktopDirectory), "FL Studio 2025.lnk")), () => FLStudio == true),
 
 			// pin fl studio to the taskbar
 			("Pinning FL Studio to the taskbar", async () => await ProcessActions.PinToTaskbar("Link", Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Microsoft", "Windows", "Start Menu", "Programs", "Image-Line", "FL Studio 2025.lnk")), () => FLStudio == true),
@@ -1910,6 +1922,9 @@ public static class ApplicationStage
 			("Cleaning up CapFrameX files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "release_installer.zip")), () => CapFrameX == true),
 			("Cleaning up CapFrameX files", async () => Directory.Delete(Path.Combine(Path.GetTempPath(), "CapFrameX"), true), () => CapFrameX == true),
 
+			// remove capframex desktop shortcut
+			("Removing CapFrameX desktop shortcut", async () => File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonDesktopDirectory), "CapFrameX.lnk")), () => CapFrameX == true),
+
 			// download minitool partition wizard
 			("Downloading MiniTool Partition Wizard", async () => await DownloadHelper.Download("https://cdn2.minitool.com/?p=pw&e=pw-free-offline", Path.GetTempPath(), "pw-free-offline.exe", reporter: reporter), () => MinitoolPartitionWizard == true),
 
@@ -1917,6 +1932,9 @@ public static class ApplicationStage
 			("Installing MiniTool Partition Wizard", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "pw-free-offline.exe"), Arguments = "/VERYSILENT /SUPPRESSMSGBOXES /NORESTART" , WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => MinitoolPartitionWizard == true),
 			("Installing MiniTool Partition Wizard", async () => { while (new[] { "partitionwizard", "OpenWith", "msedge" }.All(name => Process.GetProcessesByName(name).Length == 0)) await Task.Delay(500); foreach (Process process in new[] { "partitionwizard", "OpenWith", "msedge" }.SelectMany(Process.GetProcessesByName)) { process.Kill(); process.WaitForExit(); } }, () => MinitoolPartitionWizard == true),
 			("Cleaning up MiniTool Partition Wizard files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "pw-free-offline.exe")), () => MinitoolPartitionWizard == true),
+
+			// remove minitool partition wizard desktop shortcut
+			("Removing MiniTool Partition Wizard desktop shortcut", async () => File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonDesktopDirectory), "MiniTool Partition Wizard.lnk")), () => MinitoolPartitionWizard == true),
 
 			// disable minitool partition wizard notifications
 			("Disabling MiniTool Partition Wizard notifications", async () => await Process.Start(new ProcessStartInfo { FileName = "reg.exe", Arguments = $@"load HKU\DefaultUser ""{Path.Combine(Path.GetPathRoot(Environment.SystemDirectory)!, "Users", "Default", "NTUSER.DAT")}""", CreateNoWindow = true })!.WaitForExitAsync(), () => MinitoolPartitionWizard == true),
@@ -1937,6 +1955,9 @@ public static class ApplicationStage
 			// activate aomei partition assistant
 			("Activating AOMEI Partition Assistant", async () => { var iniHelper = new InIHelper(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "AOMEI Partition Assistant", "cfg.ini")); iniHelper.AddValue("KEY", "AOPR-CM948-83ZJZ-4NQW1", "CONFIG"); }, () => AomeiPartitionAssistant == true),
 
+			// remove aomei partition assistant desktop shortcut
+			("Removing AOMEI Partition Assistant desktop shortcut", async () => File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonDesktopDirectory), "AOMEI Partition Assistant 10.11.0.lnk")), () => AomeiPartitionAssistant == true),
+
 			// download wiztree
 			("Downloading WizTree", async () => await DownloadHelper.Download("https://diskanalyzer.com/files/wiztree_4_31_setup.exe", Path.GetTempPath(), "wiztree_setup.exe", reporter: reporter), () => WizTree == true),
 
@@ -1951,12 +1972,18 @@ public static class ApplicationStage
 			("Installing CrystalDiskMark", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "CrystalDiskMark.exe"), Arguments = "/VERYSILENT /SUPPRESSMSGBOXES /NORESTART /SP- /MERGETASKS=!desktopicon" , WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => CrystalDiskMark == true),
 			("Cleaning up CrystalDiskMark files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "CrystalDiskMark.exe")), () => CrystalDiskMark == true),
 
+			// remove crystal disk mark desktop shortcut
+			("Removing CrystalDiskMark desktop shortcut", async () => File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "CrystalDiskMark 9.lnk")), () => CrystalDiskMark == true),
+
 			// download bulk crap uninstaller
 			("Downloading Bulk Crap Uninstaller", async () => await DownloadHelper.Download(JsonDocument.Parse(await new HttpClient { DefaultRequestHeaders = { { "User-Agent", "AutoOS" } } }.GetStringAsync("https://api.github.com/repos/Klocman/Bulk-Crap-Uninstaller/releases/latest")).RootElement.GetProperty("assets").EnumerateArray().First(a => a.GetProperty("name").GetString().Contains("setup.exe")).GetProperty("browser_download_url").GetString(), Path.GetTempPath(), "BCUninstaller_setup.exe", reporter: reporter), () => BulkCrapUninstaller == true),
 			
 			// install bulk crap uninstaller
 			("Installing Bulk Crap Uninstaller", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "BCUninstaller_setup.exe"), Arguments = "/VERYSILENT /SUPPRESSMSGBOXES /NORESTART" , WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => BulkCrapUninstaller == true),
 			("Cleaning up Bulk Crap Uninstaller files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "BCUninstaller_setup.exe")), () => BulkCrapUninstaller == true),
+
+			// remove bulk crap uninstaller desktop shortcut
+			("Removing Bulk Crap Uninstaller desktop shortcut", async () => File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonDesktopDirectory), "BCUninstaller.lnk")), () => BulkCrapUninstaller == true),
 		  
 			// download bluetooth audio receiver
 			("Downloading Bluetooth Audio Receiver", async () => await StoreHelper.Download("55746MarkSmirnov.BluetoothAudioReveicer_xwrbx6997tsfc", reporter: reporter), () => BluetoothAudioReceiver == true),
