@@ -601,7 +601,7 @@ public static class ApplicationStage
 			("Disabling Zoom service", async () => ServicesHelper.StopService("ZoomCptService"), () => ZoomWorkplace == true),
 
 			// remove zoom workplace desktop shortcut
-			("Removing Zoom Workplace desktop shortcut", async () => File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "Zoom Workplace.lnk")), () => ZoomWorkplace == true),
+			("Removing Zoom Workplace desktop shortcut", async () => File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonDesktopDirectory), "Zoom Workplace.lnk")), () => ZoomWorkplace == true),
 
 			// download thunderbird
 			("Downloading Thunderbird", async () => await DownloadHelper.Download("https://download.mozilla.org/?product=thunderbird-151.0.1-msi-SSL&os=win64&lang=en-US", Path.GetTempPath(), "Thunderbird Setup.msi", reporter: reporter), () => Thunderbird == true),
@@ -618,7 +618,7 @@ public static class ApplicationStage
 			("Disabling Thunderbird service", async () => ServicesHelper.StopService("MozillaMaintenance"), () => Thunderbird == true),
 
 			// remove thunderbird desktop shortcut
-			("Removing Thunderbird desktop shortcut", async () => File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "Thunderbird.lnk")), () => Thunderbird == true),
+			("Removing Thunderbird desktop shortcut", async () => File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonDesktopDirectory), "Thunderbird.lnk")), () => Thunderbird == true),
 
 			// download signal
 			("Downloading Signal", async () => await DownloadHelper.Download("https://updates.signal.org/desktop/signal-desktop-win-8.14.0.exe", Path.GetTempPath(), "SignalSetup.exe", reporter: reporter), () => Signal == true),
@@ -1161,7 +1161,7 @@ public static class ApplicationStage
 			("Disabling Endgame Gear startup entries", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run", "Endgame Gear Utility Startup", new byte[] { 0x03 }, RegistryValueKind.Binary), () => EndgameGear == true),
 
 			// remove endgame gear desktop shortcut
-			("Removing Endgame Gear desktop shortcut", async () => File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "Endgame Gear.lnk")), () => EndgameGear == true),
+			("Removing Endgame Gear desktop shortcut", async () => File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonDesktopDirectory), "Endgame Gear.lnk")), () => EndgameGear == true),
 
 			// download glorious core
 			("Downloading Glorious CORE", async () => await DownloadHelper.Download("https://gloriouscore.nyc3.digitaloceanspaces.com/CORE2/app/GloriousCORE_2.1.15_Setup.zip", Path.GetTempPath(), "GloriousCORE_Setup.zip"), () => GloriousCORE == true),
@@ -1173,7 +1173,7 @@ public static class ApplicationStage
 			("Cleaning up Glorious CORE files", async () => Directory.Delete(Path.Combine(Path.GetTempPath(), "GloriousCORE_Setup"), true), () => GloriousCORE == true),
 
 			// remove glorious core desktop shortcut
-			("Removing Glorious CORE desktop shortcut", async () => File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "Glorious CORE.lnk")), () => GloriousCORE == true),
+			("Removing Glorious CORE desktop shortcut", async () => File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonDesktopDirectory), "Glorious CORE.lnk")), () => GloriousCORE == true),
 			
 			// download mchose hub
 			("Downloading MCHOSE HUB", async () => await DownloadHelper.Download("https://github.com/tinodin/AutoOS-Resources/releases/download/v1.0.0.0/MCHOSE.HUB.installer.exe", Path.GetTempPath(), "MCHOSE.HUB.installer.exe", reporter: reporter), () => MCHOSE == true),
@@ -1183,7 +1183,7 @@ public static class ApplicationStage
 			("Cleaning up MCHOSE HUB files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "MCHOSE.HUB.installer.exe")), () => MCHOSE == true),
 
 			// remove mchose hub desktop shortcut
-			("Removing MCHOSE HUB desktop shortcut", async () => File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "MCHOSE HUB.lnk")), () => MCHOSE == true),
+			("Removing MCHOSE HUB desktop shortcut", async () => File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonDesktopDirectory), "MCHOSE HUB.lnk")), () => MCHOSE == true),
 
 			// download steelseries gg
 			("Downloading SteelSeries GG", async () => await DownloadHelper.Download("https://steelseries.com/gg/downloads/latest/windows", Path.GetTempPath(), "SteelSeriesGGSetup.exe", reporter: reporter), () => SteelSeriesGG == true),
@@ -1245,7 +1245,7 @@ public static class ApplicationStage
 			("Disabling Corsair iCUE startup entry", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run", "Corsair iCUE5 Software", new byte[] { 0x01 }, RegistryValueKind.Binary), () => CorsairICue == true),
 
 			// remove corsair icue desktop shortcut
-			("Removing Corsair iCUE desktop shortcut", async () => File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "iCUE.lnk")), () => CorsairICue == true),
+			("Removing Corsair iCUE desktop shortcut", async () => File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonDesktopDirectory), "iCUE.lnk")), () => CorsairICue == true),
 
 			// download openrgb
 			("Downloading OpenRGB", async () => await DownloadHelper.Download("https://codeberg.org/OpenRGB/OpenRGB/releases/download/release_candidate_1.0rc2/OpenRGB_1.0rc2_Windows_64_0fca93e.msi", Path.GetTempPath(), "OpenRGB_Windows_64.msi", reporter: reporter), () => OpenRGB == true),
@@ -1333,7 +1333,7 @@ public static class ApplicationStage
 			("Setting PlayStation® Accessories data collection to limited", async () => await File.WriteAllTextAsync(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Sony Corporation", "PlayStationAccessories", "AppSettings.json"), new JsonObject { ["IsAgreedFullDataCollection"] = false, ["IsAnsweredDataCollection"] = true, ["IsCheckedDisabledButtonMessage"] = false, ["IsCheckedUpdateInfo2_0_0_0"] = true, ["IsCompletedEdgeWelcomeFlow"] = false }.ToString()), () => PlaystationAccessories == true),
 
 			// remove playstation accessories desktop shortcut
-			("Removing PlayStation® Accessories desktop shortcut", async () => File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "PlayStation® Accessories.lnk")), () => PlaystationAccessories == true),
+			("Removing PlayStation® Accessories desktop shortcut", async () => File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonDesktopDirectory), "PlayStation® Accessories.lnk")), () => PlaystationAccessories == true),
 
 			//download xbox accessories
 			("Downloading Xbox Accessories", async () => await StoreHelper.Download("Microsoft.XboxDevices_8wekyb3d8bbwe", reporter: reporter), () => XboxAccessories == true),
@@ -1748,7 +1748,7 @@ public static class ApplicationStage
 			("Cleaning up VLC files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "vlc-win64.exe")), () => VLC == true),
 
 			// remove vlc desktop shortcut
-			("Removing VLC desktop shortcut", async () => File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "VLC media player.lnk")), () => VLC == true),
+			("Removing VLC desktop shortcut", async () => File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonDesktopDirectory), "VLC media player.lnk")), () => VLC == true),
 
 			// download mediainfo
 			("Downloading MediaInfo", async () => await StoreHelper.Download("MediaArea.net.MediaInfo_9bzbd7xajy7ar", reporter: reporter), () => MediaInfo == true),
@@ -1978,7 +1978,7 @@ public static class ApplicationStage
 			("Disabling AnyDesk startup entries", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\StartupFolder", "AnyDesk.lnk", new byte[] { 0x03 }, RegistryValueKind.Binary), () => AnyDesk == true),
 
 			// remove anydesk desktop shortcut
-			("Removing AnyDesk desktop shortcut", async () => File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "AnyDesk.lnk")), () => AnyDesk == true),
+			("Removing AnyDesk desktop shortcut", async () => File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonDesktopDirectory), "AnyDesk.lnk")), () => AnyDesk == true),
 
 			// download rustdesk
 			("Downloading RustDesk", async () => await DownloadHelper.Download(JsonDocument.Parse(await new HttpClient { DefaultRequestHeaders = { { "User-Agent", "AutoOS" } } }.GetStringAsync("https://api.github.com/repos/rustdesk/rustdesk/releases")).RootElement.EnumerateArray().First(release => !release.GetProperty("prerelease").GetBoolean() && release.GetProperty("assets").EnumerateArray().Any(asset => asset.GetProperty("name").GetString().EndsWith(".msi"))).GetProperty("assets").EnumerateArray().First(asset => asset.GetProperty("name").GetString().EndsWith(".msi")).GetProperty("browser_download_url").GetString(), Path.GetTempPath(), "rustdesk-x86_64.msi", reporter: reporter), () => RustDesk == true),
@@ -1993,7 +1993,7 @@ public static class ApplicationStage
 			("Disabling RustDesk startup entry", async () => ServicesHelper.StopService("RustDesk"), () => RustDesk == true),
 
 			// remove rustdesk desktop shortcut
-			("Removing RustDesk desktop shortcut", async () => File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "RustDesk.lnk")), () => RustDesk == true),
+			("Removing RustDesk desktop shortcut", async () => File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonDesktopDirectory), "RustDesk.lnk")), () => RustDesk == true),
 
 			// download apollo
 			("Downloading Apollo", async () => await DownloadHelper.Download(JsonDocument.Parse(await new HttpClient { DefaultRequestHeaders = { { "User-Agent", "AutoOS" } } }.GetStringAsync("https://api.github.com/repos/ClassicOldSong/Apollo/releases")).RootElement.EnumerateArray().First(release => release.GetProperty("assets").EnumerateArray().Any(asset => asset.GetProperty("name").GetString().EndsWith(".exe"))).GetProperty("assets").EnumerateArray().First(asset => asset.GetProperty("name").GetString().EndsWith(".exe")).GetProperty("browser_download_url").GetString(), Path.GetTempPath(), "Apollo.exe", reporter: reporter), () => Apollo == true),
