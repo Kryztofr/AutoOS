@@ -143,8 +143,7 @@ public sealed partial class ApplicationsPage : Page
 		{
 			new() { Text = "Autoruns", ImageSource = "ms-appx:///Assets/Fluent/Autoruns.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Autoruns", "Autoruns64.exe")) },
 			new() { Text = "Process Explorer", ImageSource = "ms-appx:///Assets/Fluent/ProcessExplorer.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Process Explorer", "procexp64.exe")) },
-			new() { Text = "Process Monitor", ImageSource = "ms-appx:///Assets/Fluent/ProcessMonitor.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Process Monitor", "Procmon64.exe")) },
-			new() { Text = "WinDbg", ImageSource = "ms-appx:///Assets/Fluent/WinDbg.png", IsInstalled = Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Packages", "Microsoft.WinDbg_8wekyb3d8bbwe")) }
+			new() { Text = "Process Monitor", ImageSource = "ms-appx:///Assets/Fluent/ProcessMonitor.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Process Monitor", "Procmon64.exe")) }
 		};
 		foreach (var item in sysinternalsList.Where(item => !item.IsInstalled))
 			sysinternalsItems.Add(item);
@@ -207,7 +206,8 @@ public sealed partial class ApplicationsPage : Page
 			new() { Text = "RustDesk", ImageSource = "ms-appx:///Assets/Fluent/RustDesk.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "RustDesk", "RustDesk.exe")) },
 			new() { Text = "Apollo", ImageSource = "ms-appx:///Assets/Fluent/Apollo.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Apollo", "sunshine.exe")) },
 			new() { Text = "AutoHotkey", ImageSource = "ms-appx:///Assets/Fluent/AutoHotkey.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "AutoHotkey", "UX", "AutoHotkeyUX.exe")) },
-			new() { Text = "EmEditor", ImageSource = "ms-appx:///Assets/Fluent/EmEditor.png", IsInstalled = Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Packages", "Emurasoft.EmEditor64UWP_ws7rg9hnwrpxm")) }
+			new() { Text = "EmEditor", ImageSource = "ms-appx:///Assets/Fluent/EmEditor.png", IsInstalled = Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Packages", "Emurasoft.EmEditor64UWP_ws7rg9hnwrpxm")) },
+			new() { Text = "WinDbg", ImageSource = "ms-appx:///Assets/Fluent/WinDbg.png", IsInstalled = Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Packages", "Microsoft.WinDbg_8wekyb3d8bbwe")) }
 		};
 		foreach (var item in miscellaneousList.Where(item => !item.IsInstalled))
 			miscellaneousItems.Add(item);
@@ -303,7 +303,6 @@ public sealed partial class ApplicationsPage : Page
 		selection.Autoruns = selectedSysinternals.Contains("Autoruns");
 		selection.ProcessExplorer = selectedSysinternals.Contains("Process Explorer");
 		selection.ProcessMonitor = selectedSysinternals.Contains("Process Monitor");
-		selection.WinDbg = selectedSysinternals.Contains("WinDbg");
 
 		var selectedOverclockingItems = Overclocking.SelectedItems.Cast<GridViewItem>().ToList();
 		var selectedOverclocking = selectedOverclockingItems.Select(item => item.Text).ToList();
@@ -352,6 +351,7 @@ public sealed partial class ApplicationsPage : Page
 		selection.Apollo = selectedMiscellaneous.Contains("Apollo");
 		selection.AutoHotkey = selectedMiscellaneous.Contains("AutoHotkey");
 		selection.EmEditor = selectedMiscellaneous.Contains("EmEditor");
+		selection.WinDbg = selectedMiscellaneous.Contains("WinDbg");
 
 		var updateDialog = new UpdateDialog();
 		var reporter = new UpdateDialogReporter(updateDialog);

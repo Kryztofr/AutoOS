@@ -133,8 +133,7 @@ public sealed partial class ApplicationsPage : Page
 		{
 			new() { Text = "Autoruns", ImageSource = "ms-appx:///Assets/Fluent/Autoruns.png" },
 			new() { Text = "Process Explorer", ImageSource = "ms-appx:///Assets/Fluent/ProcessExplorer.png" },
-			new() { Text = "Process Monitor", ImageSource = "ms-appx:///Assets/Fluent/ProcessMonitor.png" },
-			new() { Text = "WinDbg", ImageSource = "ms-appx:///Assets/Fluent/WinDbg.png" }
+			new() { Text = "Process Monitor", ImageSource = "ms-appx:///Assets/Fluent/ProcessMonitor.png" }
 		};
 
 		Overclocking.ItemsSource = new List<GridViewItem>
@@ -188,6 +187,7 @@ public sealed partial class ApplicationsPage : Page
 			new() { Text = "Apollo", ImageSource = "ms-appx:///Assets/Fluent/Apollo.png" },
 			new() { Text = "AutoHotkey", ImageSource = "ms-appx:///Assets/Fluent/AutoHotkey.png" },
 			new() { Text = "EmEditor", ImageSource = "ms-appx:///Assets/Fluent/EmEditor.png" },
+			new() { Text = "WinDbg", ImageSource = "ms-appx:///Assets/Fluent/WinDbg.png" }
 		};
 	}
 

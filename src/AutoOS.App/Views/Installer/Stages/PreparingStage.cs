@@ -125,7 +125,6 @@ public static partial class PreparingStage
 	public static bool Autoruns;
 	public static bool ProcessExplorer;
 	public static bool ProcessMonitor;
-	public static bool WinDbg;
 
 	public static bool HWInfo;
 	public static bool TimingConfigurator;
@@ -164,6 +163,7 @@ public static partial class PreparingStage
 	public static bool Apollo;
 	public static bool AutoHotkey;
 	public static bool EmEditor;
+	public static bool WinDbg;
 
 	public static List<GpuInfo> GPUs { get; set; } = [];
 	public static bool MSI;
@@ -314,7 +314,6 @@ public static partial class PreparingStage
 			Autoruns = (localSettings.Values["Sysinternals"]?.ToString().Contains("Autoruns") ?? false);
 			ProcessExplorer = (localSettings.Values["Sysinternals"]?.ToString().Contains("Process Explorer") ?? false);
 			ProcessMonitor = (localSettings.Values["Sysinternals"]?.ToString().Contains("Process Monitor") ?? false);
-			WinDbg = (localSettings.Values["Sysinternals"]?.ToString().Contains("WinDbg") ?? false);
 
 			HWInfo = (localSettings.Values["Overclocking"]?.ToString().Contains("HWiNFO® 64") ?? false);
 			TimingConfigurator = (localSettings.Values["Overclocking"]?.ToString().Contains("ASRock Timing Configurator") ?? false);
@@ -353,6 +352,7 @@ public static partial class PreparingStage
 			Apollo = (localSettings.Values["Miscellaneous"]?.ToString().Contains("Apollo") ?? false);
 			AutoHotkey = (localSettings.Values["Miscellaneous"]?.ToString().Contains("AutoHotkey") ?? false);
 			EmEditor = (localSettings.Values["Miscellaneous"]?.ToString().Contains("EmEditor") ?? false);
+			WinDbg = (localSettings.Values["Miscellaneous"]?.ToString().Contains("WinDbg") ?? false);
 
 			var gpuArray = JsonNode.Parse(localSettings.Values["GPUs"]?.ToString() ?? "[]")?.AsArray();
 			if (gpuArray != null)
