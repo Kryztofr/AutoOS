@@ -14,6 +14,7 @@ public sealed partial class ApplicationsPage : Page
 	private readonly ObservableCollection<GridViewItem> peripheralsItems = [];
 	private readonly ObservableCollection<GridViewItem> controllersItems = [];
 	private readonly ObservableCollection<GridViewItem> developmentItems = [];
+	private readonly ObservableCollection<GridViewItem> sysinternalsItems = [];
 	private readonly ObservableCollection<GridViewItem> overclockingItems = [];
 	private readonly ObservableCollection<GridViewItem> musicProductionItems = [];
 	private readonly ObservableCollection<GridViewItem> multimediaItems = [];
@@ -32,6 +33,7 @@ public sealed partial class ApplicationsPage : Page
 		Peripherals.ItemsSource = peripheralsItems;
 		Controllers.ItemsSource = controllersItems;
 		Development.ItemsSource = developmentItems;
+		Sysinternals.ItemsSource = sysinternalsItems;
 		Overclocking.ItemsSource = overclockingItems;
 		MusicProduction.ItemsSource = musicProductionItems;
 		Multimedia.ItemsSource = multimediaItems;
@@ -137,6 +139,15 @@ public sealed partial class ApplicationsPage : Page
 		foreach (var item in devList.Where(item => !item.IsInstalled))
 			developmentItems.Add(item);
 
+		var sysinternalsList = new List<GridViewItem>
+		{
+			new() { Text = "Autoruns", ImageSource = "ms-appx:///Assets/Fluent/Autoruns.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Autoruns", "Autoruns64.exe")) },
+			new() { Text = "Process Explorer", ImageSource = "ms-appx:///Assets/Fluent/ProcessExplorer.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Process Explorer", "procexp64.exe")) },
+			new() { Text = "Process Monitor", ImageSource = "ms-appx:///Assets/Fluent/ProcessMonitor.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Process Monitor", "Procmon64.exe")) }
+		};
+		foreach (var item in sysinternalsList.Where(item => !item.IsInstalled))
+			sysinternalsItems.Add(item);
+
 		var overclockingList = new List<GridViewItem>
 		{
 			new() { Text = "HWiNFO® 64", ImageSource = "ms-appx:///Assets/Fluent/HWInfo.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "HWiNFO64", "HWiNFO64.exe")) },
@@ -205,7 +216,7 @@ public sealed partial class ApplicationsPage : Page
 
 	private void GridView_SelectionChanged(object sender, SelectionChangedEventArgs e)
 	{
-		InstallButton.IsEnabled = Office.SelectedItems.Count > 0 || Development.SelectedItems.Count > 0 || Overclocking.SelectedItems.Count > 0 || Music.SelectedItems.Count > 0 || Peripherals.SelectedItems.Count > 0 || Controllers.SelectedItems.Count > 0 || Messaging.SelectedItems.Count > 0 || Launchers.SelectedItems.Count > 0 || Miscellaneous.SelectedItems.Count > 0 || MusicProduction.SelectedItems.Count > 0 || Multimedia.SelectedItems.Count > 0;
+		InstallButton.IsEnabled = Office.SelectedItems.Count > 0 || Development.SelectedItems.Count > 0 || Sysinternals.SelectedItems.Count > 0 || Overclocking.SelectedItems.Count > 0 || Music.SelectedItems.Count > 0 || Peripherals.SelectedItems.Count > 0 || Controllers.SelectedItems.Count > 0 || Messaging.SelectedItems.Count > 0 || Launchers.SelectedItems.Count > 0 || Miscellaneous.SelectedItems.Count > 0 || MusicProduction.SelectedItems.Count > 0 || Multimedia.SelectedItems.Count > 0;
 	}
 
 	private async void InstallButton_Click(object sender, RoutedEventArgs e)
@@ -287,6 +298,12 @@ public sealed partial class ApplicationsPage : Page
 		selection.Java = selectedDev.Contains("Java");
 		selection.Go = selectedDev.Contains("Go");
 		selection.Trello = selectedDev.Contains("Trello");
+
+		var selectedSysinternalsItems = Sysinternals.SelectedItems.Cast<GridViewItem>().ToList();
+		var selectedSysinternals = selectedSysinternalsItems.Select(item => item.Text).ToList();
+		selection.Autoruns = selectedSysinternals.Contains("Autoruns");
+		selection.ProcessExplorer = selectedSysinternals.Contains("Process Explorer");
+		selection.ProcessMonitor = selectedSysinternals.Contains("Process Monitor");
 
 		var selectedOverclockingItems = Overclocking.SelectedItems.Cast<GridViewItem>().ToList();
 		var selectedOverclocking = selectedOverclockingItems.Select(item => item.Text).ToList();
@@ -382,6 +399,9 @@ public sealed partial class ApplicationsPage : Page
 
 			foreach (var item in selectedDevItems)
 				developmentItems.Remove(item);
+
+			foreach (var item in selectedSysinternalsItems)
+				sysinternalsItems.Remove(item);
 
 			foreach (var item in selectedOverclockingItems)
 				overclockingItems.Remove(item);

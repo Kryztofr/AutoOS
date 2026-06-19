@@ -122,6 +122,10 @@ public static partial class PreparingStage
 	public static bool Go;
 	public static bool Trello;
 
+	public static bool Autoruns;
+	public static bool ProcessExplorer;
+	public static bool ProcessMonitor;
+
 	public static bool HWInfo;
 	public static bool TimingConfigurator;
 	public static bool ZenTimings;
@@ -307,6 +311,10 @@ public static partial class PreparingStage
 			Java = (localSettings.Values["Development"]?.ToString().Contains("Java") ?? false);
 			Go = (localSettings.Values["Development"]?.ToString().Contains("Go") ?? false);
 			Trello = (localSettings.Values["Development"]?.ToString().Contains("Trello") ?? false);
+
+			Autoruns = (localSettings.Values["Sysinternals"]?.ToString().Contains("Autoruns") ?? false);
+			ProcessExplorer = (localSettings.Values["Sysinternals"]?.ToString().Contains("Process Explorer") ?? false);
+			ProcessMonitor = (localSettings.Values["Sysinternals"]?.ToString().Contains("Process Monitor") ?? false);
 
 			HWInfo = (localSettings.Values["Overclocking"]?.ToString().Contains("HWiNFO® 64") ?? false);
 			TimingConfigurator = (localSettings.Values["Overclocking"]?.ToString().Contains("ASRock Timing Configurator") ?? false);

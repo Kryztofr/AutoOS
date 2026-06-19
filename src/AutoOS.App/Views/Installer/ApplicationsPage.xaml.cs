@@ -11,6 +11,7 @@ public sealed partial class ApplicationsPage : Page
 	private bool isInitializingPeripheralsState = true;
 	private bool isInitializingControllersState = true;
 	private bool isInitializingDevelopmentState = true;
+	private bool isInitializingSysinternalsState = true;
 	private bool isInitializingOverclockingState = true;
 	private bool isInitializingMusicProductionState = true;
 	private bool isInitializingMultimediaState = true;
@@ -29,6 +30,7 @@ public sealed partial class ApplicationsPage : Page
 		GetPeripherals();
 		GetControllers();
 		GetDevelopment();
+		GetSysinternals();
 		GetOverclocking();
 		GetMusicProduction();
 		GetMultimedia();
@@ -125,6 +127,13 @@ public sealed partial class ApplicationsPage : Page
 			new() { Text = "Java", ImageSource = "ms-appx:///Assets/Fluent/Java.png" },
 			new() { Text = "Go", ImageSource = "ms-appx:///Assets/Fluent/Go.png" },
 			new() { Text = "Trello", ImageSource = "ms-appx:///Assets/Fluent/Trello.png" }
+		};
+
+		Sysinternals.ItemsSource = new List<GridViewItem>
+		{
+			new() { Text = "Autoruns", ImageSource = "ms-appx:///Assets/Fluent/Autoruns.png" },
+			new() { Text = "Process Explorer", ImageSource = "ms-appx:///Assets/Fluent/ProcessExplorer.png" },
+			new() { Text = "Process Monitor", ImageSource = "ms-appx:///Assets/Fluent/ProcessMonitor.png" }
 		};
 
 		Overclocking.ItemsSource = new List<GridViewItem>
@@ -259,6 +268,19 @@ public sealed partial class ApplicationsPage : Page
 		);
 
 		isInitializingDevelopmentState = false;
+	}
+
+	private void GetSysinternals()
+	{
+		var selectedSysinternals = localSettings.Values["Sysinternals"] as string;
+		var sysinternalsItems = Sysinternals.ItemsSource as List<GridViewItem>;
+		Sysinternals.SelectedItems.AddRange(
+			selectedSysinternals?.Split(new[] { ", " }, StringSplitOptions.RemoveEmptyEntries)
+			.Select(e => sysinternalsItems?.FirstOrDefault(ext => ext.Text == e))
+			.Where(ext => ext != null) ?? Enumerable.Empty<GridViewItem>()
+		);
+
+		isInitializingSysinternalsState = false;
 	}
 
 	private void GetOverclocking()
@@ -396,6 +418,18 @@ public sealed partial class ApplicationsPage : Page
 			.ToArray();
 
 		localSettings.Values["Development"] = string.Join(", ", selectedDevelopment);
+	}
+
+	private void Sysinternals_Changed(object sender, SelectionChangedEventArgs e)
+	{
+		if (isInitializingSysinternalsState) return;
+
+		var selectedSysinternals = Sysinternals.SelectedItems
+			.Cast<GridViewItem>()
+			.Select(item => item.Text)
+			.ToArray();
+
+		localSettings.Values["Sysinternals"] = string.Join(", ", selectedSysinternals);
 	}
 
 	private void Overclocking_Changed(object sender, SelectionChangedEventArgs e)
