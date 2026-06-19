@@ -875,6 +875,9 @@ public static class BrowsersStage
 			("Optimizing Mullvad Browser settings", async () => File.WriteAllText(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Mullvad", "MullvadBrowser", "Release", "mullvad.cfg"), "defaultPref(\"app.shield.optoutstudies.enabled\", false);\ndefaultPref(\"browser.search.serpEventTelemetryCategorization.enabled\", false);\ndefaultPref(\"dom.security.unexpected_system_load_telemetry_enabled\", false);\ndefaultPref(\"identity.fxaccounts.telemetry.clientAssociationPing.enabled\", false);\ndefaultPref(\"network.trr.confirmation_telemetry_enabled\", false);\ndefaultPref(\"nimbus.telemetry.targetingContextEnabled\", false);\ndefaultPref(\"reader.parse-on-load.enabled\", false);\ndefaultPref(\"telemetry.fog.init_on_shutdown\", false);\ndefaultPref(\"default-browser-agent.enabled\", false);\ndefaultPref(\"widget.windows.mica\", true);\ndefaultPref(\"widget.windows.mica.popups\", 1);\ndefaultPref(\"widget.windows.mica.toplevel-backdrop\", 0);"), () => Mullvad == true),
 			("Optimizing Mullvad Browser settings", async () => File.WriteAllText(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Mullvad", "MullvadBrowser", "Release", "distribution", "policies.json"), "{\r\n  \"policies\": {}\r\n}"), () => Mullvad == true),
 
+			// remove mullvad desktop shortcut
+			("Removing Mullvad Browser desktop shortcut", async () => File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "Mullvad Browser.lnk")), () => Mullvad == true),
+
 			// install ublock origin extension
 			("Installing uBlock Origin Extension", async () => UpdatePolicies(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Mullvad", "MullvadBrowser", "Release", "distribution", "policies.json"), "https://addons.mozilla.org/firefox/downloads/latest/ublock-origin"), () => Mullvad == true && uBlock == true),
 
