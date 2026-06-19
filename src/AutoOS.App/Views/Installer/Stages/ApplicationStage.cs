@@ -600,6 +600,9 @@ public static class ApplicationStage
 			("Disabling Zoom service", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\ZoomCptService", "Start", 3, RegistryValueKind.DWord), () => ZoomWorkplace == true),
 			("Disabling Zoom service", async () => ServicesHelper.StopService("ZoomCptService"), () => ZoomWorkplace == true),
 
+			// remove zoom workplace desktop shortcut
+			("Removing Zoom Workplace desktop shortcut", async () => File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "Zoom Workplace.lnk")), () => ZoomWorkplace == true),
+
 			// download thunderbird
 			("Downloading Thunderbird", async () => await DownloadHelper.Download("https://download.mozilla.org/?product=thunderbird-151.0.1-msi-SSL&os=win64&lang=en-US", Path.GetTempPath(), "Thunderbird Setup.msi", reporter: reporter), () => Thunderbird == true),
 
@@ -613,6 +616,9 @@ public static class ApplicationStage
 			// disable thunderbird service
 			("Disabling Thunderbird service", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\MozillaMaintenance", "Start", 4, RegistryValueKind.DWord), () => Thunderbird == true),
 			("Disabling Thunderbird service", async () => ServicesHelper.StopService("MozillaMaintenance"), () => Thunderbird == true),
+
+			// remove thunderbird desktop shortcut
+			("Removing Thunderbird desktop shortcut", async () => File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "Thunderbird.lnk")), () => Thunderbird == true),
 
 			// download signal
 			("Downloading Signal", async () => await DownloadHelper.Download("https://updates.signal.org/desktop/signal-desktop-win-8.14.0.exe", Path.GetTempPath(), "SignalSetup.exe", reporter: reporter), () => Signal == true),
@@ -701,6 +707,9 @@ public static class ApplicationStage
 			// disable riot client startup entry
 			("Disabling Riot Client startup entry", async () => RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run", "RiotClient", new byte[] { 0x01 }, RegistryValueKind.Binary), () => RiotClient == true),
 
+			// remove riot client desktop shortcut
+			("Removing Riot Client desktop shortcut", async () => File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "Riot Client.lnk")), () => RiotClient == true),
+
 			// download vanguard
 			("Downloading Vanguard", async () => await DownloadHelper.Download("https://github.com/tinodin/AutoOS-Resources/releases/download/v1.0.0.0/setup.exe", Path.GetTempPath(), "setup.exe", new InstallPageReporter()), () => RiotClient == true),
 
@@ -782,6 +791,9 @@ public static class ApplicationStage
 			// install lunar client
 			("Installing Lunar Client", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "Lunar Client.exe"), Arguments = "/S" , WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => LunarClient == true),
 			("Cleaning up Lunar Client files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "Lunar Client.exe")), () => LunarClient == true),
+
+			// remove lunar client desktop shortcut
+			("Removing Lunar Client desktop shortcut", async () => File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "Lunar Client.lnk")), () => LunarClient == true),
 
 			// download rockstar games launcher
 			("Downloading Rockstar Games Launcher", async () => await DownloadHelper.Download("https://gamedownloads.rockstargames.com/public/installer/Rockstar-Games-Launcher.exe", Path.GetTempPath(), "Rockstar-Games-Launcher.exe", reporter: reporter), () => RockstarGamesLauncher == true),
@@ -1148,6 +1160,9 @@ public static class ApplicationStage
 			// disabling endgame gear startup entries
 			("Disabling Endgame Gear startup entries", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run", "Endgame Gear Utility Startup", new byte[] { 0x03 }, RegistryValueKind.Binary), () => EndgameGear == true),
 
+			// remove endgame gear desktop shortcut
+			("Removing Endgame Gear desktop shortcut", async () => File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "Endgame Gear.lnk")), () => EndgameGear == true),
+
 			// download glorious core
 			("Downloading Glorious CORE", async () => await DownloadHelper.Download("https://gloriouscore.nyc3.digitaloceanspaces.com/CORE2/app/GloriousCORE_2.1.15_Setup.zip", Path.GetTempPath(), "GloriousCORE_Setup.zip"), () => GloriousCORE == true),
 
@@ -1156,6 +1171,9 @@ public static class ApplicationStage
 			("Installing Glorious CORE", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "GloriousCORE_Setup", "GloriousCORE_2.1.15_Setup.exe"), Arguments = "/VERYSILENT /SUPPRESSMSGBOXES /NORESTART" , WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => GloriousCORE == true),
 			("Cleaning up Glorious CORE files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "GloriousCORE_Setup.zip")), () => GloriousCORE == true),
 			("Cleaning up Glorious CORE files", async () => Directory.Delete(Path.Combine(Path.GetTempPath(), "GloriousCORE_Setup"), true), () => GloriousCORE == true),
+
+			// remove glorious core desktop shortcut
+			("Removing Glorious CORE desktop shortcut", async () => File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "Glorious CORE.lnk")), () => GloriousCORE == true),
 			
 			// download mchose hub
 			("Downloading MCHOSE HUB", async () => await DownloadHelper.Download("https://github.com/tinodin/AutoOS-Resources/releases/download/v1.0.0.0/MCHOSE.HUB.installer.exe", Path.GetTempPath(), "MCHOSE.HUB.installer.exe", reporter: reporter), () => MCHOSE == true),
@@ -1163,6 +1181,9 @@ public static class ApplicationStage
 			// install mchose hub
 			("Installing MCHOSE HUB", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "MCHOSE.HUB.installer.exe"), Arguments = "/S" , WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => MCHOSE == true),
 			("Cleaning up MCHOSE HUB files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "MCHOSE.HUB.installer.exe")), () => MCHOSE == true),
+
+			// remove mchose hub desktop shortcut
+			("Removing MCHOSE HUB desktop shortcut", async () => File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "MCHOSE HUB.lnk")), () => MCHOSE == true),
 
 			// download steelseries gg
 			("Downloading SteelSeries GG", async () => await DownloadHelper.Download("https://steelseries.com/gg/downloads/latest/windows", Path.GetTempPath(), "SteelSeriesGGSetup.exe", reporter: reporter), () => SteelSeriesGG == true),
@@ -1222,6 +1243,9 @@ public static class ApplicationStage
 
 			// disable corsair icue startup entry
 			("Disabling Corsair iCUE startup entry", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run", "Corsair iCUE5 Software", new byte[] { 0x01 }, RegistryValueKind.Binary), () => CorsairICue == true),
+
+			// remove corsair icue desktop shortcut
+			("Removing Corsair iCUE desktop shortcut", async () => File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "iCUE.lnk")), () => CorsairICue == true),
 
 			// download openrgb
 			("Downloading OpenRGB", async () => await DownloadHelper.Download("https://codeberg.org/OpenRGB/OpenRGB/releases/download/release_candidate_1.0rc2/OpenRGB_1.0rc2_Windows_64_0fca93e.msi", Path.GetTempPath(), "OpenRGB_Windows_64.msi", reporter: reporter), () => OpenRGB == true),
@@ -1307,6 +1331,9 @@ public static class ApplicationStage
 
 			// set playstation accessories data collection to limited
 			("Setting PlayStation® Accessories data collection to limited", async () => await File.WriteAllTextAsync(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Sony Corporation", "PlayStationAccessories", "AppSettings.json"), new JsonObject { ["IsAgreedFullDataCollection"] = false, ["IsAnsweredDataCollection"] = true, ["IsCheckedDisabledButtonMessage"] = false, ["IsCheckedUpdateInfo2_0_0_0"] = true, ["IsCompletedEdgeWelcomeFlow"] = false }.ToString()), () => PlaystationAccessories == true),
+
+			// remove playstation accessories desktop shortcut
+			("Removing PlayStation® Accessories desktop shortcut", async () => File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "PlayStation® Accessories.lnk")), () => PlaystationAccessories == true),
 
 			//download xbox accessories
 			("Downloading Xbox Accessories", async () => await StoreHelper.Download("Microsoft.XboxDevices_8wekyb3d8bbwe", reporter: reporter), () => XboxAccessories == true),
@@ -1675,7 +1702,9 @@ public static class ApplicationStage
 			("Installing ASIO4ALL", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "ASIO4ALL.exe"), Arguments = "/S", WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => ASIO4ALL == true),
 			("Cleaning up ASIO4ALL files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "ASIO4ALL.exe")), () => ASIO4ALL == true),
 
-			
+			// remove asio4all desktop shortcut
+			("Removing ASIO4ALL desktop shortcut", async () => File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "ASIO4ALL Web Site.lnk")), () => ASIO4ALL == true),
+
 			// download arturia midi driver
 			("Downloading Arturia MIDI Driver", async () => await DownloadHelper.Download("https://dl.arturia.net/products/midi-driver/soft/Arturia_USBMidi_v1.7.0_2025-08-20_setup__1_7_0_0.exe", Path.GetTempPath(), "Arturia_USBMidi.exe", reporter: reporter), () => ArturiaMidiControlCenter == true),
 
@@ -1691,6 +1720,9 @@ public static class ApplicationStage
 			// install midi control center
 			("Installing Arturia MIDI Control Center", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "MIDI_Control_Center.exe"), Arguments = @"/VERYSILENT /SUPPRESSMSGBOXES /NORESTART /COMPONENTS=""mcc""", WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => ArturiaMidiControlCenter == true),
 			("Cleaning up Arturia MIDI Control Center files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "MIDI_Control_Center.exe")), () => ArturiaMidiControlCenter == true),
+
+			// remove midi control center desktop shortcut
+			("Removing Arturia MIDI Control Center desktop shortcut", async () => File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "MIDI Control Center.lnk")), () => ArturiaMidiControlCenter == true),
 
 			// download mpc-qt
 			("Downloading MPC-QT", async () => await DownloadHelper.Download(JsonDocument.Parse(await new HttpClient { DefaultRequestHeaders = { { "User-Agent", "AutoOS" } } }.GetStringAsync("https://api.github.com/repos/mpc-qt/mpc-qt/releases")).RootElement.EnumerateArray().First(release => !release.GetProperty("prerelease").GetBoolean() && release.GetProperty("assets").EnumerateArray().Any(asset => asset.GetProperty("name").GetString().StartsWith("mpc-qt-win-x64-") && asset.GetProperty("name").GetString().EndsWith("-installer.exe"))).GetProperty("assets").EnumerateArray().First(asset => asset.GetProperty("name").GetString().StartsWith("mpc-qt-win-x64-") && asset.GetProperty("name").GetString().EndsWith("-installer.exe")).GetProperty("browser_download_url").GetString(), Path.GetTempPath(), "mpc-qt-win-x64-installer.exe", reporter: reporter), () => MpcQt == true),
@@ -1714,6 +1746,9 @@ public static class ApplicationStage
 			// install vlc
 			("Installing VLC", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "vlc-win64.exe"), Arguments = "/L=1033 /S", WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => VLC == true),
 			("Cleaning up VLC files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "vlc-win64.exe")), () => VLC == true),
+
+			// remove vlc desktop shortcut
+			("Removing VLC desktop shortcut", async () => File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "VLC media player.lnk")), () => VLC == true),
 
 			// download mediainfo
 			("Downloading MediaInfo", async () => await StoreHelper.Download("MediaArea.net.MediaInfo_9bzbd7xajy7ar", reporter: reporter), () => MediaInfo == true),
@@ -1942,16 +1977,23 @@ public static class ApplicationStage
 			("Disabling AnyDesk startup entries", async () => ServicesHelper.StopService("AnyDesk"), () => AnyDesk == true),
 			("Disabling AnyDesk startup entries", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\StartupFolder", "AnyDesk.lnk", new byte[] { 0x03 }, RegistryValueKind.Binary), () => AnyDesk == true),
 
+			// remove anydesk desktop shortcut
+			("Removing AnyDesk desktop shortcut", async () => File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "AnyDesk.lnk")), () => AnyDesk == true),
+
 			// download rustdesk
 			("Downloading RustDesk", async () => await DownloadHelper.Download(JsonDocument.Parse(await new HttpClient { DefaultRequestHeaders = { { "User-Agent", "AutoOS" } } }.GetStringAsync("https://api.github.com/repos/rustdesk/rustdesk/releases")).RootElement.EnumerateArray().First(release => !release.GetProperty("prerelease").GetBoolean() && release.GetProperty("assets").EnumerateArray().Any(asset => asset.GetProperty("name").GetString().EndsWith(".msi"))).GetProperty("assets").EnumerateArray().First(asset => asset.GetProperty("name").GetString().EndsWith(".msi")).GetProperty("browser_download_url").GetString(), Path.GetTempPath(), "rustdesk-x86_64.msi", reporter: reporter), () => RustDesk == true),
 			
 			// install rustdesk
 			("Installing RustDesk", async () => await Process.Start(new ProcessStartInfo { FileName = "msiexec.exe", Arguments = $@"/i ""{Path.Combine(Path.GetTempPath(), "rustdesk-x86_64.msi")}"" /qn" , WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => RustDesk == true),
+			("Installing RustDesk", async () => { foreach (Process process in Process.GetProcessesByName("RustDesk")) { process.Kill(); process.WaitForExit(); } }, () => RustDesk == true),
 			("Cleaning up RustDesk files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "rustdesk-x86_64.msi")), () => RustDesk == true),
 
 			// disable rustdesk startup entry
 			("Disabling RustDesk startup entry", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\RustDesk", "Start", 4, RegistryValueKind.DWord), () => RustDesk == true),
 			("Disabling RustDesk startup entry", async () => ServicesHelper.StopService("RustDesk"), () => RustDesk == true),
+
+			// remove rustdesk desktop shortcut
+			("Removing RustDesk desktop shortcut", async () => File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "RustDesk.lnk")), () => RustDesk == true),
 
 			// download apollo
 			("Downloading Apollo", async () => await DownloadHelper.Download(JsonDocument.Parse(await new HttpClient { DefaultRequestHeaders = { { "User-Agent", "AutoOS" } } }.GetStringAsync("https://api.github.com/repos/ClassicOldSong/Apollo/releases")).RootElement.EnumerateArray().First(release => release.GetProperty("assets").EnumerateArray().Any(asset => asset.GetProperty("name").GetString().EndsWith(".exe"))).GetProperty("assets").EnumerateArray().First(asset => asset.GetProperty("name").GetString().EndsWith(".exe")).GetProperty("browser_download_url").GetString(), Path.GetTempPath(), "Apollo.exe", reporter: reporter), () => Apollo == true),
