@@ -77,6 +77,7 @@ public class ApplicationSelection
 	public bool Antigravity { get; set; }
 	public bool Cursor { get; set; }
 	public bool Devin { get; set; }
+	public bool IDEA { get; set; }
 	public bool WinMerge { get; set; }
 	public bool Git { get; set; }
 	public bool CMake { get; set; }
@@ -97,9 +98,13 @@ public class ApplicationSelection
 	public bool OCCT { get; set; }
 	public bool Reaper { get; set; }
 	public bool FLStudio { get; set; }
+	public bool Audacity { get; set; }
 	public bool FlexASIO { get; set; }
 	public bool ASIO4ALL { get; set; }
 	public bool ArturiaMidiControlCenter { get; set; }
+	public bool DaVinciResolve { get; set; }
+	public bool Blender { get; set; }
+	public bool CapCut { get; set; }
 	public bool MpcQt { get; set; }
 	public bool MPV { get; set; }
 	public bool VLC { get; set; }
@@ -208,6 +213,7 @@ public static class ApplicationStage
 		bool Antigravity = selection?.Antigravity ?? PreparingStage.Antigravity;
 		bool Cursor = selection?.Cursor ?? PreparingStage.Cursor;
 		bool Devin = selection?.Devin ?? PreparingStage.Devin;
+		bool IDEA = selection?.IDEA ?? PreparingStage.IDEA;
 		bool WinMerge = selection?.WinMerge ?? PreparingStage.WinMerge;
 		bool Git = selection?.Git ?? PreparingStage.Git;
 		bool CMake = selection?.CMake ?? PreparingStage.CMake;
@@ -231,9 +237,14 @@ public static class ApplicationStage
 
 		bool Reaper = selection?.Reaper ?? PreparingStage.Reaper;
 		bool FLStudio = selection?.FLStudio ?? PreparingStage.FLStudio;
+		bool Audacity = selection?.Audacity ?? PreparingStage.Audacity;
 		bool FlexASIO = selection?.FlexASIO ?? PreparingStage.FlexASIO;
 		bool ASIO4ALL = selection?.ASIO4ALL ?? PreparingStage.ASIO4ALL;
 		bool ArturiaMidiControlCenter = selection?.ArturiaMidiControlCenter ?? PreparingStage.ArturiaMidiControlCenter;
+
+		bool DaVinciResolve = selection?.DaVinciResolve ?? PreparingStage.DaVinciResolve;
+		bool Blender = selection?.Blender ?? PreparingStage.Blender;
+		bool CapCut = selection?.CapCut ?? PreparingStage.CapCut;
 
 		bool MpcQt = selection?.MpcQt ?? PreparingStage.MpcQt;
 		bool MPV = selection?.MPV ?? PreparingStage.MPV;
@@ -1415,6 +1426,16 @@ public static class ApplicationStage
 			// pin devin to the taskbar
 			("Pinning Devin to the taskbar", async () => await ProcessActions.PinToTaskbar("Link", Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Microsoft", "Windows", "Start Menu", "Programs", "Devin", "Devin.lnk")), () => Devin == true),
 
+			// download intellij idea
+			("Downloading IntelliJ IDEA", async () => await DownloadHelper.Download("https://download.jetbrains.com/idea/idea-2026.1.3.exe", Path.GetTempPath(), "idea.exe", reporter: reporter), () => IDEA == true),
+			
+			// install intellij idea
+			("Installing IntelliJ IDEA", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "idea.exe"), Arguments = "/S /NCRC", WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => IDEA == true),
+			("Cleaning up IntelliJ IDEA files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "idea.exe")), () => IDEA == true),
+
+			// pin intellij idea to taskbar
+			("Pinning IntelliJ IDEA to the taskbar", async () => await ProcessActions.PinToTaskbar("Link", @"C:\ProgramData\Microsoft\Windows\Start Menu\Programs\JetBrains\IntelliJ IDEA 2026.1.3.lnk"), () => IDEA == true),
+
 			// download winmerge
 			("Downloading WinMerge", async () => await DownloadHelper.Download(JsonDocument.Parse(await new HttpClient { DefaultRequestHeaders = { { "User-Agent", "AutoOS" } } }.GetStringAsync("https://api.github.com/repos/WinMerge/winmerge/releases/latest")).RootElement.GetProperty("assets").EnumerateArray().First(a => a.GetProperty("name").GetString().Contains("x64-Setup.exe")).GetProperty("browser_download_url").GetString(), Path.GetTempPath(), "WinMerge-x64-Setup.exe", reporter: reporter), () => WinMerge == true),
 
@@ -1693,6 +1714,19 @@ public static class ApplicationStage
 			// pin fl studio to the taskbar
 			("Pinning FL Studio to the taskbar", async () => await ProcessActions.PinToTaskbar("Link", Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Microsoft", "Windows", "Start Menu", "Programs", "Image-Line", "FL Studio 2025.lnk")), () => FLStudio == true),
 
+			// download audacity
+			("Downloading Audacity", async () => await DownloadHelper.Download(JsonDocument.Parse(await new HttpClient { DefaultRequestHeaders = { { "User-Agent", "AutoOS" } } }.GetStringAsync("https://api.github.com/repos/audacity/audacity/releases")).RootElement.EnumerateArray().First(release => release.GetProperty("assets").EnumerateArray().Any(asset => asset.GetProperty("name").GetString().EndsWith("x86_64.msi"))).GetProperty("assets").EnumerateArray().First(asset => asset.GetProperty("name").GetString().EndsWith("x86_64.msi")).GetProperty("browser_download_url").GetString(), Path.GetTempPath(), "audacity_setup.msi", reporter: reporter), () => Audacity == true),
+									
+			// install audacity
+			("Installing Audacity", async () => await Process.Start(new ProcessStartInfo { FileName = "msiexec.exe", Arguments = $@"/i ""{Path.Combine(Path.GetTempPath(), "audacity_setup.msi")}"" /qn", WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => Audacity == true),
+			("Cleaning up Audacity files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "audacity_setup.msi")), () => Audacity == true),
+
+			// pin audacity to the taskbar
+			("Pinning Audacity to the taskbar", async () => await ProcessActions.PinToTaskbar("Link", Directory.GetFiles(Directory.GetDirectories(Environment.GetFolderPath(Environment.SpecialFolder.Programs), "Audacity*").FirstOrDefault(), "Audacity*.lnk").FirstOrDefault()), () => Audacity == true),
+
+			// remove audacity desktop shortcut
+			("Removing Audacity desktop shortcut", async () => File.Delete(Directory.GetFiles(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "Audacity*.lnk").FirstOrDefault()), () => Audacity == true),
+
 			// download flexasio
 			("Downloading FlexASIO", async () => await DownloadHelper.Download(JsonDocument.Parse(await new HttpClient { DefaultRequestHeaders = { { "User-Agent", "AutoOS" } } }.GetStringAsync("https://api.github.com/repos/dechamps/FlexASIO/releases")).RootElement.EnumerateArray().First(release => !release.GetProperty("prerelease").GetBoolean() && release.GetProperty("assets").EnumerateArray().Any(asset => asset.GetProperty("name").GetString().EndsWith(".exe"))).GetProperty("assets").EnumerateArray().First(asset => asset.GetProperty("name").GetString().EndsWith(".exe")).GetProperty("browser_download_url").GetString(), Path.GetTempPath(), "FlexASIO.exe", reporter: reporter), () => FlexASIO == true),
 
@@ -1735,6 +1769,37 @@ public static class ApplicationStage
 
 			// remove midi control center desktop shortcut
 			("Removing Arturia MIDI Control Center desktop shortcut", async () => File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "MIDI Control Center.lnk")), () => ArturiaMidiControlCenter == true),
+
+			// download davinci resolve
+			("Downloading DaVinci Resolve", async () => await DownloadHelper.Download(new[] { "https://github.com/tinodin/AutoOS-Resources/releases/download/v1.0.0.0/DaVinci_Resolve_21.0_Windows.part1.rar", "https://github.com/tinodin/AutoOS-Resources/releases/download/v1.0.0.0/DaVinci_Resolve_21.0_Windows.part2.rar" }, Path.GetTempPath(), new[] { "DaVinci_Resolve.part1.rar", "DaVinci_Resolve.part2.rar" }, reporter: reporter), () => DaVinciResolve == true),
+
+			// install davinci resolve
+			("Installing DaVinci Resolve", async () => await ExtractHelper.Extract(Path.Combine(Path.GetTempPath(), "DaVinci_Resolve.part1.rar"), Path.Combine(Path.GetTempPath(), "DaVinci_Resolve")), () => DaVinciResolve == true),
+			("Installing DaVinci Resolve", async () => await ExtractHelper.Extract(Path.Combine(Path.GetTempPath(), "DaVinci_Resolve", "DaVinci_Resolve_21.0_Windows.exe"), Path.Combine(Path.GetTempPath(), "DaVinci_Resolve", "DaVinci_Resolve_21.0_Windows")), () => DaVinciResolve == true),
+			("Installing DaVinci Resolve", async () => await Process.Start(new ProcessStartInfo { FileName = "msiexec.exe", Arguments = $@"/i ""{Path.Combine(Path.GetTempPath(), "DaVinci_Resolve", "DaVinci_Resolve_21.0_Windows", "ResolveInstaller.msi")}"" /qn", WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => DaVinciResolve == true),
+			("Cleaning up DaVinci Resolve files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "DaVinci_Resolve.part1.rar")), () => DaVinciResolve == true),
+			("Cleaning up DaVinci Resolve files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "DaVinci_Resolve.part2.rar")), () => DaVinciResolve == true),
+			("Cleaning up DaVinci Resolve files", async () => Directory.Delete(Path.Combine(Path.GetTempPath(), "DaVinci_Resolve"), true), () => DaVinciResolve == true),
+
+			// download blender
+			("Downloading Blender", async () => await DownloadHelper.Download("https://download.blender.org/release/Blender5.1/blender-5.1.2-windows-x64.msi", Path.GetTempPath(), "blender-windows-x64.msi", reporter: reporter), () => Blender == true),
+
+			// install blender
+			("Installing Blender", async () => await Process.Start(new ProcessStartInfo { FileName = "msiexec.exe", Arguments = $@"/i ""{Path.Combine(Path.GetTempPath(), "blender-windows-x64.msi")}"" /qn", WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => Blender == true),
+			("Cleaning up Blender files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "blender-windows-x64.msi")), () => Blender == true),
+
+			// remove blender desktop shortcut
+			("Removing Blender desktop shortcut", async () => File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "Blender 5.1.lnk")), () => Blender == true),
+
+			// download capcut
+			("Downloading CapCut", async () => await DownloadHelper.Download("https://sf16-web-tos-buz.capcutcdn-us.com/obj/capcut-web-buz-tx/packages/CapCut_8_8_0_3774_capcutpc_0_creatortool.exe", Path.GetTempPath(), "CapCut.exe", reporter: reporter), () => CapCut == true),
+
+			// install capcut
+			("Installing CapCut", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "CapCut.exe"), Arguments = "/silent_install=1", WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => CapCut == true),
+			("Cleaning up CapCut files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "CapCut.exe")), () => CapCut == true),
+
+			// remove capcut desktop shortcut
+			("Removing CapCut desktop shortcut", async () => File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "CapCut.lnk")), () => CapCut == true),
 
 			// download mpc-qt
 			("Downloading MPC-QT", async () => await DownloadHelper.Download(JsonDocument.Parse(await new HttpClient { DefaultRequestHeaders = { { "User-Agent", "AutoOS" } } }.GetStringAsync("https://api.github.com/repos/mpc-qt/mpc-qt/releases")).RootElement.EnumerateArray().First(release => !release.GetProperty("prerelease").GetBoolean() && release.GetProperty("assets").EnumerateArray().Any(asset => asset.GetProperty("name").GetString().StartsWith("mpc-qt-win-x64-") && asset.GetProperty("name").GetString().EndsWith("-installer.exe"))).GetProperty("assets").EnumerateArray().First(asset => asset.GetProperty("name").GetString().StartsWith("mpc-qt-win-x64-") && asset.GetProperty("name").GetString().EndsWith("-installer.exe")).GetProperty("browser_download_url").GetString(), Path.GetTempPath(), "mpc-qt-win-x64-installer.exe", reporter: reporter), () => MpcQt == true),
@@ -1956,7 +2021,7 @@ public static class ApplicationStage
 			("Activating AOMEI Partition Assistant", async () => { var iniHelper = new InIHelper(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "AOMEI Partition Assistant", "cfg.ini")); iniHelper.AddValue("KEY", "AOPR-CM948-83ZJZ-4NQW1", "CONFIG"); }, () => AomeiPartitionAssistant == true),
 
 			// remove aomei partition assistant desktop shortcut
-			("Removing AOMEI Partition Assistant desktop shortcut", async () => File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonDesktopDirectory), "AOMEI Partition Assistant 10.11.0.lnk")), () => AomeiPartitionAssistant == true),
+			("Removing AOMEI Partition Assistant desktop shortcut", async () => File.Delete(Directory.GetFiles(Environment.GetFolderPath(Environment.SpecialFolder.CommonDesktopDirectory), "AOMEI Partition Assistant*.lnk").FirstOrDefault()), () => AomeiPartitionAssistant == true),
 
 			// download wiztree
 			("Downloading WizTree", async () => await DownloadHelper.Download("https://diskanalyzer.com/files/wiztree_4_31_setup.exe", Path.GetTempPath(), "wiztree_setup.exe", reporter: reporter), () => WizTree == true),
@@ -2030,7 +2095,7 @@ public static class ApplicationStage
 			("Cleaning up Apollo files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "Apollo.exe")), () => Apollo == true),
 			
 			// download autohotkey
-			("Downloading AutoHotkey", async () => await DownloadHelper.Download("https://github.com/AutoHotkey/AutoHotkey/releases/download/v2.0.26/AutoHotkey_2.0.26_setup.exe", Path.GetTempPath(), "AutoHotkey_setup.exe", reporter: reporter), () => AutoHotkey == true),
+			("Downloading AutoHotkey", async () => await DownloadHelper.Download(JsonDocument.Parse(await new HttpClient { DefaultRequestHeaders = { { "User-Agent", "AutoOS" } } }.GetStringAsync("https://api.github.com/repos/AutoHotkey/AutoHotkey/releases")).RootElement.EnumerateArray().First(release => !release.GetProperty("prerelease").GetBoolean() && release.GetProperty("assets").EnumerateArray().Any(asset => asset.GetProperty("name").GetString().EndsWith("_setup.exe"))).GetProperty("assets").EnumerateArray().First(asset => asset.GetProperty("name").GetString().EndsWith("_setup.exe")).GetProperty("browser_download_url").GetString(), Path.GetTempPath(), "AutoHotkey_setup.exe", reporter: reporter), () => AutoHotkey == true),
 			
 			// install autohotkey
 			("Installing AutoHotkey", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "AutoHotkey_setup.exe"), Arguments = "/silent", WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => AutoHotkey == true),

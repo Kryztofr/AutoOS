@@ -112,6 +112,7 @@ public static partial class PreparingStage
 	public static bool Antigravity;
 	public static bool Cursor;
 	public static bool Devin;
+	public static bool IDEA;
 	public static bool WinMerge;
 	public static bool Git;
 	public static bool CMake;
@@ -135,9 +136,14 @@ public static partial class PreparingStage
 
 	public static bool Reaper;
 	public static bool FLStudio;
+	public static bool Audacity;
 	public static bool FlexASIO;
 	public static bool ASIO4ALL;
 	public static bool ArturiaMidiControlCenter;
+
+	public static bool DaVinciResolve;
+	public static bool Blender;
+	public static bool CapCut;
 
 	public static bool MpcQt;
 	public static bool MPV;
@@ -302,6 +308,7 @@ public static partial class PreparingStage
 			Antigravity = (localSettings.Values["Development"]?.ToString().Contains("Antigravity IDE") ?? false);
 			Cursor = (localSettings.Values["Development"]?.ToString().Contains("Cursor") ?? false);
 			Devin = (localSettings.Values["Development"]?.ToString().Contains("Devin") ?? false);
+			IDEA = (localSettings.Values["Development"]?.ToString().Contains("IntelliJ IDEA") ?? false);
 			WinMerge = (localSettings.Values["Development"]?.ToString().Contains("WinMerge") ?? false);
 			Git = (localSettings.Values["Development"]?.ToString().Contains("Git") ?? false);
 			CMake = (localSettings.Values["Development"]?.ToString().Contains("CMake") ?? false);
@@ -325,9 +332,14 @@ public static partial class PreparingStage
 
 			Reaper = (localSettings.Values["Music Production"]?.ToString().Contains("Reaper") ?? false);
 			FLStudio = (localSettings.Values["Music Production"]?.ToString().Contains("FL Studio") ?? false);
+			Audacity = (localSettings.Values["Music Production"]?.ToString().Contains("Audacity") ?? false);
 			FlexASIO = (localSettings.Values["Music Production"]?.ToString().Contains("FlexASIO") ?? false);
 			ASIO4ALL = (localSettings.Values["Music Production"]?.ToString().Contains("ASIO4ALL") ?? false);
 			ArturiaMidiControlCenter = (localSettings.Values["Music Production"]?.ToString().Contains("Arturia MIDI Control Center") ?? false);
+
+			DaVinciResolve = (localSettings.Values["Video Production"]?.ToString().Contains("DaVinci Resolve") ?? false);
+			Blender = (localSettings.Values["Video Production"]?.ToString().Contains("Blender") ?? false);
+			CapCut = (localSettings.Values["Video Production"]?.ToString().Contains("CapCut") ?? false);
 
 			MpcQt = (localSettings.Values["Multimedia"]?.ToString().Contains("MPC-QT") ?? false);
 			MPV = (localSettings.Values["Multimedia"]?.ToString().Contains("mpv") ?? false);

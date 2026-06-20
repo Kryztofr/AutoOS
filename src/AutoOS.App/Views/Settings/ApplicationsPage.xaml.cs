@@ -17,6 +17,7 @@ public sealed partial class ApplicationsPage : Page
 	private readonly ObservableCollection<GridViewItem> sysinternalsItems = [];
 	private readonly ObservableCollection<GridViewItem> overclockingItems = [];
 	private readonly ObservableCollection<GridViewItem> musicProductionItems = [];
+	private readonly ObservableCollection<GridViewItem> videoProductionItems = [];
 	private readonly ObservableCollection<GridViewItem> multimediaItems = [];
 	private readonly ObservableCollection<GridViewItem> officeItems = [];
 	private readonly ObservableCollection<GridViewItem> miscellaneousItems = [];
@@ -36,6 +37,7 @@ public sealed partial class ApplicationsPage : Page
 		Sysinternals.ItemsSource = sysinternalsItems;
 		Overclocking.ItemsSource = overclockingItems;
 		MusicProduction.ItemsSource = musicProductionItems;
+		VideoProduction.ItemsSource = videoProductionItems;
 		Multimedia.ItemsSource = multimediaItems;
 		Office.ItemsSource = officeItems;
 		Miscellaneous.ItemsSource = miscellaneousItems;
@@ -126,6 +128,7 @@ public sealed partial class ApplicationsPage : Page
 			new() { Text = "Antigravity IDE", ImageSource = "ms-appx:///Assets/Fluent/Antigravity.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs", "Antigravity IDE", "Antigravity IDE.exe")) },
 			new() { Text = "Cursor", ImageSource = "ms-appx:///Assets/Fluent/Cursor.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "cursor", "Cursor.exe")) },
 			new() { Text = "Devin", ImageSource = "ms-appx:///Assets/Fluent/Devin.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs", "Devin", "Devin.exe"))},
+			new() { Text = "IntelliJ IDEA", ImageSource = "ms-appx:///Assets/Fluent/IDEA.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "JetBrains", "IntelliJ IDEA 2026.1.3", "bin", "idea64.exe")) },
 			new() { Text = "WinMerge", ImageSource = "ms-appx:///Assets/Fluent/WinMerge.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "WinMerge", "WinMergeU.exe"))},
 			new() { Text = "Git", ImageSource = "ms-appx:///Assets/Fluent/Git.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Git", "bin", "git.exe")) },
 			new() { Text = "CMake", ImageSource = "ms-appx:///Assets/Fluent/CMake.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "CMake", "bin", "cmake-gui.exe")) },
@@ -164,12 +167,22 @@ public sealed partial class ApplicationsPage : Page
 		{
 			new() { Text = "Reaper", ImageSource = "ms-appx:///Assets/Fluent/Reaper.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "REAPER (x64)", "reaper.exe")) },
 			new() { Text = "FL Studio", ImageSource = "ms-appx:///Assets/Fluent/FLStudio.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Image-Line", "FL Studio 2025", "FL64.exe")) },
+			new() { Text = "Audacity", ImageSource = "ms-appx:///Assets/Fluent/Audacity.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Audacity", "Audacity.exe")) },
 			new() { Text = "FlexASIO", ImageSource = "ms-appx:///Assets/Fluent/FlexASIO.png", IsInstalled = Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "FlexASIO")) },
 			new() { Text = "ASIO4ALL", ImageSource = "ms-appx:///Assets/Fluent/ASIO4ALL.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "ASIO4ALL v2", "a4apanel.exe")) },
 			new() { Text = "Arturia MIDI Control Center", ImageSource = "ms-appx:///Assets/Fluent/ArturiaMidiControlCenter.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "Arturia", "MIDI Control Center", "MIDI Control Center.exe")) }
 		};
 		foreach (var item in musicProductionList.Where(item => !item.IsInstalled))
 			musicProductionItems.Add(item);
+
+		var videoProductionList = new List<GridViewItem>
+		{
+			new() { Text = "DaVinci Resolve", ImageSource = "ms-appx:///Assets/Fluent/DavinciResolve.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Blackmagic Design", "DaVinci Resolve", "Resolve.exe")) },
+			new() { Text = "Blender", ImageSource = "ms-appx:///Assets/Fluent/Blender.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Blender Foundation", "Blender 5.1", "blender.exe")) },
+			new() { Text = "CapCut", ImageSource = "ms-appx:///Assets/Fluent/CapCut.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "CapCut", "Apps", "CapCut.exe")) }
+		};
+		foreach (var item in videoProductionList.Where(item => !item.IsInstalled))
+			videoProductionItems.Add(item);
 
 		var multimediaList = new List<GridViewItem>
 		{
@@ -216,7 +229,7 @@ public sealed partial class ApplicationsPage : Page
 
 	private void GridView_SelectionChanged(object sender, SelectionChangedEventArgs e)
 	{
-		InstallButton.IsEnabled = Office.SelectedItems.Count > 0 || Development.SelectedItems.Count > 0 || Sysinternals.SelectedItems.Count > 0 || Overclocking.SelectedItems.Count > 0 || Music.SelectedItems.Count > 0 || Peripherals.SelectedItems.Count > 0 || Controllers.SelectedItems.Count > 0 || Messaging.SelectedItems.Count > 0 || Launchers.SelectedItems.Count > 0 || Miscellaneous.SelectedItems.Count > 0 || MusicProduction.SelectedItems.Count > 0 || Multimedia.SelectedItems.Count > 0;
+		InstallButton.IsEnabled = Office.SelectedItems.Count > 0 || Development.SelectedItems.Count > 0 || Sysinternals.SelectedItems.Count > 0 || Overclocking.SelectedItems.Count > 0 || Music.SelectedItems.Count > 0 || Peripherals.SelectedItems.Count > 0 || Controllers.SelectedItems.Count > 0 || Messaging.SelectedItems.Count > 0 || Launchers.SelectedItems.Count > 0 || Miscellaneous.SelectedItems.Count > 0 || VideoProduction.SelectedItems.Count > 0 || MusicProduction.SelectedItems.Count > 0 || Multimedia.SelectedItems.Count > 0;
 	}
 
 	private async void InstallButton_Click(object sender, RoutedEventArgs e)
@@ -289,6 +302,7 @@ public sealed partial class ApplicationsPage : Page
 		selection.Antigravity = selectedDev.Contains("Antigravity IDE");
 		selection.Cursor = selectedDev.Contains("Cursor");
 		selection.Devin = selectedDev.Contains("Devin");
+		selection.IDEA = selectedDev.Contains("IntelliJ IDEA");
 		selection.WinMerge = selectedDev.Contains("WinMerge");
 		selection.Git = selectedDev.Contains("Git");
 		selection.CMake = selectedDev.Contains("CMake");
@@ -318,9 +332,16 @@ public sealed partial class ApplicationsPage : Page
 		var selectedMusicProduction = selectedMusicProductionItems.Select(item => item.Text).ToList();
 		selection.Reaper = selectedMusicProduction.Contains("Reaper");
 		selection.FLStudio = selectedMusicProduction.Contains("FL Studio");
+		selection.Audacity = selectedMusicProduction.Contains("Audacity");
 		selection.FlexASIO = selectedMusicProduction.Contains("FlexASIO");
 		selection.ASIO4ALL = selectedMusicProduction.Contains("ASIO4ALL");
 		selection.ArturiaMidiControlCenter = selectedMusicProduction.Contains("Arturia MIDI Control Center");
+
+		var selectedVideoProductionItems = VideoProduction.SelectedItems.Cast<GridViewItem>().ToList();
+		var selectedVideoProduction = selectedVideoProductionItems.Select(item => item.Text).ToList();
+		selection.DaVinciResolve = selectedVideoProduction.Contains("DaVinci Resolve");
+		selection.Blender = selectedVideoProduction.Contains("Blender");
+		selection.CapCut = selectedVideoProduction.Contains("CapCut");
 
 		var selectedMultimediaItems = Multimedia.SelectedItems.Cast<GridViewItem>().ToList();
 		var selectedMultimedia = selectedMultimediaItems.Select(item => item.Text).ToList();
@@ -408,6 +429,9 @@ public sealed partial class ApplicationsPage : Page
 
 			foreach (var item in selectedMusicProductionItems)
 				musicProductionItems.Remove(item);
+
+			foreach (var item in selectedVideoProductionItems)
+				videoProductionItems.Remove(item);
 
 			foreach (var item in selectedMultimediaItems)
 				multimediaItems.Remove(item);

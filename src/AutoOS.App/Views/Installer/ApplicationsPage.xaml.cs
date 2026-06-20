@@ -14,6 +14,7 @@ public sealed partial class ApplicationsPage : Page
 	private bool isInitializingSysinternalsState = true;
 	private bool isInitializingOverclockingState = true;
 	private bool isInitializingMusicProductionState = true;
+	private bool isInitializingVideoProductionState = true;
 	private bool isInitializingMultimediaState = true;
 	private bool isInitializingOfficeState = true;
 	private bool isInitializingMiscellaneousState = true;
@@ -33,6 +34,7 @@ public sealed partial class ApplicationsPage : Page
 		GetSysinternals();
 		GetOverclocking();
 		GetMusicProduction();
+		GetVideoProduction();
 		GetMultimedia();
 		GetOffice();
 		GetMiscellaneous();
@@ -118,6 +120,7 @@ public sealed partial class ApplicationsPage : Page
 			new() { Text = "Antigravity IDE", ImageSource = "ms-appx:///Assets/Fluent/Antigravity.png" },
 			new() { Text = "Cursor", ImageSource = "ms-appx:///Assets/Fluent/Cursor.png" },
 			new() { Text = "Devin", ImageSource = "ms-appx:///Assets/Fluent/Devin.png" },
+			new() { Text = "IntelliJ IDEA", ImageSource = "ms-appx:///Assets/Fluent/IDEA.png" },
 			new() { Text = "WinMerge", ImageSource = "ms-appx:///Assets/Fluent/WinMerge.png" },
 			new() { Text = "Git", ImageSource = "ms-appx:///Assets/Fluent/Git.png" },
 			new() { Text = "CMake", ImageSource = "ms-appx:///Assets/Fluent/CMake.png" },
@@ -150,9 +153,17 @@ public sealed partial class ApplicationsPage : Page
 		{
 			new() { Text = "Reaper", ImageSource = "ms-appx:///Assets/Fluent/Reaper.png" },
 			new() { Text = "FL Studio", ImageSource = "ms-appx:///Assets/Fluent/FLStudio.png" },
+			new() { Text = "Audacity", ImageSource = "ms-appx:///Assets/Fluent/Audacity.png" },
 			new() { Text = "FlexASIO", ImageSource = "ms-appx:///Assets/Fluent/FlexASIO.png" },
 			new() { Text = "ASIO4ALL", ImageSource = "ms-appx:///Assets/Fluent/ASIO4ALL.png" },
 			new() { Text = "Arturia MIDI Control Center", ImageSource = "ms-appx:///Assets/Fluent/ArturiaMidiControlCenter.png" }
+		};
+
+		VideoProduction.ItemsSource = new List<GridViewItem>
+		{
+			new() { Text = "DaVinci Resolve", ImageSource = "ms-appx:///Assets/Fluent/DavinciResolve.png" },
+			new() { Text = "Blender", ImageSource = "ms-appx:///Assets/Fluent/Blender.png" },
+			new() { Text = "CapCut", ImageSource = "ms-appx:///Assets/Fluent/CapCut.png" }
 		};
 
 		Multimedia.ItemsSource = new List<GridViewItem>
@@ -309,6 +320,19 @@ public sealed partial class ApplicationsPage : Page
 		isInitializingMusicProductionState = false;
 	}
 
+	private void GetVideoProduction()
+	{
+		var selectedVideoProduction = localSettings.Values["VideoProduction"] as string;
+		var videoProductionItems = VideoProduction.ItemsSource as List<GridViewItem>;
+		VideoProduction.SelectedItems.AddRange(
+			selectedVideoProduction?.Split(new[] { ", " }, StringSplitOptions.RemoveEmptyEntries)
+			.Select(e => videoProductionItems?.FirstOrDefault(ext => ext.Text == e))
+			.Where(ext => ext != null) ?? Enumerable.Empty<GridViewItem>()
+		);
+
+		isInitializingVideoProductionState = false;
+	}
+
 	private void GetMultimedia()
 	{
 		var selectedMultimedia = localSettings.Values["Multimedia"] as string;
@@ -454,6 +478,18 @@ public sealed partial class ApplicationsPage : Page
 			.ToArray();
 
 		localSettings.Values["MusicProduction"] = string.Join(", ", selectedMusicProduction);
+	}
+
+	private void VideoProduction_Changed(object sender, SelectionChangedEventArgs e)
+	{
+		if (isInitializingVideoProductionState) return;
+
+		var selectedVideoProduction = VideoProduction.SelectedItems
+			.Cast<GridViewItem>()
+			.Select(item => item.Text)
+			.ToArray();
+
+		localSettings.Values["VideoProduction"] = string.Join(", ", selectedVideoProduction);
 	}
 
 	private void Multimedia_Changed(object sender, SelectionChangedEventArgs e)

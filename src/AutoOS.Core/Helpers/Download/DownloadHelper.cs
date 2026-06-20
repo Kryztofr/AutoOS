@@ -232,6 +232,145 @@ public static partial class DownloadHelper
 		reporter?.Report(progress: 100, isIndeterminate: true);
 	}
 
+	public static async Task Download(IEnumerable<string> urls, string path, IEnumerable<string> files = null, IStatusReporter reporter = null)
+	{
+		Directory.CreateDirectory(path);
+		var urlList = urls.ToList();
+		var fileList = files?.ToList() ?? new List<string>();
+		long totalBytesDownloaded = 0;
+		DateTime lastLoggedTime = DateTime.MinValue;
+		double lastSpeedMB = 0;
+		var startTime = DateTime.Now;
+
+		// Fetch actual file sizes
+		long totalBytes = 0;
+		foreach (string url in urlList)
+		{
+			try
+			{
+				using var headRequest = new HttpRequestMessage(HttpMethod.Head, url);
+				headRequest.Headers.UserAgent.ParseAdd("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36");
+				using var response = await httpClient.SendAsync(headRequest, HttpCompletionOption.ResponseHeadersRead);
+				if (response.Content.Headers.ContentLength.HasValue)
+				{
+					totalBytes += response.Content.Headers.ContentLength.Value;
+				}
+			}
+			catch { }
+		}
+		double totalSizeMB = totalBytes / (1024.0 * 1024.0);
+
+		for (int i = 0; i < urlList.Count; i++)
+		{
+			string url = urlList[i];
+			string file = fileList.Count > i ? fileList[i] : null;
+			string fileName = string.IsNullOrWhiteSpace(file) ? Path.GetFileName(url) : file;
+			string destination = Path.Combine(path, fileName);
+
+			if (url.Contains("raw.githubusercontent.com", StringComparison.OrdinalIgnoreCase))
+			{
+				using (var response = await httpClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead))
+				{
+					response.EnsureSuccessStatusCode();
+					using var contentStream = await response.Content.ReadAsStreamAsync();
+					using var fileStream = new FileStream(destination, FileMode.Create, FileAccess.Write, FileShare.None, 8192, true);
+					await contentStream.CopyToAsync(fileStream);
+					totalBytesDownloaded = new FileInfo(destination).Length;
+				}
+			}
+			else
+			{
+				DownloadConfiguration config = new()
+				{
+					MaxTryAgainOnFailure = 8,
+					EnableAutoResumeDownload = true,
+					ParallelDownload = true,
+					ChunkCount = 4,
+					ParallelCount = 4,
+					HttpClientTimeout = 300000,
+					CheckDiskSizeBeforeDownload = true,
+					MinimumChunkSize = 1024 * 1024,
+					RequestConfiguration = new RequestConfiguration
+					{
+						Headers = new WebHeaderCollection
+						{
+							{ "User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36" },
+							{ "Accept", "*/*" },
+							{ "Accept-Language", "en-US,en;q=0.9" },
+							{ "Connection", "keep-alive" }
+						}
+					}
+				};
+
+				if (url.Contains("downloadmirror.intel.com", StringComparison.OrdinalIgnoreCase))
+				{
+					config.RequestConfiguration.Headers.Add("Cookie", string.Join("; ", (await BypassAwsWaf(url)).Select(kvp => $"{kvp.Key}={kvp.Value}")));
+				}
+
+				if (url.Contains("www2.ati.com", StringComparison.OrdinalIgnoreCase))
+				{
+					config.RequestConfiguration = new RequestConfiguration
+					{
+						Headers = new WebHeaderCollection
+						{
+							{ "Referer", "http://support.amd.com" },
+							{ "Accept", "*/*" },
+							{ "User-Agent", "AMD Catalyst Install Manager/0.0" },
+							{ "Cache-Control", "no-cache" },
+							{ "Connection", "Keep-Alive" }
+						}
+					};
+				}
+
+				var downloadBuilder = DownloadBuilder.New()
+					.WithUrl(url)
+					.WithDirectory(path)
+					.WithFileName(file)
+					.WithConfiguration(config);
+
+				var download = downloadBuilder.Build();
+				long fileBytesDownloaded = 0;
+				long fileTotalBytes = 0;
+				Exception downloaderError = null;
+
+				download.DownloadProgressChanged += (sender, e) =>
+				{
+					if ((DateTime.Now - lastLoggedTime).TotalMilliseconds < 100) return;
+					lastLoggedTime = DateTime.Now;
+
+					fileBytesDownloaded = e.ReceivedBytesSize;
+					fileTotalBytes = e.TotalBytesToReceive;
+					lastSpeedMB = e.BytesPerSecondSpeed / (1024.0 * 1024.0);
+					double combinedDownloadedMB = (totalBytesDownloaded + fileBytesDownloaded) / (1024.0 * 1024.0);
+					double percentage = totalSizeMB > 0 ? (combinedDownloadedMB / totalSizeMB) * 100.0 : ((double)(i + 1) / urlList.Count) * 100.0;
+
+					reporter?.Report($"{lastSpeedMB:F1} MB/s - {combinedDownloadedMB:F2} MB of {totalSizeMB:F2} MB", percentage, false);
+				};
+
+				download.DownloadFileCompleted += (sender, e) =>
+				{
+					if (e.Error == null)
+					{
+						totalBytesDownloaded += fileTotalBytes;
+					}
+					else
+					{
+						downloaderError = e.Error;
+					}
+				};
+
+				await download.StartAsync();
+
+				if (downloaderError != null)
+				{
+					throw downloaderError;
+				}
+			}
+		}
+
+		reporter?.Report($"{totalSizeMB:F2} MB of {totalSizeMB:F2} MB", 100, false);
+	}
+
 	public static async Task<Dictionary<string, string>> BypassAwsWaf(string url)
 	{
 		return await Task.Run(() =>
