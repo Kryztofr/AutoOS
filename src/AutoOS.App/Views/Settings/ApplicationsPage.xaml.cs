@@ -49,7 +49,7 @@ public sealed partial class ApplicationsPage : Page
 	{
 		var messagingList = new List<GridViewItem>
 		{
-			new() { Text = "Discord", ImageSource = "ms-appx:///Assets/Fluent/Discord.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Discord", "Update.exe")) },
+			new() { Text = "Discord", ImageSource = "ms-appx:///Assets/Fluent/Discord.png", IsInstalled = Directory.GetDirectories(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Discord").SelectMany(directory => Directory.GetDirectories(directory, "app-*")).Any() },
 			new() { Text = "WhatsApp", ImageSource = "ms-appx:///Assets/Fluent/Whatsapp.png", IsInstalled = Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Packages", "5319275A.WhatsAppDesktop_cv1g1gvanyjgm")) },
 			new() { Text = "Telegram Desktop", ImageSource = "ms-appx:///Assets/Fluent/Telegram.png", IsInstalled = Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Packages", "TelegramMessengerLLP.TelegramDesktop_t4vj0pshhgkwm")) },
 			new() { Text = "Unigram", ImageSource = "ms-appx:///Assets/Fluent/Unigram.png", IsInstalled = Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Packages", "38833FF26BA1D.UnigramPreview_g9c9v27vpyspw")) },
