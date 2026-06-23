@@ -230,6 +230,7 @@ public static partial class DownloadHelper
 
 					Exception fallbackError = null;
 					var httpClientStartTime = DateTime.Now;
+					var httpClientEndTime = DateTime.Now;
 					if (statusCode.HasValue && (int)statusCode.Value >= 200 && (int)statusCode.Value <= 299)
 					{
 						try
@@ -275,7 +276,7 @@ public static partial class DownloadHelper
 								}
 
 								await fileStream.FlushAsync();
-								var httpClientEndTime = DateTime.Now;
+								httpClientEndTime = DateTime.Now;
 							}
 						}
 						catch (Exception ex)
@@ -287,8 +288,10 @@ public static partial class DownloadHelper
 					if (File.Exists(singleFileName) && new FileInfo(singleFileName).Length != 0)
 					{
 						errorDetails.AppendLine("Fallback download succeeded");
-						errorDetails.AppendLine($"Downloader took: {(downloaderEndTime - downloaderStartTime).TotalMinutes >= 1 ? $"{(int)(downloaderEndTime - downloaderStartTime).TotalMinutes}min {(downloaderEndTime - downloaderStartTime).Seconds}sec" : $"{(downloaderEndTime - downloaderStartTime).Seconds}sec"}");
-						errorDetails.AppendLine($"HttpClient took: {(httpClientEndTime - httpClientStartTime).TotalMinutes >= 1 ? $"{(int)(httpClientEndTime - httpClientStartTime).TotalMinutes}min {(httpClientEndTime - httpClientStartTime).Seconds}sec" : $"{(httpClientEndTime - httpClientStartTime).Seconds}sec"}");
+						var downloaderTime = downloaderEndTime - downloaderStartTime;
+						var httpClientTime = httpClientEndTime - httpClientStartTime;
+						errorDetails.AppendLine($"Downloader took: {(downloaderTime.TotalMinutes >= 1 ? $"{(int)downloaderTime.TotalMinutes}min {downloaderTime.Seconds}sec" : $"{downloaderTime.Seconds}sec")}");
+						errorDetails.AppendLine($"HttpClient took: {(httpClientTime.TotalMinutes >= 1 ? $"{(int)httpClientTime.TotalMinutes}min {httpClientTime.Seconds}sec" : $"{httpClientTime.Seconds}sec")}");
 						await LogHelper.LogError(new Exception(errorDetails.ToString(), downloaderError));
 					}
 					else
