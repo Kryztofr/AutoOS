@@ -166,7 +166,8 @@ public sealed partial class ApplicationsPage : Page
 		{
 			new() { Text = "DaVinci Resolve", ImageSource = "ms-appx:///Assets/Fluent/DavinciResolve.png" },
 			new() { Text = "Blender", ImageSource = "ms-appx:///Assets/Fluent/Blender.png" },
-			new() { Text = "CapCut", ImageSource = "ms-appx:///Assets/Fluent/CapCut.png" }
+			new() { Text = "CapCut", ImageSource = "ms-appx:///Assets/Fluent/CapCut.png" },
+			new() { Text = "LosslessCut", ImageSource = "ms-appx:///Assets/Fluent/LosslessCut.png" }
 		};
 
 		Multimedia.ItemsSource = new List<GridViewItem>
