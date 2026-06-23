@@ -42,7 +42,10 @@ public class ApplicationSelection
 	public bool EA { get; set; }
 	public bool BattleNet { get; set; }
 	public bool MinecraftLauncher { get; set; }
+	public bool CurseForge { get; set; }
 	public bool LunarClient { get; set; }
+	public bool FeatherClient { get; set; }
+	public bool Froststrap { get; set; }
 	public bool RockstarGamesLauncher { get; set; }
 	public bool FiveM { get; set; }
 	public bool FACEIT { get; set; }
@@ -174,7 +177,10 @@ public static class ApplicationStage
 		bool EA = selection?.EA ?? PreparingStage.EA;
 		bool BattleNet = selection?.BattleNet ?? PreparingStage.BattleNet;
 		bool MinecraftLauncher = selection?.MinecraftLauncher ?? PreparingStage.MinecraftLauncher;
+		bool CurseForge = selection?.CurseForge ?? PreparingStage.CurseForge;
 		bool LunarClient = selection?.LunarClient ?? PreparingStage.LunarClient;
+		bool FeatherClient = selection?.FeatherClient ?? PreparingStage.FeatherClient;
+		bool Froststrap = selection?.Froststrap ?? PreparingStage.Froststrap;
 		bool RockstarGamesLauncher = selection?.RockstarGamesLauncher ?? PreparingStage.RockstarGamesLauncher;
 		bool FiveM = selection?.FiveM ?? PreparingStage.FiveM;
 		bool FACEIT = selection?.FACEIT ?? PreparingStage.FACEIT;
@@ -798,6 +804,16 @@ public static class ApplicationStage
 			// remove minecraft launcher desktop shortcut
 			("Removing Minecraft Launcher desktop shortcut", async () => File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonDesktopDirectory), "Minecraft Launcher.lnk")), () => MinecraftLauncher == true),
 
+			// download curseforge
+			("Downloading CurseForge", async () => await DownloadHelper.Download("https://curseforge.overwolf.com/downloads/curseforge-latest-win64.exe", Path.GetTempPath(), "CurseForge-Setup.exe", reporter: reporter), () => CurseForge == true),
+
+			// install curseforge
+			("Installing CurseForge", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "CurseForge-Setup.exe"), Arguments = "/S" , WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => CurseForge == true),
+			("Cleaning up CurseForge files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "CurseForge-Setup.exe")), () => CurseForge == true),
+
+			// remove curseforge desktop shortcut
+			("Removing CurseForge desktop shortcut", async () => File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "CurseForge.lnk")), () => CurseForge == true),
+
 			// download lunar client
 			("Downloading Lunar Client", async () => await DownloadHelper.Download("https://launcherupdates.lunarclientcdn.com/Lunar%20Client%20v3.4.9.exe", Path.GetTempPath(), "Lunar Client.exe", reporter: reporter), () => LunarClient == true),
 
@@ -807,6 +823,26 @@ public static class ApplicationStage
 
 			// remove lunar client desktop shortcut
 			("Removing Lunar Client desktop shortcut", async () => File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "Lunar Client.lnk")), () => LunarClient == true),
+
+			// download feather client
+			("Downloading Feather Client", async () => await DownloadHelper.Download("https://feathermc.com/download/windows", Path.GetTempPath(), "Feather Launcher Setup.exe", reporter: reporter), () => FeatherClient == true),
+
+			// install feather client
+			("Installing Feather Client", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "Feather Launcher Setup.exe"), Arguments = "/S" , WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => FeatherClient == true),
+			("Cleaning up Feather Client files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "Feather Launcher Setup.exe")), () => FeatherClient == true),
+
+			// remove feather client desktop shortcut
+			("Removing Feather Client desktop shortcut", async () => File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "Feather Launcher.lnk")), () => FeatherClient == true),
+
+			// download froststrap
+			("Downloading Froststrap", async () => await DownloadHelper.Download(JsonDocument.Parse(await new HttpClient { DefaultRequestHeaders = { { "User-Agent", "AutoOS" } } }.GetStringAsync("https://api.github.com/repos/Froststrap/Froststrap/releases")).RootElement.EnumerateArray().First(release => !release.GetProperty("prerelease").GetBoolean() && release.GetProperty("assets").EnumerateArray().Any(asset => asset.GetProperty("name").GetString().EndsWith(".exe"))).GetProperty("assets").EnumerateArray().First(asset => asset.GetProperty("name").GetString().EndsWith(".exe")).GetProperty("browser_download_url").GetString(), Path.GetTempPath(), "Froststrap.exe", reporter: reporter), () => Froststrap == true),
+
+			// install froststrap
+			("Installing Froststrap", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "Froststrap.exe"), Arguments = "-quiet" , WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => Froststrap == true),
+			("Cleaning up Froststrap files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "Froststrap.exe")), () => Froststrap == true),
+
+			// remove froststrap desktop shortcut
+			("Removing Froststrap desktop shortcut", async () => File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "Froststrap.lnk")), () => Froststrap == true),
 
 			// download rockstar games launcher
 			("Downloading Rockstar Games Launcher", async () => await DownloadHelper.Download("https://gamedownloads.rockstargames.com/public/installer/Rockstar-Games-Launcher.exe", Path.GetTempPath(), "Rockstar-Games-Launcher.exe", reporter: reporter), () => RockstarGamesLauncher == true),
