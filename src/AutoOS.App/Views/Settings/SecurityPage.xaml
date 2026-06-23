@@ -64,7 +64,7 @@
 						</dev:SettingsCard>
 					</dev:SettingsGroup.Items>
 				</dev:SettingsGroup>
-				<StackPanel x:Name="WindowsDefenderInfo"
+				<StackPanel x:Name="SecurityInfo"
 							Margin="4,8,4,28" />
 			</StackPanel>
 		</ScrollViewer>

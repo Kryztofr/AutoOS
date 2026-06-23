@@ -115,34 +115,7 @@ public sealed partial class InstallPage : Page
 		{
 			try
 			{
-				string webhook = LogConfig.Error;
-				if (!string.IsNullOrEmpty(webhook))
-				{
-					using var client = new HttpClient();
-					using var multipart = new MultipartFormDataContent();
-
-					var payload = new JsonObject
-					{
-						["content"] = $"Logging failure: {ex.Message}, AutoOS {ProcessInfoHelper.Version}"
-					};
-					multipart.Add(new StringContent(payload.ToJsonString(), Encoding.UTF8, "application/json"), "payload_json");
-
-					var errorSb = new StringBuilder();
-					errorSb.AppendLine($"{ex.GetType().FullName}");
-					errorSb.AppendLine($"Message: {ex.Message}");
-					errorSb.AppendLine($"HResult: 0x{ex.HResult:X}");
-					errorSb.AppendLine($"Source: {ex.Source}");
-					errorSb.AppendLine(ex.StackTrace);
-					if (ex.InnerException != null)
-					{
-						errorSb.AppendLine("**InnerException:**");
-						errorSb.AppendLine(ex.InnerException.ToString());
-					}
-
-					multipart.Add(new ByteArrayContent(Encoding.UTF8.GetBytes(errorSb.ToString())), "file", "error.txt");
-
-					await client.PostAsync(webhook, multipart);
-				}
+				await LogHelper.LogFallbackError(ex, ex);
 			}
 			catch { }
 		}
@@ -222,38 +195,7 @@ public sealed partial class InstallPage : Page
 						}
 						catch (Exception exception)
 						{
-							try
-							{
-								string webhook = LogConfig.Error;
-								if (!string.IsNullOrEmpty(webhook))
-								{
-									using var client = new HttpClient();
-									using var multipart = new MultipartFormDataContent();
-
-									var payload = new JsonObject
-									{
-										["content"] = $"Logging failure: {ex.Message}, AutoOS {ProcessInfoHelper.Version}"
-									};
-									multipart.Add(new StringContent(payload.ToJsonString(), Encoding.UTF8, "application/json"), "payload_json");
-
-									var errorSb = new StringBuilder();
-									errorSb.AppendLine($"{exception.GetType().FullName}");
-									errorSb.AppendLine($"Message: {exception.Message}");
-									errorSb.AppendLine($"HResult: 0x{exception.HResult:X}");
-									errorSb.AppendLine($"Source: {exception.Source}");
-									errorSb.AppendLine(exception.StackTrace);
-									if (exception.InnerException != null)
-									{
-										errorSb.AppendLine("**InnerException:**");
-										errorSb.AppendLine(exception.InnerException.ToString());
-									}
-
-									multipart.Add(new ByteArrayContent(Encoding.UTF8.GetBytes(errorSb.ToString())), "file", "error.txt");
-
-									await client.PostAsync(webhook, multipart);
-								}
-							}
-							catch { }
+							await LogHelper.LogFallbackError(ex, exception);
 						}
 
 						Info.Title = $"{previousTitle}: {ex.Message}";

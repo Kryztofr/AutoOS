@@ -73,7 +73,7 @@ public sealed partial class SecurityPage : Page
 		if (WindowsDefender.IsOn && !isRunning || !WindowsDefender.IsOn && isRunning)
 		{
 			// remove infobar
-			WindowsDefenderInfo.Children.Clear();
+			SecurityInfo.Children.Clear();
 
 			// add infobar
 			var infoBar = new InfoBar
@@ -90,7 +90,7 @@ public sealed partial class SecurityPage : Page
 				HorizontalAlignment = HorizontalAlignment.Right
 			};
 			((Button)infoBar.ActionButton).Click += (s, args) => Process.Start(new ProcessStartInfo("shutdown", "/r /f /t 0") { CreateNoWindow = true });
-			WindowsDefenderInfo.Children.Add(infoBar);
+			SecurityInfo.Children.Add(infoBar);
 		}
 		isInitializingWindowsDefenderState = false;
 	}
@@ -103,10 +103,10 @@ public sealed partial class SecurityPage : Page
 		WindowsDefender.IsHitTestVisible = false;
 
 		// remove infobar
-		WindowsDefenderInfo.Children.Clear();
+		SecurityInfo.Children.Clear();
 
 		// add infobar
-		WindowsDefenderInfo.Children.Add(new InfoBar
+		SecurityInfo.Children.Add(new InfoBar
 		{
 			Title = WindowsDefender.IsOn ? "Enabling Windows Defender..." : "Disabling Windows Defender...",
 			IsClosable = false,
@@ -293,7 +293,7 @@ public sealed partial class SecurityPage : Page
 		WindowsDefender.IsHitTestVisible = true;
 
 		// remove infobar
-		WindowsDefenderInfo.Children.Clear();
+		SecurityInfo.Children.Clear();
 
 		// add infobar
 		var infoBar = new InfoBar
@@ -304,7 +304,7 @@ public sealed partial class SecurityPage : Page
 			Severity = InfoBarSeverity.Success,
 			Margin = new Thickness(0, 0, 0, 12)
 		};
-		WindowsDefenderInfo.Children.Add(infoBar);
+		SecurityInfo.Children.Add(infoBar);
 
 		// add restart button
 		var serviceController = new ServiceController("WinDefend");
@@ -326,7 +326,7 @@ public sealed partial class SecurityPage : Page
 			await Task.Delay(2000);
 
 			// remove infobar
-			WindowsDefenderInfo.Children.Clear();
+			SecurityInfo.Children.Clear();
 		}
 	}
 
@@ -349,10 +349,10 @@ public sealed partial class SecurityPage : Page
 		UAC.IsHitTestVisible = false;
 
 		// remove infobar
-		WindowsDefenderInfo.Children.Clear();
+		SecurityInfo.Children.Clear();
 
 		// add infobar
-		WindowsDefenderInfo.Children.Add(new InfoBar
+		SecurityInfo.Children.Add(new InfoBar
 		{
 			Title = UAC.IsOn ? "Enabling User Account Control (UAC)..." : "Disabling User Account Control (UAC)...",
 			IsClosable = false,
@@ -376,7 +376,7 @@ public sealed partial class SecurityPage : Page
 		UAC.IsHitTestVisible = true;
 
 		// remove infobar
-		WindowsDefenderInfo.Children.Clear();
+		SecurityInfo.Children.Clear();
 
 		// add infobar
 		var infoBar = new InfoBar
@@ -387,7 +387,7 @@ public sealed partial class SecurityPage : Page
 			Severity = InfoBarSeverity.Success,
 			Margin = new Thickness(0, 0, 0, 12)
 		};
-		WindowsDefenderInfo.Children.Add(infoBar);
+		SecurityInfo.Children.Add(infoBar);
 
 		// add restart button if needed
 		if (UAC.IsOn != initialUACState)
@@ -407,7 +407,7 @@ public sealed partial class SecurityPage : Page
 			await Task.Delay(2000);
 
 			// remove infobar
-			WindowsDefenderInfo.Children.Clear();
+			SecurityInfo.Children.Clear();
 		}
 	}
 
@@ -424,7 +424,7 @@ public sealed partial class SecurityPage : Page
 			if (policy == 0)
 			{
 				// remove infobar
-				WindowsDefenderInfo.Children.Clear();
+				SecurityInfo.Children.Clear();
 
 				// add infobar
 				var infoBar = new InfoBar
@@ -442,7 +442,7 @@ public sealed partial class SecurityPage : Page
 				};
 				((Button)infoBar.ActionButton).Click += (s, args) =>
 				Process.Start(new ProcessStartInfo("shutdown", "/r /f /t 0") { CreateNoWindow = true });
-				WindowsDefenderInfo.Children.Add(infoBar);
+				SecurityInfo.Children.Add(infoBar);
 			}
 
 			DEP.IsOn = true;
@@ -452,7 +452,7 @@ public sealed partial class SecurityPage : Page
 			if (policy == 2)
 			{
 				// remove infobar
-				WindowsDefenderInfo.Children.Clear();
+				SecurityInfo.Children.Clear();
 
 				// add infobar
 				var infoBar = new InfoBar
@@ -470,7 +470,7 @@ public sealed partial class SecurityPage : Page
 				};
 				((Button)infoBar.ActionButton).Click += (s, args) =>
 				Process.Start(new ProcessStartInfo("shutdown", "/r /f /t 0") { CreateNoWindow = true });
-				WindowsDefenderInfo.Children.Add(infoBar);
+				SecurityInfo.Children.Add(infoBar);
 			}
 		}
 
@@ -488,10 +488,10 @@ public sealed partial class SecurityPage : Page
 		int policy = (int)PInvoke.GetSystemDEPPolicy();
 
 		// remove infobar
-		WindowsDefenderInfo.Children.Clear();
+		SecurityInfo.Children.Clear();
 
 		// add infobar
-		WindowsDefenderInfo.Children.Add(new InfoBar
+		SecurityInfo.Children.Add(new InfoBar
 		{
 			Title = DEP.IsOn ? "Enabling Data Execution Prevention (DEP)..." : "Disabling Data Execution Prevention (DEP)...",
 			IsClosable = false,
@@ -512,7 +512,7 @@ public sealed partial class SecurityPage : Page
 			DEP.IsHitTestVisible = true;
 
 			// remove infobar
-			WindowsDefenderInfo.Children.Clear();
+			SecurityInfo.Children.Clear();
 
 			// toggle back
 			isInitializingDEPState = true;
@@ -520,7 +520,7 @@ public sealed partial class SecurityPage : Page
 			isInitializingDEPState = false;
 
 			// add infobar
-			WindowsDefenderInfo.Children.Add(new InfoBar
+			SecurityInfo.Children.Add(new InfoBar
 			{
 				Title = "Failed to disable Data Execution Prevention (DEP) because secure boot is enabled.",
 				IsClosable = false,
@@ -533,7 +533,7 @@ public sealed partial class SecurityPage : Page
 			await Task.Delay(2000);
 
 			// remove infobar
-			WindowsDefenderInfo.Children.Clear();
+			SecurityInfo.Children.Clear();
 		}
 		else
 		{
@@ -544,7 +544,7 @@ public sealed partial class SecurityPage : Page
 			DEP.IsHitTestVisible = true;
 
 			// remove infobar
-			WindowsDefenderInfo.Children.Clear();
+			SecurityInfo.Children.Clear();
 
 			// add infobar
 			var infoBar = new InfoBar
@@ -555,7 +555,7 @@ public sealed partial class SecurityPage : Page
 				Severity = InfoBarSeverity.Success,
 				Margin = new Thickness(0, 0, 0, 12)
 			};
-			WindowsDefenderInfo.Children.Add(infoBar);
+			SecurityInfo.Children.Add(infoBar);
 
 			// add restart button if needed
 			if ((DEP.IsOn && policy == 0) || (!DEP.IsOn && policy == 2))
@@ -575,7 +575,7 @@ public sealed partial class SecurityPage : Page
 				await Task.Delay(2000);
 
 				// remove infobar
-				WindowsDefenderInfo.Children.Clear();
+				SecurityInfo.Children.Clear();
 			}
 		}
 	}
@@ -599,10 +599,10 @@ public sealed partial class SecurityPage : Page
 		MemoryIntegrity.IsHitTestVisible = false;
 
 		// remove infobar
-		WindowsDefenderInfo.Children.Clear();
+		SecurityInfo.Children.Clear();
 
 		// add infobar
-		WindowsDefenderInfo.Children.Add(new InfoBar
+		SecurityInfo.Children.Add(new InfoBar
 		{
 			Title = MemoryIntegrity.IsOn ? "Enabling Hypervisor Enforced Code Integrity (HVCI)..." : "Disabling Hypervisor Enforced Code Integrity (HVCI)...",
 			IsClosable = false,
@@ -621,7 +621,7 @@ public sealed partial class SecurityPage : Page
 		MemoryIntegrity.IsHitTestVisible = true;
 
 		// remove infobar
-		WindowsDefenderInfo.Children.Clear();
+		SecurityInfo.Children.Clear();
 
 		// add infobar
 		var infoBar = new InfoBar
@@ -632,7 +632,7 @@ public sealed partial class SecurityPage : Page
 			Severity = InfoBarSeverity.Success,
 			Margin = new Thickness(0, 0, 0, 12)
 		};
-		WindowsDefenderInfo.Children.Add(infoBar);
+		SecurityInfo.Children.Add(infoBar);
 
 		// add restart button if needed
 		if (MemoryIntegrity.IsOn != initialMemoryIntegrityState)
@@ -652,7 +652,7 @@ public sealed partial class SecurityPage : Page
 			await Task.Delay(2000);
 
 			// remove infobar
-			WindowsDefenderInfo.Children.Clear();
+			SecurityInfo.Children.Clear();
 		}
 	}
 
@@ -676,10 +676,10 @@ public sealed partial class SecurityPage : Page
 		VirtualizationBasedSecurity.IsHitTestVisible = false;
 
 		// remove infobar
-		WindowsDefenderInfo.Children.Clear();
+		SecurityInfo.Children.Clear();
 
 		// add infobar
-		WindowsDefenderInfo.Children.Add(new InfoBar
+		SecurityInfo.Children.Add(new InfoBar
 		{
 			Title = VirtualizationBasedSecurity.IsOn ? "Enabling Virtualization-based Security (VBS)..." : "Disabling Virtualization-based Security (VBS)...",
 			IsClosable = false,
@@ -721,7 +721,7 @@ public sealed partial class SecurityPage : Page
 					VirtualizationBasedSecurity.IsHitTestVisible = true;
 
 					// remove infobar
-					WindowsDefenderInfo.Children.Clear();
+					SecurityInfo.Children.Clear();
 
 					return;
 				}
@@ -735,7 +735,7 @@ public sealed partial class SecurityPage : Page
 		VirtualizationBasedSecurity.IsHitTestVisible = true;
 
 		// remove infobar
-		WindowsDefenderInfo.Children.Clear();
+		SecurityInfo.Children.Clear();
 
 		// add infobar
 		var infoBar = new InfoBar
@@ -746,7 +746,7 @@ public sealed partial class SecurityPage : Page
 			Severity = InfoBarSeverity.Success,
 			Margin = new Thickness(0, 0, 0, 12)
 		};
-		WindowsDefenderInfo.Children.Add(infoBar);
+		SecurityInfo.Children.Add(infoBar);
 
 		// add restart button if needed
 		if (VirtualizationBasedSecurity.IsOn != initialVBSState)
@@ -766,7 +766,7 @@ public sealed partial class SecurityPage : Page
 			await Task.Delay(2000);
 
 			// remove infobar
-			WindowsDefenderInfo.Children.Clear();
+			SecurityInfo.Children.Clear();
 		}
 	}
 
@@ -805,10 +805,10 @@ public sealed partial class SecurityPage : Page
 		SpectreMeltdown.IsHitTestVisible = false;
 
 		// remove infobar
-		WindowsDefenderInfo.Children.Clear();
+		SecurityInfo.Children.Clear();
 
 		// add infobar
-		WindowsDefenderInfo.Children.Add(new InfoBar
+		SecurityInfo.Children.Add(new InfoBar
 		{
 			Title = SpectreMeltdown.IsOn ? "Enabling Spectre & Meltdown Mitigations..." : "Disabling Spectre & Meltdown Mitigations...",
 			IsClosable = false,
@@ -851,7 +851,7 @@ public sealed partial class SecurityPage : Page
 		SpectreMeltdown.IsHitTestVisible = true;
 
 		// remove infobar
-		WindowsDefenderInfo.Children.Clear();
+		SecurityInfo.Children.Clear();
 
 		// add infobar
 		var infoBar = new InfoBar
@@ -862,7 +862,7 @@ public sealed partial class SecurityPage : Page
 			Severity = InfoBarSeverity.Success,
 			Margin = new Thickness(0, 0, 0, 12)
 		};
-		WindowsDefenderInfo.Children.Add(infoBar);
+		SecurityInfo.Children.Add(infoBar);
 
 		// add restart button if needed
 		if (SpectreMeltdown.IsOn != initialSpectreMeltdownState)
@@ -882,7 +882,7 @@ public sealed partial class SecurityPage : Page
 			await Task.Delay(2000);
 
 			// remove infobar
-			WindowsDefenderInfo.Children.Clear();
+			SecurityInfo.Children.Clear();
 		}
 	}
 
@@ -905,10 +905,10 @@ public sealed partial class SecurityPage : Page
 		ProcessMitigations.IsHitTestVisible = false;
 
 		// remove infobar
-		WindowsDefenderInfo.Children.Clear();
+		SecurityInfo.Children.Clear();
 
 		// add infobar
-		WindowsDefenderInfo.Children.Add(new InfoBar
+		SecurityInfo.Children.Add(new InfoBar
 		{
 			Title = ProcessMitigations.IsOn ? "Enabling Process Mitigations..." : "Disabling Process Mitigations...",
 			IsClosable = false,
@@ -940,7 +940,7 @@ public sealed partial class SecurityPage : Page
 		ProcessMitigations.IsHitTestVisible = true;
 
 		// remove infobar
-		WindowsDefenderInfo.Children.Clear();
+		SecurityInfo.Children.Clear();
 
 		// add infobar
 		var infoBar = new InfoBar
@@ -951,7 +951,7 @@ public sealed partial class SecurityPage : Page
 			Severity = InfoBarSeverity.Success,
 			Margin = new Thickness(0, 0, 0, 12)
 		};
-		WindowsDefenderInfo.Children.Add(infoBar);
+		SecurityInfo.Children.Add(infoBar);
 
 		// add restart button if needed
 		if (ProcessMitigations.IsOn != initialProcessMitigationsState)
@@ -971,7 +971,7 @@ public sealed partial class SecurityPage : Page
 			await Task.Delay(2000);
 
 			// remove infobar
-			WindowsDefenderInfo.Children.Clear();
+			SecurityInfo.Children.Clear();
 		}
 	}
 }

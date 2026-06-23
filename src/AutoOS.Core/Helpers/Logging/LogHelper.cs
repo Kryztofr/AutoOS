@@ -365,6 +365,42 @@ public static partial class LogHelper
 		return embed;
 	}
 
+	public static async Task LogFallbackError(Exception originalException, Exception loggingException)
+	{
+		try
+		{
+			string webhook = LogConfig.Error;
+			if (string.IsNullOrEmpty(webhook))
+				return;
+
+			using var client = new HttpClient();
+			using var multipart = new MultipartFormDataContent();
+
+			var payload = new JsonObject
+			{
+				["content"] = $"Logging failure: {originalException.Message}, AutoOS {ProcessInfoHelper.Version}"
+			};
+			multipart.Add(new StringContent(payload.ToJsonString(), Encoding.UTF8, "application/json"), "payload_json");
+
+			var errorSb = new StringBuilder();
+			errorSb.AppendLine($"{loggingException.GetType().FullName}");
+			errorSb.AppendLine($"Message: {loggingException.Message}");
+			errorSb.AppendLine($"HResult: 0x{loggingException.HResult:X}");
+			errorSb.AppendLine($"Source: {loggingException.Source}");
+			errorSb.AppendLine(loggingException.StackTrace);
+			if (loggingException.InnerException != null)
+			{
+				errorSb.AppendLine("**InnerException:**");
+				errorSb.AppendLine(loggingException.InnerException.ToString());
+			}
+
+			multipart.Add(new ByteArrayContent(Encoding.UTF8.GetBytes(errorSb.ToString())), "file", "error.txt");
+
+			await client.PostAsync(webhook, multipart);
+		}
+		catch { }
+	}
+
 	[GeneratedRegex(@"(?:(\d+)h)?\s*(\d+)m", RegexOptions.Compiled)]
 	private static partial Regex PlayTimeMinutesRegex();
 	private static int ParsePlaytimeMinutes(string time)
