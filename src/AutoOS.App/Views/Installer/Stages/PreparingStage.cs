@@ -35,6 +35,7 @@ public static partial class PreparingStage
 	public static bool Firefox;
 	public static bool Zen;
 	public static bool Waterfox;
+	public static bool Floorp;
 	public static bool LibreWolf;
 	public static bool Mullvad;
 	public static bool uBlock;
@@ -77,6 +78,7 @@ public static partial class PreparingStage
 	public static bool PrismLauncher;
 	public static bool LunarClient;
 	public static bool FeatherClient;
+	public static bool Bloxstrap;
 	public static bool Froststrap;
 	public static bool RockstarGamesLauncher;
 	public static bool FiveM;
@@ -242,6 +244,7 @@ public static partial class PreparingStage
 			Firefox = (localSettings.Values["Browsers"]?.ToString().Contains("Firefox") ?? false);
 			Zen = (localSettings.Values["Browsers"]?.ToString().Contains("Zen") ?? false);
 			Waterfox = (localSettings.Values["Browsers"]?.ToString().Contains("Waterfox") ?? false);
+			Floorp = (localSettings.Values["Browsers"]?.ToString().Contains("Floorp") ?? false);
 			LibreWolf = (localSettings.Values["Browsers"]?.ToString().Contains("LibreWolf") ?? false);
 			Mullvad = (localSettings.Values["Browsers"]?.ToString().Contains("Mullvad Browser") ?? false);
 
@@ -279,6 +282,7 @@ public static partial class PreparingStage
 			PrismLauncher = (localSettings.Values["Launchers"]?.ToString().Contains("Prism Launcher") ?? false);
 			LunarClient = (localSettings.Values["Launchers"]?.ToString().Contains("Lunar Client") ?? false);
 			FeatherClient = (localSettings.Values["Launchers"]?.ToString().Contains("Feather Client") ?? false);
+			Bloxstrap = (localSettings.Values["Launchers"]?.ToString().Contains("Bloxstrap") ?? false);
 			Froststrap = (localSettings.Values["Launchers"]?.ToString().Contains("Froststrap") ?? false);
 			RockstarGamesLauncher = (localSettings.Values["Launchers"]?.ToString().Contains("Rockstar Games Launcher") ?? false);
 			FiveM = (localSettings.Values["Launchers"]?.ToString().Contains("FiveM") ?? false);

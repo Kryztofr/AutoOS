@@ -46,6 +46,7 @@ public class ApplicationSelection
 	public bool PrismLauncher { get; set; }
 	public bool LunarClient { get; set; }
 	public bool FeatherClient { get; set; }
+	public bool Bloxstrap { get; set; }
 	public bool Froststrap { get; set; }
 	public bool RockstarGamesLauncher { get; set; }
 	public bool FiveM { get; set; }
@@ -183,6 +184,7 @@ public static class ApplicationStage
 		bool PrismLauncher = selection?.PrismLauncher ?? PreparingStage.PrismLauncher;
 		bool LunarClient = selection?.LunarClient ?? PreparingStage.LunarClient;
 		bool FeatherClient = selection?.FeatherClient ?? PreparingStage.FeatherClient;
+		bool Bloxstrap = selection?.Bloxstrap ?? PreparingStage.Bloxstrap;
 		bool Froststrap = selection?.Froststrap ?? PreparingStage.Froststrap;
 		bool RockstarGamesLauncher = selection?.RockstarGamesLauncher ?? PreparingStage.RockstarGamesLauncher;
 		bool FiveM = selection?.FiveM ?? PreparingStage.FiveM;
@@ -845,15 +847,26 @@ public static class ApplicationStage
 			// remove feather client desktop shortcut
 			("Removing Feather Client desktop shortcut", async () => File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "Feather Launcher.lnk")), () => FeatherClient == true),
 
+			// download bloxstrap
+			("Downloading Bloxstrap", async () => await DownloadHelper.Download(JsonDocument.Parse(await new HttpClient { DefaultRequestHeaders = { { "User-Agent", "AutoOS" } } }.GetStringAsync("https://api.github.com/repos/bloxstraplabs/bloxstrap/releases")).RootElement.EnumerateArray().First(release => !release.GetProperty("prerelease").GetBoolean() && release.GetProperty("assets").EnumerateArray().Any(asset => asset.GetProperty("name").GetString().StartsWith("Bloxstrap-v") && asset.GetProperty("name").GetString().EndsWith(".exe"))).GetProperty("assets").EnumerateArray().First(asset => asset.GetProperty("name").GetString().StartsWith("Bloxstrap-v") && asset.GetProperty("name").GetString().EndsWith(".exe")).GetProperty("browser_download_url").GetString(), Path.GetTempPath(), "Bloxstrap.exe", reporter: reporter), () => Bloxstrap == true),
+
+			// install bloxstrap
+			("Installing Bloxstrap", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "Bloxstrap.exe"), Arguments = "-quiet -nolaunch" , WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => Bloxstrap == true),
+			("Cleaning up Bloxstrap files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "Bloxstrap.exe")), () => Bloxstrap == true),
+
+			// remove bloxstrap desktop shortcut
+			("Removing Bloxstrap desktop shortcut", async () => File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "Bloxstrap.lnk")), () => Bloxstrap == true),
+
 			// download froststrap
 			("Downloading Froststrap", async () => await DownloadHelper.Download(JsonDocument.Parse(await new HttpClient { DefaultRequestHeaders = { { "User-Agent", "AutoOS" } } }.GetStringAsync("https://api.github.com/repos/Froststrap/Froststrap/releases")).RootElement.EnumerateArray().First(release => !release.GetProperty("prerelease").GetBoolean() && release.GetProperty("assets").EnumerateArray().Any(asset => asset.GetProperty("name").GetString().EndsWith(".exe"))).GetProperty("assets").EnumerateArray().First(asset => asset.GetProperty("name").GetString().EndsWith(".exe")).GetProperty("browser_download_url").GetString(), Path.GetTempPath(), "Froststrap.exe", reporter: reporter), () => Froststrap == true),
 
 			// install froststrap
-			("Installing Froststrap", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "Froststrap.exe"), Arguments = "-quiet" , WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => Froststrap == true),
+			("Installing Froststrap", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "Froststrap.exe"), Arguments = "-quiet -nolaunch" , WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => Froststrap == true),
 			("Cleaning up Froststrap files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "Froststrap.exe")), () => Froststrap == true),
 
 			// remove froststrap desktop shortcut
 			("Removing Froststrap desktop shortcut", async () => File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "Froststrap.lnk")), () => Froststrap == true),
+
 
 			// download rockstar games launcher
 			("Downloading Rockstar Games Launcher", async () => await DownloadHelper.Download("https://gamedownloads.rockstargames.com/public/installer/Rockstar-Games-Launcher.exe", Path.GetTempPath(), "Rockstar-Games-Launcher.exe", reporter: reporter), () => RockstarGamesLauncher == true),

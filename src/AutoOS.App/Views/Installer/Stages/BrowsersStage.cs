@@ -26,6 +26,7 @@ public class BrowserSelection
 	public bool Firefox { get; set; }
 	public bool Zen { get; set; }
 	public bool Waterfox { get; set; }
+	public bool Floorp { get; set; }
 	public bool LibreWolf { get; set; }
 	public bool Mullvad { get; set; }
 	public bool uBlock { get; set; }
@@ -63,6 +64,7 @@ public static class BrowsersStage
 		bool? Firefox = selection?.Firefox ?? PreparingStage.Firefox;
 		bool? Zen = selection?.Zen ?? PreparingStage.Zen;
 		bool? Waterfox = selection?.Waterfox ?? PreparingStage.Waterfox;
+		bool? Floorp = selection?.Floorp ?? PreparingStage.Floorp;
 		bool? LibreWolf = selection?.LibreWolf ?? PreparingStage.LibreWolf;
 		bool? Mullvad = selection?.Mullvad ?? PreparingStage.Mullvad;
 		bool? uBlock = selection?.uBlock ?? PreparingStage.uBlock;
@@ -803,6 +805,65 @@ public static class BrowsersStage
 
 			// install 1password extension
 			("Installing 1Password Extension", async () => UpdatePolicies(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Waterfox", "distribution", "policies.json"), "https://addons.mozilla.org/firefox/downloads/latest/1password-x-password-manager"), () => Waterfox == true && OnePassword == true),
+
+			// download floorp
+			("Downloading Floorp", async () => await DownloadHelper.Download("https://github.com/Floorp-Projects/Floorp/releases/latest/download/floorp-windows-x86_64.installer.exe", Path.GetTempPath(), "FloorpSetup.exe", reporter ?? new InstallPageReporter()), () => Floorp == true),
+
+			// install floorp
+			("Installing Floorp", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "FloorpSetup.exe"), Arguments = "/S /MaintenanceService=false /DesktopShortcut=false /StartMenuShortcut=true", WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => Floorp == true),
+			("Cleaning up Floorp files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "FloorpSetup.exe")), () => Floorp == true),
+
+			// pin floorp to the taskbar
+			("Pinning Floorp to the taskbar", async () => await ProcessActions.PinToTaskbar("Link", Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Microsoft", "Windows", "Start Menu", "Programs", "Floorp.lnk")), () => Floorp == true),
+
+			// disable floorp startup entry
+			("Disabling Floorp startup entry", async () => TaskSchedulerHelper.Toggle(@"\Floorp\Floorp Default Browser Agent", false), () => Floorp == true),
+
+			// optimize floorp settings
+			("Optimizing Floorp settings", async () => Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Ablaze Floorp", "distribution")), () => Floorp == true),
+			("Optimizing Floorp settings", async () => Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Ablaze Floorp", "defaults", "pref")), () => Floorp == true),
+			("Optimizing Floorp settings", async () => File.WriteAllText(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Ablaze Floorp", "defaults", "pref", "autoconfig.js"), "pref(\"general.config.filename\", \"floorp.cfg\");\npref(\"general.config.obscure_value\", 0);"), () => Floorp == true),
+			("Optimizing Floorp settings", async () => File.WriteAllText(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Ablaze Floorp", "distribution", "floorp.cfg"), "// Disable telemetry\r\npref(\"datareporting.healthreport.uploadEnabled\", false);\r\npref(\"datareporting.policy.dataSubmissionEnabled\", false);\r\npref(\"toolkit.telemetry.enabled\", false);\r\npref(\"toolkit.telemetry.unified\", false);\r\npref(\"toolkit.telemetry.archive.enabled\", false);\r\npref(\"browser.pingCentre.telemetry\", false);\r\npref(\"dom.privateattribution.sendReport\", false);"), () => Floorp == true),
+			("Optimizing Floorp settings", async () => File.WriteAllText(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Ablaze Floorp", "distribution", "policies.json"), "{\r\n  \"policies\": {}\r\n}"), () => Floorp == true),
+
+			// install ublock origin extension
+			("Installing uBlock Origin Extension", async () => UpdatePolicies(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Ablaze Floorp", "distribution", "policies.json"), "https://addons.mozilla.org/firefox/downloads/latest/ublock-origin"), () => Floorp == true && uBlock == true),
+
+			// install privacy badger extension
+			("Installing Privacy Badger Extension", async () => UpdatePolicies(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Ablaze Floorp", "distribution", "policies.json"), "https://addons.mozilla.org/firefox/downloads/latest/privacy-badger17"), () => Floorp == true && PrivacyBadger == true),
+
+			// install decentraleyes extension
+			("Installing Decentraleyes Extension", async () => UpdatePolicies(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Ablaze Floorp", "distribution", "policies.json"), "https://addons.mozilla.org/firefox/downloads/latest/decentraleyes"), () => Floorp == true && Decentraleyes == true),
+
+			// install i still don't care about cookies extension
+			("Installing I still don't care about cookies Extension", async () => UpdatePolicies(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Ablaze Floorp", "distribution", "policies.json"), "https://addons.mozilla.org/firefox/downloads/latest/istilldontcareaboutcookies"), () => Floorp == true && Cookies == true),
+
+			// install violentmonkey extension
+			("Installing Violentmonkey Extension", async () => UpdatePolicies(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Ablaze Floorp", "distribution", "policies.json"), "https://addons.mozilla.org/firefox/downloads/latest/violentmonkey"), () => Floorp == true && Violentmonkey == true),
+
+			// install tampermonkey extension
+			("Installing Tampermonkey Extension", async () => UpdatePolicies(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Ablaze Floorp", "distribution", "policies.json"), "https://addons.mozilla.org/firefox/downloads/latest/tampermonkey"), () => Floorp == true && Tampermonkey == true),
+
+			// install sponsorblock extension
+			("Installing SponsorBlock Extension", async () => UpdatePolicies(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Ablaze Floorp", "distribution", "policies.json"), "https://addons.mozilla.org/firefox/downloads/latest/sponsorblock"), () => Floorp == true && SponsorBlock == true),
+
+			// install return youtube dislike extension
+			("Installing Return YouTube Dislike Extension", async () => UpdatePolicies(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Ablaze Floorp", "distribution", "policies.json"), "https://addons.mozilla.org/firefox/downloads/latest/return-youtube-dislikes"), () => Floorp == true && ReturnYouTubeDislike == true),
+
+			// install dark reader extension
+			("Installing Dark Reader Extension", async () => UpdatePolicies(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Ablaze Floorp", "distribution", "policies.json"), "https://addons.mozilla.org/firefox/downloads/latest/darkreader"), () => Floorp == true && DarkReader == true),
+
+			// install wayback machine extension
+			("Installing Wayback Machine Extension", async () => UpdatePolicies(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Ablaze Floorp", "distribution", "policies.json"), "https://addons.mozilla.org/firefox/downloads/latest/wayback-machine_new"), () => Floorp == true && WaybackMachine == true),
+
+			// install icloud passwords extension
+			("Installing iCloud Passwords Extension", async () => UpdatePolicies(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Ablaze Floorp", "distribution", "policies.json"), "https://addons.mozilla.org/firefox/downloads/latest/icloud-passwords"), () => Floorp == true && iCloud == true),
+
+			// install bitwarden extension
+			("Installing Bitwarden Extension", async () => UpdatePolicies(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Ablaze Floorp", "distribution", "policies.json"), "https://addons.mozilla.org/firefox/downloads/latest/bitwarden-password-manager"), () => Floorp == true && Bitwarden == true),
+
+			// install 1password extension
+			("Installing 1Password Extension", async () => UpdatePolicies(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Ablaze Floorp", "distribution", "policies.json"), "https://addons.mozilla.org/firefox/downloads/latest/1password-x-password-manager"), () => Floorp == true && OnePassword == true),
 
 			// download librewolf
 			("Downloading LibreWolf", async () => await DownloadHelper.Download(JsonDocument.Parse(await new HttpClient { DefaultRequestHeaders = { { "User-Agent", "AutoOS" } } }.GetStringAsync("https://codeberg.org/api/v1/repos/librewolf/bsys6/releases")).RootElement.EnumerateArray().First(release => release.GetProperty("assets").EnumerateArray().Any(asset => asset.GetProperty("name").GetString().Contains("windows-x86_64-setup.exe"))).GetProperty("assets").EnumerateArray().First(asset => asset.GetProperty("name").GetString().Contains("windows-x86_64-setup.exe")).GetProperty("browser_download_url").GetString(), Path.GetTempPath(), "librewolf-windows-x86_64-setup.exe", reporter: reporter), () => LibreWolf == true),

@@ -38,6 +38,7 @@ public sealed partial class BrowsersPage : Page
 			new() { Text = "Firefox", ImageSource = "ms-appx:///Assets/Fluent/Firefox.png" },
 			new() { Text = "Zen", ImageSource = "ms-appx:///Assets/Fluent/Zen.png" },
 			new() { Text = "Waterfox", ImageSource = "ms-appx:///Assets/Fluent/Waterfox.png" },
+			new() { Text = "Floorp", ImageSource = "ms-appx:///Assets/Fluent/Floorp.png" },
 			new() { Text = "LibreWolf", ImageSource = "ms-appx:///Assets/Fluent/Librewolf.png" },
 			new() { Text = "Mullvad Browser", ImageSource = "ms-appx:///Assets/Fluent/Mullvad.png" }
 		};
