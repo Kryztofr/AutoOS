@@ -77,6 +77,7 @@ public static partial class PreparingStage
 	public static bool PrismLauncher;
 	public static bool LunarClient;
 	public static bool FeatherClient;
+	public static bool Bloxstrap;
 	public static bool Froststrap;
 	public static bool RockstarGamesLauncher;
 	public static bool FiveM;
@@ -279,6 +280,7 @@ public static partial class PreparingStage
 			PrismLauncher = (localSettings.Values["Launchers"]?.ToString().Contains("Prism Launcher") ?? false);
 			LunarClient = (localSettings.Values["Launchers"]?.ToString().Contains("Lunar Client") ?? false);
 			FeatherClient = (localSettings.Values["Launchers"]?.ToString().Contains("Feather Client") ?? false);
+			Bloxstrap = (localSettings.Values["Launchers"]?.ToString().Contains("Bloxstrap") ?? false);
 			Froststrap = (localSettings.Values["Launchers"]?.ToString().Contains("Froststrap") ?? false);
 			RockstarGamesLauncher = (localSettings.Values["Launchers"]?.ToString().Contains("Rockstar Games Launcher") ?? false);
 			FiveM = (localSettings.Values["Launchers"]?.ToString().Contains("FiveM") ?? false);
