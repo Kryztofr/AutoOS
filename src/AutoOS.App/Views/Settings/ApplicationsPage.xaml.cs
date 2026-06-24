@@ -182,7 +182,8 @@ public sealed partial class ApplicationsPage : Page
 		{
 			new() { Text = "DaVinci Resolve", ImageSource = "ms-appx:///Assets/Fluent/DavinciResolve.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Blackmagic Design", "DaVinci Resolve", "Resolve.exe")) },
 			new() { Text = "Blender", ImageSource = "ms-appx:///Assets/Fluent/Blender.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Blender Foundation", "Blender 5.1", "blender.exe")) },
-			new() { Text = "CapCut", ImageSource = "ms-appx:///Assets/Fluent/CapCut.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "CapCut", "Apps", "CapCut.exe")) }
+			new() { Text = "CapCut", ImageSource = "ms-appx:///Assets/Fluent/CapCut.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "CapCut", "Apps", "CapCut.exe")) },
+			new() { Text = "LosslessCut", ImageSource = "ms-appx:///Assets/Fluent/LosslessCut.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "LosslessCut", "LosslessCut.exe")) }
 		};
 		foreach (var item in videoProductionList.Where(item => !item.IsInstalled))
 			videoProductionItems.Add(item);
@@ -348,6 +349,7 @@ public sealed partial class ApplicationsPage : Page
 		selection.DaVinciResolve = selectedVideoProduction.Contains("DaVinci Resolve");
 		selection.Blender = selectedVideoProduction.Contains("Blender");
 		selection.CapCut = selectedVideoProduction.Contains("CapCut");
+		selection.LosslessCut = selectedVideoProduction.Contains("LosslessCut");
 
 		var selectedMultimediaItems = Multimedia.SelectedItems.Cast<GridViewItem>().ToList();
 		var selectedMultimedia = selectedMultimediaItems.Select(item => item.Text).ToList();

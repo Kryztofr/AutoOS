@@ -108,6 +108,7 @@ public class ApplicationSelection
 	public bool DaVinciResolve { get; set; }
 	public bool Blender { get; set; }
 	public bool CapCut { get; set; }
+	public bool LosslessCut { get; set; }
 	public bool MpcQt { get; set; }
 	public bool MPV { get; set; }
 	public bool VLC { get; set; }
@@ -251,6 +252,7 @@ public static class ApplicationStage
 		bool DaVinciResolve = selection?.DaVinciResolve ?? PreparingStage.DaVinciResolve;
 		bool Blender = selection?.Blender ?? PreparingStage.Blender;
 		bool CapCut = selection?.CapCut ?? PreparingStage.CapCut;
+		bool LosslessCut = selection?.LosslessCut ?? PreparingStage.LosslessCut;
 
 		bool MpcQt = selection?.MpcQt ?? PreparingStage.MpcQt;
 		bool MPV = selection?.MPV ?? PreparingStage.MPV;
@@ -1835,6 +1837,20 @@ public static class ApplicationStage
 
 			// remove capcut desktop shortcut
 			("Removing CapCut desktop shortcut", async () => File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "CapCut.lnk")), () => CapCut == true),
+
+			// download losslesscut
+			("Downloading LosslessCut", async () => await DownloadHelper.Download(JsonDocument.Parse(await new HttpClient { DefaultRequestHeaders = { { "User-Agent", "AutoOS" } } }.GetStringAsync("https://api.github.com/repos/mifi/lossless-cut/releases")).RootElement.EnumerateArray().First(release => !release.GetProperty("prerelease").GetBoolean() && release.GetProperty("assets").EnumerateArray().Any(asset => asset.GetProperty("name").GetString().Contains("win-x64.7z"))).GetProperty("assets").EnumerateArray().First(asset => asset.GetProperty("name").GetString().Contains("win-x64.7z")).GetProperty("browser_download_url").GetString(), Path.GetTempPath(), "LosslessCut-win-x64.7z", reporter: reporter), () => LosslessCut == true),
+
+			// install losslesscut
+			("Installing LosslessCut", async () => await ExtractHelper.Extract(Path.Combine(Path.GetTempPath(), "LosslessCut-win-x64.7z"), Path.Combine(Path.GetTempPath(), "LosslessCut")), () => LosslessCut == true),
+			("Installing LosslessCut", async () => Directory.Move(Path.Combine(Path.GetTempPath(), "LosslessCut"), Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "LosslessCut")), () => LosslessCut == true),
+			("Installing LosslessCut", async () => ShortcutHelper.Create(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Microsoft", "Windows", "Start Menu", "Programs", "LosslessCut.lnk"), Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "LosslessCut", "LosslessCut.exe")), () => LosslessCut == true),
+			("Installing LosslessCut", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\LosslessCut", "DisplayName", "LosslessCut", RegistryValueKind.String), () => LosslessCut == true),
+			("Installing LosslessCut", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\LosslessCut", "UninstallString", $@"cmd /c rd /s /q ""{Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "LosslessCut")}"" & del ""{Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Microsoft", "Windows", "Start Menu", "Programs", "LosslessCut.lnk")}"" & reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\LosslessCut"" /f", RegistryValueKind.String), () => LosslessCut == true),
+			("Installing LosslessCut", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\LosslessCut", "DisplayIcon", Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), @"LosslessCut\LosslessCut.exe"), RegistryValueKind.String), () => LosslessCut == true),
+			("Installing LosslessCut", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\LosslessCut", "Publisher", "mifi", RegistryValueKind.String), () => LosslessCut == true),
+			("Installing LosslessCut", async () => await Task.Delay(500), () => LosslessCut == true),
+			("Cleaning up LosslessCut files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "LosslessCut-win-x64.7z")), () => LosslessCut == true),
 
 			// download mpc-qt
 			("Downloading MPC-QT", async () => await DownloadHelper.Download(JsonDocument.Parse(await new HttpClient { DefaultRequestHeaders = { { "User-Agent", "AutoOS" } } }.GetStringAsync("https://api.github.com/repos/mpc-qt/mpc-qt/releases")).RootElement.EnumerateArray().First(release => !release.GetProperty("prerelease").GetBoolean() && release.GetProperty("assets").EnumerateArray().Any(asset => asset.GetProperty("name").GetString().StartsWith("mpc-qt-win-x64-") && asset.GetProperty("name").GetString().EndsWith("-installer.exe"))).GetProperty("assets").EnumerateArray().First(asset => asset.GetProperty("name").GetString().StartsWith("mpc-qt-win-x64-") && asset.GetProperty("name").GetString().EndsWith("-installer.exe")).GetProperty("browser_download_url").GetString(), Path.GetTempPath(), "mpc-qt-win-x64-installer.exe", reporter: reporter), () => MpcQt == true),

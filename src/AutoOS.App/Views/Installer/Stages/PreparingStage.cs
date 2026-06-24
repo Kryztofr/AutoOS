@@ -147,6 +147,7 @@ public static partial class PreparingStage
 	public static bool DaVinciResolve;
 	public static bool Blender;
 	public static bool CapCut;
+	public static bool LosslessCut;
 
 	public static bool MpcQt;
 	public static bool MPV;
@@ -346,6 +347,7 @@ public static partial class PreparingStage
 			DaVinciResolve = (localSettings.Values["Video Production"]?.ToString().Contains("DaVinci Resolve") ?? false);
 			Blender = (localSettings.Values["Video Production"]?.ToString().Contains("Blender") ?? false);
 			CapCut = (localSettings.Values["Video Production"]?.ToString().Contains("CapCut") ?? false);
+			LosslessCut = (localSettings.Values["Video Production"]?.ToString().Contains("LosslessCut") ?? false);
 
 			MpcQt = (localSettings.Values["Multimedia"]?.ToString().Contains("MPC-QT") ?? false);
 			MPV = (localSettings.Values["Multimedia"]?.ToString().Contains("mpv") ?? false);
