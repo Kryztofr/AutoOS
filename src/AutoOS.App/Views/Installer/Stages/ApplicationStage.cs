@@ -43,6 +43,7 @@ public class ApplicationSelection
 	public bool BattleNet { get; set; }
 	public bool MinecraftLauncher { get; set; }
 	public bool CurseForge { get; set; }
+	public bool PrismLauncher { get; set; }
 	public bool LunarClient { get; set; }
 	public bool FeatherClient { get; set; }
 	public bool Froststrap { get; set; }
@@ -179,6 +180,7 @@ public static class ApplicationStage
 		bool BattleNet = selection?.BattleNet ?? PreparingStage.BattleNet;
 		bool MinecraftLauncher = selection?.MinecraftLauncher ?? PreparingStage.MinecraftLauncher;
 		bool CurseForge = selection?.CurseForge ?? PreparingStage.CurseForge;
+		bool PrismLauncher = selection?.PrismLauncher ?? PreparingStage.PrismLauncher;
 		bool LunarClient = selection?.LunarClient ?? PreparingStage.LunarClient;
 		bool FeatherClient = selection?.FeatherClient ?? PreparingStage.FeatherClient;
 		bool Froststrap = selection?.Froststrap ?? PreparingStage.Froststrap;
@@ -815,6 +817,20 @@ public static class ApplicationStage
 
 			// remove curseforge desktop shortcut
 			("Removing CurseForge desktop shortcut", async () => File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "CurseForge.lnk")), () => CurseForge == true),
+
+			// download prism launcher
+			("Downloading Prism Launcher", async () => await DownloadHelper.Download(JsonDocument.Parse(await new HttpClient { DefaultRequestHeaders = { { "User-Agent", "AutoOS" } } }.GetStringAsync("https://api.github.com/repos/PrismLauncher/PrismLauncher/releases")).RootElement.EnumerateArray().First(release => !release.GetProperty("prerelease").GetBoolean() && release.GetProperty("assets").EnumerateArray().Any(asset => asset.GetProperty("name").GetString().Contains("Windows-MSVC") && asset.GetProperty("name").GetString().EndsWith(".zip"))).GetProperty("assets").EnumerateArray().First(asset => asset.GetProperty("name").GetString().Contains("Windows-MSVC") && asset.GetProperty("name").GetString().EndsWith(".zip")).GetProperty("browser_download_url").GetString(), Path.GetTempPath(), "PrismLauncher-Windows-MSVC.zip", reporter: reporter), () => PrismLauncher == true),
+
+			// install prism launcher
+			("Installing Prism Launcher", async () => await ExtractHelper.Extract(Path.Combine(Path.GetTempPath(), "PrismLauncher-Windows-MSVC.zip"), Path.Combine(Path.GetTempPath(), "PrismLauncher")), () => PrismLauncher == true),
+			("Installing Prism Launcher", async () => Directory.Move(Path.Combine(Path.GetTempPath(), "PrismLauncher"), Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs", "PrismLauncher")), () => PrismLauncher == true),
+			("Installing Prism Launcher", async () => ShortcutHelper.Create(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Microsoft", "Windows", "Start Menu", "Programs", "Prism Launcher.lnk"), Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs", "PrismLauncher", "prismlauncher.exe")), () => PrismLauncher == true),
+			("Installing Prism Launcher", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\PrismLauncher", "DisplayName", "Prism Launcher", RegistryValueKind.String), () => PrismLauncher == true),
+			("Installing Prism Launcher", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\PrismLauncher", "UninstallString", $@"cmd /c rd /s /q ""{Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs", "PrismLauncher")}"" & del ""{Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Microsoft", "Windows", "Start Menu", "Programs", "Prism Launcher.lnk")}"" & reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\PrismLauncher"" /f", RegistryValueKind.String), () => PrismLauncher == true),
+			("Installing Prism Launcher", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\PrismLauncher", "DisplayIcon", Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), @"Programs\PrismLauncher\prismlauncher.exe"), RegistryValueKind.String), () => PrismLauncher == true),
+			("Installing Prism Launcher", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\PrismLauncher", "Publisher", "Prism Launcher Contributors", RegistryValueKind.String), () => PrismLauncher == true),
+			("Installing Prism Launcher", async () => await Task.Delay(500), () => PrismLauncher == true),
+			("Cleaning up Prism Launcher files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "PrismLauncher-Windows-MSVC.zip")), () => PrismLauncher == true),
 
 			// download lunar client
 			("Downloading Lunar Client", async () => await DownloadHelper.Download("https://launcherupdates.lunarclientcdn.com/Lunar%20Client%20v3.4.9.exe", Path.GetTempPath(), "Lunar Client.exe", reporter: reporter), () => LunarClient == true),
