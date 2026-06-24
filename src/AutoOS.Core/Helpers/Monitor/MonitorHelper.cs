@@ -154,7 +154,7 @@ public static partial class MonitorHelper
 			UseShellExecute = false
 		})!.WaitForExitAsync();
 
-		string[] keysToCopy = ["Configuration", "Connectivity", "ScaleFactors"];
+		string[] keysToCopy = ["Connectivity", "ScaleFactors"];
 		foreach (var key in keysToCopy)
 		{
 			await Process.Start(new ProcessStartInfo
