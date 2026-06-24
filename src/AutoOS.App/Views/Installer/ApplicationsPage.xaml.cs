@@ -75,6 +75,8 @@ public sealed partial class ApplicationsPage : Page
 			new() { Text = "Feather Client", ImageSource = "ms-appx:///Assets/Fluent/FeatherClient.png" },
 			new() { Text = "Bloxstrap", ImageSource = "ms-appx:///Assets/Fluent/Bloxstrap.png" },
 			new() { Text = "Froststrap", ImageSource = "ms-appx:///Assets/Fluent/Froststrap.png" },
+			new() { Text = "Fishstrap", ImageSource = "ms-appx:///Assets/Fluent/Fishstrap.png" },
+			new() { Text = "Voidstrap", ImageSource = "ms-appx:///Assets/Fluent/Voidstrap.png" },
 			new() { Text = "Rockstar Games Launcher", ImageSource = "ms-appx:///Assets/Fluent/RockstarGamesLauncher.png" },
 			new() { Text = "FiveM", ImageSource = "ms-appx:///Assets/Fluent/FiveM.jpg" },
 			new() { Text = "FACEIT", ImageSource = "ms-appx:///Assets/Fluent/FACEIT.png" },
