@@ -49,7 +49,6 @@ public class ApplicationSelection
 	public bool Bloxstrap { get; set; }
 	public bool Froststrap { get; set; }
 	public bool Fishstrap { get; set; }
-	public bool Voidstrap { get; set; }
 	public bool RockstarGamesLauncher { get; set; }
 	public bool FiveM { get; set; }
 	public bool FACEIT { get; set; }
@@ -189,7 +188,6 @@ public static class ApplicationStage
 		bool Bloxstrap = selection?.Bloxstrap ?? PreparingStage.Bloxstrap;
 		bool Froststrap = selection?.Froststrap ?? PreparingStage.Froststrap;
 		bool Fishstrap = selection?.Fishstrap ?? PreparingStage.Fishstrap;
-		bool Voidstrap = selection?.Voidstrap ?? PreparingStage.Voidstrap;
 		bool RockstarGamesLauncher = selection?.RockstarGamesLauncher ?? PreparingStage.RockstarGamesLauncher;
 		bool FiveM = selection?.FiveM ?? PreparingStage.FiveM;
 		bool FACEIT = selection?.FACEIT ?? PreparingStage.FACEIT;
@@ -880,16 +878,6 @@ public static class ApplicationStage
 
 			// remove fishstrap desktop shortcut
 			("Removing Fishstrap desktop shortcut", async () => File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "Fishstrap.lnk")), () => Fishstrap == true),
-
-			// download voidstrap
-			("Downloading Voidstrap", async () => await DownloadHelper.Download(JsonDocument.Parse(await new HttpClient { DefaultRequestHeaders = { { "User-Agent", "AutoOS" } } }.GetStringAsync("https://api.github.com/repos/Voidstrap/Voidstrap/releases")).RootElement.EnumerateArray().First(release => !release.GetProperty("prerelease").GetBoolean() && release.GetProperty("assets").EnumerateArray().Any(asset => asset.GetProperty("name").GetString().EndsWith(".exe"))).GetProperty("assets").EnumerateArray().First(asset => asset.GetProperty("name").GetString().EndsWith(".exe")).GetProperty("browser_download_url").GetString(), Path.GetTempPath(), "Voidstrap.exe", reporter: reporter), () => Voidstrap == true),
-
-			// install voidstrap
-			("Installing Voidstrap", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "Voidstrap.exe"), Arguments = "-quiet -nolaunch" , WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => Voidstrap == true),
-			("Cleaning up Voidstrap files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "Voidstrap.exe")), () => Voidstrap == true),
-
-			// remove voidstrap desktop shortcut
-			("Removing Voidstrap desktop shortcut", async () => File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "Voidstrap.lnk")), () => Voidstrap == true),
 
 			// download rockstar games launcher
 			("Downloading Rockstar Games Launcher", async () => await DownloadHelper.Download("https://gamedownloads.rockstargames.com/public/installer/Rockstar-Games-Launcher.exe", Path.GetTempPath(), "Rockstar-Games-Launcher.exe", reporter: reporter), () => RockstarGamesLauncher == true),
