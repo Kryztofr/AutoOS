@@ -35,6 +35,7 @@ public static partial class PreparingStage
 	public static bool Firefox;
 	public static bool Zen;
 	public static bool Waterfox;
+	public static bool Floorp;
 	public static bool LibreWolf;
 	public static bool Mullvad;
 	public static bool uBlock;
@@ -243,6 +244,7 @@ public static partial class PreparingStage
 			Firefox = (localSettings.Values["Browsers"]?.ToString().Contains("Firefox") ?? false);
 			Zen = (localSettings.Values["Browsers"]?.ToString().Contains("Zen") ?? false);
 			Waterfox = (localSettings.Values["Browsers"]?.ToString().Contains("Waterfox") ?? false);
+			Floorp = (localSettings.Values["Browsers"]?.ToString().Contains("Floorp") ?? false);
 			LibreWolf = (localSettings.Values["Browsers"]?.ToString().Contains("LibreWolf") ?? false);
 			Mullvad = (localSettings.Values["Browsers"]?.ToString().Contains("Mullvad Browser") ?? false);
 
