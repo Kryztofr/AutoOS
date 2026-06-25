@@ -742,7 +742,7 @@ public static class ApplicationStage
 
 			// install vanguard
 			("Installing Vanguard", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "setup.exe"), WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => RiotClient == true),
-			("Installing Vanguard", async () => { Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Riot Games", "Riot Vanguard")); await File.WriteAllTextAsync(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Riot Games", "Riot Vanguard", "vgtray-settings.json"), "{\"theme\":0,\"language\":0,\"precheck_option\":1}"); }, () => RiotClient == true),
+			("Installing Vanguard", async () => { Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Riot Games", "Riot Vanguard")); await File.WriteAllTextAsync(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Riot Games", "Riot Vanguard", "vgtray-settings.json"), "{\"theme\":0,\"language\":0,\"precheck_option\":1,\"precheck_completed_after_settings_changes\":1}"); }, () => RiotClient == true),
 			("Cleaning up Vanguard files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "setup.exe")), () => RiotClient == true),
 
 			// download ubisoft connect

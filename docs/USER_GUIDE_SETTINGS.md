@@ -105,24 +105,27 @@ Manually adjust or import a Custom Resolution Utility (CRU) profile:
     - **If you get a Black Screen / No Signal:** Press `Enter` to cancel. Use smaller steps to find the exact working limit.
     
     **Phase 1: Maximize Vertical Total Pixels**
-    - **Increase** the **Vertical** `Total pixels` (not Horizontal) in increments of 20.
+    - **Increase** the **Vertical** `Total pixels` in increments of 20.
     - Click `Test` after each change using the rules above until you find the maximum working value.
 
     **Phase 2: Minimize Horizontal Total Pixels**
+    - Take note of the default value.
     - **Decrease** the **Horizontal** `Total pixels` in increments of 20.
     - Click `Test` after each change using the rules above until you find the minimum working value.
 
     **Phase 3: Final Vertical Total Pixels**
     - **Increase** the **Vertical** `Total pixels` again, in increments of 1.
     - Click `Test` after each change using the rules above until you find the absolute maximum working value.
+    - If you were not able to increase it further than what you had from **Phase 1**, set **Horizontal** `Total pixels` back to the default value and **skip Phase 4**.
 
-    **Phase 4: Final Horizontal Total Pixels (Only if you were able to increase Vertical total pixels in Phase 3)**
+    **Phase 4: Final Horizontal Total Pixels**
     - **Increase** the **Horizontal** `Total pixels` again, in increments of 10.
     - Click `Test` after each change using the rules above until you find the absolute maximum working value.
 
     **Save changes using Custom Resolution Utility (CRU):**
     - Click `Launch` under `Create a custom resolution` in AutoOS.
     - Click on the entry under `Extension blocks`, then click on `Edit` below.
+    - Change the `Type` to `DisplayID 2.0`, if it has no data, change it back to `CTA-861`.
     - Click on the resolution entry with the same `refresh rate` you modified in NVIDIA Control Panel under `Detailed resolutions`, then click `Edit` below.
     - Enter all values from NVIDIA Control Panel under the corresponding fields in CRU.
       - Front porch (pixels) -> Front porch
