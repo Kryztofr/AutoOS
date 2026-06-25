@@ -101,17 +101,6 @@ public sealed partial class InstallPage : Page
 		localSettings.Values["Install_End"] = DateTimeOffset.Now.ToString("O");
 		Registry.SetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\AutoOS", "IsInstalled", 1, RegistryValueKind.DWord);
 		Registry.SetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\Explorer", "LockedStartLayout", 0, RegistryValueKind.DWord);
-		
-		// pause for 100 years
-		string start = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssK");
-		string end = DateTime.UtcNow.AddYears(100).ToString("yyyy-MM-ddTHH:mm:ssK");
-		using var key = Registry.LocalMachine.CreateSubKey(@"SOFTWARE\Microsoft\WindowsUpdate\UX\Settings");
-		key.SetValue("PauseFeatureUpdatesStartTime", start, RegistryValueKind.String);
-		key.SetValue("PauseFeatureUpdatesEndTime", end, RegistryValueKind.String);
-		key.SetValue("PauseQualityUpdatesStartTime", start, RegistryValueKind.String);
-		key.SetValue("PauseQualityUpdatesEndTime", end, RegistryValueKind.String);
-		key.SetValue("PauseUpdatesStartTime", start, RegistryValueKind.String);
-		key.SetValue("PauseUpdatesExpiryTime", end, RegistryValueKind.String);
 		localSettings.Values.Remove("actionStage");
 		localSettings.Values.Remove("actionIndex");
 		try
