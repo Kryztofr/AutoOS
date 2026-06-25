@@ -239,7 +239,6 @@ Toggle Windows Updates and set target version:
 Post-install your Browsers and Browser Extensions:
 - Use `Thorium` or `Helium` over `Chrome`.
 - Use `Zen` for best `productivity` and `design`.
-- Use `uBlock Origin` and other extensions like in `my selection`.
 
 ![Browsers](https://raw.githubusercontent.com/tinodin/AutoOS-Resources/main/AutoOS%20Settings/Browsers.png)
 
