@@ -26,8 +26,8 @@ public class BrowserSelection
 	public bool Firefox { get; set; }
 	public bool Zen { get; set; }
 	public bool Waterfox { get; set; }
-	public bool Floorp { get; set; }
 	public bool LibreWolf { get; set; }
+	public bool Floorp { get; set; }
 	public bool Mullvad { get; set; }
 	public bool uBlock { get; set; }
 	public bool PrivacyBadger { get; set; }
@@ -64,8 +64,8 @@ public static class BrowsersStage
 		bool? Firefox = selection?.Firefox ?? PreparingStage.Firefox;
 		bool? Zen = selection?.Zen ?? PreparingStage.Zen;
 		bool? Waterfox = selection?.Waterfox ?? PreparingStage.Waterfox;
-		bool? Floorp = selection?.Floorp ?? PreparingStage.Floorp;
 		bool? LibreWolf = selection?.LibreWolf ?? PreparingStage.LibreWolf;
+		bool? Floorp = selection?.Floorp ?? PreparingStage.Floorp;
 		bool? Mullvad = selection?.Mullvad ?? PreparingStage.Mullvad;
 		bool? uBlock = selection?.uBlock ?? PreparingStage.uBlock;
 		bool? PrivacyBadger = selection?.PrivacyBadger ?? PreparingStage.PrivacyBadger;
@@ -805,6 +805,61 @@ public static class BrowsersStage
 
 			// install 1password extension
 			("Installing 1Password Extension", async () => UpdatePolicies(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Waterfox", "distribution", "policies.json"), "https://addons.mozilla.org/firefox/downloads/latest/1password-x-password-manager"), () => Waterfox == true && OnePassword == true),
+			
+			// download librewolf
+			("Downloading LibreWolf", async () => await DownloadHelper.Download(JsonDocument.Parse(await new HttpClient { DefaultRequestHeaders = { { "User-Agent", "AutoOS" } } }.GetStringAsync("https://codeberg.org/api/v1/repos/librewolf/bsys6/releases")).RootElement.EnumerateArray().First(release => release.GetProperty("assets").EnumerateArray().Any(asset => asset.GetProperty("name").GetString().Contains("windows-x86_64-setup.exe"))).GetProperty("assets").EnumerateArray().First(asset => asset.GetProperty("name").GetString().Contains("windows-x86_64-setup.exe")).GetProperty("browser_download_url").GetString(), Path.GetTempPath(), "librewolf-windows-x86_64-setup.exe", reporter: reporter), () => LibreWolf == true),
+			
+			// install librewolf
+			("Installing LibreWolf", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "librewolf-windows-x86_64-setup.exe"), Arguments = "/S /MaintenanceService=false /DesktopShortcut=false /StartMenuShortcut=true", WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => LibreWolf == true),
+			("Cleaning up LibreWolf files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "librewolf-windows-x86_64-setup.exe")), () => LibreWolf == true),
+
+			// pin librewolf to the taskbar
+			("Pinning LibreWolf to the taskbar", async () => await ProcessActions.PinToTaskbar("Link", Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Microsoft", "Windows", "Start Menu", "Programs", "LibreWolf", "LibreWolf.lnk")), () => LibreWolf == true),
+
+			// optimize librewolf settings
+			("Optimizing LibreWolf settings", async () => Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "LibreWolf", "distribution")), () => LibreWolf == true),
+			("Optimizing LibreWolf settings", async () => File.WriteAllText(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "LibreWolf", "defaults", "pref", "autoconfig.js"), "pref(\"general.config.filename\", \"librewolf.cfg\");\npref(\"general.config.obscure_value\", 0);"), () => LibreWolf == true),
+			("Optimizing LibreWolf settings", async () => File.WriteAllText(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "LibreWolf", "librewolf.cfg"), "defaultPref(\"app.shield.optoutstudies.enabled\", false);\ndefaultPref(\"browser.search.serpEventTelemetryCategorization.enabled\", false);\ndefaultPref(\"dom.security.unexpected_system_load_telemetry_enabled\", false);\ndefaultPref(\"identity.fxaccounts.telemetry.clientAssociationPing.enabled\", false);\ndefaultPref(\"network.trr.confirmation_telemetry_enabled\", false);\ndefaultPref(\"nimbus.telemetry.targetingContextEnabled\", false);\ndefaultPref(\"reader.parse-on-load.enabled\", false);\ndefaultPref(\"telemetry.fog.init_on_shutdown\", false);\ndefaultPref(\"default-browser-agent.enabled\", false);\ndefaultPref(\"widget.windows.mica\", true);\ndefaultPref(\"widget.windows.mica.popups\", 1);\ndefaultPref(\"widget.windows.mica.toplevel-backdrop\", 0);"), () => LibreWolf == true),
+			("Optimizing LibreWolf settings", async () => File.WriteAllText(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "LibreWolf", "distribution", "policies.json"), "{\r\n  \"policies\": {}\r\n}"), () => LibreWolf == true),
+
+			// install ublock origin extension
+			("Installing uBlock Origin Extension", async () => UpdatePolicies(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "LibreWolf", "distribution", "policies.json"), "https://addons.mozilla.org/firefox/downloads/latest/ublock-origin"), () => LibreWolf == true && uBlock == true),
+
+			// install privacy badger extension
+			("Installing Privacy Badger Extension", async () => UpdatePolicies(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "LibreWolf", "distribution", "policies.json"), "https://addons.mozilla.org/firefox/downloads/latest/privacy-badger17"), () => LibreWolf == true && PrivacyBadger == true),
+
+			// install decentraleyes extension
+			("Installing Decentraleyes Extension", async () => UpdatePolicies(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "LibreWolf", "distribution", "policies.json"), "https://addons.mozilla.org/firefox/downloads/latest/decentraleyes"), () => LibreWolf == true && Decentraleyes == true),
+
+			// install i still don't care about cookies extension
+			("Installing I still don't care about cookies Extension", async () => UpdatePolicies(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "LibreWolf", "distribution", "policies.json"), "https://addons.mozilla.org/firefox/downloads/latest/istilldontcareaboutcookies"), () => LibreWolf == true && Cookies == true),
+
+			// install violentmonkey extension
+			("Installing Violentmonkey Extension", async () => UpdatePolicies(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "LibreWolf", "distribution", "policies.json"), "https://addons.mozilla.org/firefox/downloads/latest/violentmonkey"), () => LibreWolf == true && Violentmonkey == true),
+
+			// install tampermonkey extension
+			("Installing Tampermonkey Extension", async () => UpdatePolicies(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "LibreWolf", "distribution", "policies.json"), "https://addons.mozilla.org/firefox/downloads/latest/tampermonkey"), () => LibreWolf == true && Tampermonkey == true),
+
+			// install sponsorblock extension
+			("Installing SponsorBlock Extension", async () => UpdatePolicies(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "LibreWolf", "distribution", "policies.json"), "https://addons.mozilla.org/firefox/downloads/latest/sponsorblock"), () => LibreWolf == true && SponsorBlock == true),
+
+			// install return youtube dislike extension
+			("Installing Return YouTube Dislike Extension", async () => UpdatePolicies(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "LibreWolf", "distribution", "policies.json"), "https://addons.mozilla.org/firefox/downloads/latest/return-youtube-dislikes"), () => LibreWolf == true && ReturnYouTubeDislike == true),
+
+			// install dark reader extension
+			("Installing Dark Reader Extension", async () => UpdatePolicies(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "LibreWolf", "distribution", "policies.json"), "https://addons.mozilla.org/firefox/downloads/latest/darkreader"), () => LibreWolf == true && DarkReader == true),
+
+			// install wayback machine extension
+			("Installing Wayback Machine Extension", async () => UpdatePolicies(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "LibreWolf", "distribution", "policies.json"), "https://addons.mozilla.org/firefox/downloads/latest/wayback-machine_new"), () => LibreWolf == true && WaybackMachine == true),
+
+			// install icloud passwords extension
+			("Installing iCloud Passwords Extension", async () => UpdatePolicies(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "LibreWolf", "distribution", "policies.json"), "https://addons.mozilla.org/firefox/downloads/latest/icloud-passwords"), () => LibreWolf == true && iCloud == true),
+
+			// install bitwarden extension
+			("Installing Bitwarden Extension", async () => UpdatePolicies(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "LibreWolf", "distribution", "policies.json"), "https://addons.mozilla.org/firefox/downloads/latest/bitwarden-password-manager"), () => LibreWolf == true && Bitwarden == true),
+
+			// install 1password extension
+			("Installing 1Password Extension", async () => UpdatePolicies(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "LibreWolf", "distribution", "policies.json"), "https://addons.mozilla.org/firefox/downloads/latest/1password-x-password-manager"), () => LibreWolf == true && OnePassword == true),
 
 			// download floorp
 			("Downloading Floorp", async () => await DownloadHelper.Download("https://github.com/Floorp-Projects/Floorp/releases/latest/download/floorp-windows-x86_64.installer.exe", Path.GetTempPath(), "FloorpSetup.exe", reporter ?? new InstallPageReporter()), () => Floorp == true),
@@ -864,61 +919,6 @@ public static class BrowsersStage
 
 			// install 1password extension
 			("Installing 1Password Extension", async () => UpdatePolicies(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Ablaze Floorp", "distribution", "policies.json"), "https://addons.mozilla.org/firefox/downloads/latest/1password-x-password-manager"), () => Floorp == true && OnePassword == true),
-
-			// download librewolf
-			("Downloading LibreWolf", async () => await DownloadHelper.Download(JsonDocument.Parse(await new HttpClient { DefaultRequestHeaders = { { "User-Agent", "AutoOS" } } }.GetStringAsync("https://codeberg.org/api/v1/repos/librewolf/bsys6/releases")).RootElement.EnumerateArray().First(release => release.GetProperty("assets").EnumerateArray().Any(asset => asset.GetProperty("name").GetString().Contains("windows-x86_64-setup.exe"))).GetProperty("assets").EnumerateArray().First(asset => asset.GetProperty("name").GetString().Contains("windows-x86_64-setup.exe")).GetProperty("browser_download_url").GetString(), Path.GetTempPath(), "librewolf-windows-x86_64-setup.exe", reporter: reporter), () => LibreWolf == true),
-			
-			// install librewolf
-			("Installing LibreWolf", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "librewolf-windows-x86_64-setup.exe"), Arguments = "/S /MaintenanceService=false /DesktopShortcut=false /StartMenuShortcut=true", WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => LibreWolf == true),
-			("Cleaning up LibreWolf files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "librewolf-windows-x86_64-setup.exe")), () => LibreWolf == true),
-
-			// pin librewolf to the taskbar
-			("Pinning LibreWolf to the taskbar", async () => await ProcessActions.PinToTaskbar("Link", Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Microsoft", "Windows", "Start Menu", "Programs", "LibreWolf", "LibreWolf.lnk")), () => LibreWolf == true),
-
-			// optimize librewolf settings
-			("Optimizing LibreWolf settings", async () => Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "LibreWolf", "distribution")), () => LibreWolf == true),
-			("Optimizing LibreWolf settings", async () => File.WriteAllText(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "LibreWolf", "defaults", "pref", "autoconfig.js"), "pref(\"general.config.filename\", \"librewolf.cfg\");\npref(\"general.config.obscure_value\", 0);"), () => LibreWolf == true),
-			("Optimizing LibreWolf settings", async () => File.WriteAllText(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "LibreWolf", "librewolf.cfg"), "defaultPref(\"app.shield.optoutstudies.enabled\", false);\ndefaultPref(\"browser.search.serpEventTelemetryCategorization.enabled\", false);\ndefaultPref(\"dom.security.unexpected_system_load_telemetry_enabled\", false);\ndefaultPref(\"identity.fxaccounts.telemetry.clientAssociationPing.enabled\", false);\ndefaultPref(\"network.trr.confirmation_telemetry_enabled\", false);\ndefaultPref(\"nimbus.telemetry.targetingContextEnabled\", false);\ndefaultPref(\"reader.parse-on-load.enabled\", false);\ndefaultPref(\"telemetry.fog.init_on_shutdown\", false);\ndefaultPref(\"default-browser-agent.enabled\", false);\ndefaultPref(\"widget.windows.mica\", true);\ndefaultPref(\"widget.windows.mica.popups\", 1);\ndefaultPref(\"widget.windows.mica.toplevel-backdrop\", 0);"), () => LibreWolf == true),
-			("Optimizing LibreWolf settings", async () => File.WriteAllText(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "LibreWolf", "distribution", "policies.json"), "{\r\n  \"policies\": {}\r\n}"), () => LibreWolf == true),
-
-			// install ublock origin extension
-			("Installing uBlock Origin Extension", async () => UpdatePolicies(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "LibreWolf", "distribution", "policies.json"), "https://addons.mozilla.org/firefox/downloads/latest/ublock-origin"), () => LibreWolf == true && uBlock == true),
-
-			// install privacy badger extension
-			("Installing Privacy Badger Extension", async () => UpdatePolicies(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "LibreWolf", "distribution", "policies.json"), "https://addons.mozilla.org/firefox/downloads/latest/privacy-badger17"), () => LibreWolf == true && PrivacyBadger == true),
-
-			// install decentraleyes extension
-			("Installing Decentraleyes Extension", async () => UpdatePolicies(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "LibreWolf", "distribution", "policies.json"), "https://addons.mozilla.org/firefox/downloads/latest/decentraleyes"), () => LibreWolf == true && Decentraleyes == true),
-
-			// install i still don't care about cookies extension
-			("Installing I still don't care about cookies Extension", async () => UpdatePolicies(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "LibreWolf", "distribution", "policies.json"), "https://addons.mozilla.org/firefox/downloads/latest/istilldontcareaboutcookies"), () => LibreWolf == true && Cookies == true),
-
-			// install violentmonkey extension
-			("Installing Violentmonkey Extension", async () => UpdatePolicies(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "LibreWolf", "distribution", "policies.json"), "https://addons.mozilla.org/firefox/downloads/latest/violentmonkey"), () => LibreWolf == true && Violentmonkey == true),
-
-			// install tampermonkey extension
-			("Installing Tampermonkey Extension", async () => UpdatePolicies(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "LibreWolf", "distribution", "policies.json"), "https://addons.mozilla.org/firefox/downloads/latest/tampermonkey"), () => LibreWolf == true && Tampermonkey == true),
-
-			// install sponsorblock extension
-			("Installing SponsorBlock Extension", async () => UpdatePolicies(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "LibreWolf", "distribution", "policies.json"), "https://addons.mozilla.org/firefox/downloads/latest/sponsorblock"), () => LibreWolf == true && SponsorBlock == true),
-
-			// install return youtube dislike extension
-			("Installing Return YouTube Dislike Extension", async () => UpdatePolicies(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "LibreWolf", "distribution", "policies.json"), "https://addons.mozilla.org/firefox/downloads/latest/return-youtube-dislikes"), () => LibreWolf == true && ReturnYouTubeDislike == true),
-
-			// install dark reader extension
-			("Installing Dark Reader Extension", async () => UpdatePolicies(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "LibreWolf", "distribution", "policies.json"), "https://addons.mozilla.org/firefox/downloads/latest/darkreader"), () => LibreWolf == true && DarkReader == true),
-
-			// install wayback machine extension
-			("Installing Wayback Machine Extension", async () => UpdatePolicies(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "LibreWolf", "distribution", "policies.json"), "https://addons.mozilla.org/firefox/downloads/latest/wayback-machine_new"), () => LibreWolf == true && WaybackMachine == true),
-
-			// install icloud passwords extension
-			("Installing iCloud Passwords Extension", async () => UpdatePolicies(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "LibreWolf", "distribution", "policies.json"), "https://addons.mozilla.org/firefox/downloads/latest/icloud-passwords"), () => LibreWolf == true && iCloud == true),
-
-			// install bitwarden extension
-			("Installing Bitwarden Extension", async () => UpdatePolicies(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "LibreWolf", "distribution", "policies.json"), "https://addons.mozilla.org/firefox/downloads/latest/bitwarden-password-manager"), () => LibreWolf == true && Bitwarden == true),
-
-			// install 1password extension
-			("Installing 1Password Extension", async () => UpdatePolicies(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "LibreWolf", "distribution", "policies.json"), "https://addons.mozilla.org/firefox/downloads/latest/1password-x-password-manager"), () => LibreWolf == true && OnePassword == true),
 
 			// download mullvad
 			("Downloading Mullvad Browser", async () => await DownloadHelper.Download("https://mullvad.net/en/download/browser/win64/latest", Path.GetTempPath(), "mullvad-browser-windows-x86_64.exe", reporter ?? new InstallPageReporter()), () => Mullvad == true),

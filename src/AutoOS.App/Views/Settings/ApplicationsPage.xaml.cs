@@ -70,9 +70,9 @@ public sealed partial class ApplicationsPage : Page
 			new() { Text = "Battle.Net", ImageSource = "ms-appx:///Assets/Fluent/BattleNet.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "Battle.net", "Battle.net.exe")) },
 			new() { Text = "Minecraft Launcher", ImageSource = "ms-appx:///Assets/Fluent/MinecraftLauncher.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "Minecraft Launcher", "MinecraftLauncher.exe")) },
 			new() { Text = "CurseForge", ImageSource = "ms-appx:///Assets/Fluent/CurseForge.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs", "CurseForge", "CurseForge.exe")) },
-			new() { Text = "Prism Launcher", ImageSource = "ms-appx:///Assets/Fluent/PrismLauncher.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs", "PrismLauncher", "prismlauncher.exe")) },
 			new() { Text = "Lunar Client", ImageSource = "ms-appx:///Assets/Fluent/LunarClient.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs", "launcher", "Lunar Client.exe")) },
 			new() { Text = "Feather Client", ImageSource = "ms-appx:///Assets/Fluent/FeatherClient.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs", "feather", "Feather Launcher.exe")) },
+			new() { Text = "Prism Launcher", ImageSource = "ms-appx:///Assets/Fluent/PrismLauncher.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs", "PrismLauncher", "prismlauncher.exe")) },
 			new() { Text = "Bloxstrap", ImageSource = "ms-appx:///Assets/Fluent/Bloxstrap.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Bloxstrap", "Bloxstrap.exe")) },
 			new() { Text = "Froststrap", ImageSource = "ms-appx:///Assets/Fluent/Froststrap.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Froststrap", "Froststrap.exe")) },
 			new() { Text = "Fishstrap", ImageSource = "ms-appx:///Assets/Fluent/Fishstrap.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Fishstrap", "Fishstrap.exe")) },
@@ -263,9 +263,9 @@ public sealed partial class ApplicationsPage : Page
 		selection.BattleNet = selectedLaunchers.Contains("Battle.Net");
 		selection.MinecraftLauncher = selectedLaunchers.Contains("Minecraft Launcher");
 		selection.CurseForge = selectedLaunchers.Contains("CurseForge");
-		selection.PrismLauncher = selectedLaunchers.Contains("Prism Launcher");
 		selection.LunarClient = selectedLaunchers.Contains("Lunar Client");
 		selection.FeatherClient = selectedLaunchers.Contains("Feather Client");
+		selection.PrismLauncher = selectedLaunchers.Contains("Prism Launcher");
 		selection.Bloxstrap = selectedLaunchers.Contains("Bloxstrap");
 		selection.Froststrap = selectedLaunchers.Contains("Froststrap");
 		selection.Fishstrap = selectedLaunchers.Contains("Fishstrap");

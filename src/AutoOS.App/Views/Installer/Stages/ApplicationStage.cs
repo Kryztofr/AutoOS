@@ -43,9 +43,9 @@ public class ApplicationSelection
 	public bool BattleNet { get; set; }
 	public bool MinecraftLauncher { get; set; }
 	public bool CurseForge { get; set; }
-	public bool PrismLauncher { get; set; }
 	public bool LunarClient { get; set; }
 	public bool FeatherClient { get; set; }
+	public bool PrismLauncher { get; set; }
 	public bool Bloxstrap { get; set; }
 	public bool Froststrap { get; set; }
 	public bool Fishstrap { get; set; }
@@ -182,9 +182,9 @@ public static class ApplicationStage
 		bool BattleNet = selection?.BattleNet ?? PreparingStage.BattleNet;
 		bool MinecraftLauncher = selection?.MinecraftLauncher ?? PreparingStage.MinecraftLauncher;
 		bool CurseForge = selection?.CurseForge ?? PreparingStage.CurseForge;
-		bool PrismLauncher = selection?.PrismLauncher ?? PreparingStage.PrismLauncher;
 		bool LunarClient = selection?.LunarClient ?? PreparingStage.LunarClient;
 		bool FeatherClient = selection?.FeatherClient ?? PreparingStage.FeatherClient;
+		bool PrismLauncher = selection?.PrismLauncher ?? PreparingStage.PrismLauncher;
 		bool Bloxstrap = selection?.Bloxstrap ?? PreparingStage.Bloxstrap;
 		bool Froststrap = selection?.Froststrap ?? PreparingStage.Froststrap;
 		bool Fishstrap = selection?.Fishstrap ?? PreparingStage.Fishstrap;
@@ -822,13 +822,6 @@ public static class ApplicationStage
 			// remove curseforge desktop shortcut
 			("Removing CurseForge desktop shortcut", async () => File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "CurseForge.lnk")), () => CurseForge == true),
 
-			// download prism launcher
-			("Downloading Prism Launcher", async () => await DownloadHelper.Download(JsonDocument.Parse(await new HttpClient { DefaultRequestHeaders = { { "User-Agent", "AutoOS" } } }.GetStringAsync("https://api.github.com/repos/PrismLauncher/PrismLauncher/releases")).RootElement.EnumerateArray().First(release => !release.GetProperty("prerelease").GetBoolean() && release.GetProperty("assets").EnumerateArray().Any(asset => asset.GetProperty("name").GetString().Contains("Windows-MSVC") && !asset.GetProperty("name").GetString().Contains("arm64") && !asset.GetProperty("name").GetString().Contains("Portable") && asset.GetProperty("name").GetString().EndsWith(".exe"))).GetProperty("assets").EnumerateArray().First(asset => asset.GetProperty("name").GetString().Contains("Windows-MSVC") && !asset.GetProperty("name").GetString().Contains("arm64") && !asset.GetProperty("name").GetString().Contains("Portable") && asset.GetProperty("name").GetString().EndsWith(".exe")).GetProperty("browser_download_url").GetString(), Path.GetTempPath(), "PrismLauncher-Windows-MSVC-Setup.exe", reporter: reporter), () => PrismLauncher == true),
-
-			// install prism launcher
-			("Installing Prism Launcher", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "PrismLauncher-Windows-MSVC-Setup.exe"), Arguments = "/S" , WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => PrismLauncher == true),
-			("Cleaning up Prism Launcher files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "PrismLauncher-Windows-MSVC-Setup.exe")), () => PrismLauncher == true),
-
 			// download lunar client
 			("Downloading Lunar Client", async () => await DownloadHelper.Download("https://launcherupdates.lunarclientcdn.com/Lunar%20Client%20v3.4.9.exe", Path.GetTempPath(), "Lunar Client.exe", reporter: reporter), () => LunarClient == true),
 
@@ -848,6 +841,13 @@ public static class ApplicationStage
 
 			// remove feather client desktop shortcut
 			("Removing Feather Client desktop shortcut", async () => File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "Feather Launcher.lnk")), () => FeatherClient == true),
+
+			// download prism launcher
+			("Downloading Prism Launcher", async () => await DownloadHelper.Download(JsonDocument.Parse(await new HttpClient { DefaultRequestHeaders = { { "User-Agent", "AutoOS" } } }.GetStringAsync("https://api.github.com/repos/PrismLauncher/PrismLauncher/releases")).RootElement.EnumerateArray().First(release => !release.GetProperty("prerelease").GetBoolean() && release.GetProperty("assets").EnumerateArray().Any(asset => asset.GetProperty("name").GetString().Contains("Windows-MSVC") && !asset.GetProperty("name").GetString().Contains("arm64") && !asset.GetProperty("name").GetString().Contains("Portable") && asset.GetProperty("name").GetString().EndsWith(".exe"))).GetProperty("assets").EnumerateArray().First(asset => asset.GetProperty("name").GetString().Contains("Windows-MSVC") && !asset.GetProperty("name").GetString().Contains("arm64") && !asset.GetProperty("name").GetString().Contains("Portable") && asset.GetProperty("name").GetString().EndsWith(".exe")).GetProperty("browser_download_url").GetString(), Path.GetTempPath(), "PrismLauncher-Windows-MSVC-Setup.exe", reporter: reporter), () => PrismLauncher == true),
+
+			// install prism launcher
+			("Installing Prism Launcher", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "PrismLauncher-Windows-MSVC-Setup.exe"), Arguments = "/S" , WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => PrismLauncher == true),
+			("Cleaning up Prism Launcher files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "PrismLauncher-Windows-MSVC-Setup.exe")), () => PrismLauncher == true),
 
 			// download bloxstrap
 			("Downloading Bloxstrap", async () => await DownloadHelper.Download(JsonDocument.Parse(await new HttpClient { DefaultRequestHeaders = { { "User-Agent", "AutoOS" } } }.GetStringAsync("https://api.github.com/repos/bloxstraplabs/bloxstrap/releases")).RootElement.EnumerateArray().First(release => !release.GetProperty("prerelease").GetBoolean() && release.GetProperty("assets").EnumerateArray().Any(asset => asset.GetProperty("name").GetString().StartsWith("Bloxstrap-v") && asset.GetProperty("name").GetString().EndsWith(".exe"))).GetProperty("assets").EnumerateArray().First(asset => asset.GetProperty("name").GetString().StartsWith("Bloxstrap-v") && asset.GetProperty("name").GetString().EndsWith(".exe")).GetProperty("browser_download_url").GetString(), Path.GetTempPath(), "Bloxstrap.exe", reporter: reporter), () => Bloxstrap == true),
@@ -1513,8 +1513,8 @@ public static class ApplicationStage
 			("Installing WinMerge", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "WinMerge-x64-Setup.exe"), Arguments = "/SP- /VERYSILENT /SUPPRESSMSGBOXES /NORESTART" , WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => WinMerge == true),
 			("Cleaning up WinMerge files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "WinMerge-x64-Setup.exe")), () => WinMerge == true),
 
-			// set winmerge color mode to follow system
-			(@"Setting WinMerge ""Color mode"" to ""Follow system""", async () => RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_CURRENT_USER\Software\Thingamahoochie\WinMerge\Settings", "ColorMode", 2, RegistryValueKind.DWord), () => WinMerge == true),
+			//// set winmerge color mode to follow system
+			//(@"Setting WinMerge ""Color mode"" to ""Follow system""", async () => RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_CURRENT_USER\Software\Thingamahoochie\WinMerge\Settings", "ColorMode", 2, RegistryValueKind.DWord), () => WinMerge == true),
 
 			// download git
 			("Downloading Git", async () => await DownloadHelper.Download(JsonDocument.Parse(await new HttpClient { DefaultRequestHeaders = { { "User-Agent", "AutoOS" } } }.GetStringAsync("https://api.github.com/repos/git-for-windows/git/releases")).RootElement.EnumerateArray().First(release => release.GetProperty("assets").EnumerateArray().Any(asset => asset.GetProperty("name").GetString().Contains("64-bit.exe"))).GetProperty("assets").EnumerateArray().First(asset => asset.GetProperty("name").GetString().Contains("64-bit.exe")).GetProperty("browser_download_url").GetString(), Path.GetTempPath(), "Git64-bit.exe", reporter: reporter), () => Git == true),
