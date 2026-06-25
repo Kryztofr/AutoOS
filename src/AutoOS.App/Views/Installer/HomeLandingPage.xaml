@@ -17,7 +17,7 @@
                         Spacing="12">
                 <dev:HeaderTile Title="AutoOS User Guide"
                                 Description="Instructions on how to get the most out of AutoOS."
-                                Link="https://github.com/tinodin/AutoOS/blob/master/docs/INSTALLER_USER_GUIDE.md">
+                                Link="https://github.com/tinodin/AutoOS/blob/master/docs/USER_GUIDE_INSTALLER.md">
                     <dev:HeaderTile.Source>
                         <Image Source="/Assets/AppIcon.png" />
                     </dev:HeaderTile.Source>
