@@ -223,8 +223,7 @@ Clean up your drives:
 
 ### Windows Security
 Toggle Windows Security Options:
-- Enable `HVCI` if you play `Valorant`.
-- Enable `HVCI` and `VBS` if you play `FACEIT`.
+- Enable `HVCI` and `VBS` if you play `FACEIT` or `Valorant`.
 
 ![Windows Security](https://raw.githubusercontent.com/tinodin/AutoOS-Resources/main/AutoOS%20Settings/Windows%20Security.png)
 

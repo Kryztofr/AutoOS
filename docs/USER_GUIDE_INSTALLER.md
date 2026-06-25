@@ -55,8 +55,7 @@ Select your Graphics Card preferences:
 
 ### Windows Security
 Choose your Windows Security settings:
-- Enable `HVCI` if you play `Valorant`.
-- Enable `HVCI` and `VBS` if you play `FACEIT`.
+- Enable `HVCI` and `VBS` if you play `FACEIT` or `Valorant`.
 
 ![Windows Security](https://raw.githubusercontent.com/tinodin/AutoOS-Resources/main/AutoOS%20Installer/Windows%20Security.png)
 
