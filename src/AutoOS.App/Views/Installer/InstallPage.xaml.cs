@@ -4,8 +4,6 @@ using AutoOS.Views.Installer.Stages;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.Win32;
 using System.Diagnostics;
-using System.Text;
-using System.Text.Json.Nodes;
 using Windows.Storage;
 using WinRT.Interop;
 
@@ -103,7 +101,17 @@ public sealed partial class InstallPage : Page
 		localSettings.Values["Install_End"] = DateTimeOffset.Now.ToString("O");
 		Registry.SetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\AutoOS", "IsInstalled", 1, RegistryValueKind.DWord);
 		Registry.SetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\Explorer", "LockedStartLayout", 0, RegistryValueKind.DWord);
-		Registry.SetValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Start", "AllAppsViewMode", 2, RegistryValueKind.DWord);
+		
+		// pause for 100 years
+		string start = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssK");
+		string end = DateTime.UtcNow.AddYears(100).ToString("yyyy-MM-ddTHH:mm:ssK");
+		using var key = Registry.LocalMachine.CreateSubKey(@"SOFTWARE\Microsoft\WindowsUpdate\UX\Settings");
+		key.SetValue("PauseFeatureUpdatesStartTime", start, RegistryValueKind.String);
+		key.SetValue("PauseFeatureUpdatesEndTime", end, RegistryValueKind.String);
+		key.SetValue("PauseQualityUpdatesStartTime", start, RegistryValueKind.String);
+		key.SetValue("PauseQualityUpdatesEndTime", end, RegistryValueKind.String);
+		key.SetValue("PauseUpdatesStartTime", start, RegistryValueKind.String);
+		key.SetValue("PauseUpdatesExpiryTime", end, RegistryValueKind.String);
 		localSettings.Values.Remove("actionStage");
 		localSettings.Values.Remove("actionIndex");
 		try
@@ -113,11 +121,7 @@ public sealed partial class InstallPage : Page
 		}
 		catch (Exception ex)
 		{
-			try
-			{
-				await LogHelper.LogFallbackError(ex, ex);
-			}
-			catch { }
+			await LogHelper.LogFallbackError(ex);
 		}
 		Info.Title = "Restarting in 3...";
 		await Task.Delay(1000);
@@ -195,7 +199,8 @@ public sealed partial class InstallPage : Page
 						}
 						catch (Exception exception)
 						{
-							await LogHelper.LogFallbackError(ex, exception);
+							await LogHelper.LogFallbackError(ex);
+							await LogHelper.LogFallbackError(exception);
 						}
 
 						Info.Title = $"{previousTitle}: {ex.Message}";

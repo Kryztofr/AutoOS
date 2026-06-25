@@ -127,6 +127,18 @@ namespace AutoOS.Views.Settings
 				RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\FeatureManagement\Overrides\8\3650112648", "VariantPayloadKind", 0, RegistryValueKind.DWord);
 			}
 
+			if (Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Windhawk\Engine\Mods\auto-theme-switcher", "Version", null) as string != "1.3.2" && Convert.ToInt32(Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Windhawk\Engine\Mods\auto-theme-switcher", "Disabled", 0)) != 1)
+			{
+				var restartDialog = new ContentDialog
+				{
+					Title = "Update Windhawk Auto Theme Switcher Mod",
+					Content = "Open Windhawk and update the Auto Theme Switcher Mod.",
+					PrimaryButtonText = "Done",
+					DefaultButton = ContentDialogButton.Primary,
+					XamlRoot = XamlRoot
+				};
+			}
+
 			Version currentVersion = new(ProcessInfoHelper.Version);
 
 			localSettings.Values.TryGetValue("Version", out var storedVersionObj);
@@ -203,38 +215,7 @@ namespace AutoOS.Views.Settings
 				}
 				catch (Exception ex)
 				{
-					try
-					{
-						string webhook = LogConfig.Error;
-						if (!string.IsNullOrEmpty(webhook))
-						{
-							using var client = new HttpClient();
-							using var multipart = new MultipartFormDataContent();
-
-							var payload = new JsonObject
-							{
-								["content"] = $"Logging failure: {ex.Message}, AutoOS {ProcessInfoHelper.Version}"
-							};
-							multipart.Add(new StringContent(payload.ToJsonString(), Encoding.UTF8, "application/json"), "payload_json");
-
-							var errorSb = new StringBuilder();
-							errorSb.AppendLine($"{ex.GetType().FullName}");
-							errorSb.AppendLine($"Message: {ex.Message}");
-							errorSb.AppendLine($"HResult: 0x{ex.HResult:X}");
-							errorSb.AppendLine($"Source: {ex.Source}");
-							errorSb.AppendLine(ex.StackTrace);
-							if (ex.InnerException != null)
-							{
-								errorSb.AppendLine("**InnerException:**");
-								errorSb.AppendLine(ex.InnerException.ToString());
-							}
-
-							multipart.Add(new ByteArrayContent(Encoding.UTF8.GetBytes(errorSb.ToString())), "file", "error.txt");
-
-							await client.PostAsync(webhook, multipart);
-						}
-					}
-					catch { }
+					await LogHelper.LogFallbackError(ex);
 				}
 			}
 

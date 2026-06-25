@@ -98,7 +98,8 @@ public sealed partial class UpdateDialog : UserControl
 						{
 							StatusText.Text = ex.Message;
 							SetError();
-							await LogHelper.LogFallbackError(ex, exception);
+							await LogHelper.LogFallbackError(ex);
+							await LogHelper.LogFallbackError(exception);
 						}
 					}
 				}

@@ -1,20 +1,19 @@
 # 🚀 Installation Guide
 
 > [!NOTE]  
-> This guide does **NOT** require a USB drive.<br/> 
-> Installing AutoOS using a USB drive is technically possible using Ventoy with the unattend.xml file but you will need a ventoy config file.<br/> 
-> When installing via USB drive, you will lose out on stripping 8.3 file names and importing games, etc. from your old installation.
+> This guide does **NOT** require a USB drive.<br/>
+> AutoOS will automatically be installed as a dual boot, meaning your old data and Windows installation stay accessible after installing.
 
 ### Step 1: Join Discord Server
 Join my [Discord Server](https://discord.gg/bZU4dMMWpg) to receive **installation support** and stay informed about **future updates or changes**.
 
 ### Step 2: Downloading the ISO
 Download the latest Windows `25H2.iso` file from [here](https://drive.google.com/drive/folders/1BlAYofjlW1bU-WPG3jXygO1ezoJ4gPs7?usp=sharing) (Log into your Google Account if you get an error).<br/>
-Other ISOs are not supported (will not work) to guarantee consistency and the latest features. 
+Other ISOs are not supported (will not work) to guarantee consistency and the latest features.
 
 ### Step 3: Downloading Drivers
 Open Device Manager (`devmgmt.msc`) and look for the brand of your Ethernet and Wi-Fi Adapter under the `Network adapters` section.<br/>
-If you have one of following below, download them.<br/>
+If you have one of the following, download them.<br/>
 
 **INTEL:** [Ethernet](https://www.intel.com/content/www/us/en/download/727998/intel-network-adapter-driver-for-microsoft-windows-11.html) · [Wi-Fi](https://raw.githubusercontent.com/tinodin/AutoOS-Resources/main/Files/Intel/WiFi.zip) · [Bluetooth](https://raw.githubusercontent.com/tinodin/AutoOS-Resources/main/Files/Intel/Bluetooth.zip)
 
@@ -22,13 +21,20 @@ If you have one of following below, download them.<br/>
 
 **MediaTek:** [Wi-Fi](https://raw.githubusercontent.com/tinodin/AutoOS-Resources/main/Files/MediaTek/WiFi.zip) · [Bluetooth](https://raw.githubusercontent.com/tinodin/AutoOS-Resources/main/Files/MediaTek/Bluetooth.zip)
 
+**Qualcomm:** [Wi-Fi](https://raw.githubusercontent.com/tinodin/AutoOS-Resources/main/Files/Qualcomm/WiFi.zip) · [Bluetooth](https://raw.githubusercontent.com/tinodin/AutoOS-Resources/main/Files/Qualcomm/Bluetooth.zip)
+
+**Killer:** [Ethernet, Wi-Fi and Bluetooth](https://github.com/tinodin/AutoOS-Resources/releases/download/v1.0.0.0/Killer.zip)
+
+**Marvell:** [Ethernet](https://www.marvell.com/content/dam/marvell/en/drivers/Marvell_AQtion_Win_v3.1.11_10-17-2025.zip)
+
 ---
 
 <details>
 <summary>If you have a <b>Laptop</b>, click to expand</summary>
 <br/>
 
-Open System Information (`msinfo32`) and look for `System Model`, in your browser search for "{Your system model here} drivers".<br/>
+Open System Information (`msinfo32`) and look for `System Model`.<br/>
+Search for "{System Model} drivers" in your browser.<br/>
 Click on the support page, head to drivers and select Windows 11 (if available), then download the **Audio and Touchpad** drivers (if available).
 <br/>
 </details>
@@ -36,7 +42,7 @@ Click on the support page, head to drivers and select Windows 11 (if available),
 ---
 
 <details>
-<summary>If you have an Intel <b>10th Generation and up Prebuilt PC</b> or <b>Laptop</b>, click to expand</summary>
+<summary>If you have an Intel <b>10th Generation or newer Prebuilt PC</b> or <b>Laptop</b>, click to expand</summary>
 <br/>
 
 Open Device Manager (`devmgmt.msc`) and look for anything containing "**Intel**" under the `Storage controllers` section.<br/>
@@ -45,7 +51,7 @@ If there are none, continue with Step 4.<br/>
 If there is an "**Intel**" entry, you have **2 options**:
 
 **Option 1 (Preferred):**
-- Disable `VMD Controller` in your BIOS. 
+- Disable `VMD Controller` in your BIOS.
 - On DELL/Alienware go to `Storage -> SATA/NVMe Operation` and change it from `Disabled` to `AHCI/NVMe`.
 
 **Option 2:**
@@ -63,7 +69,7 @@ If there is an "**Intel**" entry, you have **2 options**:
 ---
 
 After downloading your drivers, extract all `.zip` files.<br/>
-For `.exe` files, run them and select the `Extract` (if available).<br/>
+For `.exe` files, run them and select the `Extract` option (if available).<br/>
 If they don't have that option, use `7-Zip, NanaZip, or WinRAR` to extract them.
 
 Finally, create a `New Folder` and move all extracted folders into it.
@@ -74,27 +80,20 @@ Paste this into the PowerShell window to run the deployment script.<br/>
 
 ```ps1
 $PSDefaultParameterValues['Invoke-WebRequest:UseBasicParsing'] = $true
-Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force 
+Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
 irm https://raw.githubusercontent.com/tinodin/AutoOS/master/deploy/deploy.ps1 | iex
 ```
 Then select the **ISO** file you downloaded in Step 2 and your **drivers folder** you created in Step 3.<br/>
 If you get any errors during the script, please leave a message on my [Discord Server](https://discord.gg/bZU4dMMWpg).
 
 ### Step 5: Restarting into AutoOS
-Once the script finished, restart your PC and boot into `AutoOS` by pressing `Enter` after every following restart.<br/>
+Once the script has successfully finished, restart your PC.<br/>
+Boot into `AutoOS` by pressing `Enter` after every restart.<br/>
 
-> [!WARNING]  
+> [!WARNING]
 > Make sure to `keep your ethernet cable connected` or `connect to your WiFi in the setup`.<br/>
 > **DO NOT BYPASS THE NETWORK REQUIREMENT!**
 
 ### Step 6: AutoOS Installer
-Once the OOBE has finished, wait for Windows to restart and AutoOS Installer to open up.<br/>
-Carefully look through every tab and select your preferences and apps.<br/>
-You can take inspiration from my selection in **[Screenshots](SCREENSHOTS.md)**.<br/>
-Then click "Install AutoOS". This process will take around 15-45 minutes depending on your internet speed.
-
-> [!NOTE]  
-> You may experience a blank screen in the App after installing the Graphics Driver.<br/>
-> To fix this, resize the window, click the navigation pane button a few times or just wait until it rerenders the UI.
-
-After the installation is done, make sure to read the **[Post Install Guide](POSTINSTALL.md)**.
+Once the OOBE has finished, wait for Windows to restart and the `AutoOS Installer` to open up.<br/>
+Click on the `AutoOS User Guide` tile on the Home tab and follow the `instructions` for the `AutoOS Installer`.

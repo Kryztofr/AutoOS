@@ -176,7 +176,8 @@ namespace AutoOS
 			}
 			catch (Exception exception)
 			{
-				await LogHelper.LogFallbackError(ex, exception);
+				await LogHelper.LogFallbackError(ex);
+				await LogHelper.LogFallbackError(exception);
 			}
 		}
 	}

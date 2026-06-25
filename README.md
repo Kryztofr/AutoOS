@@ -57,7 +57,7 @@ Pressing **Install AutoOS** in the **AutoOS Installer** does the following:
 - Disables selected Security features
 - Downloads strips, installs and optimizes your selected Graphic Card drivers
 - Imports the selected Custom Resolution Utility (CRU) profile
-- Imports the monitor configuration from the old Windows Installation
+- Imports the monitor layout from the old Windows Installation
 - Automatically sets your monitors to their highest supported refresh rates
 - Imports the selected MSI Afterburner overclock profile
 - Installs OBS Studio with optimal settings depending on your GPUs

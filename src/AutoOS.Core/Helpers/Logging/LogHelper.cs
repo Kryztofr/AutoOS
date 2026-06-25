@@ -365,7 +365,7 @@ public static partial class LogHelper
 		return embed;
 	}
 
-	public static async Task LogFallbackError(Exception originalException, Exception loggingException)
+	public static async Task LogFallbackError(Exception ex)
 	{
 		try
 		{
@@ -378,20 +378,20 @@ public static partial class LogHelper
 
 			var payload = new JsonObject
 			{
-				["content"] = $"Logging failure: {originalException.Message}, AutoOS {ProcessInfoHelper.Version}"
+				["content"] = $"Logging failure: {ex.Message}, AutoOS {ProcessInfoHelper.Version}"
 			};
 			multipart.Add(new StringContent(payload.ToJsonString(), Encoding.UTF8, "application/json"), "payload_json");
 
 			var errorSb = new StringBuilder();
-			errorSb.AppendLine($"{loggingException.GetType().FullName}");
-			errorSb.AppendLine($"Message: {loggingException.Message}");
-			errorSb.AppendLine($"HResult: 0x{loggingException.HResult:X}");
-			errorSb.AppendLine($"Source: {loggingException.Source}");
-			errorSb.AppendLine(loggingException.StackTrace);
-			if (loggingException.InnerException != null)
+			errorSb.AppendLine($"{ex.GetType().FullName}");
+			errorSb.AppendLine($"Message: {ex.Message}");
+			errorSb.AppendLine($"HResult: 0x{ex.HResult:X}");
+			errorSb.AppendLine($"Source: {ex.Source}");
+			errorSb.AppendLine(ex.StackTrace);
+			if (ex.InnerException != null)
 			{
 				errorSb.AppendLine("**InnerException:**");
-				errorSb.AppendLine(loggingException.InnerException.ToString());
+				errorSb.AppendLine(ex.InnerException.ToString());
 			}
 
 			multipart.Add(new ByteArrayContent(Encoding.UTF8.GetBytes(errorSb.ToString())), "file", "error.txt");

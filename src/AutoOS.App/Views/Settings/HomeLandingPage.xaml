@@ -15,22 +15,14 @@
         <dev:MainLandingPage.HeaderContent>
             <StackPanel Orientation="Horizontal"
                         Spacing="12">
-                <dev:HeaderTile Title="Get started with AutoOS"
-                                Description="Instructions on what to do after installing AutoOS."
-                                Link="https://github.com/tinodin/AutoOS/blob/master/docs/POSTINSTALL.md">
+                <dev:HeaderTile Title="AutoOS User Guide"
+                                Description="Instructions on how to get the most out of AutoOS."
+                                Link="https://github.com/tinodin/AutoOS/blob/master/docs/SETTINGS_USER_GUIDE.md">
                     <dev:HeaderTile.Source>
                         <Image Source="/Assets/AppIcon.png" />
                     </dev:HeaderTile.Source>
                 </dev:HeaderTile>
-
-                <dev:HeaderTile Title="Join the Discord server"
-                                Description="Join the community to report issues, get support or suggest new features."
-                                Link="https://discord.gg/bZU4dMMWpg">
-                    <dev:HeaderTile.Source>
-                        <Image Source="/Assets/Fluent/Discord.png" />
-                    </dev:HeaderTile.Source>
-                </dev:HeaderTile>
-                <dev:HeaderTile Title="Contribute to AutoOS"
+                <dev:HeaderTile Title="AutoOS Contribution Guide"
                                 Description="Contribute to become a part of the AutoOS project."
                                 Link="https://github.com/tinodin/AutoOS/blob/master/docs/CONTRIBUTING.md">
                     <dev:HeaderTile.Source>
@@ -40,7 +32,14 @@
                         </Viewbox>
                     </dev:HeaderTile.Source>
                 </dev:HeaderTile>
-                <dev:HeaderTile Title="Donate via PayPal"
+                <dev:HeaderTile Title="AutoOS Discord Server"
+                                Description="Join the community to report issues, get support or suggest new features."
+                                Link="https://discord.gg/bZU4dMMWpg">
+                    <dev:HeaderTile.Source>
+                        <Image Source="/Assets/Fluent/Discord.png" />
+                    </dev:HeaderTile.Source>
+                </dev:HeaderTile>
+                <dev:HeaderTile Title="Donate"
                                 Description="Donate if you appreciate the time and effort I put into this project."
                                 Link="https://www.paypal.com/donate?hosted_button_id=W3YRLW35QEZWS">
                     <dev:HeaderTile.Source>
