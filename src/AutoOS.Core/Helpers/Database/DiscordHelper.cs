@@ -20,17 +20,37 @@ public static partial class DiscordHelper
 
 	public static readonly string LevelDbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "discord", "Local Storage", "leveldb");
 
-	private static readonly Dictionary<string, string> browserPaths = new()
+	private static IEnumerable<(string Path, string Browser, DateTime LastWriteTime)> GetBrowserDatabases(string userDir)
 	{
-		{ @"AppData\Local\Microsoft\Edge\User Data\Default\Local Storage\leveldb", "Edge" },
-		{ @"AppData\Local\Google\Chrome\User Data\Default\Local Storage\leveldb", "Chrome" },
-		{ @"AppData\Local\Thorium\User Data\Default\Local Storage\leveldb", "Thorium" },
-		{ @"AppData\Local\imput\Helium\User Data\Default\Local Storage\leveldb", "Helium" },
-		{ @"AppData\Local\BraveSoftware\Brave-Browser\User Data\Default\Local Storage\leveldb", "Brave" },
-		{ @"AppData\Local\Vivaldi\User Data\Default\Local Storage\leveldb", "Vivaldi" },
-		{ @"AppData\Local\Packages\TheBrowserCompany.Arc_ttt1ap7aakyb4\LocalCache\Local\Arc\User Data\Default\Local Storage\leveldb", "Arc" },
-		{ @"AppData\Local\Perplexity\Comet\User Data\Default\Local Storage\leveldb", "Perplexity" }
-	};
+		var chromium = new[]
+		{
+			(@"AppData\Local\Microsoft\Edge\User Data\Default\Local Storage\leveldb", "Edge"),
+			(@"AppData\Local\Google\Chrome\User Data\Default\Local Storage\leveldb", "Chrome"),
+			(@"AppData\Local\Thorium\User Data\Default\Local Storage\leveldb", "Thorium"),
+			(@"AppData\Local\imput\Helium\User Data\Default\Local Storage\leveldb", "Helium"),
+			(@"AppData\Local\BraveSoftware\Brave-Browser\User Data\Default\Local Storage\leveldb", "Brave"),
+			(@"AppData\Local\Vivaldi\User Data\Default\Local Storage\leveldb", "Vivaldi"),
+			(@"AppData\Local\Packages\TheBrowserCompany.Arc_ttt1ap7aakyb4\LocalCache\Local\Arc\User Data\Default\Local Storage\leveldb", "Arc"),
+			(@"AppData\Local\Perplexity\Comet\User Data\Default\Local Storage\leveldb", "Perplexity")
+		}
+		.Where(entry => Directory.Exists(Path.Combine(userDir, entry.Item1)))
+		.Select(entry => (Path: Path.Combine(userDir, entry.Item1), Browser: entry.Item2, LastWriteTime: new DirectoryInfo(Path.Combine(userDir, entry.Item1)).LastWriteTime));
+
+		var firefox = new[]
+		{
+			(@"AppData\Roaming\Mozilla\Firefox\Profiles", "Firefox"),
+			(@"AppData\Roaming\Zen\Profiles", "Zen"),
+			(@"AppData\Roaming\LibreWolf\Profiles", "LibreWolf"),
+			(@"AppData\Roaming\Waterfox\Profiles", "Waterfox")
+		}
+		.Where(entry => Directory.Exists(Path.Combine(userDir, entry.Item1)))
+		.SelectMany(entry => Directory.GetDirectories(Path.Combine(userDir, entry.Item1)).Select(profile => (profile, entry.Item2)))
+		.SelectMany(profileEntry => new[] { Path.Combine(profileEntry.profile, "storage", "default", "https+++discord.com", "ls", "data.sqlite"), Path.Combine(profileEntry.profile, "storage", "default", "https+++discordapp.com", "ls", "data.sqlite") }.Select(path => (Path: path, Browser: profileEntry.Item2)))
+		.Where(pathEntry => File.Exists(pathEntry.Path))
+		.Select(pathEntry => (pathEntry.Path, pathEntry.Browser, LastWriteTime: File.GetLastWriteTime(pathEntry.Path)));
+
+		return chromium.Concat(firefox);
+	}
 
 	public static async Task ImportAccount(IStatusReporter reporter = null)
 	{
@@ -120,18 +140,15 @@ public static partial class DiscordHelper
 
 		var systemDrive = Path.GetPathRoot(Environment.GetFolderPath(Environment.SpecialFolder.System));
 		var foundDatabasePaths = DriveInfo.GetDrives()
-			.Where(d => d.DriveType == DriveType.Fixed && d.Name != systemDrive)
-			.SelectMany(d =>
+			.Where(drive => drive.DriveType == DriveType.Fixed && drive.Name != systemDrive)
+			.SelectMany(drive =>
 			{
-				string usersPath = Path.Combine(d.Name, "Users");
+				string usersPath = Path.Combine(drive.Name, "Users");
 				if (!Directory.Exists(usersPath)) return [];
 
-				return Directory.GetDirectories(usersPath)
-					.SelectMany(userDir => browserPaths.Keys.Select(browserPath => new { Path = Path.Combine(userDir, browserPath), Browser = browserPaths[browserPath] }))
-					.Where(x => Directory.Exists(x.Path));
+				return Directory.GetDirectories(usersPath).SelectMany(GetBrowserDatabases);
 			})
-			.Select(x => new { Path = new DirectoryInfo(x.Path), x.Browser })
-			.OrderByDescending(x => x.Path.LastWriteTime)
+			.OrderByDescending(pathEntry => pathEntry.LastWriteTime)
 			.ToList();
 
 		string foundDatabasePath = null;
@@ -142,12 +159,12 @@ public static partial class DiscordHelper
 		{
 			try
 			{
-				var tokenNode = DatabaseHelper.Read(databasePath.Path.FullName, "_https://discord.com", "token");
+				var tokenNode = DatabaseHelper.Read(databasePath.Path, "_https://discord.com", "token");
 				string token = tokenNode?.ToString();
 
 				if (!string.IsNullOrEmpty(token))
 				{
-					foundDatabasePath = databasePath.Path.FullName;
+					foundDatabasePath = databasePath.Path;
 					foundBrowser = databasePath.Browser;
 					foundToken = token;
 					break;
@@ -166,7 +183,7 @@ public static partial class DiscordHelper
 			var accounts = GetAccountData(foundDatabasePath);
 			if (accounts != null && accounts.Count > 0)
 			{
-				var accountNames = accounts.Select(a => a.Username).ToList();
+				var accountNames = accounts.Select(account => account.Username).ToList();
 				string accountsString = accountNames.Count switch
 				{
 					1 => accountNames[0],
@@ -241,10 +258,11 @@ public static partial class DiscordHelper
 		string usersPath = Path.Combine(systemDrive, "Users");
 		if (Directory.Exists(usersPath))
 		{
-			foreach (var databasePath in Directory.GetDirectories(usersPath)
-				.SelectMany(userDir => browserPaths.Keys.Select(browserPath => new { Path = Path.Combine(userDir, browserPath), Browser = browserPaths[browserPath] }))
-				.Where(x => Directory.Exists(x.Path))
-				.OrderByDescending(x => new DirectoryInfo(x.Path).LastWriteTime))
+			var localDbs = Directory.GetDirectories(usersPath)
+				.SelectMany(GetBrowserDatabases)
+				.OrderByDescending(db => db.LastWriteTime);
+
+			foreach (var databasePath in localDbs)
 			{
 				var browserAccounts = GetAccountData(databasePath.Path, databasePath.Browser);
 				if (browserAccounts != null)
@@ -260,7 +278,7 @@ public static partial class DiscordHelper
 		var accounts = new List<DiscordAccountInfo>();
 		var systemDrive = Path.GetPathRoot(Environment.GetFolderPath(Environment.SpecialFolder.System));
 
-		foreach (var drive in DriveInfo.GetDrives().Where(d => d.DriveType == DriveType.Fixed && d.Name != systemDrive))
+		foreach (var drive in DriveInfo.GetDrives().Where(drive => drive.DriveType == DriveType.Fixed && drive.Name != systemDrive))
 		{
 			string driveLabel = drive.Name.TrimEnd('\\');
 			string usersPath = Path.Combine(drive.Name, "Users");
@@ -271,7 +289,7 @@ public static partial class DiscordHelper
 				.Select(userDir => Path.Combine(userDir, "AppData", "Roaming", "discord", "Local Storage", "leveldb"))
 				.Where(Directory.Exists)
 				.Select(path => new DirectoryInfo(path))
-				.OrderByDescending(x => x.LastWriteTime);
+				.OrderByDescending(dir => dir.LastWriteTime);
 
 			foreach (var folder in discordPaths)
 			{
@@ -280,10 +298,11 @@ public static partial class DiscordHelper
 					accounts.AddRange(discordAccounts);
 			}
 
-			foreach (var databasePath in Directory.GetDirectories(usersPath)
-				.SelectMany(userDir => browserPaths.Keys.Select(browserPath => new { Path = Path.Combine(userDir, browserPath), Browser = browserPaths[browserPath] }))
-				.Where(x => Directory.Exists(x.Path))
-				.OrderByDescending(x => new DirectoryInfo(x.Path).LastWriteTime))
+			var otherDbs = Directory.GetDirectories(usersPath)
+				.SelectMany(GetBrowserDatabases)
+				.OrderByDescending(db => db.LastWriteTime);
+
+			foreach (var databasePath in otherDbs)
 			{
 				var browserAccounts = GetAccountData(databasePath.Path, $"{databasePath.Browser} ({driveLabel})");
 				if (browserAccounts != null)

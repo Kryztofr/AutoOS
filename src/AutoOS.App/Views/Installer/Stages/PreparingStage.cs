@@ -549,34 +549,54 @@ public static partial class PreparingStage
 			//         return accounts != null && accounts.Count > 0;
 			//     });
 
-			var browserPaths = new Dictionary<string, string>
-			{
-				{ @"AppData\Local\Microsoft\Edge\User Data\Default\Local Storage\leveldb", "Edge" },
-				{ @"AppData\Local\Google\Chrome\User Data\Default\Local Storage\leveldb", "Chrome" },
-				{ @"AppData\Local\Thorium\User Data\Default\Local Storage\leveldb", "Thorium" },
-				{ @"AppData\Local\imput\Helium\User Data\Default\Local Storage\leveldb", "Helium" },
-				{ @"AppData\Local\BraveSoftware\Brave-Browser\User Data\Default\Local Storage\leveldb", "Brave" },
-				{ @"AppData\Local\Vivaldi\User Data\Default\Local Storage\leveldb", "Vivaldi" },
-				{ @"AppData\Local\Packages\TheBrowserCompany.Arc_ttt1ap7aakyb4\LocalCache\Local\Arc\User Data\Default\Local Storage\leveldb", "Arc" },
-				{ @"AppData\Local\Perplexity\Comet\User Data\Default\Local Storage\leveldb", "Perplexity" }
-			};
-
 			DiscordAccount = DriveInfo.GetDrives()
-				.Where(d => d.DriveType == DriveType.Fixed && d.Name != systemDrive)
-				.SelectMany(d =>
+				.Where(drive => drive.DriveType == DriveType.Fixed && drive.Name != systemDrive)
+				.SelectMany(drive =>
 				{
-					string usersPath = Path.Combine(d.Name, "Users");
+					string usersPath = Path.Combine(drive.Name, "Users");
 					if (!Directory.Exists(usersPath)) return [];
 
-					return Directory.GetDirectories(usersPath)
-						.SelectMany(userDir => browserPaths.Keys.Select(browserPath => new { Path = Path.Combine(userDir, browserPath), Browser = browserPaths[browserPath] }))
-						.Where(x => Directory.Exists(x.Path));
+					return Directory.GetDirectories(usersPath);
+				})
+				.SelectMany(userDir =>
+				{
+					var chromium = new[]
+					{
+						@"AppData\Local\Microsoft\Edge\User Data\Default\Local Storage\leveldb",
+						@"AppData\Local\Google\Chrome\User Data\Default\Local Storage\leveldb",
+						@"AppData\Local\Thorium\User Data\Default\Local Storage\leveldb",
+						@"AppData\Local\imput\Helium\User Data\Default\Local Storage\leveldb",
+						@"AppData\Local\BraveSoftware\Brave-Browser\User Data\Default\Local Storage\leveldb",
+						@"AppData\Local\Vivaldi\User Data\Default\Local Storage\leveldb",
+						@"AppData\Local\Packages\TheBrowserCompany.Arc_ttt1ap7aakyb4\LocalCache\Local\Arc\User Data\Default\Local Storage\leveldb",
+						@"AppData\Local\Perplexity\Comet\User Data\Default\Local Storage\leveldb"
+					}
+					.Select(path => Path.Combine(userDir, path))
+					.Where(Directory.Exists);
+
+					var firefox = new[]
+					{
+						@"AppData\Roaming\Mozilla\Firefox\Profiles",
+						@"AppData\Roaming\Zen\Profiles",
+						@"AppData\Roaming\LibreWolf\Profiles",
+						@"AppData\Roaming\Waterfox\Profiles"
+					}
+					.Where(path => Directory.Exists(Path.Combine(userDir, path)))
+					.SelectMany(path => Directory.GetDirectories(Path.Combine(userDir, path)))
+					.SelectMany(profile => new[]
+					{
+						Path.Combine(profile, "storage", "default", "https+++discord.com", "ls", "data.sqlite"),
+						Path.Combine(profile, "storage", "default", "https+++discordapp.com", "ls", "data.sqlite")
+					})
+					.Where(File.Exists);
+
+					return chromium.Concat(firefox);
 				})
 				.Any(databasePath =>
 				{
 					try
 					{
-						var tokenNode = DatabaseHelper.Read(databasePath.Path, "_https://discord.com", "token");
+						var tokenNode = DatabaseHelper.Read(databasePath, "_https://discord.com", "token");
 						string token = tokenNode?.ToString();
 						return !string.IsNullOrEmpty(token);
 					}

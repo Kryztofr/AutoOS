@@ -8,7 +8,15 @@ public static partial class DatabaseHelper
 {
 	public static JsonNode Read(string databasePath, string domain, string keyName)
 	{
-		if (string.IsNullOrEmpty(databasePath) || !Directory.Exists(databasePath))
+		if (string.IsNullOrEmpty(databasePath))
+			return null;
+
+		if (databasePath.EndsWith(".sqlite", StringComparison.OrdinalIgnoreCase))
+		{
+			return ReadSqlite(databasePath, keyName);
+		}
+
+		if (!Directory.Exists(databasePath))
 			return null;
 
 		byte[] prefixBytes = Encoding.UTF8.GetBytes(domain);
@@ -117,5 +125,46 @@ public static partial class DatabaseHelper
 		using var database = new DB(options, databasePath);
 		database.Delete(finalKeyBytes);
 		return true;
+	}
+
+	private static JsonNode ReadSqlite(string sqlitePath, string keyName)
+	{
+		using var connection = new Microsoft.Data.Sqlite.SqliteConnection(new Microsoft.Data.Sqlite.SqliteConnectionStringBuilder { DataSource = sqlitePath, Mode = Microsoft.Data.Sqlite.SqliteOpenMode.ReadOnly }.ToString());
+		connection.Open();
+
+		using var cmd = new Microsoft.Data.Sqlite.SqliteCommand("SELECT value, compression_type, conversion_type FROM data WHERE key = @keyName;", connection);
+		cmd.Parameters.AddWithValue("@keyName", keyName);
+
+		using var reader = cmd.ExecuteReader();
+		if (reader.Read())
+		{
+			byte[] rawBytes = (byte[])reader.GetValue(0);
+			int compressionType = reader.GetInt32(1);
+			int conversionType = reader.GetInt32(2);
+
+			byte[] decompressedBytes = rawBytes;
+			if (compressionType == 1)
+			{
+				try
+				{
+					decompressedBytes = Snappier.Snappy.DecompressToArray(rawBytes);
+				}
+				catch
+				{
+					decompressedBytes = rawBytes;
+				}
+			}
+
+			string decodedValue = conversionType switch
+			{
+				1 => Encoding.UTF8.GetString(decompressedBytes),
+				0 => Encoding.Unicode.GetString(decompressedBytes),
+				_ => Encoding.UTF8.GetString(decompressedBytes)
+			};
+
+			return JsonNode.Parse(decodedValue);
+		}
+
+		return null;
 	}
 }
