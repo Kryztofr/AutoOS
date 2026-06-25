@@ -15,7 +15,7 @@
 	<CsWinRTAotWarningLevel>2</CsWinRTAotWarningLevel>
 	<WindowsPackageType>MSIX</WindowsPackageType>
 	<ApplicationIcon>Assets\AppIcon.ico</ApplicationIcon>
-	<Version>1.4.4.0</Version>
+	<Version>1.4.4.1</Version>
 	<!--Remove git hash from assembly informational version in .NET >= 8, Example: false = 1.0.0, true = 1.0.0+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx-->
 	<IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
   </PropertyGroup>
@@ -31,7 +31,7 @@
 	<DefaultItemExcludes>$(DefaultItemExcludes);AppPackages\**</DefaultItemExcludes>
 	<GenerateAppInstallerFile>False</GenerateAppInstallerFile>
 	<AppxPackageSigningEnabled>True</AppxPackageSigningEnabled>
-	<PackageCertificateKeyFile>AutoOS_TemporaryKey.pfx</PackageCertificateKeyFile>
+	<PackageCertificateKeyFile>C:\Users\AutoOS\Desktop\AutoOS\AutoOS_TemporaryKey.pfx</PackageCertificateKeyFile>
 	<AppxPackageSigningTimestampDigestAlgorithm>SHA256</AppxPackageSigningTimestampDigestAlgorithm>
 	<AppxAutoIncrementPackageRevision>False</AppxAutoIncrementPackageRevision>
 	<AppxSymbolPackageEnabled>False</AppxSymbolPackageEnabled>
