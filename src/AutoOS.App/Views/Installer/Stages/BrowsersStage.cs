@@ -813,9 +813,6 @@ public static class BrowsersStage
 			("Installing LibreWolf", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "librewolf-windows-x86_64-setup.exe"), Arguments = "/S /MaintenanceService=false /DesktopShortcut=false /StartMenuShortcut=true", WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => LibreWolf == true),
 			("Cleaning up LibreWolf files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "librewolf-windows-x86_64-setup.exe")), () => LibreWolf == true),
 
-			// pin librewolf to the taskbar
-			("Pinning LibreWolf to the taskbar", async () => await ProcessActions.PinToTaskbar("Link", Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Microsoft", "Windows", "Start Menu", "Programs", "LibreWolf", "LibreWolf.lnk")), () => LibreWolf == true),
-
 			// optimize librewolf settings
 			("Optimizing LibreWolf settings", async () => Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "LibreWolf", "distribution")), () => LibreWolf == true),
 			("Optimizing LibreWolf settings", async () => File.WriteAllText(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "LibreWolf", "defaults", "pref", "autoconfig.js"), "pref(\"general.config.filename\", \"librewolf.cfg\");\npref(\"general.config.obscure_value\", 0);"), () => LibreWolf == true),
@@ -926,9 +923,6 @@ public static class BrowsersStage
 			// install mullvad
 			("Installing Mullvad Browser", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "mullvad-browser-windows-x86_64.exe"), Arguments = "/S /MaintenanceService=false /DesktopShortcut=false /StartMenuShortcut=true", WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => Mullvad == true),
 			("Cleaning up Mullvad Browser files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "mullvad-browser-windows-x86_64.exe")), () => Mullvad == true),
-
-			// pin mullvad to the taskbar
-			("Pinning Mullvad Browser to the taskbar", async () => await ProcessActions.PinToTaskbar("Link", Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Mullvad", "MullvadBrowser", "Release", "Mullvad Browser.lnk")), () => Mullvad == true),
 
 			// optimize mullvad settings
 			("Optimizing Mullvad Browser settings", async () => Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Mullvad", "MullvadBrowser", "Release", "distribution")), () => Mullvad == true),

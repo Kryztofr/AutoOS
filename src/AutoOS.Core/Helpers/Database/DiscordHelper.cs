@@ -38,10 +38,12 @@ public static partial class DiscordHelper
 
 		var firefox = new[]
 		{
+			(@"AppData\Roaming\Floorp\Profiles", "Floorp"),
+			(@"AppData\Roaming\librewolf\Profiles", "LibreWolf"),
 			(@"AppData\Roaming\Mozilla\Firefox\Profiles", "Firefox"),
-			(@"AppData\Roaming\Zen\Profiles", "Zen"),
-			(@"AppData\Roaming\LibreWolf\Profiles", "LibreWolf"),
-			(@"AppData\Roaming\Waterfox\Profiles", "Waterfox")
+			(@"AppData\Roaming\Mullvad\MullvadBrowser\Profiles", "MullvadBrowser"),
+			(@"AppData\Roaming\Waterfox\Profiles", "Waterfox"),
+			(@"AppData\Roaming\zen\Profiles", "Zen")
 		}
 		.Where(entry => Directory.Exists(Path.Combine(userDir, entry.Item1)))
 		.SelectMany(entry => Directory.GetDirectories(Path.Combine(userDir, entry.Item1)).Select(profile => (profile, entry.Item2)))

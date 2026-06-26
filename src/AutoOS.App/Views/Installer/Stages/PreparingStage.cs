@@ -576,10 +576,12 @@ public static partial class PreparingStage
 
 					var firefox = new[]
 					{
+						@"AppData\Roaming\Floorp\Profiles",
+						@"AppData\Roaming\librewolf\Profiles",
 						@"AppData\Roaming\Mozilla\Firefox\Profiles",
-						@"AppData\Roaming\Zen\Profiles",
-						@"AppData\Roaming\LibreWolf\Profiles",
-						@"AppData\Roaming\Waterfox\Profiles"
+						@"AppData\Roaming\Mullvad\MullvadBrowser\Profiles",
+						@"AppData\Roaming\Waterfox\Profiles",
+						@"AppData\Roaming\zen\Profiles"
 					}
 					.Where(path => Directory.Exists(Path.Combine(userDir, path)))
 					.SelectMany(path => Directory.GetDirectories(Path.Combine(userDir, path)))
