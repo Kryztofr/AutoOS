@@ -243,6 +243,14 @@ public sealed partial class ApplicationsPage : Page
 	{
 		var selection = new ApplicationSelection();
 
+		var (discordAccount, epicGamesAccount, epicGamesGames, steamGames, riotClientAccount, riotClientGames) = await PreparingStage.CheckAccountsAndGames();
+		selection.DiscordAccount = discordAccount;
+		selection.EpicGamesAccount = epicGamesAccount;
+		selection.EpicGamesGames = epicGamesGames;
+		selection.SteamGames = steamGames;
+		selection.RiotClientAccount = riotClientAccount;
+		selection.RiotClientGames = riotClientGames;
+
 		var selectedMessagingItems = Messaging.SelectedItems.Cast<GridViewItem>().ToList();
 		var selectedMessaging = selectedMessagingItems.Select(item => item.Text).ToList();
 		selection.Discord = selectedMessaging.Contains("Discord");

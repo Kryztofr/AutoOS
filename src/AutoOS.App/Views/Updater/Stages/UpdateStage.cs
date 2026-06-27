@@ -25,6 +25,7 @@ public static class UpdateStage
 
 			// enable vanguard on demand
 			("Enabling Vanguard on demand", async () => { Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Riot Games", "Riot Vanguard")); await File.WriteAllTextAsync(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Riot Games", "Riot Vanguard", "vgtray-settings.json"), "{\"theme\":0,\"language\":0,\"precheck_option\":1,\"precheck_completed_after_settings_changes\":1}"); }, () => RiotClient == true),
+			("Enabling Vanguard on demand", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run", "Riot Vanguard", new byte[] { 0x03 }, RegistryValueKind.Binary), () => RiotClient == true),
 
 			// enable hypervisor enforced code integrity (hvci)
 			("Enabling Hypervisor Enforced Code Integrity (HVCI)", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\DeviceGuard\Scenarios\HypervisorEnforcedCodeIntegrity", "Enabled", 1, RegistryValueKind.DWord), () => Valorant == true && HVCI == false),

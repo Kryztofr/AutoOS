@@ -208,6 +208,171 @@ public static partial class PreparingStage
 
 	private static readonly ApplicationDataContainer localSettings = ApplicationData.Current.LocalSettings;
 
+	public static async Task<(bool DiscordAccount, bool EpicGamesAccount, bool EpicGamesGames, bool SteamGames, bool RiotClientAccount, bool RiotClientGames)> CheckAccountsAndGames()
+	{
+		var systemDrive = Path.GetPathRoot(Environment.GetFolderPath(Environment.SpecialFolder.System))?.ToUpperInvariant();
+
+
+		bool discordAccount = DriveInfo.GetDrives()
+			.Where(drive => drive.DriveType == DriveType.Fixed && drive.Name != systemDrive)
+			.SelectMany(drive =>
+			{
+				string usersPath = Path.Combine(drive.Name, "Users");
+				if (!Directory.Exists(usersPath)) return [];
+
+				return Directory.GetDirectories(usersPath);
+			})
+			.SelectMany(userDir =>
+			{
+				var chromium = new[]
+				{
+					@"AppData\Local\Microsoft\Edge\User Data\Default\Local Storage\leveldb",
+					@"AppData\Local\Google\Chrome\User Data\Default\Local Storage\leveldb",
+					@"AppData\Local\Thorium\User Data\Default\Local Storage\leveldb",
+					@"AppData\Local\imput\Helium\User Data\Default\Local Storage\leveldb",
+					@"AppData\Local\BraveSoftware\Brave-Browser\User Data\Default\Local Storage\leveldb",
+					@"AppData\Local\Vivaldi\User Data\Default\Local Storage\leveldb",
+					@"AppData\Local\Packages\TheBrowserCompany.Arc_ttt1ap7aakyb4\LocalCache\Local\Arc\User Data\Default\Local Storage\leveldb",
+					@"AppData\Local\Perplexity\Comet\User Data\Default\Local Storage\leveldb"
+				}
+				.Select(path => Path.Combine(userDir, path))
+				.Where(Directory.Exists);
+
+				var firefox = new[]
+				{
+					@"AppData\Roaming\Floorp\Profiles",
+					@"AppData\Roaming\librewolf\Profiles",
+					@"AppData\Roaming\Mozilla\Firefox\Profiles",
+					@"AppData\Roaming\Mullvad\MullvadBrowser\Profiles",
+					@"AppData\Roaming\Waterfox\Profiles",
+					@"AppData\Roaming\zen\Profiles"
+				}
+				.Where(path => Directory.Exists(Path.Combine(userDir, path)))
+				.SelectMany(path => Directory.GetDirectories(Path.Combine(userDir, path)))
+				.SelectMany(profile => new[]
+				{
+					Path.Combine(profile, "storage", "default", "https+++discord.com", "ls", "data.sqlite"),
+					Path.Combine(profile, "storage", "default", "https+++discordapp.com", "ls", "data.sqlite")
+				})
+				.Where(File.Exists);
+
+				return chromium.Concat(firefox);
+			})
+			.Any(databasePath =>
+			{
+				try
+				{
+					var tokenNode = DatabaseHelper.Read(databasePath, "_https://discord.com", "token");
+					string token = tokenNode?.ToString();
+					return !string.IsNullOrEmpty(token);
+				}
+				catch
+				{
+					return false;
+				}
+			});
+
+		bool epicGamesAccount = DriveInfo.GetDrives()
+			.Where(d => d.DriveType == DriveType.Fixed && d.Name != systemDrive)
+			.SelectMany(d =>
+			{
+				string usersPath = Path.Combine(d.Name, "Users");
+				if (!Directory.Exists(usersPath)) return [];
+
+				return Directory.GetDirectories(usersPath)
+					.Select(userDir =>
+						File.Exists(Path.Combine(userDir, "AppData", "Local", "EpicGamesLauncher", "Saved", "Config", "WindowsEditor", "GameUserSettings.ini"))
+						? Path.Combine(userDir, "AppData", "Local", "EpicGamesLauncher", "Saved", "Config", "WindowsEditor", "GameUserSettings.ini")
+						: Path.Combine(userDir, "AppData", "Local", "EpicGamesLauncher", "Saved", "Config", "Windows", "GameUserSettings.ini")
+					)
+					.Where(File.Exists);
+			})
+			.Select(path => new FileInfo(path))
+			.Any(file =>
+			{
+				string configContent = File.ReadAllText(file.FullName);
+				Match dataMatch = Regex.Match(configContent, @"Data=([^\r\n]+)");
+
+				return dataMatch.Success && dataMatch.Groups[1].Value.Length >= 1000;
+			});
+
+		bool epicGamesGames = false;
+		var epicLauncherFile = DriveInfo.GetDrives()
+			.Where(d => d.DriveType == DriveType.Fixed && d.Name != systemDrive)
+			.Select(d => Path.Combine(d.Name, "ProgramData", "Epic", "UnrealEngineLauncher", "LauncherInstalled.dat"))
+			.Where(File.Exists)
+			.Select(path => new FileInfo(path))
+			.OrderByDescending(f => f.LastWriteTime)
+			.FirstOrDefault();
+
+		if (epicLauncherFile != null)
+		{
+			string jsonContent = await File.ReadAllTextAsync(epicLauncherFile.FullName);
+			var jsonObject = JsonNode.Parse(jsonContent);
+			JsonArray installationList = jsonObject?["InstallationList"] as JsonArray;
+			epicGamesGames = installationList != null && installationList.Count > 0;
+		}
+
+		bool steamGames = DriveInfo.GetDrives()
+			.Where(d => d.DriveType == DriveType.Fixed && d.Name != systemDrive)
+			.Select(d => Path.Combine(d.Name, "Program Files (x86)", "Steam", "steamapps", "libraryfolders.vdf"))
+			.Where(File.Exists)
+			.Select(path => new FileInfo(path))
+			.OrderByDescending(f => f.LastWriteTime)
+			.Select(file =>
+			{
+				using var stream = File.OpenRead(file.FullName);
+				var kv = KVSerializer.Create(KVSerializationFormat.KeyValues1Text).Deserialize(stream);
+				return kv?.Root.Children.Any() == true;
+			})
+			.FirstOrDefault(false);
+
+		bool riotClientAccount = DriveInfo.GetDrives()
+			.Where(d => d.DriveType == DriveType.Fixed && d.Name != systemDrive)
+			.SelectMany(d =>
+			{
+				string usersPath = Path.Combine(d.Name, "Users");
+				if (!Directory.Exists(usersPath)) return [];
+
+				return Directory.GetDirectories(usersPath)
+					.Select(userDir => Path.Combine(userDir, "AppData", "Local", "Riot Games", "Riot Client", "Data", "RiotGamesPrivateSettings.yaml"))
+					.Where(File.Exists);
+			})
+			.Any(file =>
+			{
+				string fileContent = File.ReadAllText(file);
+				Match ssidMatch = RiotHelper.SsidRegex().Match(fileContent);
+
+				return ssidMatch.Success && !string.IsNullOrWhiteSpace(ssidMatch.Groups[1].Value);
+			});
+
+		bool riotClientGames = DriveInfo.GetDrives()
+			.Where(d => d.DriveType == DriveType.Fixed && d.Name != systemDrive)
+			.SelectMany(d =>
+			{
+				string metadataPath = Path.Combine(d.Name, "ProgramData", "Riot Games", "Metadata");
+				if (!Directory.Exists(metadataPath)) return [];
+
+				return Directory.GetDirectories(metadataPath)
+					.Select(subFolder =>
+					{
+						string folderName = new DirectoryInfo(subFolder).Name;
+						string settingsFile = Path.Combine(subFolder, $"{folderName}.product_settings.yaml");
+
+						if (!File.Exists(settingsFile))
+							return false;
+
+						string fileContent = File.ReadAllText(settingsFile);
+						Match pathMatch = RiotHelper.ProductInstallFullPathRegex().Match(fileContent);
+
+						return pathMatch.Success && !string.IsNullOrWhiteSpace(pathMatch.Groups[1].Value);
+					});
+			})
+			.Any(hasGame => hasGame);
+
+		return (discordAccount, epicGamesAccount, epicGamesGames, steamGames, riotClientAccount, riotClientGames);
+	}
+
 	public static async Task Run()
 	{
 		WindowHandle = WindowNative.GetWindowHandle(App.MainWindow);
@@ -435,178 +600,7 @@ public static partial class PreparingStage
 			PCores = pCores.Count;
 			HyperThreading = cpuSetsInfo.HyperThreading;
 
-			EpicGamesAccount = DriveInfo.GetDrives()
-				.Where(d => d.DriveType == DriveType.Fixed && d.Name != systemDrive)
-				.SelectMany(d =>
-				{
-					string usersPath = Path.Combine(d.Name, "Users");
-					if (!Directory.Exists(usersPath)) return [];
-
-					return Directory.GetDirectories(usersPath)
-						.Select(userDir =>
-							File.Exists(Path.Combine(userDir, "AppData", "Local", "EpicGamesLauncher", "Saved", "Config", "WindowsEditor", "GameUserSettings.ini"))
-							? Path.Combine(userDir, "AppData", "Local", "EpicGamesLauncher", "Saved", "Config", "WindowsEditor", "GameUserSettings.ini")
-							: Path.Combine(userDir, "AppData", "Local", "EpicGamesLauncher", "Saved", "Config", "Windows", "GameUserSettings.ini")
-						)
-						.Where(File.Exists);
-				})
-				.Select(path => new FileInfo(path))
-				.Any(file =>
-				{
-					string configContent = File.ReadAllText(file.FullName);
-					Match dataMatch = Regex.Match(configContent, @"Data=([^\r\n]+)");
-
-					return dataMatch.Success && dataMatch.Groups[1].Value.Length >= 1000;
-				});
-
-			EpicGamesGames = DriveInfo.GetDrives()
-				.Where(d => d.DriveType == DriveType.Fixed && d.Name != systemDrive)
-				.Select(d => Path.Combine(d.Name, "ProgramData", "Epic", "UnrealEngineLauncher", "LauncherInstalled.dat"))
-				.Where(File.Exists)
-				.Select(path => new FileInfo(path))
-				.OrderByDescending(f => f.LastWriteTime)
-				.Select(async file =>
-				{
-					string jsonContent = await File.ReadAllTextAsync(file.FullName);
-					var jsonObject = JsonNode.Parse(jsonContent);
-					JsonArray installationList = jsonObject?["InstallationList"] as JsonArray;
-					return installationList != null && installationList.Count > 0;
-				})
-				.Select(t => t.Result)
-				.FirstOrDefault(false);
-
-			SteamGames = DriveInfo.GetDrives()
-				.Where(d => d.DriveType == DriveType.Fixed && d.Name != systemDrive)
-				.Select(d => Path.Combine(d.Name, "Program Files (x86)", "Steam", "steamapps", "libraryfolders.vdf"))
-				.Where(File.Exists)
-				.Select(path => new FileInfo(path))
-				.OrderByDescending(f => f.LastWriteTime)
-				.Select(file =>
-				{
-					using var stream = File.OpenRead(file.FullName);
-					var kv = KVSerializer.Create(KVSerializationFormat.KeyValues1Text).Deserialize(stream);
-					return kv?.Root.Children.Any() == true;
-				})
-				.FirstOrDefault(false);
-
-			RiotClientAccount = DriveInfo.GetDrives()
-				.Where(d => d.DriveType == DriveType.Fixed && d.Name != systemDrive)
-				.SelectMany(d =>
-				{
-					string usersPath = Path.Combine(d.Name, "Users");
-					if (!Directory.Exists(usersPath)) return [];
-
-					return Directory.GetDirectories(usersPath)
-						.Select(userDir => Path.Combine(userDir, "AppData", "Local", "Riot Games", "Riot Client", "Data", "RiotGamesPrivateSettings.yaml"))
-						.Where(File.Exists);
-				})
-				.Any(file =>
-				{
-					string fileContent = File.ReadAllText(file);
-					Match ssidMatch = RiotHelper.SsidRegex().Match(fileContent);
-
-					return ssidMatch.Success && !string.IsNullOrWhiteSpace(ssidMatch.Groups[1].Value);
-				});
-
-			RiotClientGames = DriveInfo.GetDrives()
-				.Where(d => d.DriveType == DriveType.Fixed && d.Name != systemDrive)
-				.SelectMany(d =>
-				{
-					string metadataPath = Path.Combine(d.Name, "ProgramData", "Riot Games", "Metadata");
-					if (!Directory.Exists(metadataPath)) return [];
-
-					return Directory.GetDirectories(metadataPath)
-						.Select(subFolder =>
-						{
-							string folderName = new DirectoryInfo(subFolder).Name;
-							string settingsFile = Path.Combine(subFolder, $"{folderName}.product_settings.yaml");
-
-							if (!File.Exists(settingsFile))
-								return false;
-
-							string fileContent = File.ReadAllText(settingsFile);
-							Match pathMatch = RiotHelper.ProductInstallFullPathRegex().Match(fileContent);
-
-							return pathMatch.Success && !string.IsNullOrWhiteSpace(pathMatch.Groups[1].Value);
-						});
-				})
-				.Any(hasGame => hasGame);
-
-			// DiscordAccount = DriveInfo.GetDrives()
-			//     .Where(d => d.DriveType == DriveType.Fixed && d.Name != systemDrive)
-			//     .SelectMany(d =>
-			//     {
-			//         string usersPath = Path.Combine(d.Name, "Users");
-			//         if (!Directory.Exists(usersPath)) return [];
-
-			//         return Directory.GetDirectories(usersPath)
-			//             .Select(userDir => Path.Combine(userDir, "AppData", "Roaming", "discord", "Local Storage", "leveldb"))
-			//             .Where(Directory.Exists);
-			//     })
-			//     .Any(leveldbPath =>
-			//     {
-			//         var accounts = DiscordHelper.GetAccountData(leveldbPath);
-			//         return accounts != null && accounts.Count > 0;
-			//     });
-
-			DiscordAccount = DriveInfo.GetDrives()
-				.Where(drive => drive.DriveType == DriveType.Fixed && drive.Name != systemDrive)
-				.SelectMany(drive =>
-				{
-					string usersPath = Path.Combine(drive.Name, "Users");
-					if (!Directory.Exists(usersPath)) return [];
-
-					return Directory.GetDirectories(usersPath);
-				})
-				.SelectMany(userDir =>
-				{
-					var chromium = new[]
-					{
-						@"AppData\Local\Microsoft\Edge\User Data\Default\Local Storage\leveldb",
-						@"AppData\Local\Google\Chrome\User Data\Default\Local Storage\leveldb",
-						@"AppData\Local\Thorium\User Data\Default\Local Storage\leveldb",
-						@"AppData\Local\imput\Helium\User Data\Default\Local Storage\leveldb",
-						@"AppData\Local\BraveSoftware\Brave-Browser\User Data\Default\Local Storage\leveldb",
-						@"AppData\Local\Vivaldi\User Data\Default\Local Storage\leveldb",
-						@"AppData\Local\Packages\TheBrowserCompany.Arc_ttt1ap7aakyb4\LocalCache\Local\Arc\User Data\Default\Local Storage\leveldb",
-						@"AppData\Local\Perplexity\Comet\User Data\Default\Local Storage\leveldb"
-					}
-					.Select(path => Path.Combine(userDir, path))
-					.Where(Directory.Exists);
-
-					var firefox = new[]
-					{
-						@"AppData\Roaming\Floorp\Profiles",
-						@"AppData\Roaming\librewolf\Profiles",
-						@"AppData\Roaming\Mozilla\Firefox\Profiles",
-						@"AppData\Roaming\Mullvad\MullvadBrowser\Profiles",
-						@"AppData\Roaming\Waterfox\Profiles",
-						@"AppData\Roaming\zen\Profiles"
-					}
-					.Where(path => Directory.Exists(Path.Combine(userDir, path)))
-					.SelectMany(path => Directory.GetDirectories(Path.Combine(userDir, path)))
-					.SelectMany(profile => new[]
-					{
-						Path.Combine(profile, "storage", "default", "https+++discord.com", "ls", "data.sqlite"),
-						Path.Combine(profile, "storage", "default", "https+++discordapp.com", "ls", "data.sqlite")
-					})
-					.Where(File.Exists);
-
-					return chromium.Concat(firefox);
-				})
-				.Any(databasePath =>
-				{
-					try
-					{
-						var tokenNode = DatabaseHelper.Read(databasePath, "_https://discord.com", "token");
-						string token = tokenNode?.ToString();
-						return !string.IsNullOrEmpty(token);
-					}
-					catch
-					{
-						return false;
-					}
-				});
+			(DiscordAccount, EpicGamesAccount, EpicGamesGames, SteamGames, RiotClientAccount, RiotClientGames) = await CheckAccountsAndGames();
 
 			var nics = DeviceHelper.GetDevices(DeviceType.NIC);
 			Wifi = nics.Any(device => device.NicType == NicDeviceType.WiFi);

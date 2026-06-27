@@ -29,6 +29,7 @@ public class ApplicationSelection
 	public bool Bitwarden { get; set; }
 	public bool OnePassword { get; set; }
 	public bool Discord { get; set; }
+	public bool DiscordAccount { get; set; }
 	public bool WhatsApp { get; set; }
 	public bool Telegram { get; set; }
 	public bool Unigram { get; set; }
@@ -36,8 +37,13 @@ public class ApplicationSelection
 	public bool Thunderbird { get; set; }
 	public bool Signal { get; set; }
 	public bool EpicGames { get; set; }
+	public bool EpicGamesAccount { get; set; }
+	public bool EpicGamesGames { get; set; }
 	public bool Steam { get; set; }
+	public bool SteamGames { get; set; }
 	public bool RiotClient { get; set; }
+	public bool RiotClientAccount { get; set; }
+	public bool RiotClientGames { get; set; }
 	public bool UbisoftConnect { get; set; }
 	public bool EA { get; set; }
 	public bool BattleNet { get; set; }
@@ -161,7 +167,7 @@ public static class ApplicationStage
 		bool LeftTaskbarAlignment = selection != null ? true : PreparingStage.LeftTaskbarAlignment;
 
 		bool Discord = selection?.Discord ?? PreparingStage.Discord;
-		bool DiscordAccount = selection != null ? false : PreparingStage.DiscordAccount;
+		bool DiscordAccount = selection?.DiscordAccount ?? PreparingStage.DiscordAccount;
 		bool WhatsApp = selection?.WhatsApp ?? PreparingStage.WhatsApp;
 		bool Telegram = selection?.Telegram ?? PreparingStage.Telegram;
 		bool Unigram = selection?.Unigram ?? PreparingStage.Unigram;
@@ -170,13 +176,13 @@ public static class ApplicationStage
 		bool Signal = selection?.Signal ?? PreparingStage.Signal;
 
 		bool EpicGames = selection?.EpicGames ?? PreparingStage.EpicGames;
-		bool EpicGamesAccount = selection != null ? false : PreparingStage.EpicGamesAccount;
-		bool EpicGamesGames = selection != null ? false : PreparingStage.EpicGamesGames;
+		bool EpicGamesAccount = selection?.EpicGamesAccount ?? PreparingStage.EpicGamesAccount;
+		bool EpicGamesGames = selection?.EpicGamesGames ?? PreparingStage.EpicGamesGames;
 		bool Steam = selection?.Steam ?? PreparingStage.Steam;
-		bool SteamGames = selection != null ? false : PreparingStage.SteamGames;
+		bool SteamGames = selection?.SteamGames ?? PreparingStage.SteamGames;
 		bool RiotClient = selection?.RiotClient ?? PreparingStage.RiotClient;
-		bool RiotClientAccount = selection != null ? false : PreparingStage.RiotClientAccount;
-		bool RiotClientGames = selection != null ? false : PreparingStage.RiotClientAccount;
+		bool RiotClientAccount = selection?.RiotClientAccount ?? PreparingStage.RiotClientAccount;
+		bool RiotClientGames = selection?.RiotClientGames ?? PreparingStage.RiotClientGames;
 		bool UbisoftConnect = selection?.UbisoftConnect ?? PreparingStage.UbisoftConnect;
 		bool EA = selection?.EA ?? PreparingStage.EA;
 		bool BattleNet = selection?.BattleNet ?? PreparingStage.BattleNet;
