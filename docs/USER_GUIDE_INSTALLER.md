@@ -70,7 +70,7 @@ Start the AutoOS Installation:
 > You may experience a blank screen in the App after installing the Graphics Driver.<br/>
 > To fix this, resize the window, click the navigation pane button a few times or just wait until it rerenders the UI.
 
-- After it's done, it will restart once.
-- Then open the AutoOS app and click on the `AutoOS User Guide` tile on the Home tab and follow the `instructions` for `AutoOS Settings`.
+> [!IMPORTANT]
+> After AutoOS Installer has finished and restarted your PC, open the `AutoOS` app and click on the `AutoOS User Guide` tile on the Home tab and follow the `instructions` for `AutoOS Settings`.
 
 ![Install AutoOS](https://raw.githubusercontent.com/tinodin/AutoOS-Resources/main/AutoOS%20Installer/Install%20AutoOS.png)

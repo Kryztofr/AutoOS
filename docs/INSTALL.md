@@ -1,8 +1,9 @@
 # 🚀 Installation Guide
 
 > [!NOTE]  
-> This guide does **NOT** require a USB drive.<br/>
+> This guide does **NOT** make use of a USB drive.<br/>
 > AutoOS will automatically be installed as a dual boot, meaning your old data and Windows installation stay accessible after installing.
+> Don't do anything the guide does not tell you to do (e.g. stuff related to the ISO or partitions).
 
 ### Step 1: Join Discord Server
 Join my [Discord Server](https://discord.gg/bZU4dMMWpg) to receive **installation support** and stay informed about **future updates or changes**.
@@ -77,6 +78,7 @@ Finally, create a `New Folder` and move all extracted folders into it.
 ### Step 4: Run the deployment script
 Open PowerShell **as Administrator**.<br/>
 Paste this into the PowerShell window to run the deployment script.<br/>
+This will automatically handle everything related to the ISO, the drivers and your partitions.<br/>
 
 ```ps1
 $PSDefaultParameterValues['Invoke-WebRequest:UseBasicParsing'] = $true
@@ -96,4 +98,6 @@ Boot into `AutoOS` by pressing `Enter` after every restart.<br/>
 
 ### Step 6: AutoOS Installer
 Once the OOBE has finished, wait for Windows to restart and the `AutoOS Installer` to open up.<br/>
-Click on the `AutoOS User Guide` tile on the Home tab and follow the `instructions` for the `AutoOS Installer`.
+
+> [!IMPORTANT]
+> Click on the `AutoOS User Guide` tile on the Home tab and follow the `instructions` for the `AutoOS Installer`.
