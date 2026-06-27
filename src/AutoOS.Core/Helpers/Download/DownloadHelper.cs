@@ -351,7 +351,7 @@ public static partial class DownloadHelper
 
 			driver.Navigate().GoToUrl(url);
 
-			var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(15));
+			var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(30));
 			wait.Until(webDriver => webDriver.Manage().Cookies.GetCookieNamed("aws-waf-token") != null);
 
 			var cookies = driver.Manage().Cookies.AllCookies;

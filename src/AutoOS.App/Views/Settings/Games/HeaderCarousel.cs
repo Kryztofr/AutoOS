@@ -2226,11 +2226,13 @@ public partial class HeaderCarousel : ItemsControl
 				"TrustedInstaller",
 				"UdkUserSvc",
 				"UserManager",
+				//"Wcmsvc",
 				"WFDSConMgrSvc",
 				"Windhawk",
 				//"WinHttpAutoProxySvc",
 				//"Winmgmt",
-				//"Wcmsvc"
+				"WpnService",
+				"WpnUserService"
 			};
 
 			foreach (var serviceName in serviceNames)
@@ -2325,10 +2327,12 @@ public partial class HeaderCarousel : ItemsControl
 				"TrustedInstaller",
 				"UdkUserSvc",
 				"UserManager",
+				//"Wcmsvc",
 				"WFDSConMgrSvc",
 				//"WinHttpAutoProxySvc",
 				//"Winmgmt",
-				//"Wcmsvc"
+				"WpnService",
+				"WpnUserService"
 			};
 
 			foreach (var serviceName in serviceNames)

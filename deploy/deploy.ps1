@@ -390,7 +390,7 @@ try {
 			}
 			
 			$progressPercentage = 100 - $status.EncryptionPercentage
-			Write-Host "`rDisabling BitLocker... ($progressPercentage%)" -NoNewline
+			Write-Host "`rDisabling BitLocker ($progressPercentage%)..." -NoNewline
 			
 			Start-Sleep -Seconds 5
 		}

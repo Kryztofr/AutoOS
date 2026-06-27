@@ -317,6 +317,7 @@ public static class ApplicationStage
 		var actions = new List<(string Title, Func<Task> Action, Func<bool> Condition)>
 		{
 			// optimize notepad settings
+			("Optimizing Notepad settings", async () => await StoreHelper.KillProcesses("Microsoft.WindowsNotepad_8wekyb3d8bbwe"), () => selection == null),
 			("Optimizing Notepad settings", async () => await Process.Start(new ProcessStartInfo { FileName = "reg.exe", Arguments = $@"load HKU\TEMP ""{Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Packages", "Microsoft.WindowsNotepad_8wekyb3d8bbwe", "Settings", "settings.dat")}""", CreateNoWindow = true })!.WaitForExitAsync(), () => selection == null),
 			("Optimizing Notepad settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_USERS\TEMP\LocalState", "AutoCorrect", RegistryHelper.ApplicationDataBoolean, new byte[] { 0x00, 0xcd, 0xff, 0x04, 0x45, 0x95, 0x13, 0xdc, 0x01 }), () => selection == null),
 			("Optimizing Notepad settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_USERS\TEMP\LocalState", "GhostFile", RegistryHelper.ApplicationDataBoolean, new byte[] { 0x00, 0xfc, 0x13, 0x31, 0x4b, 0x95, 0x13, 0xdc, 0x01 }), () => selection == null),
@@ -328,6 +329,7 @@ public static class ApplicationStage
 			("Optimizing Notepad settings", async () => { try { FileSystem.CopyDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Packages", "Microsoft.WindowsNotepad_8wekyb3d8bbwe"), Path.Combine(Path.GetPathRoot(Environment.SystemDirectory)!, "Users", "Default", "AppData", "Local", "Packages", "Microsoft.WindowsNotepad_8wekyb3d8bbwe"), true); } catch { } }, () => selection == null),
 			
 			// optimize xbox gaming overlay settings
+			("Optimizing Xbox Gaming Overlay settings", async () => await StoreHelper.KillProcesses("Microsoft.XboxGamingOverlay_8wekyb3d8bbwe"), () => selection == null),
 			("Optimizing Xbox Gaming Overlay settings", async () => await Process.Start(new ProcessStartInfo { FileName = "reg.exe", Arguments = $@"load HKU\TEMP ""{Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Packages", "Microsoft.XboxGamingOverlay_8wekyb3d8bbwe", "Settings", "settings.dat")}""", CreateNoWindow = true })!.WaitForExitAsync(), () => selection == null),
 			("Optimizing Xbox Gaming Overlay settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_USERS\TEMP\LocalState", "AppTheme", RegistryHelper.ApplicationDataInt32, new byte[] { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x1f, 0x43, 0x21, 0xaf, 0xc9, 0xd4, 0xdc, 0x01 }), () => selection == null),
 			("Optimizing Xbox Gaming Overlay settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_USERS\TEMP\LocalState", "ClosedControllerBarTip", RegistryHelper.ApplicationDataBoolean, new byte[] { 0x01, 0x43, 0x8e, 0x00, 0xd5, 0xc9, 0xd4, 0xdc, 0x01 }), () => selection == null),
