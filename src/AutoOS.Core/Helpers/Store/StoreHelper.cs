@@ -198,34 +198,38 @@ public static partial class StoreHelper
 
 	public static async Task KillProcesses(string packageFamilyName)
 	{
-		var manager = new PackageManager();
-		var package = manager.FindPackagesForUser(string.Empty, packageFamilyName).FirstOrDefault();
-		if (package == null) return;
-
-		string manifestPath = Path.Combine(package.InstalledLocation.Path, "AppxManifest.xml");
-		if (!File.Exists(manifestPath)) return;
-
-		var doc = XDocument.Load(manifestPath);
-		var ns = doc.Root.Name.Namespace;
-		var applications = doc.Descendants(ns + "Application");
-
-		foreach (var app in applications)
+		try
 		{
-			var exe = app.Attribute("Executable")?.Value;
-			if (!string.IsNullOrEmpty(exe))
+			var manager = new PackageManager();
+			var package = manager.FindPackagesForUser(string.Empty, packageFamilyName).FirstOrDefault();
+			if (package == null) return;
+
+			string manifestPath = Path.Combine(package.InstalledLocation.Path, "AppxManifest.xml");
+			if (!File.Exists(manifestPath)) return;
+
+			var doc = XDocument.Load(manifestPath);
+			var ns = doc.Root.Name.Namespace;
+			var applications = doc.Descendants(ns + "Application");
+
+			foreach (var app in applications)
 			{
-				var processName = Path.GetFileNameWithoutExtension(exe);
-				foreach (var process in Process.GetProcessesByName(processName))
+				var exe = app.Attribute("Executable")?.Value;
+				if (!string.IsNullOrEmpty(exe))
 				{
-					try
+					var processName = Path.GetFileNameWithoutExtension(exe);
+					foreach (var process in Process.GetProcessesByName(processName))
 					{
-						process.Kill();
-						await process.WaitForExitAsync();
+						try
+						{
+							process.Kill();
+							await process.WaitForExitAsync();
+						}
+						catch { }
 					}
-					catch { }
 				}
 			}
 		}
+		catch { }
 
 		await Task.Delay(1000);
 	}

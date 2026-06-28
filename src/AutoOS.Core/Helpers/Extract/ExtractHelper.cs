@@ -15,13 +15,19 @@ public static partial class ExtractHelper
 			Arguments = @$"x ""{inputPath}"" -y -o""{outputPath}""",
 			CreateNoWindow = true,
 			RedirectStandardOutput = true,
+			RedirectStandardError = true,
 			UseShellExecute = false
 		});
 
-		var output = await process!.StandardOutput.ReadToEndAsync();
+		var outputTask = process!.StandardOutput.ReadToEndAsync();
+		var errorTask = process.StandardError.ReadToEndAsync();
 		await process.WaitForExitAsync();
 
-		if (!output.Contains("Everything is Ok"))
-			throw new InvalidOperationException($"7-Zip extraction failed: {output}");
+		var output = await outputTask;
+		var error = await errorTask;
+		var fullOutput = string.IsNullOrEmpty(output) ? error : output;
+
+		if (!fullOutput.Contains("Everything is Ok"))
+			throw new InvalidOperationException($"7-Zip extraction failed: {fullOutput}");
 	}
 }

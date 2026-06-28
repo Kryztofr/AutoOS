@@ -2,8 +2,6 @@ using AutoOS.Core.Common;
 using AutoOS.Core.Helpers.Logging;
 using DevWinUI;
 using Downloader;
-using OpenQA.Selenium.Edge;
-using OpenQA.Selenium.Support.UI;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
@@ -100,11 +98,6 @@ public static partial class DownloadHelper
 					}
 				}
 			};
-
-			if (url.Contains("downloadmirror.intel.com", StringComparison.OrdinalIgnoreCase))
-			{
-				config.RequestConfiguration.Headers.Add("Cookie", string.Join("; ", (await BypassAwsWaf(url)).Select(kvp => $"{kvp.Key}={kvp.Value}")));
-			}
 
 			if (url.Contains("www2.ati.com", StringComparison.OrdinalIgnoreCase))
 			{
@@ -322,47 +315,5 @@ public static partial class DownloadHelper
 		{
 			reporter?.Report($"{totalSizeMB:F2} MB of {totalSizeMB:F2} MB", 100, false);
 		}
-	}
-
-	public static async Task<Dictionary<string, string>> BypassAwsWaf(string url)
-	{
-		return await Task.Run(() =>
-		{
-			var options = new EdgeOptions();
-
-			options.AddArgument("--headless=new");
-			options.AddArgument("--disable-blink-features=AutomationControlled");
-			options.AddArgument("--disable-dev-shm-usage");
-			options.AddArgument("--no-sandbox");
-			options.AddArgument("--disable-gpu");
-			options.AddArgument("--disable-web-security");
-			options.AddArgument("--disable-features=VizDisplayCompositor");
-			options.AddArgument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
-			options.AddArgument("--disable-infobars");
-			options.AddExcludedArgument("enable-automation");
-
-			using var driver = new EdgeDriver(options);
-
-			var cdpParameters = new Dictionary<string, object>
-			{
-				{ "behavior", "deny" }
-			};
-			driver.ExecuteCdpCommand("Browser.setDownloadBehavior", cdpParameters);
-
-			driver.Navigate().GoToUrl(url);
-
-			var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(30));
-			wait.Until(webDriver => webDriver.Manage().Cookies.GetCookieNamed("aws-waf-token") != null);
-
-			var cookies = driver.Manage().Cookies.AllCookies;
-			var cookieDict = new Dictionary<string, string>();
-
-			foreach (var cookie in cookies)
-			{
-				cookieDict[cookie.Name] = cookie.Value;
-			}
-
-			return cookieDict;
-		});
 	}
 }
