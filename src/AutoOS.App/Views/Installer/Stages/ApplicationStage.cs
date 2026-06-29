@@ -1342,7 +1342,7 @@ public static class ApplicationStage
 			("Removing Corsair iCUE desktop shortcut", async () => File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonDesktopDirectory), "iCUE.lnk")), () => CorsairICue == true),
 
 			// download openrgb
-			("Downloading OpenRGB", async () => await DownloadHelper.Download("https://codeberg.org/OpenRGB/OpenRGB/releases/download/release_candidate_1.0rc2/OpenRGB_1.0rc2_Windows_64_0fca93e.msi", Path.GetTempPath(), "OpenRGB_Windows_64.msi", reporter: reporter), () => OpenRGB == true),
+			("Downloading OpenRGB", async () => await DownloadHelper.Download(JsonDocument.Parse(await new HttpClient { DefaultRequestHeaders = { { "User-Agent", "AutoOS" } } }.GetStringAsync("https://api.github.com/repos/CalcProgrammer1/OpenRGB/releases")).RootElement.EnumerateArray().First(release => release.GetProperty("assets").EnumerateArray().Any(asset => asset.GetProperty("name").GetString().Contains("Windows_64") && asset.GetProperty("name").GetString().EndsWith(".msi"))).GetProperty("assets").EnumerateArray().First(asset => asset.GetProperty("name").GetString().Contains("Windows_64") && asset.GetProperty("name").GetString().EndsWith(".msi")).GetProperty("browser_download_url").GetString(), Path.GetTempPath(), "OpenRGB_Windows_64.msi", reporter: reporter), () => OpenRGB == true),
 
 			// install openrgb
 			("Installing OpenRGB", async () => await Process.Start(new ProcessStartInfo { FileName = "msiexec.exe", Arguments = $@"/i ""{Path.Combine(Path.GetTempPath(), "OpenRGB_Windows_64.msi")}"" /qn" , WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => OpenRGB ==  true),
