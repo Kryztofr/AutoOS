@@ -37,6 +37,7 @@ public class BrowserSelection
 	public bool Tampermonkey { get; set; }
 	public bool SponsorBlock { get; set; }
 	public bool ReturnYouTubeDislike { get; set; }
+	public bool YouTubeNoTranslation { get; set; }
 	public bool DarkReader { get; set; }
 	public bool Shazam { get; set; }
 	public bool WaybackMachine { get; set; }
@@ -75,6 +76,7 @@ public static class BrowsersStage
 		bool? Tampermonkey = selection?.Tampermonkey ?? PreparingStage.Tampermonkey;
 		bool? SponsorBlock = selection?.SponsorBlock ?? PreparingStage.SponsorBlock;
 		bool? ReturnYouTubeDislike = selection?.ReturnYouTubeDislike ?? PreparingStage.ReturnYouTubeDislike;
+		bool? YouTubeNoTranslation = selection?.YouTubeNoTranslation ?? PreparingStage.YouTubeNoTranslation;
 		bool? DarkReader = selection?.DarkReader ?? PreparingStage.DarkReader;
 		bool? Shazam = selection?.Shazam ?? PreparingStage.Shazam;
 		bool? WaybackMachine = selection?.WaybackMachine ?? PreparingStage.WaybackMachine;
@@ -175,6 +177,9 @@ public static class BrowsersStage
 			// install return youtube dislike extension
 			("Installing Return YouTube Dislike Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Google\Chrome\ExtensionInstallForcelist", "gebbhagfogifgggkldgodflihgfeippi"), () => Chrome == true && ReturnYouTubeDislike == true),
 
+			// install youtube no translation extension
+			("Installing YouTube No Translation Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Google\Chrome\ExtensionInstallForcelist", "lmkeolibdeeglfglnncmfleojmakecjb"), () => Chrome == true && YouTubeNoTranslation == true),
+
 			// install dark reader extension
 			("Installing Dark Reader Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Google\Chrome\ExtensionInstallForcelist", "eimadpbcbfnmbkopoojfekhnkhdbieeh"), () => Chrome == true && DarkReader == true),
 			
@@ -254,6 +259,9 @@ public static class BrowsersStage
 			// install return youtube dislike extension
 			("Installing ReturnYouTubeDislike Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "gebbhagfogifgggkldgodflihgfeippi"), () => Thorium == true && ReturnYouTubeDislike == true),
 
+			// install youtube no translation extension
+			("Installing YouTube No Translation Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "lmkeolibdeeglfglnncmfleojmakecjb"), () => Thorium == true && YouTubeNoTranslation == true),
+
 			// install i still dont care about cookies extension
 			("Installing I still don't care about cookies Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Chromium\ExtensionInstallForcelist", "edibdbjcniadpccecjdfdjjppcpchdlm"), () => Thorium == true && Cookies == true),
 
@@ -328,6 +336,9 @@ public static class BrowsersStage
 
 			// install return youtube dislike extension
 			("Installing Return YouTube Dislike Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Helium\ExtensionInstallForcelist", "gebbhagfogifgggkldgodflihgfeippi"), () => Helium == true && ReturnYouTubeDislike == true),
+
+			// install youtube no translation extension
+			("Installing YouTube No Translation Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Helium\ExtensionInstallForcelist", "lmkeolibdeeglfglnncmfleojmakecjb"), () => Helium == true && YouTubeNoTranslation == true),
 
 			// install dark reader extension
 			("Installing Dark Reader Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Helium\ExtensionInstallForcelist", "eimadpbcbfnmbkopoojfekhnkhdbieeh"), () => Helium == true && DarkReader == true),
@@ -412,6 +423,9 @@ public static class BrowsersStage
 			// install return youtube dislike extension
 			("Installing Return YouTube Dislike Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\BraveSoftware\Brave\ExtensionInstallForcelist", "gebbhagfogifgggkldgodflihgfeippi"), () => Brave == true && ReturnYouTubeDislike == true),
 
+			// install youtube no translation extension
+			("Installing YouTube No Translation Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\BraveSoftware\Brave\ExtensionInstallForcelist", "lmkeolibdeeglfglnncmfleojmakecjb"), () => Brave == true && YouTubeNoTranslation == true),
+
 			// install dark reader extension
 			("Installing Dark Reader Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\BraveSoftware\Brave\ExtensionInstallForcelist", "eimadpbcbfnmbkopoojfekhnkhdbieeh"), () => Brave == true && DarkReader == true),
 			
@@ -464,6 +478,9 @@ public static class BrowsersStage
 
 			// install return youtube dislike extension
 			("Installing Return YouTube Dislike Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Vivaldi\ExtensionInstallForcelist", "gebbhagfogifgggkldgodflihgfeippi"), () => Vivaldi == true && ReturnYouTubeDislike == true),
+
+			// install youtube no translation extension
+			("Installing YouTube No Translation Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Vivaldi\ExtensionInstallForcelist", "lmkeolibdeeglfglnncmfleojmakecjb"), () => Vivaldi == true && YouTubeNoTranslation == true),
 
 			// install dark reader extension
 			("Installing Dark Reader Extension", async () => await InstallChromiumExtension(@"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Vivaldi\ExtensionInstallForcelist", "eimadpbcbfnmbkopoojfekhnkhdbieeh"), () => Vivaldi == true && DarkReader == true),
@@ -673,6 +690,9 @@ public static class BrowsersStage
 			// install return youtube dislike extension
 			("Installing Return YouTube Dislike Extension", async () => UpdatePolicies(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Mozilla Firefox", "distribution", "policies.json"), "https://addons.mozilla.org/firefox/downloads/latest/return-youtube-dislikes"), () => Firefox == true && ReturnYouTubeDislike == true),
 
+			// install youtube no translation extension
+			("Installing YouTube No Translation Extension", async () => UpdatePolicies(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Mozilla Firefox", "distribution", "policies.json"), "https://addons.mozilla.org/firefox/downloads/latest/youtube-no-translation"), () => Firefox == true && YouTubeNoTranslation == true),
+
 			// install dark reader extension
 			("Installing Dark Reader Extension", async () => UpdatePolicies(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Mozilla Firefox", "distribution", "policies.json"), "https://addons.mozilla.org/firefox/downloads/latest/darkreader"), () => Firefox == true && DarkReader == true),
 
@@ -731,6 +751,9 @@ public static class BrowsersStage
 
 			// install return youtube dislike extension
 			("Installing Return YouTube Dislike Extension", async () => UpdatePolicies(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Zen Browser", "distribution", "policies.json"), "https://addons.mozilla.org/firefox/downloads/latest/return-youtube-dislikes"), () => Zen == true && ReturnYouTubeDislike == true),
+
+			// install youtube no translation extension
+			("Installing YouTube No Translation Extension", async () => UpdatePolicies(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Zen Browser", "distribution", "policies.json"), "https://addons.mozilla.org/firefox/downloads/latest/youtube-no-translation"), () => Zen == true && YouTubeNoTranslation == true),
 
 			// install dark reader extension
 			("Installing Dark Reader Extension", async () => UpdatePolicies(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Zen Browser", "distribution", "policies.json"), "https://addons.mozilla.org/firefox/downloads/latest/darkreader"), () => Zen == true && DarkReader == true),
@@ -791,6 +814,9 @@ public static class BrowsersStage
 			// install return youtube dislike extension
 			("Installing Return YouTube Dislike Extension", async () => UpdatePolicies(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Waterfox", "distribution", "policies.json"), "https://addons.mozilla.org/firefox/downloads/latest/return-youtube-dislikes"), () => Waterfox == true && ReturnYouTubeDislike == true),
 
+			// install youtube no translation extension
+			("Installing YouTube No Translation Extension", async () => UpdatePolicies(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Waterfox", "distribution", "policies.json"), "https://addons.mozilla.org/firefox/downloads/latest/youtube-no-translation"), () => Waterfox == true && YouTubeNoTranslation == true),
+
 			// install dark reader extension
 			("Installing Dark Reader Extension", async () => UpdatePolicies(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Waterfox", "distribution", "policies.json"), "https://addons.mozilla.org/firefox/downloads/latest/darkreader"), () => Waterfox == true && DarkReader == true),
 
@@ -842,6 +868,9 @@ public static class BrowsersStage
 
 			// install return youtube dislike extension
 			("Installing Return YouTube Dislike Extension", async () => UpdatePolicies(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "LibreWolf", "distribution", "policies.json"), "https://addons.mozilla.org/firefox/downloads/latest/return-youtube-dislikes"), () => LibreWolf == true && ReturnYouTubeDislike == true),
+
+			// install youtube no translation extension
+			("Installing YouTube No Translation Extension", async () => UpdatePolicies(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "LibreWolf", "distribution", "policies.json"), "https://addons.mozilla.org/firefox/downloads/latest/youtube-no-translation"), () => LibreWolf == true && YouTubeNoTranslation == true),
 
 			// install dark reader extension
 			("Installing Dark Reader Extension", async () => UpdatePolicies(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "LibreWolf", "distribution", "policies.json"), "https://addons.mozilla.org/firefox/downloads/latest/darkreader"), () => LibreWolf == true && DarkReader == true),
@@ -902,6 +931,9 @@ public static class BrowsersStage
 			// install return youtube dislike extension
 			("Installing Return YouTube Dislike Extension", async () => UpdatePolicies(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Ablaze Floorp", "distribution", "policies.json"), "https://addons.mozilla.org/firefox/downloads/latest/return-youtube-dislikes"), () => Floorp == true && ReturnYouTubeDislike == true),
 
+			// install youtube no translation extension
+			("Installing YouTube No Translation Extension", async () => UpdatePolicies(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Ablaze Floorp", "distribution", "policies.json"), "https://addons.mozilla.org/firefox/downloads/latest/youtube-no-translation"), () => Floorp == true && YouTubeNoTranslation == true),
+
 			// install dark reader extension
 			("Installing Dark Reader Extension", async () => UpdatePolicies(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Ablaze Floorp", "distribution", "policies.json"), "https://addons.mozilla.org/firefox/downloads/latest/darkreader"), () => Floorp == true && DarkReader == true),
 
@@ -956,6 +988,9 @@ public static class BrowsersStage
 
 			// install return youtube dislike extension
 			("Installing Return YouTube Dislike Extension", async () => UpdatePolicies(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Mullvad", "MullvadBrowser", "Release", "distribution", "policies.json"), "https://addons.mozilla.org/firefox/downloads/latest/return-youtube-dislikes"), () => Mullvad == true && ReturnYouTubeDislike == true),
+
+			// install youtube no translation extension
+			("Installing YouTube No Translation Extension", async () => UpdatePolicies(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Mullvad", "MullvadBrowser", "Release", "distribution", "policies.json"), "https://addons.mozilla.org/firefox/downloads/latest/youtube-no-translation"), () => Mullvad == true && YouTubeNoTranslation == true),
 
 			// install dark reader extension
 			("Installing Dark Reader Extension", async () => UpdatePolicies(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Mullvad", "MullvadBrowser", "Release", "distribution", "policies.json"), "https://addons.mozilla.org/firefox/downloads/latest/darkreader"), () => Mullvad == true && DarkReader == true),

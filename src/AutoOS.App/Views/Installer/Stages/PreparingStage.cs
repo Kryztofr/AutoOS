@@ -46,6 +46,7 @@ public static partial class PreparingStage
 	public static bool Tampermonkey;
 	public static bool SponsorBlock;
 	public static bool ReturnYouTubeDislike;
+	public static bool YouTubeNoTranslation;
 	public static bool DarkReader;
 	public static bool Shazam;
 	public static bool WaybackMachine;
@@ -422,6 +423,7 @@ public static partial class PreparingStage
 			Tampermonkey = (localSettings.Values["Extensions"]?.ToString().Contains("Tampermonkey") ?? false);
 			SponsorBlock = (localSettings.Values["Extensions"]?.ToString().Contains("SponsorBlock") ?? false);
 			ReturnYouTubeDislike = (localSettings.Values["Extensions"]?.ToString().Contains("Return YouTube Dislike") ?? false);
+			YouTubeNoTranslation = (localSettings.Values["Extensions"]?.ToString().Contains("YouTube No Translation") ?? false);
 			DarkReader = (localSettings.Values["Extensions"]?.ToString().Contains("Dark Reader") ?? false);
 			Shazam = (localSettings.Values["Extensions"]?.ToString().Contains("Shazam") ?? false);
 			WaybackMachine = (localSettings.Values["Extensions"]?.ToString().Contains("Wayback Machine") ?? false);

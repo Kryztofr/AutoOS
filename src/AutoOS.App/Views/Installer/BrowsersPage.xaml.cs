@@ -53,6 +53,7 @@ public sealed partial class BrowsersPage : Page
 			new() { Text = "Tampermonkey", ImageSource = "ms-appx:///Assets/Fluent/Tampermonkey.png" },
 			new() { Text = "SponsorBlock", ImageSource = "ms-appx:///Assets/Fluent/Sponsorblock.png" },
 			new() { Text = "Return YouTube Dislike", ImageSource = "ms-appx:///Assets/Fluent/ReturnYouTubeDislike.png" },
+			new() { Text = "YouTube No Translation", ImageSource = "ms-appx:///Assets/Fluent/YouTubeNoTranslation.png" },
 			new() { Text = "Dark Reader", ImageSource = "ms-appx:///Assets/Fluent/Darkreader.png" },
 			new() { Text = "Shazam", ImageSource = "ms-appx:///Assets/Fluent/Shazam.png" },
 			new() { Text = "Wayback Machine", ImageSource = "ms-appx:///Assets/Fluent/WaybackMachine.png" },
