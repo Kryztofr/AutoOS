@@ -221,6 +221,7 @@ public sealed partial class ApplicationsPage : Page
 			new() { Text = "Minitool Partition Wizard", ImageSource = "ms-appx:///Assets/Fluent/MinitoolPartitionWizard.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "MiniTool Partition Wizard 13", "partitionwizard.exe")) },
 			new() { Text = "AOMEI Partition Assistant", ImageSource = "ms-appx:///Assets/Fluent/AomeiPartitionAssistant.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "AOMEI Partition Assistant", "PartAssist.exe")) },
 			new() { Text = "WizTree", ImageSource = "ms-appx:///Assets/Fluent/WizTree.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "WizTree", "WizTree64.exe")) },
+			new() { Text = "CrystalDiskInfo", ImageSource = "ms-appx:///Assets/Fluent/CrystalDiskInfo.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "CrystalDiskInfo", "DiskInfo64.exe")) },
 			new() { Text = "CrystalDiskMark", ImageSource = "ms-appx:///Assets/Fluent/CrystalDiskMark.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "CrystalDiskMark9", "DiskMark64.exe")) },
 			new() { Text = "Bulk Crap Uninstaller", ImageSource = "ms-appx:///Assets/Fluent/BulkCrapUninstaller.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "BCUninstaller", "BCUninstaller.exe")) },
 			new() { Text = "Bluetooth Audio Receiver", ImageSource = "ms-appx:///Assets/Fluent/BluetoothAudioReceiver.png", IsInstalled = Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Packages", "55746MarkSmirnov.BluetoothAudioReveicer_xwrbx6997tsfc")) },
@@ -390,6 +391,7 @@ public sealed partial class ApplicationsPage : Page
 		selection.MinitoolPartitionWizard = selectedMiscellaneous.Contains("Minitool Partition Wizard");
 		selection.AomeiPartitionAssistant = selectedMiscellaneous.Contains("AOMEI Partition Assistant");
 		selection.WizTree = selectedMiscellaneous.Contains("WizTree");
+		selection.CrystalDiskInfo = selectedMiscellaneous.Contains("CrystalDiskInfo");
 		selection.CrystalDiskMark = selectedMiscellaneous.Contains("CrystalDiskMark");
 		selection.BulkCrapUninstaller = selectedMiscellaneous.Contains("Bulk Crap Uninstaller");
 		selection.BluetoothAudioReceiver = selectedMiscellaneous.Contains("Bluetooth Audio Receiver");

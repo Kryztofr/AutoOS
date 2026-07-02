@@ -134,6 +134,7 @@ public class ApplicationSelection
 	public bool MinitoolPartitionWizard { get; set; }
 	public bool AomeiPartitionAssistant { get; set; }
 	public bool WizTree { get; set; }
+	public bool CrystalDiskInfo { get; set; }
 	public bool CrystalDiskMark { get; set; }
 	public bool BulkCrapUninstaller { get; set; }
 	public bool BluetoothAudioReceiver { get; set; }
@@ -285,6 +286,7 @@ public static class ApplicationStage
 		bool MinitoolPartitionWizard = selection?.MinitoolPartitionWizard ?? PreparingStage.MinitoolPartitionWizard;
 		bool AomeiPartitionAssistant = selection?.AomeiPartitionAssistant ?? PreparingStage.AomeiPartitionAssistant;
 		bool WizTree = selection?.WizTree ?? PreparingStage.WizTree;
+		bool CrystalDiskInfo = selection?.CrystalDiskInfo ?? PreparingStage.CrystalDiskInfo;
 		bool CrystalDiskMark = selection?.CrystalDiskMark ?? PreparingStage.CrystalDiskMark;
 		bool BulkCrapUninstaller = selection?.BulkCrapUninstaller ?? PreparingStage.BulkCrapUninstaller;
 		bool BluetoothAudioReceiver = selection?.BluetoothAudioReceiver ?? PreparingStage.BluetoothAudioReceiver;
@@ -2134,6 +2136,13 @@ public static class ApplicationStage
 			// install wiztree
 			("Installing WizTree", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "wiztree_setup.exe"), Arguments = "/VERYSILENT /SUPPRESSMSGBOXES /NORESTART /SP- /MERGETASKS=!desktopicon" , WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => WizTree == true),
 			("Cleaning up WizTree files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "wiztree_setup.exe")), () => WizTree == true),
+
+			// download crystal disk info
+			("Downloading CrystalDiskInfo", async () => await DownloadHelper.Download("https://deac-ams.dl.sourceforge.net/project/crystaldiskinfo/9.9.1/CrystalDiskInfo9_9_1.exe?viasf=1&fid=8679e6d10c13a1ea", Path.GetTempPath(), "CrystalDiskInfo.exe", reporter: reporter), () => CrystalDiskInfo == true),
+
+			// install crystal disk info
+			("Installing CrystalDiskInfo", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "CrystalDiskInfo.exe"), Arguments = "/VERYSILENT /SUPPRESSMSGBOXES /NORESTART /SP- /MERGETASKS=!desktopicon" , WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => CrystalDiskInfo == true),
+			("Cleaning up CrystalDiskInfo files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "CrystalDiskInfo.exe")), () => CrystalDiskInfo == true),
 
 			// download crystal disk mark
 			("Downloading CrystalDiskMark", async () => await DownloadHelper.Download("https://sf-eu-introserv-3.dl.sourceforge.net/project/crystaldiskmark/9.0.3/CrystalDiskMark9_0_3.exe?viasf=1&fid=3146e97b3c195781", Path.GetTempPath(), "CrystalDiskMark.exe", reporter: reporter), () => CrystalDiskMark == true),

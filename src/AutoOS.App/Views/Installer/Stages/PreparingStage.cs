@@ -172,6 +172,7 @@ public static partial class PreparingStage
 	public static bool MinitoolPartitionWizard;
 	public static bool AomeiPartitionAssistant;
 	public static bool WizTree;
+	public static bool CrystalDiskInfo;
 	public static bool CrystalDiskMark;
 	public static bool BulkCrapUninstaller;
 	public static bool BluetoothAudioReceiver;
@@ -543,6 +544,7 @@ public static partial class PreparingStage
 			MinitoolPartitionWizard = (localSettings.Values["Miscellaneous"]?.ToString().Contains("Minitool Partition Wizard") ?? false);
 			AomeiPartitionAssistant = (localSettings.Values["Miscellaneous"]?.ToString().Contains("AOMEI Partition Assistant") ?? false);
 			WizTree = (localSettings.Values["Miscellaneous"]?.ToString().Contains("WizTree") ?? false);
+			CrystalDiskInfo = (localSettings.Values["Miscellaneous"]?.ToString().Contains("CrystalDiskInfo") ?? false);
 			CrystalDiskMark = (localSettings.Values["Miscellaneous"]?.ToString().Contains("CrystalDiskMark") ?? false);
 			BulkCrapUninstaller = (localSettings.Values["Miscellaneous"]?.ToString().Contains("Bulk Crap Uninstaller") ?? false);
 			BluetoothAudioReceiver = (localSettings.Values["Miscellaneous"]?.ToString().Contains("BluetoothAudioReceiver") ?? false);
