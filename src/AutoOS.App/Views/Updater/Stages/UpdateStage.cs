@@ -1,3 +1,4 @@
+using AutoOS.Core.Helpers.Power;
 using AutoOS.Core.Helpers.Registry;
 
 namespace AutoOS.Views.Updater.Stages;
@@ -61,7 +62,20 @@ public static class UpdateStage
 			"wuauserv"
 		];
 
-		var actions = new List<(string Title, Func<Task> Action, Func<bool> Condition)>();
+		Guid guid = Guid.Empty;
+
+		var actions = new List<(string Title, Func<Task> Action, Func<bool> Condition)>()
+		{
+			// select autoos power plan
+            ("Selecting AutoOS Power Plan", async () => guid = PowerHelper.GetPlanGuidByName("AutoOS"), null),
+
+			// set "interrupt steering mode" to "lock interrupt routing"
+			(@"Setting ""Interrupt Steering Mode"" to ""Lock Interrupt Routing""", async () => PowerHelper.WriteACValueIndex(guid, new Guid("48672f38-7a9a-4bb2-8bf8-3d85be19de4e"), new Guid("2bfc24f9-5ea2-4801-8213-3dbae01aa39d"), 4), null),
+			(@"Setting ""Interrupt Steering Mode"" to ""Lock Interrupt Routing""", async () => PowerHelper.WriteDCValueIndex(guid, new Guid("48672f38-7a9a-4bb2-8bf8-3d85be19de4e"), new Guid("2bfc24f9-5ea2-4801-8213-3dbae01aa39d"), 4), null),
+		
+			// apply changes
+			("Applying Changes", async () =>  PowerHelper.PowerSetActiveScheme(guid), null)
+		};
 
 		foreach (var service in services)
 		{

@@ -1,6 +1,7 @@
+using AutoOS.Core.Helpers.Power;
 using AutoOS.Core.Helpers.Picker;
-using AutoOS.Helpers.Picker;
 using AutoOS.Views.Settings.Power;
+using AutoOS.Helpers.Picker;
 using Microsoft.UI.Text;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -59,8 +60,8 @@ namespace AutoOS.Views.Settings
 				plansList.Add(new PowerPlan
 				{
 					Guid = schemeGuid,
-					Name = PowerApi.ReadFriendlyName(schemeGuid, null, null),
-					Description = PowerApi.ReadDescription(schemeGuid)
+					Name = PowerHelper.ReadFriendlyName(schemeGuid, null, null),
+					Description = PowerHelper.ReadDescription(schemeGuid)
 				});
 			}
 
@@ -132,14 +133,14 @@ namespace AutoOS.Views.Settings
 				{
 					SubgroupGuid = noneSubgroupGuid,
 					Guid = settingGuid,
-					Name = PowerApi.ReadFriendlyName(scheme, noneSubgroupGuid, settingGuid),
-					Description = PowerApi.ReadDescription(scheme, noneSubgroupGuid, settingGuid),
-					AcValueIndex = PowerApi.ReadAcValueIndex(scheme, noneSubgroupGuid, settingGuid),
-					DcValueIndex = PowerApi.ReadDcValueIndex(scheme, noneSubgroupGuid, settingGuid),
-					Min = PowerApi.ReadValueMin(noneSubgroupGuid, settingGuid),
-					Max = PowerApi.ReadValueMax(noneSubgroupGuid, settingGuid),
-					Increment = PowerApi.ReadValueIncrement(noneSubgroupGuid, settingGuid),
-					Unit = PowerApi.ReadValueUnitsSpecifier(noneSubgroupGuid, settingGuid)
+					Name = PowerHelper.ReadFriendlyName(scheme, noneSubgroupGuid, settingGuid),
+					Description = PowerHelper.ReadDescription(scheme, noneSubgroupGuid, settingGuid),
+					AcValueIndex = PowerHelper.ReadAcValueIndex(scheme, noneSubgroupGuid, settingGuid),
+					DcValueIndex = PowerHelper.ReadDcValueIndex(scheme, noneSubgroupGuid, settingGuid),
+					Min = PowerHelper.ReadValueMin(noneSubgroupGuid, settingGuid),
+					Max = PowerHelper.ReadValueMax(noneSubgroupGuid, settingGuid),
+					Increment = PowerHelper.ReadValueIncrement(noneSubgroupGuid, settingGuid),
+					Unit = PowerHelper.ReadValueUnitsSpecifier(noneSubgroupGuid, settingGuid)
 				};
 
 
@@ -148,8 +149,8 @@ namespace AutoOS.Views.Settings
 
 				if (setting.IsOption)
 				{
-					friendlyAc = PowerApi.ReadPossibleFriendlyName(noneSubgroupGuid, settingGuid, setting.AcValueIndex);
-					friendlyDc = PowerApi.ReadPossibleFriendlyName(noneSubgroupGuid, settingGuid, setting.DcValueIndex);
+					friendlyAc = PowerHelper.ReadPossibleFriendlyName(noneSubgroupGuid, settingGuid, setting.AcValueIndex);
+					friendlyDc = PowerHelper.ReadPossibleFriendlyName(noneSubgroupGuid, settingGuid, setting.DcValueIndex);
 				}
 
 				setting.FriendlyAcValue = friendlyAc;
@@ -201,7 +202,7 @@ namespace AutoOS.Views.Settings
 				PowerSubgroup subgroup = new()
 				{
 					Guid = subgroupGuid,
-					Name = subgroupGuid == new Guid("9596fb26-9850-41fd-ac3e-f7c3c00afd4b") ? "Multimedia settings" : PowerApi.ReadFriendlyName(scheme, subgroupGuid, null)
+					Name = subgroupGuid == new Guid("9596fb26-9850-41fd-ac3e-f7c3c00afd4b") ? "Multimedia settings" : PowerHelper.ReadFriendlyName(scheme, subgroupGuid, null)
 				};
 
 				if (string.IsNullOrWhiteSpace(subgroup.Name))
@@ -232,14 +233,14 @@ namespace AutoOS.Views.Settings
 					{
 						SubgroupGuid = subgroupGuid,
 						Guid = settingGuid,
-						Name = PowerApi.ReadFriendlyName(scheme, subgroupGuid, settingGuid),
-						Description = PowerApi.ReadDescription(scheme, subgroupGuid, settingGuid),
-						AcValueIndex = PowerApi.ReadAcValueIndex(scheme, subgroupGuid, settingGuid),
-						DcValueIndex = PowerApi.ReadDcValueIndex(scheme, subgroupGuid, settingGuid),
-						Min = PowerApi.ReadValueMin(subgroupGuid, settingGuid),
-						Max = PowerApi.ReadValueMax(subgroupGuid, settingGuid),
-						Increment = PowerApi.ReadValueIncrement(subgroupGuid, settingGuid),
-						Unit = PowerApi.ReadValueUnitsSpecifier(subgroupGuid, settingGuid)
+						Name = PowerHelper.ReadFriendlyName(scheme, subgroupGuid, settingGuid),
+						Description = PowerHelper.ReadDescription(scheme, subgroupGuid, settingGuid),
+						AcValueIndex = PowerHelper.ReadAcValueIndex(scheme, subgroupGuid, settingGuid),
+						DcValueIndex = PowerHelper.ReadDcValueIndex(scheme, subgroupGuid, settingGuid),
+						Min = PowerHelper.ReadValueMin(subgroupGuid, settingGuid),
+						Max = PowerHelper.ReadValueMax(subgroupGuid, settingGuid),
+						Increment = PowerHelper.ReadValueIncrement(subgroupGuid, settingGuid),
+						Unit = PowerHelper.ReadValueUnitsSpecifier(subgroupGuid, settingGuid)
 					};
 
 
@@ -248,8 +249,8 @@ namespace AutoOS.Views.Settings
 
 					if (setting.IsOption)
 					{
-						friendlyAc = PowerApi.ReadPossibleFriendlyName(subgroupGuid, settingGuid, setting.AcValueIndex);
-						friendlyDc = PowerApi.ReadPossibleFriendlyName(subgroupGuid, settingGuid, setting.DcValueIndex);
+						friendlyAc = PowerHelper.ReadPossibleFriendlyName(subgroupGuid, settingGuid, setting.AcValueIndex);
+						friendlyDc = PowerHelper.ReadPossibleFriendlyName(subgroupGuid, settingGuid, setting.DcValueIndex);
 					}
 
 					setting.FriendlyAcValue = friendlyAc;
@@ -409,19 +410,19 @@ namespace AutoOS.Views.Settings
 			if (PowerPlanComboBox.SelectedItem is PowerPlan selectedPlan)
 			{
 				var schemeGuid = selectedPlan.Guid;
-				PowerApi.PowerSetActiveScheme(schemeGuid);
+				PowerHelper.PowerSetActiveScheme(schemeGuid);
 
 				foreach (var subgroup in _allSubgroups)
 				{
 					foreach (var setting in subgroup.Settings)
 					{
-						setting.AcValueIndex = PowerApi.ReadAcValueIndex(schemeGuid, subgroup.Guid, setting.Guid);
-						setting.DcValueIndex = PowerApi.ReadDcValueIndex(schemeGuid, subgroup.Guid, setting.Guid);
+						setting.AcValueIndex = PowerHelper.ReadAcValueIndex(schemeGuid, subgroup.Guid, setting.Guid);
+						setting.DcValueIndex = PowerHelper.ReadDcValueIndex(schemeGuid, subgroup.Guid, setting.Guid);
 
 						if (setting.IsOption)
 						{
-							setting.FriendlyAcValue = PowerApi.ReadPossibleFriendlyName(subgroup.Guid, setting.Guid, setting.AcValueIndex);
-							setting.FriendlyDcValue = PowerApi.ReadPossibleFriendlyName(subgroup.Guid, setting.Guid, setting.DcValueIndex);
+							setting.FriendlyAcValue = PowerHelper.ReadPossibleFriendlyName(subgroup.Guid, setting.Guid, setting.AcValueIndex);
+							setting.FriendlyDcValue = PowerHelper.ReadPossibleFriendlyName(subgroup.Guid, setting.Guid, setting.DcValueIndex);
 						}
 						else
 						{
@@ -506,15 +507,15 @@ namespace AutoOS.Views.Settings
 				if (sg == _identicalPlansPlaceholder) continue;
 				foreach (var setting in sg.Settings)
 				{
-					uint p1Ac = PowerApi.ReadAcValueIndex(activePlan.Guid, setting.SubgroupGuid, setting.Guid);
-					uint p1Dc = PowerApi.ReadDcValueIndex(activePlan.Guid, setting.SubgroupGuid, setting.Guid);
-					uint p2Ac = PowerApi.ReadAcValueIndex(comparePlan.Guid, setting.SubgroupGuid, setting.Guid);
-					uint p2Dc = PowerApi.ReadDcValueIndex(comparePlan.Guid, setting.SubgroupGuid, setting.Guid);
+					uint p1Ac = PowerHelper.ReadAcValueIndex(activePlan.Guid, setting.SubgroupGuid, setting.Guid);
+					uint p1Dc = PowerHelper.ReadDcValueIndex(activePlan.Guid, setting.SubgroupGuid, setting.Guid);
+					uint p2Ac = PowerHelper.ReadAcValueIndex(comparePlan.Guid, setting.SubgroupGuid, setting.Guid);
+					uint p2Dc = PowerHelper.ReadDcValueIndex(comparePlan.Guid, setting.SubgroupGuid, setting.Guid);
 
-					setting.Plan1AcFriendlyValue = setting.IsOption ? PowerApi.ReadPossibleFriendlyName(setting.SubgroupGuid, setting.Guid, p1Ac) : p1Ac.ToString();
-					setting.Plan1DcFriendlyValue = setting.IsOption ? PowerApi.ReadPossibleFriendlyName(setting.SubgroupGuid, setting.Guid, p1Dc) : p1Dc.ToString();
-					setting.Plan2AcFriendlyValue = setting.IsOption ? PowerApi.ReadPossibleFriendlyName(setting.SubgroupGuid, setting.Guid, p2Ac) : p2Ac.ToString();
-					setting.Plan2DcFriendlyValue = setting.IsOption ? PowerApi.ReadPossibleFriendlyName(setting.SubgroupGuid, setting.Guid, p2Dc) : p2Dc.ToString();
+					setting.Plan1AcFriendlyValue = setting.IsOption ? PowerHelper.ReadPossibleFriendlyName(setting.SubgroupGuid, setting.Guid, p1Ac) : p1Ac.ToString();
+					setting.Plan1DcFriendlyValue = setting.IsOption ? PowerHelper.ReadPossibleFriendlyName(setting.SubgroupGuid, setting.Guid, p1Dc) : p1Dc.ToString();
+					setting.Plan2AcFriendlyValue = setting.IsOption ? PowerHelper.ReadPossibleFriendlyName(setting.SubgroupGuid, setting.Guid, p2Ac) : p2Ac.ToString();
+					setting.Plan2DcFriendlyValue = setting.IsOption ? PowerHelper.ReadPossibleFriendlyName(setting.SubgroupGuid, setting.Guid, p2Dc) : p2Dc.ToString();
 
 					setting.Plan1AcValue = p1Ac;
 					setting.Plan1DcValue = p1Dc;
@@ -602,8 +603,8 @@ namespace AutoOS.Views.Settings
 
 			var selectedCompare = ComparePowerPlanComboBox.SelectedItem;
 
-			PowerApi.WriteSchemeFriendlyName(plan.Guid, nameTextBox.Text);
-			PowerApi.WriteSchemeDescription(plan.Guid, descriptionBox.Text);
+			PowerHelper.WriteSchemeFriendlyName(plan.Guid, nameTextBox.Text);
+			PowerHelper.WriteSchemeDescription(plan.Guid, descriptionBox.Text);
 
 			_powerPlans.Remove(plan);
 			_comparePlans.Remove(plan);
@@ -646,7 +647,7 @@ namespace AutoOS.Views.Settings
 
 			var newPlan = new PowerPlan
 			{
-				Guid = PowerApi.DuplicateScheme(plan.Guid, i == 1 ? $"{plan.Name} - Copy" : $"{plan.Name} - Copy ({i})", plan.Description),
+				Guid = PowerHelper.DuplicateScheme(plan.Guid, i == 1 ? $"{plan.Name} - Copy" : $"{plan.Name} - Copy ({i})", plan.Description),
 				Name = i == 1 ? $"{plan.Name} - Copy" : $"{plan.Name} - Copy ({i})",
 				Description = plan.Description
 			};
@@ -676,7 +677,7 @@ namespace AutoOS.Views.Settings
 			if (result != ContentDialogResult.Primary)
 				return;
 
-			PowerApi.RestoreDefaultPowerSchemes();
+			PowerHelper.RestoreDefaultPowerSchemes();
 			LoadPowerPlans();
 		}
 
@@ -723,7 +724,7 @@ namespace AutoOS.Views.Settings
 
 			PowerPlanComboBox.SelectedItem = nextSelection;
 
-			PowerApi.DeleteScheme(plan.Guid);
+			PowerHelper.DeleteScheme(plan.Guid);
 
 			_powerPlans.Remove(plan);
 			_comparePlans.Remove(_comparePlans.FirstOrDefault(p => p.Guid == plan.Guid));
@@ -768,8 +769,8 @@ namespace AutoOS.Views.Settings
 			var plan = new PowerPlan
 			{
 				Guid = importedGuid,
-				Name = PowerApi.ReadFriendlyName(importedGuid, null, null),
-				Description = PowerApi.ReadDescription(importedGuid)
+				Name = PowerHelper.ReadFriendlyName(importedGuid, null, null),
+				Description = PowerHelper.ReadDescription(importedGuid)
 			};
 
 			int powerIndex = _powerPlans.Count(p => string.Compare(p.Name, plan.Name, StringComparison.CurrentCultureIgnoreCase) < 0);
@@ -842,14 +843,14 @@ namespace AutoOS.Views.Settings
 					uint newAcValue = dialog.GetAcValue();
 					uint newDcValue = dialog.GetDcValue();
 
-					PowerApi.WriteACValueIndex(activeScheme, setting.SubgroupGuid, setting.Guid, newAcValue);
-					PowerApi.WriteDCValueIndex(activeScheme, setting.SubgroupGuid, setting.Guid, newDcValue);
-					PowerApi.PowerSetActiveScheme(activeScheme);
+					PowerHelper.WriteACValueIndex(activeScheme, setting.SubgroupGuid, setting.Guid, newAcValue);
+					PowerHelper.WriteDCValueIndex(activeScheme, setting.SubgroupGuid, setting.Guid, newDcValue);
+					PowerHelper.PowerSetActiveScheme(activeScheme);
 
 					setting.AcValueIndex = newAcValue;
 					setting.DcValueIndex = newDcValue;
-					setting.FriendlyAcValue = setting.IsOption ? PowerApi.ReadPossibleFriendlyName(setting.SubgroupGuid, setting.Guid, newAcValue) : newAcValue.ToString();
-					setting.FriendlyDcValue = setting.IsOption ? PowerApi.ReadPossibleFriendlyName(setting.SubgroupGuid, setting.Guid, newDcValue) : newDcValue.ToString();
+					setting.FriendlyAcValue = setting.IsOption ? PowerHelper.ReadPossibleFriendlyName(setting.SubgroupGuid, setting.Guid, newAcValue) : newAcValue.ToString();
+					setting.FriendlyDcValue = setting.IsOption ? PowerHelper.ReadPossibleFriendlyName(setting.SubgroupGuid, setting.Guid, newDcValue) : newDcValue.ToString();
 					break;
 			}
 		}
@@ -899,15 +900,15 @@ namespace AutoOS.Views.Settings
 					uint newAcValue = dialog.GetAcValue();
 					uint newDcValue = dialog.GetDcValue();
 
-					PowerApi.WriteACValueIndex(activeScheme, compareSettings.SubgroupGuid, compareSettings.Guid, newAcValue);
-					PowerApi.WriteDCValueIndex(activeScheme, compareSettings.SubgroupGuid, compareSettings.Guid, newDcValue);
-					PowerApi.PowerSetActiveScheme(activeScheme);
+					PowerHelper.WriteACValueIndex(activeScheme, compareSettings.SubgroupGuid, compareSettings.Guid, newAcValue);
+					PowerHelper.WriteDCValueIndex(activeScheme, compareSettings.SubgroupGuid, compareSettings.Guid, newDcValue);
+					PowerHelper.PowerSetActiveScheme(activeScheme);
 
 					compareSettings.Plan1AcValue = newAcValue;
 					compareSettings.Plan1DcValue = newDcValue;
 
-					compareSettings.Plan1AcFriendlyValue = compareSettings.IsOption ? PowerApi.ReadPossibleFriendlyName(compareSettings.SubgroupGuid, compareSettings.Guid, newAcValue) : newAcValue.ToString();
-					compareSettings.Plan1DcFriendlyValue = compareSettings.IsOption ? PowerApi.ReadPossibleFriendlyName(compareSettings.SubgroupGuid, compareSettings.Guid, newDcValue) : newDcValue.ToString();
+					compareSettings.Plan1AcFriendlyValue = compareSettings.IsOption ? PowerHelper.ReadPossibleFriendlyName(compareSettings.SubgroupGuid, compareSettings.Guid, newAcValue) : newAcValue.ToString();
+					compareSettings.Plan1DcFriendlyValue = compareSettings.IsOption ? PowerHelper.ReadPossibleFriendlyName(compareSettings.SubgroupGuid, compareSettings.Guid, newDcValue) : newDcValue.ToString();
 
 					compareSettings.IsAcDifferent = compareSettings.Plan1AcValue != compareSettings.Plan2AcValue;
 					compareSettings.IsDcDifferent = compareSettings.Plan1DcValue != compareSettings.Plan2DcValue;
@@ -1047,7 +1048,7 @@ namespace AutoOS.Views.Settings
 				string text;
 				if (item.IsOption)
 				{
-					text = PowerApi.ReadPossibleDescription(item.SubgroupGuid, item.Guid, item.AcValueIndex);
+					text = PowerHelper.ReadPossibleDescription(item.SubgroupGuid, item.Guid, item.AcValueIndex);
 				}
 				else
 				{
@@ -1064,7 +1065,7 @@ namespace AutoOS.Views.Settings
 				string text;
 				if (compareItem.IsOption)
 				{
-					text = PowerApi.ReadPossibleDescription(compareItem.SubgroupGuid, compareItem.Guid, compareItem.Plan1AcValue);
+					text = PowerHelper.ReadPossibleDescription(compareItem.SubgroupGuid, compareItem.Guid, compareItem.Plan1AcValue);
 				}
 				else
 				{
@@ -1085,7 +1086,7 @@ namespace AutoOS.Views.Settings
 				string text;
 				if (item.IsOption)
 				{
-					text = PowerApi.ReadPossibleDescription(item.SubgroupGuid, item.Guid, item.DcValueIndex);
+					text = PowerHelper.ReadPossibleDescription(item.SubgroupGuid, item.Guid, item.DcValueIndex);
 				}
 				else
 				{
@@ -1102,7 +1103,7 @@ namespace AutoOS.Views.Settings
 				string text;
 				if (compareItem.IsOption)
 				{
-					text = PowerApi.ReadPossibleDescription(compareItem.SubgroupGuid, compareItem.Guid, compareItem.Plan1DcValue);
+					text = PowerHelper.ReadPossibleDescription(compareItem.SubgroupGuid, compareItem.Guid, compareItem.Plan1DcValue);
 				}
 				else
 				{

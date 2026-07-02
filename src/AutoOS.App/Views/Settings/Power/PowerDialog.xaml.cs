@@ -1,3 +1,4 @@
+using AutoOS.Core.Helpers.Power;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
@@ -24,7 +25,7 @@ namespace AutoOS.Views.Settings.Power
 
 			while (true)
 			{
-				string name = PowerApi.ReadPossibleFriendlyName(setting.SubgroupGuid, setting.Guid, index);
+				string name = PowerHelper.ReadPossibleFriendlyName(setting.SubgroupGuid, setting.Guid, index);
 				if (string.IsNullOrWhiteSpace(name))
 					break;
 
@@ -32,7 +33,7 @@ namespace AutoOS.Views.Settings.Power
 				{
 					Index = index,
 					FriendlyName = name,
-					Description = PowerApi.ReadPossibleDescription(setting.SubgroupGuid, setting.Guid, index)
+					Description = PowerHelper.ReadPossibleDescription(setting.SubgroupGuid, setting.Guid, index)
 				});
 
 				index++;
