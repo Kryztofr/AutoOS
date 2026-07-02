@@ -79,6 +79,7 @@ public sealed partial class ApplicationsPage : Page
 			new() { Text = "Rockstar Games Launcher", ImageSource = "ms-appx:///Assets/Fluent/RockstarGamesLauncher.png" },
 			new() { Text = "FiveM", ImageSource = "ms-appx:///Assets/Fluent/FiveM.jpg" },
 			new() { Text = "FACEIT", ImageSource = "ms-appx:///Assets/Fluent/FACEIT.png" },
+			new() { Text = "FACEIT AC", ImageSource = "ms-appx:///Assets/Fluent/FACEITAC.png" },
 			new() { Text = "Eden", ImageSource = "ms-appx:///Assets/Fluent/Eden.png" }
 		};
 

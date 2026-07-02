@@ -79,6 +79,7 @@ public sealed partial class ApplicationsPage : Page
 			new() { Text = "Rockstar Games Launcher", ImageSource = "ms-appx:///Assets/Fluent/RockstarGamesLauncher.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Rockstar Games", "Launcher", "Launcher.exe")) },
 			new() { Text = "FiveM", ImageSource = "ms-appx:///Assets/Fluent/FiveM.jpg", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "FiveM", "FiveM.exe")) },
 			new() { Text = "FACEIT", ImageSource = "ms-appx:///Assets/Fluent/FACEIT.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "FACEIT", "FACEIT.exe")) },
+			new() { Text = "FACEIT AC", ImageSource = "ms-appx:///Assets/Fluent/FACEITAC.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "FACEIT AC", "faceitclient.exe")) },
 			new() { Text = "Eden", ImageSource = "ms-appx:///Assets/Fluent/Eden.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Eden", "eden.exe")) }
 		};
 		foreach (var item in launchersList.Where(item => !item.IsInstalled))
@@ -280,6 +281,7 @@ public sealed partial class ApplicationsPage : Page
 		selection.RockstarGamesLauncher = selectedLaunchers.Contains("Rockstar Games Launcher");
 		selection.FiveM = selectedLaunchers.Contains("FiveM");
 		selection.FACEIT = selectedLaunchers.Contains("FACEIT");
+		selection.FACEITAC = selectedLaunchers.Contains("FACEIT AC");
 		selection.Eden = selectedLaunchers.Contains("Eden");
 
 		var selectedMusicItems = Music.SelectedItems.Cast<GridViewItem>().ToList();

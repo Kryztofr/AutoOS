@@ -58,6 +58,7 @@ public class ApplicationSelection
 	public bool RockstarGamesLauncher { get; set; }
 	public bool FiveM { get; set; }
 	public bool FACEIT { get; set; }
+	public bool FACEITAC { get; set; }
 	public bool Eden { get; set; }
 	public bool AppleMusic { get; set; }
 	public bool Tidal { get; set; }
@@ -197,6 +198,7 @@ public static class ApplicationStage
 		bool RockstarGamesLauncher = selection?.RockstarGamesLauncher ?? PreparingStage.RockstarGamesLauncher;
 		bool FiveM = selection?.FiveM ?? PreparingStage.FiveM;
 		bool FACEIT = selection?.FACEIT ?? PreparingStage.FACEIT;
+		bool FACEITAC = selection?.FACEITAC ?? PreparingStage.FACEITAC;
 		bool Eden = selection?.Eden ?? PreparingStage.Eden;
 
 		bool AppleMusic = selection?.AppleMusic ?? PreparingStage.AppleMusic;
@@ -683,6 +685,7 @@ public static class ApplicationStage
 			("Importing Epic Games Launcher Games", async () => await EpicGamesHelper.ImportGames(), () => EpicGames == true && EpicGamesGames == true),
 			("Importing Epic Games Launcher Games", async () => Fortnite = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Epic", "UnrealEngineLauncher", "LauncherInstalled.dat")) && (JsonNode.Parse(await File.ReadAllTextAsync(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Epic", "UnrealEngineLauncher", "LauncherInstalled.dat")))?["InstallationList"] is JsonArray installations) && installations.Any(entry => entry?["AppName"]?.ToString() == "Fortnite") , () => EpicGames == true && EpicGamesGames == true),
 			("Importing Epic Games Launcher Games", async () => await Task.Delay(1000), () => EpicGames == true && EpicGamesGames == true),
+			("Importing Epic Games Launcher Games", async () => EpicGamesHelper.CloseEpicGames(), () => EpicGames == true && EpicGamesGames == true),
 
 			// log in to epic games launcher account
 			("Please log in to your Epic Games Launcher account (Close to continue)", async () => await EpicGamesHelper.EpicGamesLogin(), () => EpicGames == true && EpicGamesAccount == false),
@@ -750,7 +753,7 @@ public static class ApplicationStage
 
 			// install vanguard
 			("Installing Vanguard", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "setup.exe"), WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => RiotClient == true),
-			("Installing Vanguard", async () => { Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Riot Games", "Riot Vanguard")); await File.WriteAllTextAsync(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Riot Games", "Riot Vanguard", "vgtray-settings.json"), "{\"theme\":0,\"language\":0,\"precheck_option\":1,\"precheck_completed_after_settings_changes\":1}"); }, () => RiotClient == true),
+			("Installing Vanguard", async () => { Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Riot Games", "Riot Vanguard")); await File.WriteAllTextAsync(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Riot Games", "Riot Vanguard", "vgtray-settings.json"), "{\"theme\":0,\"language\":0,\"precheck_option\":1,\"precheck_completed_after_settings_changes\":1,\"precheck_completed_once\":1}"); }, () => RiotClient == true),
 			("Installing Vanguard", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run", "Riot Vanguard", new byte[] { 0x03 }, RegistryValueKind.Binary), () => RiotClient == true),
 			("Cleaning up Vanguard files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "setup.exe")), () => RiotClient == true),
 
@@ -1031,6 +1034,13 @@ public static class ApplicationStage
 
 			// disable faceit startup entry
 			("Disabling FACEIT startup entry", async () => RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run", "FACEIT", new byte[] { 0x01 }, RegistryValueKind.Binary), () => FACEIT == true),
+
+			// download faceit ac
+			("Downloading FACEIT AC", async () => await DownloadHelper.Download("https://anticheat-client.faceit-cdn.net/FACEITInstaller_64.exe", Path.GetTempPath(), "FACEITInstaller_64.exe", new InstallPageReporter()), () => FACEITAC == true),
+
+			// install faceit ac
+			("Installing FACEIT AC", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "FACEITInstaller_64.exe"), Arguments = @"/VERYSILENT /TASKS=""""", WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => FACEITAC == true),
+			("Cleaning up FACEIT AC files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "FACEITInstaller_64.exe")), () => FACEITAC == true),
 
 			// download Eden
 			("Downloading Eden", async () => await DownloadHelper.Download("https://stable.eden-emu.dev/v0.2.1/Eden-Windows-v0.2.1-amd64-clang-pgo.zip", Path.GetTempPath(), "Eden-Windows-amd64-clang-pgo.zip"), () => Eden == true),
