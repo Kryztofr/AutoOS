@@ -324,49 +324,6 @@ public static partial class ServicesHelper
 		}
 	}
 
-	public unsafe static void DisableFailureActions(string serviceName)
-	{
-		using var scmHandle = PInvoke.OpenSCManager(null, null, (uint)PInvoke.SC_MANAGER_CONNECT);
-		if (scmHandle.IsInvalid) throw new Win32Exception(Marshal.GetLastWin32Error(), "OpenSCManager failed");
-
-		using var serviceHandle = PInvoke.OpenService(scmHandle, serviceName, (uint)PInvoke.SERVICE_ALL_ACCESS);
-		if (serviceHandle.IsInvalid)
-		{
-			int error = Marshal.GetLastWin32Error();
-			if (error == 1060) return;
-			throw new Win32Exception(error, "OpenService failed");
-		}
-
-		var actions = stackalloc SC_ACTION[3];
-		actions[0] = new SC_ACTION { Type = SC_ACTION_TYPE.SC_ACTION_NONE, Delay = 0 };
-		actions[1] = new SC_ACTION { Type = SC_ACTION_TYPE.SC_ACTION_NONE, Delay = 0 };
-		actions[2] = new SC_ACTION { Type = SC_ACTION_TYPE.SC_ACTION_NONE, Delay = 0 };
-
-		var failureActions = new SERVICE_FAILURE_ACTIONSW
-		{
-			dwResetPeriod = 0,
-			lpRebootMsg = default,
-			lpCommand = default,
-			cActions = 3,
-			lpsaActions = actions
-		};
-
-		if (!PInvoke.ChangeServiceConfig2W(serviceHandle, SERVICE_CONFIG.SERVICE_CONFIG_FAILURE_ACTIONS, &failureActions))
-		{
-			throw new Win32Exception(Marshal.GetLastWin32Error(), "ChangeServiceConfig2W (Actions) failed");
-		}
-
-		var failureFlag = new SERVICE_FAILURE_ACTIONS_FLAG
-		{
-			fFailureActionsOnNonCrashFailures = false
-		};
-
-		if (!PInvoke.ChangeServiceConfig2W(serviceHandle, SERVICE_CONFIG.SERVICE_CONFIG_FAILURE_ACTIONS_FLAG, &failureFlag))
-		{
-			throw new Win32Exception(Marshal.GetLastWin32Error(), "ChangeServiceConfig2W (Flag) failed");
-		}
-	}
-
 	public unsafe static void CreateService(string serviceName, string path)
 	{
 		using var scmHandle = PInvoke.OpenSCManager(null, null, (uint)PInvoke.SC_MANAGER_CREATE_SERVICE);
@@ -390,83 +347,6 @@ public static partial class ServicesHelper
 				null,
 				null,
 				null);
-		}
-	}
-
-	public static void GroupServices()
-	{
-		string[] services =
-		[
-			"AppXSvc",
-			"AudioEndpointBuilder",
-			"BITS",
-			"BrokerInfrastructure",
-			"CDPSvc",
-			"ClipSVC",
-			"CoreMessagingRegistrar",
-			"DcomLaunch",
-			"DeviceAssociationService",
-			"Dhcp",
-			"DispBrokerDesktopSvc",
-			"DisplayEnhancementService",
-			"Dnscache",
-			"DPS",
-			"EventLog",
-			"EventSystem",
-			"FDResPub",
-			"FontCache",
-			"hidserv",
-			"iphlpsvc",
-			"KeyIso",
-			"LanmanServer",
-			"LanmanWorkstation",
-			"LicenseManager",
-			"lmhosts",
-			"LSM",
-			"NcbService",
-			"NcdAutoSetup",
-			"NlaSvc",
-			"nsi",
-			"PcaSvc",
-			"Power",
-			"SamSs",
-			"Schedule",
-			"SENS",
-			"ShellHWDetection",
-			"SSDPSRV",
-			"SstpSvc",
-			"StorSvc",
-			"SysMain",
-			"SystemEventsBroker",
-			"Themes",
-			"TimeBrokerSvc",
-			"TokenBroker",
-			"TrkWks",
-			"UsoSvc",
-			"VaultSvc",
-			"WdiSystemHost",
-			"WinHttpAutoProxySvc",
-			"WpnService",
-			"wuauserv"
-		];
-
-		string[] userServices = ["CDPUserSvc_", "OneSyncSvc_", "WpnUserService_"];
-
-		foreach (var service in services)
-		{
-			RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, $@"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\{service}", "SvcHostSplitDisable", 1, RegistryValueKind.DWord);
-		}
-
-		using var baseKey = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Services");
-		foreach (string subKeyName in baseKey.GetSubKeyNames())
-		{
-			foreach (var prefix in userServices)
-			{
-				if (subKeyName.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
-				{
-					RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, $@"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\{subKeyName}", "SvcHostSplitDisable", 1, RegistryValueKind.DWord);
-				}
-			}
 		}
 	}
 }

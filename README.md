@@ -78,7 +78,6 @@ Pressing **Install AutoOS** in the **AutoOS Installer** does the following:
 - Imports the Epic Games and Riot Games Account from the old Windows installation
 - Imports / Links Epic Games, Riot Games and Steam titles from the old Windows installation
 - Sets Fortnite frame rate depending on your main monitors refresh rate
-- Groups services and disables failure actions for some
 - Cleans up temporary files and creates a restore point
 
 See the [AutoOS Installer Screenshots](docs/SCREENSHOTS.md#%EF%B8%8F-autoos-installer) or [YouTube Showcase](https://youtu.be/k_xp1WXjMvw) for more information.

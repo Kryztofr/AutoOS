@@ -87,9 +87,8 @@ public sealed partial class InstallPage : Page
 		await RunStage("Configuring Runtimes...", RuntimesStage.GetActions(), 5);
 		await RunStage("Configuring Browsers...", BrowsersStage.GetActions(), 5);
 		await RunStage("Configuring Applications...", ApplicationStage.GetActions(), 15);
-		await RunStage("Configuring Games...", GamesStage.GetActions(), 2);
-		await RunStage("Configuring Services and Drivers...", ServicesStage.GetActions(), 2);
-		await RunStage("Cleaning up...", CleanupStage.GetActions(), 4);
+		await RunStage("Configuring Games...", GamesStage.GetActions(), 3);
+		await RunStage("Cleaning up...", CleanupStage.GetActions(), 5);
 		Status.Text = "Installation finished.";
 		Info.Title = "Done.";
 		Info.Severity = InfoBarSeverity.Success;
