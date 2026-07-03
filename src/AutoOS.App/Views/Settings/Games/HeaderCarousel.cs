@@ -1,5 +1,6 @@
 ﻿using AutoOS.Core.Helpers.Games;
 using AutoOS.Core.Helpers.Processes;
+using AutoOS.Core.Helpers.Registry;
 using AutoOS.Core.Helpers.Services;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Markup;
@@ -2121,151 +2122,150 @@ public partial class HeaderCarousel : ItemsControl
 		StopProcesses.IsHitTestVisible = false;
 		RestartProcesses.IsHitTestVisible = false;
 
-		await Task.Run(() =>
+		// close dllhost processes
+		foreach (var proc in Process.GetProcessesByName("dllhost"))
 		{
-			// close dllhost processes
-			foreach (var proc in Process.GetProcessesByName("dllhost"))
-			{
-				string cmdLine = ProcessesHelper.GetCommandLine(proc);
+			string cmdLine = ProcessesHelper.GetCommandLine(proc);
 
-				if (cmdLine.Contains("/PROCESSID", StringComparison.OrdinalIgnoreCase))
-				{
-					proc.Kill();
-					proc.WaitForExit();
-				}
+			if (cmdLine.Contains("/PROCESSID", StringComparison.OrdinalIgnoreCase))
+			{
+				proc.Kill();
+				proc.WaitForExit();
 			}
+		}
 
-			// close executables
-			Registry.SetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon", "AutoRestartShell", 0, RegistryValueKind.DWord);
+		// close executables
+		Registry.SetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon", "AutoRestartShell", 0, RegistryValueKind.DWord);
 
-			var processNames = new[]
+		var processNames = new[]
+		{
+			"ApplicationFrameHost",
+			//"backgroundTaskHost",
+			"CrashReportClient",
+			"CrossDeviceResume",
+			//"ctfmon",
+			"DataExchangeHost",
+			"EasyAntiCheat_EOS",
+			"EpicGamesLauncher",
+			"EpicOnlineServicesUserHelper",
+			"explorer",
+			"Everything",
+			//"Files",
+			"FortniteBootstrapper",
+			"FortniteClient-Win64-Shipping_EAC_EOS",
+			"GameBar",
+			"GameBarFTServer",
+			"gamingservices",
+			"gamingservicesnet",
+			"LeagueCrashHandler64",
+			"LsaIso",
+			"mobsync",
+			"NgcIso",
+			"RiotClientServices",
+			"RiotClientCrashHandler",
+			"rundll32",
+			"RuntimeBroker",
+			"SearchHost",
+			"secd",
+			"ShellExperienceHost",
+			"SpatialAudioLicenseSrv",
+			"sppsvc",
+			"StartMenuExperienceHost",
+			"SystemSettingsBroker",
+			"TabTip",
+			"TextInputHost",
+			"TrustedInstaller",
+			"useroobebroker",
+			//"WMIADAP",
+			//"WmiPrvSE",
+			"WUDFHost",
+			"XboxPcAppFT"
+		};
+
+		foreach (var name in processNames)
+		{
+			foreach (var process in Process.GetProcessesByName(name))
 			{
-				"ApplicationFrameHost",
-				"CrashReportClient",
-				"CrossDeviceResume",
-				//"ctfmon",
-				"DataExchangeHost",
-				"EasyAntiCheat_EOS",
-				"EpicGamesLauncher",
-				"EpicOnlineServicesUserHelper",
-				"explorer",
-				"Everything",
-				//"Files",
-				"FortniteBootstrapper",
-				"FortniteClient-Win64-Shipping_EAC_EOS",
-				"GameBar",
-				"GameBarFTServer",
-				"gamingservicesnet",
-				"LeagueCrashHandler64",
-				"LsaIso",
-				"mobsync",
-				"NgcIso",
-				"RiotClientServices",
-				"RiotClientCrashHandler",
-				"rundll32",
-				"RuntimeBroker",
-				"SearchHost",
-				"secd",
-				"ShellExperienceHost",
-				"SpatialAudioLicenseSrv",
-				"sppsvc",
-				"StartMenuExperienceHost",
-				"SystemSettingsBroker",
-				"TabTip",
-				"TrustedInstaller",
-				"useroobebroker",
-				//"WMIADAP",
-				//"WmiPrvSE",
-				"WUDFHost"
-			};
-
-			foreach (var name in processNames)
-			{
-				foreach (var process in Process.GetProcessesByName(name))
-				{
-					process.Kill();
-					process.WaitForExit();
-				}
+				process.Kill();
+				process.WaitForExit();
 			}
+		}
 
-			Registry.SetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon", "AutoRestartShell", 1, RegistryValueKind.DWord);
+		Registry.SetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon", "AutoRestartShell", 1, RegistryValueKind.DWord);
 
-			// stop services
-			var serviceNames = new[]
+		// stop services
+		var serviceNames = new[]
+		{
+			"AudioEndpointBuilder",
+			"Appinfo",
+			"AppXSvc",
+			"CaptureService",
+			"cbdhsvc",
+			//"CDPSvc",
+			//"CDPUserSvc",
+			"ClipSvc",
+			"CryptSvc",
+			"DevicesFlowUserSvc",
+			"DeviceAssociationService",
+			"DeviceInstall",
+			"DispBrokerDesktopSvc",
+			"DoSvc",
+			"Everything (1.5a)",
+			"gpsvc",
+			"InstallService",
+			"KeyIso",
+			"LicenseManager",
+			"lfsvc",
+			"msiserver",
+			//"NcbService",
+			"Netman",
+			"NetSetupSvc",
+			"netprofm",
+			"NgcCtnrSvc",
+			"NgcSvc",
+			"NVDisplay.ContainerLocalSystem",
+			"ProfSvc",
+			//"Schedule",
+			//"SstpSvc",
+			"StateRepository",
+			//"TimeBrokerSvc",
+			//"TokenBroker",
+			"TrustedInstaller",
+			"UdkUserSvc",
+			"UserManager",
+			"WFDSConMgrSvc",
+			"Windhawk",
+			//"Winmgmt",
+			"WpnService",
+			"WpnUserService"
+		};
+
+		foreach (var serviceName in serviceNames)
+		{
+			try
 			{
-				"AudioEndpointBuilder",
-				"AppXSvc",
-				"Appinfo",
-				"BITS",
-				"CaptureService",
-				"cbdhsvc",
-				"ClipSvc",
-				"CryptSvc",
-				"DevicesFlowUserSvc",
-				"DeviceAssociationService",
-				"DeviceInstall",
-				"DispBrokerDesktopSvc",
-				//"Dnscache",
-				"DoSvc",
-				"Everything (1.5a)",
-				"gpsvc",
-				"InstallService",
-				"KeyIso",
-				"LicenseManager",
-				"lfsvc",
-				"msiserver",
-				"Netman",
-				"NetSetupSvc",
-				"netprofm",
-				"NgcCtnrSvc",
-				"NgcSvc",
-				//"nsi",
-				"NVDisplay.ContainerLocalSystem",
-				"ProfSvc",
-				"StateRepository",
-				"TimeBrokerSvc",
-				"TrustedInstaller",
-				"UdkUserSvc",
-				"UserManager",
-				//"Wcmsvc",
-				"WFDSConMgrSvc",
-				"Windhawk",
-				//"WinHttpAutoProxySvc",
-				//"Winmgmt",
-				"WpnService",
-				"WpnUserService"
-			};
-
-			foreach (var serviceName in serviceNames)
-			{
-				try
-				{
-					ServicesHelper.StopService(serviceName);
-				}
-				catch
-				{
-					ServicesHelper.KillServiceProcess(serviceName);
-				}
+				ServicesHelper.StopService(serviceName);
 			}
-
-			foreach (var serviceName in serviceNames)
+			catch
 			{
-				try
-				{
-					ServicesHelper.StopService(serviceName);
-				}
-				catch
-				{
-					ServicesHelper.KillServiceProcess(serviceName);
-				}
+				ServicesHelper.KillServiceProcess(serviceName);
 			}
+		}
 
-			//Process.GetProcessesByName("ctfmon").ToList().ForEach(process => process.Kill());
-			//ProcessesHelper.SuspendProcess(ServicesHelper.GetServicePid("TextInputManagementService"));
+		foreach (var serviceName in serviceNames)
+		{
+			try
+			{
+				ServicesHelper.StopService(serviceName);
+			}
+			catch
+			{
+				ServicesHelper.KillServiceProcess(serviceName);
+			}
+		}
 
-			if (Process.GetProcessesByName("ClassicWindowSwitcher").Length == 0)
-				Process.Start(new ProcessStartInfo(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Applications", "ClassicWindowSwitcher", "ClassicWindowSwitcher.exe")) { CreateNoWindow = true });
-		});
+		if (Process.GetProcessesByName("ClassicWindowSwitcher").Length == 0)
+			Process.Start(new ProcessStartInfo(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Applications", "ClassicWindowSwitcher", "ClassicWindowSwitcher.exe")) { CreateNoWindow = true });
 
 		// re-enable hittestvisible
 		StopProcesses.IsHitTestVisible = true;
@@ -2278,88 +2278,87 @@ public partial class HeaderCarousel : ItemsControl
 		StopProcesses.IsHitTestVisible = false;
 		RestartProcesses.IsHitTestVisible = false;
 
-		await Task.Run(() =>
+		try
+		{
+			Process.GetProcessesByName("ClassicWindowSwitcher").FirstOrDefault()?.Kill();
+
+			// launch explorer
+			Process.Start("explorer.exe");
+
+			// start windhawk service
+			ServicesHelper.StartService("Windhawk");
+		}
+		catch { }
+
+		// restart services
+		var serviceNames = new[]
+		{
+			"AudioEndpointBuilder",
+			"Appinfo",
+			"AppXSvc",
+			"CaptureService",
+			"cbdhsvc",
+			//"CDPSvc",
+			//"CDPUserSvc",
+			"ClipSvc",
+			"CryptSvc",
+			"DevicesFlowUserSvc",
+			"DeviceAssociationService",
+			"DeviceInstall",
+			"DispBrokerDesktopSvc",
+			"DoSvc",
+			"Everything (1.5a)",
+			"gpsvc",
+			"InstallService",
+			"KeyIso",
+			"LicenseManager",
+			"lfsvc",
+			"msiserver",
+			//"NcbService",
+			"Netman",
+			"NetSetupSvc",
+			"netprofm",
+			"NgcCtnrSvc",
+			"NgcSvc",
+			"NVDisplay.ContainerLocalSystem",
+			"ProfSvc",
+			//"Schedule",
+			//"SstpSvc",
+			"StateRepository",
+			//"TimeBrokerSvc",
+			//"TokenBroker",
+			"TrustedInstaller",
+			"UdkUserSvc",
+			"UserManager",
+			"WFDSConMgrSvc",
+			//"Winmgmt",
+			"WpnService",
+			"WpnUserService"
+		};
+
+		foreach (var serviceName in serviceNames)
 		{
 			try
 			{
-				Process.GetProcessesByName("ClassicWindowSwitcher").FirstOrDefault()?.Kill();
-
-				// launch explorer
-				Process.Start("explorer.exe");
-
-				// start windhawk service
-				ServicesHelper.StartService("Windhawk");
+				ServicesHelper.StartService(serviceName);
 			}
 			catch { }
+		}
 
-			// restart services
-			var serviceNames = new[]
+		//ProcessesHelper.ResumeProcess(ServicesHelper.GetServicePid("TextInputManagementService"));
+		//Process.Start("ctfmon.exe");
+
+		string filePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Everything 1.5a", "Everything.exe");
+
+		if (File.Exists(filePath))
+		{
+			Process.Start(new ProcessStartInfo
 			{
-				"AudioEndpointBuilder",
-				"AppXSvc",
-				"Appinfo",
-				"CaptureService",
-				"cbdhsvc",
-				"ClipSvc",
-				"CryptSvc",
-				"DevicesFlowUserSvc",
-				"DeviceInstall",
-				"DeviceAssociationService",
-				"Dhcp",
-				"DispBrokerDesktopSvc",
-				//"Dnscache",
-				"DoSvc",
-				"Everything (1.5a)",
-				"gpsvc",
-				"InstallService",
-				"KeyIso",
-				"LicenseManager",
-				"lfsvc",
-				"msiserver",
-				"Netman",
-				"NetSetupSvc",
-				"netprofm",
-				"NgcCtnrSvc",
-				"NgcSvc",
-				"nsi",
-				"ProfSvc",
-				"StateRepository",
-				"TimeBrokerSvc",
-				"TrustedInstaller",
-				"UdkUserSvc",
-				"UserManager",
-				//"Wcmsvc",
-				"WFDSConMgrSvc",
-				//"WinHttpAutoProxySvc",
-				//"Winmgmt",
-				"WpnService",
-				"WpnUserService"
-			};
-
-			foreach (var serviceName in serviceNames)
-			{
-				try
-				{
-					ServicesHelper.StartService(serviceName);
-				}
-				catch { }
-			}
-
-			//ProcessesHelper.ResumeProcess(ServicesHelper.GetServicePid("TextInputManagementService"));
-			//Process.Start("ctfmon.exe");
-
-			string filePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Everything 1.5a", "Everything.exe");
-
-			if (File.Exists(filePath))
-			{
-				Process.Start(new ProcessStartInfo
-				{
-					FileName = filePath,
-					WindowStyle = ProcessWindowStyle.Hidden,
-					Arguments = "-startup",
-				});
-			}
-		});
+				FileName = filePath,
+				WindowStyle = ProcessWindowStyle.Hidden,
+				Arguments = "-startup",
+			});
+		}
 
 		// re-enable hittestvisible
 		StopProcesses.IsHitTestVisible = true;
