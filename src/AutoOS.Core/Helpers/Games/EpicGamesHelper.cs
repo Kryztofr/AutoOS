@@ -12,6 +12,7 @@ using System.Text.Json.Serialization;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Text;
+using PhantomClientCore;
 using Windows.Media.Core;
 
 namespace AutoOS.Core.Helpers.Games;
@@ -28,6 +29,17 @@ public static partial class EpicGamesHelper
 
 	private static readonly HttpClient httpClient = new();
 	private static readonly HttpClient loginClient = new();
+	private static readonly PhantomClient phantomClient = new PhantomClient(new PhantomClientOptions
+	{
+		ClientIdentifier = "chrome_120",
+		RandomTlsExtensionOrder = true,
+		DefaultHeaders = new Dictionary<string, string>
+		{
+			{ "User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" },
+			{ "Accept", "application/json" },
+			{ "Accept-Language", "en-US,en;q=0.9" }
+		}
+	});
 
 	private const string ClientId = "34a02cf8f4414e29b15921876da36f9a";
 
@@ -53,6 +65,15 @@ public static partial class EpicGamesHelper
 			) {
 			elements {
 				id
+				productSlug
+				urlSlug
+				catalogNs {
+					mappings {
+						pageSlug
+						pageType
+						productId
+					}
+				}
 			}
 			}
 			}
@@ -868,12 +889,13 @@ public static partial class EpicGamesHelper
 			if (playTimeResponse != null && playTimeResponse.IsSuccessStatusCode)
 			{
 				playTimeData = (JsonNode.Parse(await playTimeResponse.Content.ReadAsStringAsync()) as JsonArray)?.ToDictionary(
-					p => p["artifactId"]?.GetValue<string>(),
-					p => p["totalTime"]?.GetValue<int>() ?? 0
+					playtime => playtime["artifactId"]?.GetValue<string>(),
+					playtime => playtime["totalTime"]?.GetValue<int>() ?? 0
 				);
 			}
 
-			string region = RegionInfo.CurrentRegion.TwoLetterISORegionName.ToUpper();
+			string region = new RegionInfo(CultureInfo.CurrentCulture.Name).TwoLetterISORegionName.ToUpper();
+
 			string ratingKey = region switch
 			{
 				"AU" => "ACB",
@@ -964,174 +986,154 @@ public static partial class EpicGamesHelper
 					if (!Directory.Exists(installLocation))
 						return;
 
-					// get offer id
-					JsonNode itemOfferData = null;
-					try
+					var offerResponse = await phantomClient.PostAsync("https://store.epicgames.com/graphql", new PostRequestOptions
 					{
-						itemOfferData = JsonNode.Parse(await httpClient.GetStringAsync($"https://api.egdata.app/items/{catalogItemId}/offer", token).ConfigureAwait(false));
+						Body = JsonSerializer.Serialize(new { query = itemOfferQuery, variables = new { allowCountries = "US", country = "US", locale = "en-US", count = 1, @namespace = catalogNamespace } }),
+						Headers = new Dictionary<string, string> { { "Content-Type", "application/json" } }
+					});
+
+					// get offer id, product slug and product id
+					string offerId = null;
+					string productSlug = null;
+					string productId = null;
+					if (offerResponse.IsSuccess)
+					{
+						var searchElement = JsonNode.Parse(offerResponse.Body)?["data"]?["Catalog"]?["searchStore"]?["elements"]?[0];
+
+						offerId = searchElement?["id"]?.GetValue<string>();
+
+						var mappings = searchElement?["catalogNs"]?["mappings"]?.AsArray();
+						if (mappings != null)
+						{
+							var homeMapping = mappings.FirstOrDefault(mapping => mapping?["pageType"]?.GetValue<string>() == "productHome");
+							if (homeMapping != null)
+							{
+								productSlug = homeMapping["pageSlug"]?.GetValue<string>();
+								productId = homeMapping["productId"]?.GetValue<string>();
+							}
+							else
+							{
+								var offerMapping = mappings.FirstOrDefault(m => m?["pageType"]?.GetValue<string>() == "offer");
+								if (offerMapping != null)
+								{
+									productSlug = offerMapping["pageSlug"]?.GetValue<string>();
+									productId = offerMapping["productId"]?.GetValue<string>();
+								}
+								else if (mappings.Count > 0)
+								{
+									productSlug = mappings[0]?["pageSlug"]?.GetValue<string>();
+									productId = mappings[0]?["productId"]?.GetValue<string>();
+								}
+							}
+						}
+
+						if (string.IsNullOrEmpty(productSlug) && searchElement != null)
+						{
+							productSlug = searchElement["productSlug"]?.GetValue<string>() ?? searchElement["urlSlug"]?.GetValue<string>();
+						}
 					}
-					catch (Exception ex)
+
+					if (string.IsNullOrEmpty(offerId))
 					{
-						await LogHelper.LogError(ex, null, $"Failed to load offer data for game {itemJson?["DisplayName"]?.ToString()}, {catalogItemId}, https://api.egdata.app/items/{catalogItemId}/offer");
+						await LogHelper.LogError(new InvalidOperationException($"Failed to get offerId for {catalogItemId}"), null, $"Failed to get offerId for game {itemJson?["DisplayName"]?.ToString()}, {catalogItemId}");
 						return;
 					}
 
-					var offerId = itemOfferData?["id"]?.GetValue<string>();
-
-					if (catalogItemId == "4fe75bbc5a674f4f9b356b5c90567da5")
-					{
-						offerId = "09176f4ff7564bbbb499bbe20bd6348f";
-					}
-					else if (catalogItemId == "1e8bda5cfbb641b9a9aea8bd62285f73")
-					{
-						offerId = "38a7aa439bad42fa8c708bf80e47ed8b";
-					}
-					else if (catalogItemId == "d398f3033c5e4b90b09dcbb4b962be80")
-					{
-						offerId = "e880a70ecac84bc185fea9d354a157cc";
-					}
-
-					// get offer id
-					//var itemOfferTask = loginClient.PostAsync("https://graphql.unrealengine.com/ue/graphql", new StringContent(JsonSerializer.Serialize(new { query = itemOfferQuery, variables = new { allowCountries = "US", country = "US", locale = "en-US", count = 1, withPrice = true, withPromotions = true, sortBy = "releaseDate", sortDir = "DESC", @namespace = itemJson["CatalogNamespace"]?.GetValue<string>(), category = "games/edition/base" } }), Encoding.UTF8, "application/json"), token);
-
-					//var itemOfferData = JsonNode.Parse(await (await itemOfferTask.ConfigureAwait(false)).Content.ReadAsStringAsync(token).ConfigureAwait(false));
-
-					//string offerId;
-
-					//if (itemOfferData?["data"]?["Catalog"]?["searchStore"]?["elements"] is JsonArray { Count: > 0 })
-					//{
-					//    offerId = itemOfferData?["data"]?["Catalog"]?["searchStore"]?["elements"]?[0]?["id"]?.GetValue<string>();
-					//}
-					//else
-					//{
-					//    itemOfferData = JsonNode.Parse(await httpClient.GetStringAsync($"https://api.egdata.app/items/{itemJson["MainGameCatalogItemId"]?.GetValue<string>()}/offer", token).ConfigureAwait(false));
-					//    offerId = itemOfferData?["id"]?.GetValue<string>();
-					//}
-
-					// get metadata
-					//var itemTask = httpClient.GetStringAsync($"https://api.egdata.app/items/{itemJson["MainGameCatalogItemId"]?.GetValue<string>()}", token);
-					//var offerTask = httpClient.GetStringAsync($"https://api.egdata.app/offers/{offerId}", token);
+					// Fetch metadata and assets
 					string manifestUrl = $"https://catalog-public-service-prod.ol.epicgames.com/catalog/api/shared/namespace/{catalogNamespace}/bulk/items?id={catalogItemId}&includeDLCDetails=false&includeMainGameDetails=true&country=US&locale=en-US";
 					string manifestFallbackUrl = $"https://catalog-public-service-prod06.ol.epicgames.com/catalog/api/shared/namespace/{catalogNamespace}/bulk/items?id={catalogItemId}&includeDLCDetails=false&includeMainGameDetails=true&country=US&locale=en-US";
 					string offerUrl = $"https://catalog-public-service-prod.ol.epicgames.com/catalog/api/shared/bulk/offers?id={offerId}&returnItemDetails=true&country=US&locale=en-US";
 					string offerFallbackUrl = $"https://catalog-public-service-prod06.ol.epicgames.com/catalog/api/shared/bulk/offers?id={offerId}&returnItemDetails=true&country=US&locale=en-US";
-					string ratingUrl = $"https://api.egdata.app/offers/{offerId}/polls";
-					string genresUrl = $"https://api.egdata.app/offers/{(offerId == "6e02cab6e82243858462ba7f93c82e9d" ? "d546d9a3e9fe4ba093d3a3fdae020760" : offerId)}/genres";
-					string featuresUrl = $"https://api.egdata.app/offers/{(offerId == "6e02cab6e82243858462ba7f93c82e9d" ? "d546d9a3e9fe4ba093d3a3fdae020760" : offerId)}/features";
-					string ageRatingUrl = $"https://api.egdata.app/offers/{offerId}/age-rating";
-					string mediaUrl = $"https://api.egdata.app/offers/{offerId}/media";
-
+					string productOfferUrl = $"https://egs-platform-service.store.epicgames.com/api/v1/egs/products/{productId}/offers/{offerId}?country={region}&locale=en-US&store=EGS";
+					string ageRatingUrl = $"https://egs-platform-service.store.epicgames.com/api/v1/egs/products/{productId}/offers/{offerId}/age-rating?country={region}&locale=en-US&store=EGS";
 					JsonNode manifestData = null;
 					JsonNode offerData = null;
 					JsonNode ratingData = null;
-					JsonNode genresData = null;
-					JsonNode featuresData = null;
+					JsonNode productOfferData = null;
 					JsonNode ageRatingData = null;
-					JsonNode mediaData = null;
 
-					try
-					{
-						manifestData = JsonNode.Parse(await loginClient.GetStringAsync(manifestUrl, token).ConfigureAwait(false));
-					}
-					catch (Exception)
+					var manifestTask = new Func<Task>(async () =>
 					{
 						try
 						{
-							manifestData = JsonNode.Parse(await loginClient.GetStringAsync(manifestFallbackUrl, token).ConfigureAwait(false));
+							manifestData = JsonNode.Parse(await loginClient.GetStringAsync(manifestUrl, token).ConfigureAwait(false));
 						}
-						catch (Exception fallbackEx)
+						catch (Exception)
 						{
-							await LogHelper.LogError(fallbackEx, null, $"Failed to load manifest data for game {itemJson?["DisplayName"]?.ToString()}, {catalogItemId}, both {manifestUrl} and {manifestFallbackUrl}");
-							return;
+							try
+							{
+								manifestData = JsonNode.Parse(await loginClient.GetStringAsync(manifestFallbackUrl, token).ConfigureAwait(false));
+							}
+							catch (Exception fallbackEx)
+							{
+								await LogHelper.LogError(fallbackEx, null, $"Failed to load manifest data for game {itemJson?["DisplayName"]?.ToString()}, {catalogItemId}, both {manifestUrl} and {manifestFallbackUrl}");
+							}
 						}
-					}
+					})();
 
-					try
-					{
-						offerData = JsonNode.Parse(await loginClient.GetStringAsync(offerUrl, token).ConfigureAwait(false));
-					}
-					catch (Exception)
+					var offerTask = new Func<Task>(async () =>
 					{
 						try
 						{
-							offerData = JsonNode.Parse(await loginClient.GetStringAsync(offerFallbackUrl, token).ConfigureAwait(false));
+							offerData = JsonNode.Parse(await loginClient.GetStringAsync(offerUrl, token).ConfigureAwait(false));
 						}
-						catch (Exception fallbackEx)
+						catch (Exception)
 						{
-							await LogHelper.LogError(fallbackEx, null, $"Failed to load offer data for game {itemJson?["DisplayName"]?.ToString()}, {offerId}, both {offerUrl} and {offerFallbackUrl}");
-							return;
+							try
+							{
+								offerData = JsonNode.Parse(await loginClient.GetStringAsync(offerFallbackUrl, token).ConfigureAwait(false));
+							}
+							catch (Exception fallbackEx)
+							{
+								await LogHelper.LogError(fallbackEx, null, $"Failed to load offer data for game {itemJson?["DisplayName"]?.ToString()}, {offerId}, both {offerUrl} and {offerFallbackUrl}");
+							}
 						}
-					}
+					})();
 
-					try
+					var ratingTask = new Func<Task>(async () =>
 					{
-						ratingData = JsonNode.Parse(await httpClient.GetStringAsync(ratingUrl, token).ConfigureAwait(false));
-					}
-					catch (Exception ex)
-					{
-						await LogHelper.LogError(ex, null, $"Failed to load rating data for game {itemJson?["DisplayName"]?.ToString()}, {offerId}, {ratingUrl}");
-						ratingData = JsonNode.Parse("{}");
-					}
+						try
+						{
+							var ratingResponse = await phantomClient.PostAsync("https://store.epicgames.com/graphql", new PostRequestOptions
+							{
+								Body = JsonSerializer.Serialize(new { query = ratingQuery, variables = new { sandboxId = catalogNamespace, locale = "en-US" } }),
+								Headers = new Dictionary<string, string> { { "Content-Type", "application/json" } }
+							});
+							ratingData = ratingResponse.IsSuccess ? JsonNode.Parse(ratingResponse.Body) : JsonNode.Parse("{}");
+						}
+						catch (Exception ex)
+						{
+							await LogHelper.LogError(ex, null, $"Failed to load rating data for game {itemJson?["DisplayName"]?.ToString()}, {catalogNamespace}");
+						}
+					})();
 
-					try
+					var productOfferTask = new Func<Task>(async () =>
 					{
-						genresData = JsonNode.Parse(await httpClient.GetStringAsync(genresUrl, token).ConfigureAwait(false));
-					}
-					catch (Exception ex)
-					{
-						await LogHelper.LogError(ex, null, $"Failed to load genres data for game {itemJson?["DisplayName"]?.ToString()}, {offerId}, {genresUrl}");
-						genresData = JsonNode.Parse("[]");
-					}
+						try
+						{
+							var productOfferResponse = await phantomClient.GetAsync(productOfferUrl);
+							productOfferData = productOfferResponse.IsSuccess ? JsonNode.Parse(productOfferResponse.Body) : JsonNode.Parse("{}");
+						}
+						catch (Exception ex)
+						{
+							await LogHelper.LogError(ex, null, $"Failed to load product offer data for game {itemJson?["DisplayName"]?.ToString()}, {productId}, {offerId}, {productOfferUrl}");
+						}
+					})();
 
-					try
+					var ageRatingTask = new Func<Task>(async () =>
 					{
-						featuresData = JsonNode.Parse(await httpClient.GetStringAsync(featuresUrl, token).ConfigureAwait(false));
-					}
-					catch (Exception ex)
-					{
-						await LogHelper.LogError(ex, null, $"Failed to load features data for game {itemJson?["DisplayName"]?.ToString()}, {offerId}, {featuresUrl}");
-						featuresData = JsonNode.Parse("{}");
-					}
+						try
+						{
+							var ageRatingResponse = await phantomClient.GetAsync(ageRatingUrl);
+							ageRatingData = ageRatingResponse.IsSuccess ? JsonNode.Parse(ageRatingResponse.Body) : JsonNode.Parse("{}");
+						}
+						catch (Exception ex)
+						{
+							await LogHelper.LogError(ex, null, $"Failed to load age rating data for game {itemJson?["DisplayName"]?.ToString()}, {offerId}, {ageRatingUrl}");
+						}
+					})();
 
-					try
-					{
-						ageRatingData = JsonNode.Parse(await httpClient.GetStringAsync(ageRatingUrl, token).ConfigureAwait(false));
-					}
-					catch (Exception ex)
-					{
-						await LogHelper.LogError(ex, null, $"Failed to load age rating data for game {itemJson?["DisplayName"]?.ToString()}, {offerId}, {ageRatingUrl}");
-						ageRatingData = JsonNode.Parse("{}");
-					}
-
-					try
-					{
-						var mediaResponse = await httpClient.GetAsync(mediaUrl, token).ConfigureAwait(false);
-						mediaData = mediaResponse.IsSuccessStatusCode ? JsonNode.Parse(await mediaResponse.Content.ReadAsStringAsync(token).ConfigureAwait(false)) : JsonNode.Parse("{}");
-					}
-					catch (Exception ex)
-					{
-						await LogHelper.LogError(ex, null, $"Failed to load media data for game {itemJson?["DisplayName"]?.ToString()}, {offerId}, {mediaUrl}");
-						mediaData = JsonNode.Parse("{}");
-					}
-
-					// get images
-					//var itemModified = DateTime.TryParse(itemData["lastModifiedDate"]?.GetValue<string>(), out var itemDate) ? itemDate : DateTime.MinValue;
-					//var offerModified = DateTime.TryParse(offerData["lastModifiedDate"]?.GetValue<string>(), out var offerDate) ? offerDate : DateTime.MinValue;
-
-					//string imageTallUrl, imageWideUrl;
-
-					//if (itemModified > offerModified)
-					//{
-					//    var itemImages = itemData["keyImages"]?.AsArray() ?? [];
-					//    imageTallUrl = itemImages.FirstOrDefault(img => img?["type"]?.GetValue<string>() == "DieselGameBoxTall")?["url"]?.GetValue<string>();
-					//    imageWideUrl = itemImages.FirstOrDefault(img => img?["type"]?.GetValue<string>() == "DieselGameBox")?["url"]?.GetValue<string>();
-					//}
-					//else
-					//{
-					//    var offerImages = offerData["keyImages"]?.AsArray() ?? [];
-					//    imageTallUrl = offerImages.FirstOrDefault(img => img?["type"]?.GetValue<string>() == "OfferImageTall")?["url"]?.GetValue<string>();
-					//    imageWideUrl = offerImages.FirstOrDefault(img => img?["type"]?.GetValue<string>() == "OfferImageWide")?["url"]?.GetValue<string>();
-					//}
+					await Task.WhenAll(manifestTask, offerTask, ratingTask, productOfferTask, ageRatingTask).ConfigureAwait(false);
 
 					// get description
 					string description = offerData[offerId]?["description"]?.GetValue<string>();
@@ -1145,7 +1147,6 @@ public static partial class EpicGamesHelper
 					var keyImages = manifestData[catalogItemId]?["keyImages"]?.AsArray() ?? [];
 
 					// get artifactid
-					//string artifactId = itemData?["releaseInfo"]?[0]?["appId"]?.ToString();
 					string artifactId = manifestData[catalogItemId]?["releaseInfo"]?[0]?["appId"]?.ToString();
 
 					// read playtime json data
@@ -1170,6 +1171,60 @@ public static partial class EpicGamesHelper
 					if (!sizeBytes.HasValue)
 						sizeBytes = new DirectoryInfo(installLocation).EnumerateFiles("*", System.IO.SearchOption.AllDirectories).Sum(fi => fi.Length);
 
+					// get screenshots
+					var keyImagesList = offerData[offerId]?["keyImages"]?.AsArray();
+					var screenshots = new List<string>();
+					foreach (var image in keyImagesList)
+					{
+						if (image?["type"]?.GetValue<string>() == "featuredMedia")
+						{
+							string url = image["url"]?.GetValue<string>();
+							if (!string.IsNullOrEmpty(url))
+							{
+								screenshots.Add(url);
+							}
+						}
+					}
+
+					if (screenshots.Count == 0 && !string.IsNullOrEmpty(productSlug))
+					{
+						var cmsUrl = $"https://store-content-ipv4.ak.epicgames.com/api/en-US/content/products/{productSlug}";
+						var cmsResponse = await phantomClient.GetAsync(cmsUrl).ConfigureAwait(false);
+						if (cmsResponse.IsSuccess)
+						{
+							var cmsJson = JsonNode.Parse(cmsResponse.Body);
+							var pages = cmsJson?["pages"]?.AsArray();
+							if (pages != null)
+							{
+								foreach (var page in pages)
+								{
+									var carouselItems = page?["data"]?["carousel"]?["items"]?.AsArray();
+									if (carouselItems != null && carouselItems.Count > 0)
+									{
+										foreach (var item in carouselItems)
+										{
+											var videoNode = item?["video"];
+											bool isVideo = videoNode != null && videoNode["recipes"] != null;
+											if (!isVideo)
+											{
+												string src = item?["image"]?["src"]?.GetValue<string>();
+												if (!string.IsNullOrEmpty(src))
+												{
+													screenshots.Add(src);
+												}
+											}
+										}
+
+										if (screenshots.Count > 0)
+										{
+											break;
+										}
+									}
+								}
+							}
+						}
+					}
+
 					games.Add(new GameModel
 					{
 						Launcher = itemJson["Provider"]?.GetValue<string>() ?? "Epic Games",
@@ -1183,20 +1238,24 @@ public static partial class EpicGamesHelper
 						ProcessNames = itemJson["ProcessNames"]?.AsArray().Select(p => p.GetValue<string>()).ToList(),
 						ArtifactId = artifactId,
 						UpdateIsAvailable = latestVersion != null && latestVersion != currentVersion,
-						ImageUrl = keyImages.FirstOrDefault(img => img?["type"]?.GetValue<string>() == "DieselGameBoxTall")?["url"]?.GetValue<string>(),
-						BackgroundImageUrl = keyImages.FirstOrDefault(img => img?["type"]?.GetValue<string>() == "DieselGameBox")?["url"]?.GetValue<string>(),
+						ImageUrl = keyImages.FirstOrDefault(image => image?["type"]?.GetValue<string>() == "DieselGameBoxTall")?["url"]?.GetValue<string>(),
+						BackgroundImageUrl = keyImages.FirstOrDefault(image => image?["type"]?.GetValue<string>() == "DieselGameBox")?["url"]?.GetValue<string>(),
 						Title = offerData[offerId]?["title"]?.GetValue<string>(),
 						Developers = offerData[offerId]?["seller"]?["name"]?.GetValue<string>(),
-						Genres = genresData?.AsArray()?.Select(g => g?["name"]?.GetValue<string>()).Where(n => !string.IsNullOrWhiteSpace(n)).ToList() ?? [],
-						Features = featuresData?["features"]?.AsArray()?.Select(f => f?.GetValue<string>()).Where(f => !string.IsNullOrWhiteSpace(f)).ToList() ?? [],
-						Rating = ratingData["averageRating"]?.GetValue<double?>() ?? 0.0,
+						Genres = productOfferData?["tags"]?["genres"]?.AsArray()?.Select(genre => genre?["name"]?.GetValue<string>()).Where(n => !string.IsNullOrWhiteSpace(n)).ToList() ?? [],
+						Features = productOfferData?["tags"]?["features"]?.AsArray()?.Select(feature => feature?["name"]?.GetValue<string>()).Where(f => !string.IsNullOrWhiteSpace(f)).ToList() ?? [],
+						Rating = ratingData?["data"]?["RatingsPolls"]?["getProductResult"]?["averageRating"]?.GetValue<double?>() ?? 0.0,
 						PlayTime = playTime,
-						AgeRatingUrl = ageRatingData[ratingKey]?["ratingImage"]?.ToString(),
-						AgeRatingTitle = ageRatingData[ratingKey]?["title"]?.ToString(),
-						AgeRatingDescription = ageRatingData[ratingKey]?["descriptor"]?.ToString()?.Replace(",", ", "),
-						Elements = ageRatingData[ratingKey]?["element"]?.ToString()?.Replace(",", ", "),
+						AgeRatingUrl = ageRatingData?["ageRating"]?["ratingImage"]?.ToString(),
+						AgeRatingTitle = ageRatingData?["ageRating"]?["title"]?.ToString(),
+						AgeRatingDescription = ageRatingData?["ageRating"]?["contentDescriptors"]?.AsArray() != null
+							? string.Join(", ", ageRatingData["ageRating"]["contentDescriptors"].AsArray().Select(descriptor => descriptor?.ToString()).Where(descriptor => !string.IsNullOrWhiteSpace(descriptor)))
+							: null,
+						Elements = ageRatingData?["ageRating"]?["interactiveElements"]?.AsArray() != null
+							? string.Join(", ", ageRatingData["ageRating"]["interactiveElements"].AsArray().Select(element => element?.ToString()).Where(element => !string.IsNullOrWhiteSpace(element)))
+							: null,
 						Description = description,
-						Screenshots = [.. (mediaData["images"]?.AsArray().Select(img => img["src"]?.ToString()).Where(src => !string.IsNullOrWhiteSpace(src)) ?? [])],
+						Screenshots = screenshots,
 						ReleaseDate = releaseDate.ToString("d"),
 						Size = sizeBytes >= 1_000_000_000 ? $"{sizeBytes.Value / 1_000_000_000d:F1} GB" : $"{sizeBytes.Value / 1_000_000d:F2} MB",
 						Version = currentVersion

@@ -118,7 +118,7 @@ public static partial class IgdbHelper
 						? $"https://raw.githubusercontent.com/LizardByte/GameDB/gh-pages/games/{gameId}.json"
 						: "";
 
-					string region = RegionInfo.CurrentRegion.TwoLetterISORegionName.ToUpper();
+					string region = new RegionInfo(CultureInfo.CurrentCulture.Name).TwoLetterISORegionName.ToUpper();
 
 					string ratingKey = region switch
 					{

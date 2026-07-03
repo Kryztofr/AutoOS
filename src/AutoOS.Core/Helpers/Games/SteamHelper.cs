@@ -1,4 +1,4 @@
-﻿using AutoOS.Core.Common;
+using AutoOS.Core.Common;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Globalization;
@@ -620,7 +620,7 @@ public static partial class SteamHelper
 
 	private static async Task<bool> GetStoreMetadata(GameModel model, string steamAppId, CancellationToken cancellationToken = default)
 	{
-		string region = RegionInfo.CurrentRegion.TwoLetterISORegionName.ToUpper();
+		string region = new RegionInfo(CultureInfo.CurrentCulture.Name).TwoLetterISORegionName.ToUpper();
 
 		string ratingKey = region switch
 		{

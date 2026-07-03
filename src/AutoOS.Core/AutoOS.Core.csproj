@@ -19,6 +19,7 @@
 	<PackageReference Include="Microsoft.Data.Sqlite" />
 	<PackageReference Include="Microsoft.Windows.CsWin32" />
 	<PackageReference Include="Newtonsoft.Json" />
+	<PackageReference Include="PhantomClient" />
 	<PackageReference Include="Snappier" />
 	<PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" />
 	<PackageReference Include="System.ServiceProcess.ServiceController" />
