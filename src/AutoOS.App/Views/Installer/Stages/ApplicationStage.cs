@@ -1794,7 +1794,7 @@ public static class ApplicationStage
 			("Cleaning up Prime95 files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "Prime95.zip")), () => Prime95 == true),
 
 			// download y-cruncher
-			("Downloading y-cruncher", async () => await DownloadHelper.Download("https://cdn.numberworld.org/y-cruncher-downloads/y-cruncher%20v0.8.7.9547b.zip", Path.GetTempPath(), "y-cruncher.zip", reporter: reporter), () => yCruncher == true),
+			("Downloading y-cruncher", async () => await DownloadHelper.Download(JsonDocument.Parse(await new HttpClient { DefaultRequestHeaders = { { "User-Agent", "AutoOS" } } }.GetStringAsync("https://api.github.com/repos/Mysticial/y-cruncher/releases/latest")).RootElement.GetProperty("assets").EnumerateArray().First(a => a.GetProperty("name").GetString().Contains(".zip")).GetProperty("browser_download_url").GetString(), Path.GetTempPath(), "y-cruncher.zip", reporter: reporter), () => yCruncher == true),
 
 			// install y-cruncher
 			("Installing y-cruncher", async () => await ExtractHelper.Extract(Path.Combine(Path.GetTempPath(), "y-cruncher.zip"), Path.GetTempPath()), () => yCruncher == true),

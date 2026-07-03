@@ -1,4 +1,5 @@
 using AutoOS.Core.Common;
+using AutoOS.Core.Helpers.Games.Clients;
 using AutoOS.Core.Helpers.Logging;
 using System.Collections.Concurrent;
 using DevWinUI;
@@ -12,7 +13,6 @@ using System.Text.Json.Serialization;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Text;
-using PhantomClientCore;
 using Windows.Media.Core;
 
 namespace AutoOS.Core.Helpers.Games;
@@ -29,17 +29,7 @@ public static partial class EpicGamesHelper
 
 	private static readonly HttpClient httpClient = new();
 	private static readonly HttpClient loginClient = new();
-	private static readonly PhantomClient phantomClient = new PhantomClient(new PhantomClientOptions
-	{
-		ClientIdentifier = "chrome_120",
-		RandomTlsExtensionOrder = true,
-		DefaultHeaders = new Dictionary<string, string>
-		{
-			{ "User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" },
-			{ "Accept", "application/json" },
-			{ "Accept-Language", "en-US,en;q=0.9" }
-		}
-	});
+	private static readonly TlsClient tlsClient = new();
 
 	private const string ClientId = "34a02cf8f4414e29b15921876da36f9a";
 
@@ -986,11 +976,21 @@ public static partial class EpicGamesHelper
 					if (!Directory.Exists(installLocation))
 						return;
 
-					var offerResponse = await phantomClient.PostAsync("https://store.epicgames.com/graphql", new PostRequestOptions
-					{
-						Body = JsonSerializer.Serialize(new { query = itemOfferQuery, variables = new { allowCountries = "US", country = "US", locale = "en-US", count = 1, @namespace = catalogNamespace } }),
-						Headers = new Dictionary<string, string> { { "Content-Type", "application/json" } }
-					});
+					var offerResponse = await tlsClient.PostAsync(
+						"https://store.epicgames.com/graphql",
+						new JsonObject
+						{
+							["query"] = itemOfferQuery,
+							["variables"] = new JsonObject
+							{
+								["allowCountries"] = "US",
+								["country"] = "US",
+								["locale"] = "en-US",
+								["count"] = 1,
+								["namespace"] = catalogNamespace
+							}
+						}.ToJsonString(),
+						new Dictionary<string, string> { { "Content-Type", "application/json" } });
 
 					// get offer id, product slug and product id
 					string offerId = null;
@@ -1094,11 +1094,18 @@ public static partial class EpicGamesHelper
 					{
 						try
 						{
-							var ratingResponse = await phantomClient.PostAsync("https://store.epicgames.com/graphql", new PostRequestOptions
-							{
-								Body = JsonSerializer.Serialize(new { query = ratingQuery, variables = new { sandboxId = catalogNamespace, locale = "en-US" } }),
-								Headers = new Dictionary<string, string> { { "Content-Type", "application/json" } }
-							});
+							var ratingResponse = await tlsClient.PostAsync(
+								"https://store.epicgames.com/graphql",
+								new JsonObject
+								{
+									["query"] = ratingQuery,
+									["variables"] = new JsonObject
+									{
+										["sandboxId"] = catalogNamespace,
+										["locale"] = "en-US"
+									}
+								}.ToJsonString(),
+								new Dictionary<string, string> { { "Content-Type", "application/json" } });
 							ratingData = ratingResponse.IsSuccess ? JsonNode.Parse(ratingResponse.Body) : JsonNode.Parse("{}");
 						}
 						catch (Exception ex)
@@ -1111,7 +1118,7 @@ public static partial class EpicGamesHelper
 					{
 						try
 						{
-							var productOfferResponse = await phantomClient.GetAsync(productOfferUrl);
+							var productOfferResponse = await tlsClient.GetAsync(productOfferUrl);
 							productOfferData = productOfferResponse.IsSuccess ? JsonNode.Parse(productOfferResponse.Body) : JsonNode.Parse("{}");
 						}
 						catch (Exception ex)
@@ -1124,7 +1131,7 @@ public static partial class EpicGamesHelper
 					{
 						try
 						{
-							var ageRatingResponse = await phantomClient.GetAsync(ageRatingUrl);
+							var ageRatingResponse = await tlsClient.GetAsync(ageRatingUrl);
 							ageRatingData = ageRatingResponse.IsSuccess ? JsonNode.Parse(ageRatingResponse.Body) : JsonNode.Parse("{}");
 						}
 						catch (Exception ex)
@@ -1189,7 +1196,7 @@ public static partial class EpicGamesHelper
 					if (screenshots.Count == 0 && !string.IsNullOrEmpty(productSlug))
 					{
 						var cmsUrl = $"https://store-content-ipv4.ak.epicgames.com/api/en-US/content/products/{productSlug}";
-						var cmsResponse = await phantomClient.GetAsync(cmsUrl).ConfigureAwait(false);
+						var cmsResponse = await tlsClient.GetAsync(cmsUrl).ConfigureAwait(false);
 						if (cmsResponse.IsSuccess)
 						{
 							var cmsJson = JsonNode.Parse(cmsResponse.Body);
