@@ -139,9 +139,13 @@ public static partial class PreparingStage
 	public static bool HWInfo;
 	public static bool TimingConfigurator;
 	public static bool ZenTimings;
+	public static bool RamTestPro;
 	public static bool TestMem5;
 	public static bool Prime95;
+	public static bool yCruncher;
 	public static bool OCCT;
+	public static bool AIDA64Extreme;
+	public static bool MemtestVulkan;
 
 	public static bool Reaper;
 	public static bool FLStudio;
@@ -179,6 +183,7 @@ public static partial class PreparingStage
 	public static bool AnyDesk;
 	public static bool RustDesk;
 	public static bool Apollo;
+	public static bool Moonlight;
 	public static bool AutoHotkey;
 	public static bool EmEditor;
 	public static bool WinDbg;
@@ -511,9 +516,13 @@ public static partial class PreparingStage
 			HWInfo = (localSettings.Values["Overclocking"]?.ToString().Contains("HWiNFO® 64") ?? false);
 			TimingConfigurator = (localSettings.Values["Overclocking"]?.ToString().Contains("ASRock Timing Configurator") ?? false);
 			ZenTimings = (localSettings.Values["Overclocking"]?.ToString().Contains("ZenTimings") ?? false);
+			RamTestPro = (localSettings.Values["Overclocking"]?.ToString().Contains("RAM Test Pro") ?? false);
 			TestMem5 = (localSettings.Values["Overclocking"]?.ToString().Contains("TestMem5") ?? false);
 			Prime95 = (localSettings.Values["Overclocking"]?.ToString().Contains("Prime95") ?? false);
+			yCruncher = (localSettings.Values["Overclocking"]?.ToString().Contains("y-cruncher") ?? false);
 			OCCT = (localSettings.Values["Overclocking"]?.ToString().Contains("OCCT") ?? false);
+			AIDA64Extreme = (localSettings.Values["Overclocking"]?.ToString().Contains("AIDA64 Extreme") ?? false);
+			MemtestVulkan = (localSettings.Values["Overclocking"]?.ToString().Contains("Memtest Vulkan") ?? false);
 
 			Reaper = (localSettings.Values["Music Production"]?.ToString().Contains("Reaper") ?? false);
 			FLStudio = (localSettings.Values["Music Production"]?.ToString().Contains("FL Studio") ?? false);
@@ -551,6 +560,7 @@ public static partial class PreparingStage
 			AnyDesk = (localSettings.Values["Miscellaneous"]?.ToString().Contains("AnyDesk") ?? false);
 			RustDesk = (localSettings.Values["Miscellaneous"]?.ToString().Contains("RustDesk") ?? false);
 			Apollo = (localSettings.Values["Miscellaneous"]?.ToString().Contains("Apollo") ?? false);
+			Moonlight = (localSettings.Values["Miscellaneous"]?.ToString().Contains("Moonlight") ?? false);
 			AutoHotkey = (localSettings.Values["Miscellaneous"]?.ToString().Contains("AutoHotkey") ?? false);
 			EmEditor = (localSettings.Values["Miscellaneous"]?.ToString().Contains("EmEditor") ?? false);
 			WinDbg = (localSettings.Values["Miscellaneous"]?.ToString().Contains("WinDbg") ?? false);

@@ -151,9 +151,14 @@ public sealed partial class ApplicationsPage : Page
 			new() { Text = "HWiNFO® 64", ImageSource = "ms-appx:///Assets/Fluent/HWInfo.png" },
 			new() { Text = "ASRock Timing Configurator", ImageSource = "ms-appx:///Assets/Fluent/TimingConfigurator.png" },
 			new() { Text = "ZenTimings", ImageSource = "ms-appx:///Assets/Fluent/ZenTimings.png" },
+			new() { Text = "RAM Test Pro", ImageSource = "ms-appx:///Assets/Fluent/RamTestPro.png" },
 			new() { Text = "TestMem5", ImageSource = "ms-appx:///Assets/Fluent/TestMem5.png" },
 			new() { Text = "Prime95", ImageSource = "ms-appx:///Assets/Fluent/Prime95.png" },
-			new() { Text = "OCCT", ImageSource = "ms-appx:///Assets/Fluent/OCCT.png" }
+			new() { Text = "y-cruncher", ImageSource = "ms-appx:///Assets/Fluent/Default.png" },
+			new() { Text = "OCCT", ImageSource = "ms-appx:///Assets/Fluent/OCCT.png" },
+			new() { Text = "AIDA64 Extreme", ImageSource = "ms-appx:///Assets/Fluent/Aida64Extreme.png" },
+			new() { Text = "Memtest Vulkan", ImageSource = "ms-appx:///Assets/Fluent/Default.png" }
+
 		};
 
 		MusicProduction.ItemsSource = new List<GridViewItem>
@@ -206,6 +211,7 @@ public sealed partial class ApplicationsPage : Page
 			new() { Text = "AnyDesk", ImageSource = "ms-appx:///Assets/Fluent/AnyDesk.png" },
 			new() { Text = "RustDesk", ImageSource = "ms-appx:///Assets/Fluent/RustDesk.png" },
 			new() { Text = "Apollo", ImageSource = "ms-appx:///Assets/Fluent/Apollo.png" },
+			new() { Text = "Moonlight", ImageSource = "ms-appx:///Assets/Fluent/Moonlight.png" },
 			new() { Text = "AutoHotkey", ImageSource = "ms-appx:///Assets/Fluent/AutoHotkey.png" },
 			new() { Text = "EmEditor", ImageSource = "ms-appx:///Assets/Fluent/EmEditor.png" },
 			new() { Text = "WinDbg", ImageSource = "ms-appx:///Assets/Fluent/WinDbg.png" }

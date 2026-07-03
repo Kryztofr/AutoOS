@@ -106,9 +106,13 @@ public class ApplicationSelection
 	public bool HWInfo { get; set; }
 	public bool TimingConfigurator { get; set; }
 	public bool ZenTimings { get; set; }
+	public bool RamTestPro { get; set; }
 	public bool TestMem5 { get; set; }
 	public bool Prime95 { get; set; }
+	public bool yCruncher { get; set; }
 	public bool OCCT { get; set; }
+	public bool AIDA64Extreme { get; set; }
+	public bool MemtestVulkan { get; set; }
 	public bool Reaper { get; set; }
 	public bool FLStudio { get; set; }
 	public bool Audacity { get; set; }
@@ -141,6 +145,7 @@ public class ApplicationSelection
 	public bool AnyDesk { get; set; }
 	public bool RustDesk { get; set; }
 	public bool Apollo { get; set; }
+	public bool Moonlight { get; set; }
 	public bool AutoHotkey { get; set; }
 	public bool EmEditor { get; set; }
 	public bool WinDbg { get; set; }
@@ -152,7 +157,7 @@ public static class ApplicationStage
 	public static bool Valorant;
 
 	public static List<(string Title, Func<Task> Action, Func<bool> Condition)> GetActions(IStatusReporter reporter = null, ApplicationSelection selection = null)
-	{
+ 	{
 		if (reporter == null && selection == null)
 		{
 			reporter = new InstallPageReporter();
@@ -255,7 +260,11 @@ public static class ApplicationStage
 		bool ZenTimings = selection?.ZenTimings ?? PreparingStage.ZenTimings;
 		bool TestMem5 = selection?.TestMem5 ?? PreparingStage.TestMem5;
 		bool Prime95 = selection?.Prime95 ?? PreparingStage.Prime95;
+		bool yCruncher = selection?.yCruncher ?? PreparingStage.yCruncher;
 		bool OCCT = selection?.OCCT ?? PreparingStage.OCCT;
+		bool AIDA64Extreme = selection?.AIDA64Extreme ?? PreparingStage.AIDA64Extreme;
+		bool RamTestPro = selection?.RamTestPro ?? PreparingStage.RamTestPro;
+		bool MemtestVulkan = selection?.MemtestVulkan ?? PreparingStage.MemtestVulkan;
 
 		bool Reaper = selection?.Reaper ?? PreparingStage.Reaper;
 		bool FLStudio = selection?.FLStudio ?? PreparingStage.FLStudio;
@@ -293,6 +302,7 @@ public static class ApplicationStage
 		bool AnyDesk = selection?.AnyDesk ?? PreparingStage.AnyDesk;
 		bool RustDesk = selection?.RustDesk ?? PreparingStage.RustDesk;
 		bool Apollo = selection?.Apollo ?? PreparingStage.Apollo;
+		bool Moonlight = selection?.Moonlight ?? PreparingStage.Moonlight;
 		bool AutoHotkey = selection?.AutoHotkey ?? PreparingStage.AutoHotkey;
 		bool EmEditor = selection?.EmEditor ?? PreparingStage.EmEditor;
 		bool WinDbg = selection?.WinDbg ?? PreparingStage.WinDbg;
@@ -1488,15 +1498,15 @@ public static class ApplicationStage
 			// pin visual studio code to the taskbar
 			("Pinning Visual Studio Code to the taskbar", async () => await ProcessActions.PinToTaskbar("Link", Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Microsoft", "Windows", "Start Menu", "Programs", "Visual Studio Code", "Visual Studio Code.lnk")), () => VisualStudioCode == true),
 
-			// download antigravity
-			("Downloading Antigravity", async () => await DownloadHelper.Download("https://edgedl.me.gvt1.com/edgedl/release2/j0qc3/antigravity/stable/2.0.4-6381998290370560/windows-x64/Antigravity%20IDE.exe", Path.GetTempPath(), "Antigravity.exe", reporter: reporter), () => Antigravity == true),
+			// download antigravity ide
+			("Downloading Antigravity IDE", async () => await DownloadHelper.Download("https://edgedl.me.gvt1.com/edgedl/release2/j0qc3/antigravity/stable/2.1.1-6123990880747520/windows-x64/Antigravity%20IDE.exe", Path.GetTempPath(), "Antigravity.exe", reporter: reporter), () => Antigravity == true),
 
-			// install antigravity
-			("Installing Antigravity", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "Antigravity.exe"), Arguments = "/VERYSILENT /NORESTART /MERGETASKS=!runcode" , WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => Antigravity == true),
-			("Cleaning up Antigravity files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "Antigravity.exe")), () => Antigravity == true),
+			// install antigravity ide
+			("Installing Antigravity IDE", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "Antigravity.exe"), Arguments = "/VERYSILENT /NORESTART /MERGETASKS=!runcode" , WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => Antigravity == true),
+			("Cleaning up Antigravity IDE files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "Antigravity.exe")), () => Antigravity == true),
 
-			// pin antigravity to the taskbar
-			("Pinning Antigravity to the taskbar", async () => await ProcessActions.PinToTaskbar("Link", Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Microsoft", "Windows", "Start Menu", "Programs", "Antigravity", "Antigravity IDE.lnk")), () => Antigravity == true),
+			// pin antigravity ide to the taskbar
+			("Pinning Antigravity IDE to the taskbar", async () => await ProcessActions.PinToTaskbar("Link", Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Microsoft", "Windows", "Start Menu", "Programs", "Antigravity IDE", "Antigravity IDE.lnk")), () => Antigravity == true),
 
 			// download cursor
 			("Downloading Cursor", async () => await DownloadHelper.Download("https://api2.cursor.sh/updates/download/golden/win32-x64/cursor/3.5", Path.GetTempPath(), "CursorSetup-x64.exe", reporter: reporter), () => Cursor == true),
@@ -1744,6 +1754,21 @@ public static class ApplicationStage
 			("Cleaning up ZenTimings files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "ZenTimings.zip")), () => ZenTimings == true),
 			("Cleaning up ZenTimings files", async () => Directory.Delete(Path.Combine(Path.GetTempPath(), "ZenTimings")), () => ZenTimings == true),
 
+			//download ram test pro
+			("Downloading RAM Test Pro", async () => await DownloadHelper.Download("https://media.pcstonks.com/ram-test-pro/1.5.0/ram_test_pro_1.5.0.zip", Path.GetTempPath(), "ram_test_pro.zip", reporter: reporter), () => RamTestPro == true),
+
+			// install ram test pro
+			("Installing RAM Test Pro", async () => await ExtractHelper.Extract(Path.Combine(Path.GetTempPath(), "ram_test_pro.zip"), Path.GetTempPath()), () => RamTestPro == true),
+			("Installing RAM Test Pro", async () => Directory.Move(Path.Combine(Path.GetTempPath(), "RAMTestPro1.5.0"), Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "RAM Test Pro")), () => RamTestPro == true),
+			("Installing RAM Test Pro", async () => ShortcutHelper.Create(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Microsoft", "Windows", "Start Menu", "Programs", "RAM Test Pro.lnk"), Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "RAM Test Pro", "RAM Test Pro.exe")), () => RamTestPro == true),
+			("Installing RAM Test Pro", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\RAM Test Pro", "DisplayName", "RAM Test Pro", RegistryValueKind.String), () => RamTestPro == true),
+			("Installing RAM Test Pro", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\RAM Test Pro", "UninstallString", $@"cmd /c rd /s /q ""{Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "RAM Test Pro")}"" & del ""{Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), @"Microsoft\Windows\Start Menu\Programs\RAM Test Pro.lnk")}"" & reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\RAM Test Pro"" /f", RegistryValueKind.String), () => RamTestPro == true),
+			("Installing RAM Test Pro", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\RAM Test Pro", "DisplayIcon", Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "RAM Test Pro", "RAM Test Pro.exe"), RegistryValueKind.String), () => RamTestPro == true),
+			("Installing RAM Test Pro", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\RAM Test Pro", "Publisher", "PCStonks", RegistryValueKind.String), () => RamTestPro == true),
+
+			// cleanup ram test pro
+			("Cleaning up RAM Test Pro files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "ram_test_pro.zip")), () => RamTestPro == true),
+
 			// download testmem5
 			("Downloading TestMem5", async () => await DownloadHelper.Download(JsonDocument.Parse(await new HttpClient { DefaultRequestHeaders = { { "User-Agent", "AutoOS" } } }.GetStringAsync("https://api.github.com/repos/CoolCmd/TestMem5/releases")).RootElement.EnumerateArray().First(release => !release.GetProperty("prerelease").GetBoolean() && release.GetProperty("assets").EnumerateArray().Any(asset => asset.GetProperty("name").GetString().EndsWith(".7z"))).GetProperty("assets").EnumerateArray().First(asset => asset.GetProperty("name").GetString().EndsWith(".7z")).GetProperty("browser_download_url").GetString(), Path.GetTempPath(), "TestMem5.7z"), () => TestMem5 == true),
 
@@ -1768,6 +1793,19 @@ public static class ApplicationStage
 			("Installing Prime95", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Prime95", "Publisher", "Mersenne Research, Inc.", RegistryValueKind.String), () => Prime95 == true),
 			("Cleaning up Prime95 files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "Prime95.zip")), () => Prime95 == true),
 
+			// download y-cruncher
+			("Downloading y-cruncher", async () => await DownloadHelper.Download("https://cdn.numberworld.org/y-cruncher-downloads/y-cruncher%20v0.8.7.9547b.zip", Path.GetTempPath(), "y-cruncher.zip", reporter: reporter), () => yCruncher == true),
+
+			// install y-cruncher
+			("Installing y-cruncher", async () => await ExtractHelper.Extract(Path.Combine(Path.GetTempPath(), "y-cruncher.zip"), Path.GetTempPath()), () => yCruncher == true),
+			("Installing y-cruncher", async () => Directory.Move(Path.Combine(Path.GetTempPath(), "y-cruncher v0.8.7.9547b"), Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "y-cruncher")), () => yCruncher == true),
+			("Installing y-cruncher", async () => ShortcutHelper.Create(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Microsoft", "Windows", "Start Menu", "Programs", "y-cruncher.lnk"), Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "y-cruncher", "y-cruncher.exe")), () => yCruncher == true),
+			("Installing y-cruncher", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\y-cruncher", "DisplayName", "y-cruncher", RegistryValueKind.String), () => yCruncher == true),
+			("Installing y-cruncher", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\y-cruncher", "UninstallString", $@"cmd /c rd /s /q ""{Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "y-cruncher")}"" & del ""{Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), @"Microsoft\Windows\Start Menu\Programs\y-cruncher.lnk")}"" & reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\y-cruncher"" /f", RegistryValueKind.String), () => yCruncher == true),
+			("Installing y-cruncher", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\y-cruncher", "DisplayIcon", Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "y-cruncher", "y-cruncher.exe"), RegistryValueKind.String), () => yCruncher == true),
+			("Installing y-cruncher", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\y-cruncher", "Publisher", "Mysticial", RegistryValueKind.String), () => yCruncher == true),
+			("Cleaning up y-cruncher files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "y-cruncher.zip")), () => yCruncher == true),
+
 			// download occt
 			("Downloading OCCT", async () => await DownloadHelper.Download("https://www.ocbase.com/download/edition:Personal/os:Windows", Path.GetTempPath(), "OCCT.exe"), () => OCCT == true),
 
@@ -1779,6 +1817,29 @@ public static class ApplicationStage
 			("Installing OCCT", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\OCCT", "UninstallString", $@"cmd /c rd /s /q ""{Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "OCCT")}"" & del ""{Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), @"Microsoft\Windows\Start Menu\Programs\OCCT.lnk")}"" & reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\OCCT"" /f", RegistryValueKind.String), () => OCCT == true),
 			("Installing OCCT", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\OCCT", "DisplayIcon", Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), @"OCCT\OCCT.exe"), RegistryValueKind.String), () => OCCT == true),
 			("Installing OCCT", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\OCCT", "Publisher", "OCBASE", RegistryValueKind.String), () => OCCT == true),
+
+			// download aida64 extreme
+			("Downloading AIDA64 Extreme", async () => await DownloadHelper.Download("https://download.aida64.com/aida64extreme830.exe", Path.GetTempPath(), "aida64extreme.exe", reporter: reporter), () => AIDA64Extreme == true),
+
+			// install aida64 extreme
+			("Installing AIDA64 Extreme", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "aida64extreme.exe"), Arguments = "/SP- /VERYSILENT /SUPPRESSMSGBOXES /NORESTART" , WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => AIDA64Extreme == true),
+			("Cleaning up AIDA64 Extreme files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "aida64extreme.exe")), () => AIDA64Extreme == true),
+
+			// remove aida64 extreme desktop shortcut
+			("Removing AIDA64 Extreme desktop shortcut", async () => File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "AIDA64 Extreme.lnk")), () => AIDA64Extreme == true),
+
+			// download memtest vulkan
+			("Downloading Memtest Vulkan", async () => await DownloadHelper.Download(JsonDocument.Parse(await new HttpClient { DefaultRequestHeaders = { { "User-Agent", "AutoOS" } } }.GetStringAsync("https://api.github.com/repos/GpuZelenograd/memtest_vulkan/releases")).RootElement.EnumerateArray().First(release => !release.GetProperty("prerelease").GetBoolean() && release.GetProperty("assets").EnumerateArray().Any(asset => asset.GetProperty("name").GetString().EndsWith(".exe"))).GetProperty("assets").EnumerateArray().First(asset => asset.GetProperty("name").GetString().EndsWith(".exe")).GetProperty("browser_download_url").GetString(), Path.GetTempPath(), "memtest_vulkan.exe", reporter: reporter), () => MemtestVulkan == true),
+
+			// install memtest vulkan
+			("Installing Memtest Vulkan", async () => Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Memtest Vulkan")), () => MemtestVulkan == true),
+			("Installing Memtest Vulkan", async () => File.Move(Path.Combine(Path.GetTempPath(), "memtest_vulkan.exe"), Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Memtest Vulkan", "memtest_vulkan.exe"), true), () => MemtestVulkan == true),
+			("Installing Memtest Vulkan", async () => ShortcutHelper.Create(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Microsoft", "Windows", "Start Menu", "Programs", "Memtest Vulkan.lnk"), Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Memtest Vulkan", "memtest_vulkan.exe")), () => MemtestVulkan == true),
+			("Installing Memtest Vulkan", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Memtest Vulkan", "DisplayName", "Memtest Vulkan", RegistryValueKind.String), () => MemtestVulkan == true),
+			("Installing Memtest Vulkan", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Memtest Vulkan", "UninstallString", $@"cmd /c rd /s /q ""{Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Memtest Vulkan")}"" & del ""{Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), @"Microsoft\Windows\Start Menu\Programs\Memtest Vulkan.lnk")}"" & reg delete ""HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Memtest Vulkan"" /f", RegistryValueKind.String), () => MemtestVulkan == true),
+			("Installing Memtest Vulkan", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Memtest Vulkan", "DisplayIcon", Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Memtest Vulkan", "memtest_vulkan.exe"), RegistryValueKind.String), () => MemtestVulkan == true),
+			("Installing Memtest Vulkan", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Memtest Vulkan", "Publisher", "GpuZelenograd", RegistryValueKind.String), () => MemtestVulkan == true),
+			("Cleaning up Memtest Vulkan files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "memtest_vulkan.exe")), () => MemtestVulkan == true),
 
 			// download reaper
 			("Downloading Reaper", async () => await DownloadHelper.Download("https://www.reaper.fm/files/7.x/reaper774_x64-install.exe", Path.GetTempPath(), "reaper_x64-install.exe", reporter: reporter), () => Reaper == true),
@@ -2207,6 +2268,16 @@ public static class ApplicationStage
 			// install apollo
 			("Installing Apollo", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "Apollo.exe"), Arguments = "/S", WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => Apollo == true),
 			("Cleaning up Apollo files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "Apollo.exe")), () => Apollo == true),
+
+			// download moonlight
+			("Downloading Moonlight", async () => await DownloadHelper.Download(JsonDocument.Parse(await new HttpClient { DefaultRequestHeaders = { { "User-Agent", "AutoOS" } } }.GetStringAsync("https://api.github.com/repos/moonlight-stream/moonlight-qt/releases")).RootElement.EnumerateArray().First(release => !release.GetProperty("prerelease").GetBoolean() && release.GetProperty("assets").EnumerateArray().Any(asset => asset.GetProperty("name").GetString().EndsWith(".exe"))).GetProperty("assets").EnumerateArray().First(asset => asset.GetProperty("name").GetString().EndsWith(".exe")).GetProperty("browser_download_url").GetString(), Path.GetTempPath(), "MoonlightSetup.exe", reporter: reporter), () => Moonlight == true),
+			
+			// install moonlight
+			("Installing Moonlight", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "MoonlightSetup.exe"), Arguments = "/quiet /norestart", WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => Moonlight == true),
+			("Cleaning up Moonlight files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "MoonlightSetup.exe")), () => Moonlight == true),
+
+			// remove moonlight desktop shortcut
+			("Removing Moonlight desktop shortcut", async () => File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonDesktopDirectory), "Moonlight.lnk")), () => Moonlight == true),
 			
 			// download autohotkey
 			("Downloading AutoHotkey", async () => await DownloadHelper.Download(JsonDocument.Parse(await new HttpClient { DefaultRequestHeaders = { { "User-Agent", "AutoOS" } } }.GetStringAsync("https://api.github.com/repos/AutoHotkey/AutoHotkey/releases")).RootElement.EnumerateArray().First(release => !release.GetProperty("prerelease").GetBoolean() && release.GetProperty("assets").EnumerateArray().Any(asset => asset.GetProperty("name").GetString().EndsWith("_setup.exe"))).GetProperty("assets").EnumerateArray().First(asset => asset.GetProperty("name").GetString().EndsWith("_setup.exe")).GetProperty("browser_download_url").GetString(), Path.GetTempPath(), "AutoHotkey_setup.exe", reporter: reporter), () => AutoHotkey == true),

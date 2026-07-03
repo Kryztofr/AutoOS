@@ -163,9 +163,13 @@ public sealed partial class ApplicationsPage : Page
 			new() { Text = "HWiNFO® 64", ImageSource = "ms-appx:///Assets/Fluent/HWInfo.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "HWiNFO64", "HWiNFO64.exe")) },
 			new() { Text = "ASRock Timing Configurator", ImageSource = "ms-appx:///Assets/Fluent/TimingConfigurator.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "ASRock Utility", "Timing Configurator", "AsrTC.exe")) },
 			new() { Text = "ZenTimings", ImageSource = "ms-appx:///Assets/Fluent/ZenTimings.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "ZenTimings", "ZenTimings.exe")) },
+			new() { Text = "RAM Test Pro", ImageSource = "ms-appx:///Assets/Fluent/RamTestPro.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "RAM Test Pro", "RAM Test Pro.exe")) },
 			new() { Text = "TestMem5", ImageSource = "ms-appx:///Assets/Fluent/TestMem5.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "TestMem5", "TM5.exe")) },
 			new() { Text = "Prime95", ImageSource = "ms-appx:///Assets/Fluent/Prime95.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Prime95", "prime95.exe")) },
-			new() { Text = "OCCT", ImageSource = "ms-appx:///Assets/Fluent/OCCT.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "OCCT", "OCCT.exe")) }
+			new() { Text = "y-cruncher", ImageSource = "ms-appx:///Assets/Fluent/Default.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "y-cruncher", "y-cruncher.exe")) },
+			new() { Text = "OCCT", ImageSource = "ms-appx:///Assets/Fluent/OCCT.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "OCCT", "OCCT.exe")) },
+			new() { Text = "AIDA64 Extreme", ImageSource = "ms-appx:///Assets/Fluent/Aida64Extreme.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "FinalWire", "AIDA64 Extreme", "aida64.exe")) },
+			new() { Text = "Memtest Vulkan", ImageSource = "ms-appx:///Assets/Fluent/Default.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Memtest Vulkan", "memtest_vulkan.exe")) }
 		};
 		foreach (var item in overclockingList.Where(item => !item.IsInstalled))
 			overclockingItems.Add(item);
@@ -228,6 +232,7 @@ public sealed partial class ApplicationsPage : Page
 			new() { Text = "AnyDesk", ImageSource = "ms-appx:///Assets/Fluent/AnyDesk.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "AnyDesk", "AnyDesk.exe")) },
 			new() { Text = "RustDesk", ImageSource = "ms-appx:///Assets/Fluent/RustDesk.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "RustDesk", "RustDesk.exe")) },
 			new() { Text = "Apollo", ImageSource = "ms-appx:///Assets/Fluent/Apollo.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Apollo", "sunshine.exe")) },
+			new() { Text = "Moonlight", ImageSource = "ms-appx:///Assets/Fluent/Moonlight.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Moonlight Game Streaming", "Moonlight.exe")) },
 			new() { Text = "AutoHotkey", ImageSource = "ms-appx:///Assets/Fluent/AutoHotkey.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "AutoHotkey", "UX", "AutoHotkeyUX.exe")) },
 			new() { Text = "EmEditor", ImageSource = "ms-appx:///Assets/Fluent/EmEditor.png", IsInstalled = Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Packages", "Emurasoft.EmEditor64UWP_ws7rg9hnwrpxm")) },
 			new() { Text = "WinDbg", ImageSource = "ms-appx:///Assets/Fluent/WinDbg.png", IsInstalled = Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Packages", "Microsoft.WinDbg_8wekyb3d8bbwe")) }
@@ -348,9 +353,13 @@ public sealed partial class ApplicationsPage : Page
 		selection.HWInfo = selectedOverclocking.Contains("HWiNFO® 64");
 		selection.TimingConfigurator = selectedOverclocking.Contains("ASRock Timing Configurator");
 		selection.ZenTimings = selectedOverclocking.Contains("ZenTimings");
+		selection.RamTestPro = selectedOverclocking.Contains("RAM Test Pro");
 		selection.TestMem5 = selectedOverclocking.Contains("TestMem5");
 		selection.Prime95 = selectedOverclocking.Contains("Prime95");
+		selection.yCruncher = selectedOverclocking.Contains("y-cruncher");
 		selection.OCCT = selectedOverclocking.Contains("OCCT");
+		selection.AIDA64Extreme = selectedOverclocking.Contains("AIDA64 Extreme");
+		selection.MemtestVulkan = selectedOverclocking.Contains("Memtest Vulkan");
 
 		var selectedMusicProductionItems = MusicProduction.SelectedItems.Cast<GridViewItem>().ToList();
 		var selectedMusicProduction = selectedMusicProductionItems.Select(item => item.Text).ToList();
@@ -398,6 +407,7 @@ public sealed partial class ApplicationsPage : Page
 		selection.AnyDesk = selectedMiscellaneous.Contains("AnyDesk");
 		selection.RustDesk = selectedMiscellaneous.Contains("RustDesk");
 		selection.Apollo = selectedMiscellaneous.Contains("Apollo");
+		selection.Moonlight = selectedMiscellaneous.Contains("Moonlight");
 		selection.AutoHotkey = selectedMiscellaneous.Contains("AutoHotkey");
 		selection.EmEditor = selectedMiscellaneous.Contains("EmEditor");
 		selection.WinDbg = selectedMiscellaneous.Contains("WinDbg");
