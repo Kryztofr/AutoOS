@@ -745,6 +745,19 @@ public static partial class SteamHelper
 		model.AgeRatingTitle = !string.IsNullOrEmpty(rating) ? (ratingTitles.TryGetValue(rating.ToLowerInvariant(), out var title) ? title : rating) : null;
 		model.AgeRatingDescription = !string.IsNullOrEmpty(descriptors) ? descriptors : null;
 
+		try
+		{
+			var reviewData = JsonDocument.Parse(await httpClient.GetStringAsync($"https://store.steampowered.com/appreviews/{steamAppId}?json=1", cancellationToken)).RootElement.GetProperty("query_summary");
+			int totalPositive = reviewData.GetProperty("total_positive").GetInt32();
+			int totalNegative = reviewData.GetProperty("total_negative").GetInt32();
+
+			model.Rating = totalPositive + totalNegative > 0 ? Math.Round(5.0 * totalPositive / (totalPositive + totalNegative), 1) : 0.0;
+		}
+		catch
+		{
+			model.Rating = 0.0;
+		}
+
 		model.Description = data.TryGetProperty("short_description", out var shortDescription) && shortDescription.ValueKind == JsonValueKind.String ? shortDescription.GetString() : "";
 
 		model.Developers = data.TryGetProperty("developers", out var developers) && developers.ValueKind == JsonValueKind.Array

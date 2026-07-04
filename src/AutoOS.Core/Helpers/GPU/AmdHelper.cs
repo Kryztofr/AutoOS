@@ -97,8 +97,11 @@ public static partial class AmdHelper
 	{
 		var actions = new List<(string Title, Func<Task> Action, Func<bool> Condition)>
 		{
+			// skip setup wizard
+			("Skipping Setup Wizard", async () => await Process.Start(new ProcessStartInfo { FileName = "reg.exe", Arguments = $@"load HKU\DefaultUser ""{Path.Combine(Path.GetPathRoot(Environment.SystemDirectory)!, "Users", "Default", "NTUSER.DAT")}""", CreateNoWindow = true })!.WaitForExitAsync(), null),
+			("Skipping Setup Wizard", async () => RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_CURRENT_USER\Software\AMD\CN", "UserTypeWizardShown", 1, RegistryValueKind.DWord, true), null),
+
 			// accept eula
-			("Accepting EULA", async () => await Process.Start(new ProcessStartInfo { FileName = "reg.exe", Arguments = $@"load HKU\DefaultUser ""{Path.Combine(Path.GetPathRoot(Environment.SystemDirectory)!, "Users", "Default", "NTUSER.DAT")}""", CreateNoWindow = true })!.WaitForExitAsync(), null),
 			("Accepting EULA", async () => RegistryHelper.SetValue(RegistryHelper.Identity.CurrentUser, @"HKEY_CURRENT_USER\Software\AMD\CN\DisplayOverride", "EulaAccepted", "true", RegistryValueKind.String, true), null),
 
 			// settings -> system
@@ -149,37 +152,37 @@ public static partial class AmdHelper
 			(@"Disabling ""Radeon™ Image Sharpening""", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "KMD_USUEnable", 0, RegistryValueKind.DWord), null),
 
 			// disable "radeon™ enhanced sync"
-			(@"Disabling ""Radeon™ Enhanced Sync""", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, $@"{gpu.RegistryPath}\UMD", "TurboSync", new byte[] { 0x30, 0x00, 0x00, 0x00 }, RegistryValueKind.Binary), null),
+			(@"Disabling ""Radeon™ Enhanced Sync""", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, $@"{gpu.RegistryPath}\UMD", "TurboSync", new byte[] {0x30, 0x00 }, RegistryValueKind.Binary), null),
 
 			// set "wait for vertical refresh" to "off, unless application specifies"
-			(@"Setting ""Wait for Vertical Refresh"" to Off, unless application specifies", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, $@"{gpu.RegistryPath}\UMD", "VSyncControl", new byte[] { 0x31, 0x00, 0x00, 0x00 }, RegistryValueKind.Binary), null),
+			(@"Setting ""Wait for Vertical Refresh"" to Off, unless application specifies", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, $@"{gpu.RegistryPath}\UMD", "VSyncControl", new byte[] {0x31, 0x00 }, RegistryValueKind.Binary), null),
 
 			// disable "frame rate target control"
 			(@"Disabling ""Frame rate target control""", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, gpu.RegistryPath, "KMD_FRTEnabled", 0, RegistryValueKind.DWord), null),
 
 			// set "anti-aliasing" to "use application settings"
-			(@"Setting ""Anti-Aliasing"" to Use application settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, $@"{gpu.RegistryPath}\UMD", "EQAA", new byte[] { 0x30, 0x00, 0x00, 0x00 }, RegistryValueKind.Binary), null),
+			(@"Setting ""Anti-Aliasing"" to Use application settings", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, $@"{gpu.RegistryPath}\UMD", "EQAA", new byte[] {0x30, 0x00 }, RegistryValueKind.Binary), null),
 
 			// set "anti-aliasing method" to "multisampling"
-			(@"Setting ""Anti-Aliasing Method"" to Multisampling", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, $@"{gpu.RegistryPath}\UMD", "ASTT", new byte[] { 0x30, 0x00, 0x00, 0x00 }, RegistryValueKind.Binary), null),
+			(@"Setting ""Anti-Aliasing Method"" to Multisampling", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, $@"{gpu.RegistryPath}\UMD", "ASTT", new byte[] {0x30, 0x00 }, RegistryValueKind.Binary), null),
 
 			// disable "morphological anti-aliasing"
-			(@"Disabling ""Morphological Anti-Aliasing""", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, $@"{gpu.RegistryPath}\UMD", "MLF", new byte[] { 0x30, 0x00, 0x00, 0x00 }, RegistryValueKind.Binary), null),
+			(@"Disabling ""Morphological Anti-Aliasing""", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, $@"{gpu.RegistryPath}\UMD", "MLF", new byte[] {0x30, 0x00 }, RegistryValueKind.Binary), null),
 
 			// set "texture filtering quality" to "performance"
-			(@"Setting ""Texture Filtering Quality"" to Performance", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, $@"{gpu.RegistryPath}\UMD", "TFQ", new byte[] { 0x32, 0x00, 0x00, 0x00 }, RegistryValueKind.Binary), null),
+			(@"Setting ""Texture Filtering Quality"" to Performance", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, $@"{gpu.RegistryPath}\UMD", "TFQ", new byte[] {0x32, 0x00 }, RegistryValueKind.Binary), null),
 
 			// enable "surface format optimization"
-			(@"Enabling ""Surface Format Optimization""", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, $@"{gpu.RegistryPath}\UMD", "SurfaceFormatReplacements", new byte[] { 0x31, 0x00, 0x00, 0x00 }, RegistryValueKind.Binary), null),
+			(@"Enabling ""Surface Format Optimization""", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, $@"{gpu.RegistryPath}\UMD", "SurfaceFormatReplacements", new byte[] {0x31, 0x00 }, RegistryValueKind.Binary), null),
 
 			// set "tessellation mode" to "override application setting"
-			(@"Setting ""Tessellation Mode"" to Override application setting", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, $@"{gpu.RegistryPath}\UMD", "Tessellation_OPTION", new byte[] { 0x32, 0x00, 0x00, 0x00 }, RegistryValueKind.Binary), null),
+			(@"Setting ""Tessellation Mode"" to Override application setting", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, $@"{gpu.RegistryPath}\UMD", "Tessellation_OPTION", new byte[] { 0x32, 0x00 }, RegistryValueKind.Binary), null),
 
 			// set "maximum tessellation level" to "off"
-			(@"Setting ""Maximum Tessellation Level"" to Off", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, $@"{gpu.RegistryPath}\UMD", "Tessellation", new byte[] { 0x31, 0x00, 0x00, 0x00 }, RegistryValueKind.Binary), null),
+			(@"Setting ""Maximum Tessellation Level"" to Off", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, $@"{gpu.RegistryPath}\UMD", "Tessellation", new byte[] { 0x31, 0x00 }, RegistryValueKind.Binary), null),
 
 			// disable "opengl triple buffering"
-			(@"Disabling ""OpenGL Triple Buffering""", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, $@"{gpu.RegistryPath}\UMD", "EnableTripleBuffering", new byte[] { 0x30, 0x00, 0x00, 0x00 }, RegistryValueKind.Binary), null),
+			(@"Disabling ""OpenGL Triple Buffering""", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, $@"{gpu.RegistryPath}\UMD", "EnableTripleBuffering", new byte[] { 0x30, 0x00 }, RegistryValueKind.Binary), null),
 
 			// disable "10-bit pixel format"
 			(@"Disabling ""10-Bit Pixel Format""", async () => RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, $@"{gpu.RegistryPath}\UMD", "VisualEnhancements_Capabilities", new byte[] { 0, 0, 0, 0 }, RegistryValueKind.Binary), null),
