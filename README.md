@@ -13,8 +13,8 @@
 
 <h3 align="center">
   <a href="docs/INSTALL.md">Installation Guide</a> •
-  <a href="docs/USER_GUIDE_INSTALLER.md">User Guide (AutoOS Installer)</a> •
-  <a href="docs/USER_GUIDE_SETTINGS.md">User Guide (AutoOS Settings)</a> •
+  <a href="docs/USER_GUIDE_INSTALLER.md">User Guide (Installer)</a> •
+  <a href="docs/USER_GUIDE_SETTINGS.md">User Guide (Settings)</a> •
   <a href="docs/LICENSE_THIRD_PARTY.md">Credits & License</a>
 </h3>
 </div>
