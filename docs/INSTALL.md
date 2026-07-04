@@ -13,8 +13,8 @@ Download the latest Windows `25H2.iso` file from [here](https://drive.google.com
 Other ISOs are not supported (will not work) to guarantee consistency and the latest features.
 
 ### Step 3: Downloading Drivers
-Open Network Connections (`ncpa.cpl`) and look for the brand of your Ethernet, Wi-Fi and Bluetooth Adapters (Usually same as Wi-Fi).<br/>
-If you have one of the following, download them from the links below.<br/>
+Open Network Connections (`ncpa.cpl`) and look for the brand of your Ethernet, Wi-Fi and Bluetooth adapters (Usually same brand as Wi-Fi).<br/>
+If you have one of the following, download the drivers from the links below.<br/>
 
 **INTEL:** [Ethernet](https://www.intel.com/content/www/us/en/download/727998/intel-network-adapter-driver-for-microsoft-windows-11.html) · [Wi-Fi](https://raw.githubusercontent.com/tinodin/AutoOS-Resources/main/Files/Intel/WiFi.zip) · [Bluetooth](https://raw.githubusercontent.com/tinodin/AutoOS-Resources/main/Files/Intel/Bluetooth.zip)
 
