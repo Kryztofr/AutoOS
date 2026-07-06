@@ -72,6 +72,7 @@ public sealed partial class ApplicationsPage : Page
 			new() { Text = "CurseForge", ImageSource = "ms-appx:///Assets/Fluent/CurseForge.png" },
 			new() { Text = "Lunar Client", ImageSource = "ms-appx:///Assets/Fluent/LunarClient.png" },
 			new() { Text = "Feather Client", ImageSource = "ms-appx:///Assets/Fluent/FeatherClient.png" },
+			new() { Text = "NoRisk Client", ImageSource = "ms-appx:///Assets/Fluent/NoRiskClient.png" },
 			new() { Text = "Prism Launcher", ImageSource = "ms-appx:///Assets/Fluent/PrismLauncher.png" },
 			new() { Text = "Bloxstrap", ImageSource = "ms-appx:///Assets/Fluent/Bloxstrap.png" },
 			new() { Text = "Froststrap", ImageSource = "ms-appx:///Assets/Fluent/Froststrap.png" },

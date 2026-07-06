@@ -51,6 +51,7 @@ public class ApplicationSelection
 	public bool CurseForge { get; set; }
 	public bool LunarClient { get; set; }
 	public bool FeatherClient { get; set; }
+	public bool NoRiskClient { get; set; }
 	public bool PrismLauncher { get; set; }
 	public bool Bloxstrap { get; set; }
 	public bool Froststrap { get; set; }
@@ -197,6 +198,7 @@ public static class ApplicationStage
 		bool CurseForge = selection?.CurseForge ?? PreparingStage.CurseForge;
 		bool LunarClient = selection?.LunarClient ?? PreparingStage.LunarClient;
 		bool FeatherClient = selection?.FeatherClient ?? PreparingStage.FeatherClient;
+		bool NoRiskClient = selection?.NoRiskClient ?? PreparingStage.NoRiskClient;
 		bool PrismLauncher = selection?.PrismLauncher ?? PreparingStage.PrismLauncher;
 		bool Bloxstrap = selection?.Bloxstrap ?? PreparingStage.Bloxstrap;
 		bool Froststrap = selection?.Froststrap ?? PreparingStage.Froststrap;
@@ -866,6 +868,16 @@ public static class ApplicationStage
 
 			// remove feather client desktop shortcut
 			("Removing Feather Client desktop shortcut", async () => File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "Feather Launcher.lnk")), () => FeatherClient == true),
+
+			// download norisk client
+			("Downloading NoRisk Client", async () => await DownloadHelper.Download(JsonDocument.Parse(await new HttpClient { DefaultRequestHeaders = { { "User-Agent", "AutoOS" } } }.GetStringAsync("https://api.github.com/repos/NoRiskClient/noriskclient-launcher/releases")).RootElement.EnumerateArray().First(release => !release.GetProperty("prerelease").GetBoolean() && release.GetProperty("assets").EnumerateArray().Any(asset => asset.GetProperty("name").GetString() == "NoRiskClient-Windows-setup.exe")).GetProperty("assets").EnumerateArray().First(asset => asset.GetProperty("name").GetString() == "NoRiskClient-Windows-setup.exe").GetProperty("browser_download_url").GetString(), Path.GetTempPath(), "NoRiskClient-Windows-setup.exe", reporter: reporter), () => NoRiskClient == true),
+
+			// install norisk client
+			("Installing NoRisk Client", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Path.GetTempPath(), "NoRiskClient-Windows-setup.exe"), Arguments = "/S" , WindowStyle = ProcessWindowStyle.Hidden })!.WaitForExitAsync(), () => NoRiskClient == true),
+			("Cleaning up NoRisk Client files", async () => File.Delete(Path.Combine(Path.GetTempPath(), "NoRiskClient-Windows-setup.exe")), () => NoRiskClient == true),
+
+			// remove norisk client desktop shortcut 
+			("Removing NoRisk Client desktop shortcut", async () => File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "NoRisk Launcher.lnk")), () => NoRiskClient == true),
 
 			// download prism launcher
 			("Downloading Prism Launcher", async () => await DownloadHelper.Download(JsonDocument.Parse(await new HttpClient { DefaultRequestHeaders = { { "User-Agent", "AutoOS" } } }.GetStringAsync("https://api.github.com/repos/PrismLauncher/PrismLauncher/releases")).RootElement.EnumerateArray().First(release => !release.GetProperty("prerelease").GetBoolean() && release.GetProperty("assets").EnumerateArray().Any(asset => asset.GetProperty("name").GetString().Contains("Windows-MSVC") && !asset.GetProperty("name").GetString().Contains("arm64") && !asset.GetProperty("name").GetString().Contains("Portable") && asset.GetProperty("name").GetString().EndsWith(".exe"))).GetProperty("assets").EnumerateArray().First(asset => asset.GetProperty("name").GetString().Contains("Windows-MSVC") && !asset.GetProperty("name").GetString().Contains("arm64") && !asset.GetProperty("name").GetString().Contains("Portable") && asset.GetProperty("name").GetString().EndsWith(".exe")).GetProperty("browser_download_url").GetString(), Path.GetTempPath(), "PrismLauncher-Windows-MSVC-Setup.exe", reporter: reporter), () => PrismLauncher == true),
