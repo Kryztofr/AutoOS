@@ -56,6 +56,7 @@ public static partial class PreparingStage
 
 	public static bool Discord;
 	public static bool DiscordAccount;
+	public static bool DiscordKeybinds;
 	public static bool WhatsApp;
 	public static bool Telegram;
 	public static bool Unigram;
@@ -217,7 +218,7 @@ public static partial class PreparingStage
 
 	private static readonly ApplicationDataContainer localSettings = ApplicationData.Current.LocalSettings;
 
-	public static async Task<(bool DiscordAccount, bool EpicGamesAccount, bool EpicGamesGames, bool SteamGames, bool RiotClientAccount, bool RiotClientGames)> CheckAccountsAndGames()
+	public static async Task<(bool DiscordAccount, bool DiscordKeybinds, bool EpicGamesAccount, bool EpicGamesGames, bool SteamGames, bool RiotClientAccount, bool RiotClientGames)> CheckAccountsAndGames()
 	{
 		var systemDrive = Path.GetPathRoot(Environment.GetFolderPath(Environment.SpecialFolder.System))?.ToUpperInvariant();
 
@@ -274,6 +275,31 @@ public static partial class PreparingStage
 					var tokenNode = DatabaseHelper.Read(databasePath, "_https://discord.com", "token");
 					string token = tokenNode?.ToString();
 					return !string.IsNullOrEmpty(token);
+				}
+				catch
+				{
+					return false;
+				}
+			});
+
+		bool discordKeybinds = DriveInfo.GetDrives()
+			.Where(drive => drive.DriveType == DriveType.Fixed && drive.Name != systemDrive)
+			.SelectMany(drive =>
+			{
+				string usersPath = Path.Combine(drive.Name, "Users");
+				if (!Directory.Exists(usersPath)) return [];
+
+				return Directory.GetDirectories(usersPath)
+					.Select(userDir => Path.Combine(userDir, "AppData", "Roaming", "discord", "Local Storage", "leveldb"))
+					.Where(Directory.Exists);
+			})
+			.Any(databasePath =>
+			{
+				try
+				{
+					var keybindsNode = DatabaseHelper.Read(databasePath, "_https://discord.com", "keybinds");
+					string keybinds = keybindsNode?.ToString();
+					return !string.IsNullOrEmpty(keybinds);
 				}
 				catch
 				{
@@ -379,7 +405,7 @@ public static partial class PreparingStage
 			})
 			.Any(hasGame => hasGame);
 
-		return (discordAccount, epicGamesAccount, epicGamesGames, steamGames, riotClientAccount, riotClientGames);
+		return (discordAccount, discordKeybinds, epicGamesAccount, epicGamesGames, steamGames, riotClientAccount, riotClientGames);
 	}
 
 	public static async Task Run()

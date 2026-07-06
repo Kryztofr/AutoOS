@@ -199,6 +199,55 @@ public static partial class DiscordHelper
 		}
 	}
 
+	public static async Task ImportKeybinds(IStatusReporter reporter = null)
+	{
+		var systemDrive = Path.GetPathRoot(Environment.GetFolderPath(Environment.SpecialFolder.System));
+		var foundFolders = DriveInfo.GetDrives()
+			.Where(drive => drive.DriveType == DriveType.Fixed && drive.Name != systemDrive)
+			.SelectMany(drive =>
+			{
+				string usersPath = Path.Combine(drive.Name, "Users");
+				if (!Directory.Exists(usersPath)) return [];
+
+				return Directory.GetDirectories(usersPath)
+					.Select(userDir => Path.Combine(userDir, "AppData", "Roaming", "discord", "Local Storage", "leveldb"))
+					.Where(Directory.Exists)
+					.Select(path => new DirectoryInfo(path));
+			})
+			.OrderByDescending(folder => folder.LastWriteTime)
+			.ToList();
+
+		DirectoryInfo newestFolder = null;
+		string foundKeybinds = null;
+
+		foreach (var folder in foundFolders)
+		{
+			try
+			{
+				var keybindsNode = DatabaseHelper.Read(folder.FullName, "_https://discord.com", "keybinds");
+				string keybinds = keybindsNode?.ToString();
+
+				if (!string.IsNullOrEmpty(keybinds))
+				{
+					newestFolder = folder;
+					foundKeybinds = keybinds;
+					break;
+				}
+			}
+			catch
+			{
+				continue;
+			}
+		}
+
+		if (!string.IsNullOrEmpty(foundKeybinds))
+		{
+			DatabaseHelper.Write(LevelDbPath, "_https://discord.com", "keybinds", foundKeybinds);
+			reporter?.SetTitle("Successfully imported Discord keybinds...");
+			await Task.Delay(1000);
+		}
+	}
+
 	public static async Task KillDiscord()
 	{
 		foreach (Process process in Process.GetProcessesByName("Discord"))

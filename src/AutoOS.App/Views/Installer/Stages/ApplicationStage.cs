@@ -30,6 +30,7 @@ public class ApplicationSelection
 	public bool OnePassword { get; set; }
 	public bool Discord { get; set; }
 	public bool DiscordAccount { get; set; }
+	public bool DiscordKeybinds { get; set; }
 	public bool WhatsApp { get; set; }
 	public bool Telegram { get; set; }
 	public bool Unigram { get; set; }
@@ -176,6 +177,7 @@ public static class ApplicationStage
 
 		bool Discord = selection?.Discord ?? PreparingStage.Discord;
 		bool DiscordAccount = selection?.DiscordAccount ?? PreparingStage.DiscordAccount;
+		bool DiscordKeybinds = selection?.DiscordKeybinds ?? PreparingStage.DiscordKeybinds;
 		bool WhatsApp = selection?.WhatsApp ?? PreparingStage.WhatsApp;
 		bool Telegram = selection?.Telegram ?? PreparingStage.Telegram;
 		bool Unigram = selection?.Unigram ?? PreparingStage.Unigram;
@@ -577,7 +579,10 @@ public static class ApplicationStage
 			("Importing Discord Account", async () => { foreach (Process process in Process.GetProcessesByName("OpenWith")) { process.Kill(); process.WaitForExit(); } foreach (Process process in Process.GetProcessesByName("msedge")) { process.Kill(); process.WaitForExit(); } }, () => Discord == true && DiscordAccount == true),
 			("Importing Discord Account", async () => { foreach (Process process in Process.GetProcessesByName("Discord")) { if (process.MainWindowHandle != IntPtr.Zero) { PInvoke.PostMessage((HWND)process.MainWindowHandle, PInvoke.WM_CLOSE, default(WPARAM), default(LPARAM)); process.WaitForExit(); } } }, () => Discord == true && DiscordAccount == true),
 			("Importing Discord Account", async () => await DiscordHelper.ImportAccount(reporter), () => Discord == true && DiscordAccount == true),
-			
+
+			// import discord keybinds
+			("Importing Discord Keybinds", async () => await DiscordHelper.ImportKeybinds(reporter), () => Discord == true && DiscordKeybinds == true),
+
 			// log in to discord
 			("Please log in to your Discord account (Close to continue)", async () => await Process.Start(new ProcessStartInfo { FileName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Discord", "app-" + discordVersion, "Discord.exe"), WindowStyle = ProcessWindowStyle.Maximized }) !.WaitForExitAsync(), () => Discord == true && DiscordAccount == false),
 			
