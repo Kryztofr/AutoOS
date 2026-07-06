@@ -6,12 +6,12 @@
 
 - Run any other `tweaks` or `optimizers` for obvious reasons.
 - Use `timer resolution` or `memory cleaners` because they do more harm than good.
-- Use `external frame rate limiters` like `NVCP` or `RTSS` because they trade `better 1% lows` for `added latency` (unless non-competitive).
+- Use `external frame rate limiters` like `NVCP` or `RTSS` because they trade **better 1% lows** for **added latency** (unless non-competitive).
 - Set `visual effects` to `Best Performance`.
 - Disable `animations`, `transparency` or `paging file`.
-- `Uninstall` `MSI Afterburner, OBS, Everything, Windhawk, StartAllBack` or any of the `runtimes`.
-- `Install` `7-Zip` or `WinRAR` because `NanaZip` is already installed.
-- `Uninstall` more AppX Packages like `Xbox Game Bar` or `Microsoft Edge` because it **breaks functionality**.
+- **Uninstall** `MSI Afterburner, OBS, Everything, Windhawk, StartAllBack` or any of the `runtimes`.
+- **Install** `7-Zip` or `WinRAR` because `NanaZip` is already installed.
+- **Uninstall** more AppX Packages like `Xbox Game Bar` or `Microsoft Edge`.
 
 </details>
 
@@ -23,7 +23,7 @@
 
 **Step 1:**
 - Copy your Games to the same path but on the AutoOS partition.
-- Open all the manifest files from the game launchers, then use `Ctrl + H` to replace the drive letters, click `Replace All` and save the file.
+- Open all the manifest files from the game launchers, then use `Ctrl + H` to replace the drive letters, click **Replace All** and save the file.
   - Epic Games
     - `C:\ProgramData\Epic\UnrealEngineLauncher\LauncherInstalled.dat`
     - `C:\ProgramData\Epic\EpicGamesLauncher\Data\Manifests`
@@ -35,9 +35,9 @@
 
 **Step 2:**
 - Install `Minitool Partition Wizard` from the `Applications` tab.
-- Right click on the `old Windows partition` and select `Delete`.
-- Right click on the `AutoOS partition` and select `Extend`, select the `old Windows partition` and `max out the slider`.
-- Click `Apply` and then `Restart Now`.
+- Right click on the **old Windows partition** and select **Delete**.
+- Right click on the **AutoOS partition** and select **Extend**, select the **old Windows partition** and **max out the slider**.
+- Click **Apply** and then **Restart Now**.
 
   ---
 
@@ -85,7 +85,7 @@ Quick access for links:
 
 ### Sound
 Adjust Volume, Format and Buffer Size of your current input and output device:
-- If your audio output device supports a lower `buffer size`, you can lower it in exchange for `higher CPU usage`.
+- If your audio output device supports a lower `buffer size`, you can lower it in exchange for **higher CPU usage**.
 
 ![Sound](https://raw.githubusercontent.com/tinodin/AutoOS-Resources/main/AutoOS%20Settings/Sound.png)
 
@@ -146,7 +146,7 @@ Manually adjust or import a Custom Resolution Utility (CRU) profile:
 ### Graphics Cards
 Select your Graphics Card preferences:
 - Click `Update` if available, which updates your GPU driver while keeping your current settings.
-- Enable `High-Bandwidth Digital Content Protection (HDCP)` if you watch `DRM protected content` like `Netflix` etc.
+- Enable `High-Bandwidth Digital Content Protection (HDCP)` if you watch **DRM protected content** like `Netflix` etc.
 - Disable `High-Definition Multimedia Interface (HDMI)/DisplayPort (DP) Audio` if you don't use headphones or speakers connected to your monitor or audio receiver.
 - Manually adjust or import an `MSI Afterburner Profile`.
 - Enable the `OBS Studio` toggle if you want to have `clips` (`30sec`, `Alt + F10`).
@@ -156,7 +156,7 @@ Select your Graphics Card preferences:
 
 ### Per-CPU Scheduling
 Manually adjust or automatically optimize Audio, GPU, XHCI and NIC Affinities:
-- Click `Optimize Affinities` to reapply Affinities to all devices after `manual driver reinstalls` or after toggling `Hyper-Threading` / `SMT`.
+- Click `Optimize Affinities` to reapply Affinities to all devices after **manual driver reinstalls** or after toggling `Hyper-Threading` / `SMT`.
 
 ![Per-CPU Scheduling](https://raw.githubusercontent.com/tinodin/AutoOS-Resources/main/AutoOS%20Settings/Per-CPU%20Scheduling.png)
 ![Per-CPU Scheduling2](https://raw.githubusercontent.com/tinodin/AutoOS-Resources/main/AutoOS%20Settings/Per-CPU%20Scheduling2.png)
@@ -169,7 +169,7 @@ Toggle Bluetooth Services & Drivers and XHCI Interrupt Moderation (IMOD) per con
 
 ### Network & Internet
 Manually adjust or automatically optimize advanced network adapter settings:
-- Click `Optimize Adapter` to reapply settings after `driver reinstalls`.
+- Click `Optimize Adapter` to reapply settings after **driver reinstalls**.
 
 ![Network & Internet](https://raw.githubusercontent.com/tinodin/AutoOS-Resources/main/AutoOS%20Settings/Network%20&%20Internet.png)
 
@@ -177,7 +177,7 @@ Manually adjust or automatically optimize advanced network adapter settings:
 Adjust, Edit, Duplicate, Delete, Restore, Export, Import Power plans and compare them:
 - Keep using the AutoOS Power Plan.
 - If you have issues with the AutoOS Power Plan, leave a message on the [Discord Server](https://discord.gg/bZU4dMMWpg).
-- Select another power plan in the 2nd combobox to `compare` it to the active power plan.
+- Select another power plan in the 2nd combobox to **compare** it to the active power plan.
 - Right click on the active power plan combobox to `Edit, Duplicate, Delete or Export` it.
 
 ![Energy & Power](https://raw.githubusercontent.com/tinodin/AutoOS-Resources/main/AutoOS%20Settings/Energy%20&%20Power.png)
@@ -186,10 +186,10 @@ Adjust, Edit, Duplicate, Delete, Restore, Export, Import Power plans and compare
 
 ### Services & Drivers
 Toggle Services & Drivers states with configured functionality:
-- `Enable` the `WiFi Support` checkbox if you are using `WiFi while Gaming`.
-- `Enable` the `Bluetooth Support` checkbox if you are using `Bluetooth while Gaming`.
-- `Disable` the `toggle` at the top and restart whenever you are `Gaming` competitively.
-- `Enable` it again and restart if you need `functionality` for `Work` or installing applications / drivers.
+- **Enable** the `WiFi Support` checkbox if you are using **WiFi while Gaming**.
+- **Enable** the `Bluetooth Support` checkbox if you are using **Bluetooth while Gaming**.
+- **Disable** the toggle at the top and restart whenever you are **Gaming** competitively.
+- **Enable** it again and restart if you need `functionality` for **Work** or installing applications / drivers.
 
 ![Services & Drivers](https://raw.githubusercontent.com/tinodin/AutoOS-Resources/main/AutoOS%20Settings/Services%20&%20Drivers.png)
 
@@ -198,12 +198,12 @@ Manually adjust or merge recommended BIOS Settings:
 - In the `Recommended Changes` field click `Merge` and `Import to NVRAM` on the top right, then restart your PC.
 
   **If no internet:**
-  - Enable the `toggle` in the `Services & Drivers` tab and restart your PC.
+  - Enable the **toggle** in the `Services & Drivers` tab and restart your PC.
   - Click `Optimize` in the `Per-CPU Scheduling` and in the `Network & Internet` tab.
 
   **If not booting:**
-  - Reset CMOS using the `button` on your `motherboard` (if yours has one) or by `removing the CMOS battery` for 5 minutes.
-  - After that, `lower the amount` to merge using the `numberbox` on the left until you `find the setting` that causes your PC to not boot.
+  - Reset CMOS using the **button** on your **motherboard** (if yours has one) or by **removing the CMOS battery** for 5 minutes.
+  - After that, **lower the amount** to merge using the **numberbox** on the left until you **find the setting** that causes your PC to not boot.
   - Once you find the setting, please leave a message on the [Discord Server](https://discord.gg/bZU4dMMWpg).
 
   **If crashing, freezing or worse performance:**
@@ -232,23 +232,23 @@ Toggle Windows Security Options:
 
 ### Windows Update
 Toggle Windows Updates and set target version:
-- Enable `Windows Updates` to get the `latest features` and `security updates`.
-- All `optimizations will be kept`.
-- `Drivers` are `excluded by default`.
+- Enable `Windows Updates` to get the **latest features** and **security updates**.
+- All **optimizations** will be **kept**.
+- **Drivers** are **excluded by default**.
 
 ![Windows Update](https://raw.githubusercontent.com/tinodin/AutoOS-Resources/main/AutoOS%20Settings/Windows%20Update.png)
 
 ### Browsers
 Post-install your Browsers and Browser Extensions:
 - Use `Thorium` or `Helium` over `Chrome`.
-- Use `Zen` for best `productivity` and `design`.
+- Use `Zen` for best **productivity** and **design**.
 
 ![Browsers](https://raw.githubusercontent.com/tinodin/AutoOS-Resources/main/AutoOS%20Settings/Browsers.png)
 
 ### Applications
 Post-install your Applications:
 - Select `Discord`, which comes `preconfigured` with `Vencord`, `OpenAsar` and `all settings`.
-- Use `Logitech Onboard Memory Manager` over `Logitech G HUB` if you have a `Logitech Mouse`.
+- Use `Logitech Onboard Memory Manager` over `Logitech G HUB` if you have a **Logitech Mouse**.
 
 ![Applications](https://raw.githubusercontent.com/tinodin/AutoOS-Resources/main/AutoOS%20Settings/Applications.png)
 ![Applications2](https://raw.githubusercontent.com/tinodin/AutoOS-Resources/main/AutoOS%20Settings/Applications2.png)
@@ -280,6 +280,6 @@ View your Game Library (Supports Epic Games, Riot Games, EA, Ubisoft Connect, St
 Configure AutoOS window and theme preferences:
 - Enable `Hide AutoOS Startup` if you don't want to see the `AutoOS Startup`.
 - Change `Material` to customize the window appearance.
-- Select paths for `Switch Emulator data` to make them show up in the `Games` tab.
+- Select paths for **Switch Emulator** data to make them show up in the `Games` tab.
 
 ![Settings](https://raw.githubusercontent.com/tinodin/AutoOS-Resources/main/AutoOS%20Settings/Settings.png)

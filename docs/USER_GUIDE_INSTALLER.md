@@ -20,16 +20,16 @@ Choose your Theme and Taskbar preferences:
 ### Browsers
 Choose your Browsers and Browser Extensions:
 - Use `Thorium` or `Helium` over `Chrome`.
-- Use `Zen` for best `productivity` and `design`.
-- Use `uBlock Origin` and other extensions like in `my selection`.
+- Use `Zen` for best **productivity** and **design**.
+- Use `uBlock Origin` and other extensions like in **my selection**.
 
 ![Browsers](https://raw.githubusercontent.com/tinodin/AutoOS-Resources/main/AutoOS%20Installer/Browsers.png)
 
 ### Applications
 Choose your Applications:
-- Select `Discord`, which comes `preconfigured` with `Vencord`, `OpenAsar` and `all settings`.
-- Select `Epic Games, Steam or Riot Games` to have your `accounts and games imported` from your old Installation.
-- Use `Logitech Onboard Memory Manager` over `Logitech G HUB` if you have a `Logitech Mouse`.
+- Select `Discord`, which comes **preconfigured** with `Vencord`, `OpenAsar` and **all settings**.
+- Select `Epic Games, Steam or Riot Games` to have your **accounts and games imported** from your old Installation.
+- Use `Logitech Onboard Memory Manager` over `Logitech G HUB` if you have a **Logitech Mouse**.
 
 ![Applications](https://raw.githubusercontent.com/tinodin/AutoOS-Resources/main/AutoOS%20Installer/Applications.png)
 ![Applications2](https://raw.githubusercontent.com/tinodin/AutoOS-Resources/main/AutoOS%20Installer/Applications2.png)
@@ -43,9 +43,9 @@ Import a pre-configured Custom Resolution Utility (CRU) profile (optional):
 
 ### Graphics Cards
 Select your Graphics Card preferences:
-- On `Laptops`, make sure to install `all` available GPU drivers.
+- On `Laptops`, make sure to install **all** available GPU drivers.
 - On `PCs`, you can choose to not install the `iGPU` driver if you have a `dGPU`.
-- Enable `High-Bandwidth Digital Content Protection (HDCP)` if you watch `DRM protected content` like `Netflix` etc.
+- Enable `High-Bandwidth Digital Content Protection (HDCP)` if you watch **DRM protected content** like `Netflix` etc.
 - Disable `High-Definition Multimedia Interface (HDMI)/DisplayPort (DP) Audio` if you don't use headphones or speakers connected to your monitor or audio receiver.
 - Import a pre-configured `MSI Afterburner Profile` (optional).
 - Enable the `OBS Studio` toggle if you want to have `clips` (`30sec`, `Alt + F10`).
@@ -62,15 +62,15 @@ Choose your Windows Security settings:
 ### Install AutoOS
 Start the AutoOS Installation:
 - Click on the `hyperlink` to open `Windows Security` if prompted and disable `Real-time protection` and `Tamper protection`.
-- Now everything will be configured `automatically`.
-- This process will usually take around `15-45 minutes` depending on your internet speed.
-- You will be asked to `login` for some apps, close the app to `skip`.
+- Now everything will be configured **automatically**.
+- This process will usually take around **15-45 minutes** depending on your internet speed.
+- You will be asked to log in for some apps, close the app to skip.
 
 > [!NOTE]  
 > You may experience a blank screen in the App after installing the Graphics Driver.<br/>
 > To fix this, resize the window, click the navigation pane button a few times or just wait until it rerenders the UI.
 
 > [!IMPORTANT]
-> After AutoOS Installer has finished and restarted your PC, open the `AutoOS` app and click on the `AutoOS User Guide` tile on the Home tab and follow the `instructions` for `AutoOS Settings`.
+> After AutoOS Installer has finished and restarted your PC, open the `AutoOS` app and click on the `AutoOS User Guide` tile on the Home tab and follow the **instructions** for `AutoOS Settings`.
 
 ![Install AutoOS](https://raw.githubusercontent.com/tinodin/AutoOS-Resources/main/AutoOS%20Installer/Install%20AutoOS.png)
