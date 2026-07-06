@@ -251,8 +251,9 @@ public sealed partial class ApplicationsPage : Page
 	{
 		var selection = new ApplicationSelection();
 
-		var (discordAccount, epicGamesAccount, epicGamesGames, steamGames, riotClientAccount, riotClientGames) = await PreparingStage.CheckAccountsAndGames();
+		var (discordAccount, discordKeybinds, epicGamesAccount, epicGamesGames, steamGames, riotClientAccount, riotClientGames) = await PreparingStage.CheckAccountsAndGames();
 		selection.DiscordAccount = discordAccount;
+		selection.DiscordKeybinds = discordKeybinds;
 		selection.EpicGamesAccount = epicGamesAccount;
 		selection.EpicGamesGames = epicGamesGames;
 		selection.SteamGames = steamGames;

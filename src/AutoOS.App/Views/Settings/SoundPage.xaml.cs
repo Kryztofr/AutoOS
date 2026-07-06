@@ -164,9 +164,6 @@ namespace AutoOS.Views.Settings
 				store->Release();
 			}
 
-			var bufferSizes = SoundHelper.GetBufferSizes(device);
-			device.BufferSizes = bufferSizes;
-			device.SelectedBufferSize = bufferSizes.FirstOrDefault(x => x.IsCurrent) ?? bufferSizes.FirstOrDefault();
 			device.IsInputDevice = flow == EDataFlow.eCapture;
 
 			var details = SoundHelper.GetAudioDetails(device);
@@ -177,6 +174,10 @@ namespace AutoOS.Views.Settings
 			device.IsMuted = details.IsMuted;
 			device.AvailableFormats = details.Formats;
 			device.SelectedFormat = details.Formats.FirstOrDefault(f => f.IsCurrent) ?? details.Formats.FirstOrDefault();
+
+			var bufferSizes = SoundHelper.GetBufferSizes(device);
+			device.BufferSizes = bufferSizes;
+			device.SelectedBufferSize = bufferSizes.FirstOrDefault(x => x.IsCurrent) ?? bufferSizes.FirstOrDefault();
 
 			SoundHelper.RegisterVolumeCallback(device, (vol, muted, left, right) =>
 			{

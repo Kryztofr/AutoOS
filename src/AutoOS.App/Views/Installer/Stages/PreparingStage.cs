@@ -644,7 +644,7 @@ public static partial class PreparingStage
 			PCores = pCores.Count;
 			HyperThreading = cpuSetsInfo.HyperThreading;
 
-			(DiscordAccount, EpicGamesAccount, EpicGamesGames, SteamGames, RiotClientAccount, RiotClientGames) = await CheckAccountsAndGames();
+			(DiscordAccount, DiscordKeybinds, EpicGamesAccount, EpicGamesGames, SteamGames, RiotClientAccount, RiotClientGames) = await CheckAccountsAndGames();
 
 			var nics = DeviceHelper.GetDevices(DeviceType.NIC);
 			Wifi = nics.Any(device => device.NicType == NicDeviceType.WiFi);

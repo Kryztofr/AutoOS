@@ -315,20 +315,41 @@ public static partial class SoundHelper
 				{
 					IAudioClient3* audioClient = (IAudioClient3*)pAudioClient;
 					WAVEFORMATEX* format = null;
+					WAVEFORMATEXTENSIBLE selectedFormat = default;
+					bool freeFormat = false;
 					try
 					{
-						audioClient->GetMixFormat(&format);
+						if (device.SelectedFormat is AudioFormatOption selected)
+						{
+							selectedFormat = CreateWaveFormat(selected.SampleRate, selected.Bits, selected.Channels, selected.ActualBitsPerSample, selected.SubFormat);
+							format = (WAVEFORMATEX*)&selectedFormat;
+						}
+						else
+						{
+							audioClient->GetMixFormat(&format);
+							freeFormat = true;
+						}
+
 						if (format != null)
 						{
 							try
 							{
-								audioClient->GetSharedModeEnginePeriod(*format, out uint def, out uint fund, out uint min, out uint max);
+								audioClient->GetSharedModeEnginePeriod(*format, out uint def, out _, out uint min, out uint max);
 								audioClient->GetCurrentSharedModeEnginePeriod(out _, out uint current);
 
 								if (min > 0)
 								{
+									const uint step = 64;
+									var options = new SortedSet<uint> { min };
+
+									uint aligned = ((min + step - 1) / step) * step;
+									for (uint frames = aligned; frames <= max; frames += step)
+										options.Add(frames);
+
+									if (max > 0) options.Add(max);
+									if (current > 0) options.Add(current);
+
 									double factor = 1000.0 / format->nSamplesPerSec;
-									var options = new HashSet<uint> { min, def, max, current }.Where(x => x > 0).OrderBy(x => x);
 									foreach (var frames in options)
 									{
 										float ms = (float)Math.Round(frames * factor, 2);
@@ -349,7 +370,7 @@ public static partial class SoundHelper
 					catch { }
 					finally
 					{
-						if (format != null)
+						if (freeFormat && format != null)
 						{
 							PInvoke.CoTaskMemFree(format);
 						}
