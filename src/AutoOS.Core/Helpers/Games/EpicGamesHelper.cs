@@ -110,45 +110,52 @@ public static partial class EpicGamesHelper
 		// get all configs
 		foreach (var file in Directory.GetFiles(EpicGamesAccountDir, "GameUserSettings.ini", System.IO.SearchOption.AllDirectories))
 		{
-			// check if data is valid
-			if (!ValidateData(file))
-				continue;
-
-			var (accountId, displayName, _, _) = GetAccountData(file);
-
-			// update config if accountids match
-			string accountDir = Path.Combine(EpicGamesAccountDir, accountId);
-			if (Directory.Exists(accountDir))
+			try
 			{
-				if (File.Exists(ActiveEpicGamesAccountPath) && file != ActiveEpicGamesAccountPath)
+				// check if data is valid
+				if (!ValidateData(file))
+					continue;
+
+				var (accountId, displayName, _, _) = GetAccountData(file);
+
+				// update config if accountids match
+				string accountDir = Path.Combine(EpicGamesAccountDir, accountId);
+				if (Directory.Exists(accountDir))
 				{
-					if (GetAccountData(ActiveEpicGamesAccountPath).AccountId == accountId)
+				if (File.Exists(ActiveEpicGamesAccountPath) && file != ActiveEpicGamesAccountPath)
 					{
-						File.Copy(ActiveEpicGamesAccountPath, Path.Combine(accountDir, "GameUserSettings.ini"), true);
+						if (GetAccountData(ActiveEpicGamesAccountPath).AccountId == accountId)
+						{
+							File.Copy(ActiveEpicGamesAccountPath, Path.Combine(accountDir, "GameUserSettings.ini"), true);
+						}
 					}
 				}
-			}
-			// backup config if not already
-			else
-			{
-				// create folder
-				Directory.CreateDirectory(accountDir);
-
-				// copy config
-				File.Copy(file, Path.Combine(accountDir, "GameUserSettings.ini"), true);
-
-				// create reg file
-				File.WriteAllText(Path.Combine(accountDir, "accountId.reg"), $"Windows Registry Editor Version 5.00\r\n\r\n[HKEY_CURRENT_USER\\Software\\Epic Games\\Unreal Engine\\Identifiers]\r\n\"AccountId\"=\"{accountId}\"");
-			}
-
-			if (!accounts.Any(x => x.AccountId == accountId))
-			{
-				accounts.Add(new EpicAccountInfo
+				// backup config if not already
+				else
 				{
-					DisplayName = displayName,
-					AccountId = accountId,
+					// create folder
+					Directory.CreateDirectory(accountDir);
+
+					// copy config
+					File.Copy(file, Path.Combine(accountDir, "GameUserSettings.ini"), true);
+
+					// create reg file
+					File.WriteAllText(Path.Combine(accountDir, "accountId.reg"), $"Windows Registry Editor Version 5.00\r\n\r\n[HKEY_CURRENT_USER\\Software\\Epic Games\\Unreal Engine\\Identifiers]\r\n\"AccountId\"=\"{accountId}\"");
+				}
+
+				if (!accounts.Any(x => x.AccountId == accountId))
+				{
+					accounts.Add(new EpicAccountInfo
+					{
+						DisplayName = displayName,
+						AccountId = accountId,
 					IsActive = file == ActiveEpicGamesAccountPath
-				});
+					});
+				}
+			}
+			catch
+			{
+				continue;
 			}
 		}
 
@@ -901,53 +908,53 @@ public static partial class EpicGamesHelper
 			var allManifests = new List<JsonNode>();
 			foreach (var file in manifestFiles)
 			{
-				var node = JsonNode.Parse(File.ReadAllText(file));
-				allManifests.Add(node);
-			}
+					var node = JsonNode.Parse(File.ReadAllText(file));
+					allManifests.Add(node);
+				}
 
 			if (Directory.Exists(EpicGamesThirdPartyManifestDir))
 			{
-				foreach (var file in Directory.GetFiles(EpicGamesThirdPartyManifestDir, "*.json"))
-				{
-					var json = JsonNode.Parse(File.ReadAllText(file));
+					foreach (var file in Directory.GetFiles(EpicGamesThirdPartyManifestDir, "*.json"))
+					{
+							var json = JsonNode.Parse(File.ReadAllText(file));
 
-					string installLocation = null;
+							string installLocation = null;
 
 					using (var key = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(json["RegistryPath"]?.GetValue<string>()))
-					{
-						if (key != null)
-						{
+									{
+										if (key != null)
+										{
 							installLocation = key.GetValue(json["RegistryKey"]?.GetValue<string>())?.ToString()?.TrimEnd('\\', '/');
+								}
+							}
+
+							if (Directory.Exists(installLocation))
+							{
+								string provider = json["Provider"]?.GetValue<string>();
+
+								string gameId = null;
+								if (provider == "UbisoftConnect")
+								{
+									gameId = json["GameID"]?.GetValue<string>();
+									provider = "Ubisoft Connect";
+								}
+
+								allManifests.Add(new JsonObject
+								{
+									["Provider"] = provider,
+									["bIsApplication"] = true,
+									["CatalogItemId"] = json["CatalogID"]?.GetValue<string>(),
+									["CatalogNamespace"] = json["Namespace"]?.GetValue<string>(),
+									["AppName"] = json["AppName"]?.GetValue<string>(),
+									["DisplayName"] = json["Title"]?.GetValue<string>(),
+									["InstallLocation"] = installLocation,
+									["GameID"] = gameId,
+									["LaunchExecutable"] = json["MainWindowProcessName"]?.GetValue<string>(),
+									["ProcessNames"] = json["ProcessNames"]?.AsArray().DeepClone()
+								});
+							}
 						}
-					}
-
-					if (Directory.Exists(installLocation))
-					{
-						string provider = json["Provider"]?.GetValue<string>();
-
-						string gameId = null;
-						if (provider == "UbisoftConnect")
-						{
-							gameId = json["GameID"]?.GetValue<string>();
-							provider = "Ubisoft Connect";
-						}
-
-						allManifests.Add(new JsonObject
-						{
-							["Provider"] = provider,
-							["bIsApplication"] = true,
-							["CatalogItemId"] = json["CatalogID"]?.GetValue<string>(),
-							["CatalogNamespace"] = json["Namespace"]?.GetValue<string>(),
-							["AppName"] = json["AppName"]?.GetValue<string>(),
-							["DisplayName"] = json["Title"]?.GetValue<string>(),
-							["InstallLocation"] = installLocation,
-							["GameID"] = gameId,
-							["LaunchExecutable"] = json["MainWindowProcessName"]?.GetValue<string>(),
-							["ProcessNames"] = json["ProcessNames"]?.AsArray().DeepClone()
-						});
-					}
 				}
-			}
 
 			// for each manifest
 			await Parallel.ForEachAsync(allManifests, new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount * 2 }, async (itemJson, _) =>

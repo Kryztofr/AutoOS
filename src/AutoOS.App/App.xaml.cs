@@ -5,8 +5,6 @@ using AutoOS.Views.Startup;
 using Microsoft.UI.Windowing;
 using Microsoft.Win32;
 using Microsoft.Windows.AppLifecycle;
-using System.Text;
-using System.Text.Json.Nodes;
 using Windows.Graphics;
 using Windows.Storage;
 using WinRT.Interop;
