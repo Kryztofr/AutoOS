@@ -48,8 +48,8 @@
   - Press `F1` to get into `BIOS`.
   - Press `F7` to get into `advanced mode`.
   - Go to `Boot` tab, then select `Boot Configuration`.
-  - Change `Next Boot Recovery Action` to `Recovery`.
-  - Change `Boot Sector (MBR/GPT) Recovery Policy` to `Auto Recovery` if it exists.
+  - Change `Next Boot Recovery Action` to `Recovery` (if available).
+  - Change `Boot Sector (MBR/GPT) Recovery Policy` to `Auto Recovery` (if available).
 
   </details>
 
@@ -92,7 +92,10 @@ Adjust Volume, Format and Buffer Size of your current input and output device:
 ### Displays
 Manually adjust or import a Custom Resolution Utility (CRU) profile:
 
-  **NVIDIA:**
+  <details>
+  <summary>For <b>NVIDIA</b> GPUs, click to expand</summary>
+  <br/>
+
   - Open NVIDIA Control Panel, go to `Display` -> `Change resolution` and select your desired `monitor`.
   - Make sure your desired resolution and refresh rate is active.
   - Click on `Customize...` -> `Create Custom Resolution`, and click `Accept` on the disclaimer.
@@ -140,6 +143,8 @@ Manually adjust or import a Custom Resolution Utility (CRU) profile:
 
     **Future usage:**
     - Click `Import profile` in AutoOS and select the `.exe` file you exported to instantly reapply the custom resolution.
+
+  </details>
 
 ![Displays](https://raw.githubusercontent.com/tinodin/AutoOS-Resources/main/AutoOS%20Settings/Displays.png)
 
