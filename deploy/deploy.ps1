@@ -267,10 +267,6 @@ if ($IsoPicker.ShowDialog() -ne [System.Windows.Forms.DialogResult]::OK) {
 	Write-Host "No ISO selected. Exiting." -ForegroundColor Red
 	return
 }
-if ([System.IO.Path]::GetFileName($IsoPicker.FileName) -ne "25H2.iso") {
-	Write-Host "Invalid file. Please select 25H2.iso you downloaded in Step 2." -ForegroundColor Red
-	return
-}
 
 Write-Host "Please select your drivers folder you created in Step 3..."
 $DriverPicker = New-Object System.Windows.Forms.FolderBrowserDialog
