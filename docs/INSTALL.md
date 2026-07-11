@@ -9,8 +9,7 @@
 Join my [Discord Server](https://discord.gg/bZU4dMMWpg) to receive **installation support** and stay informed about **future updates or changes**.
 
 ### Step 2: Downloading the ISO
-Download the latest Windows `25H2.iso` file from [here](https://drive.google.com/drive/folders/1BlAYofjlW1bU-WPG3jXygO1ezoJ4gPs7?usp=sharing) (Log into your Google Account if you get an error).<br/>
-Other ISOs are not supported (will not work) to guarantee consistency and the latest features.
+Download the windows iso file which you would like
 
 ### Step 3: Downloading Drivers
 Open **Network Connections** (`ncpa.cpl`) and look for the brand of your Ethernet, Wi-Fi and Bluetooth adapters (Usually same brand as Wi-Fi).<br/>
