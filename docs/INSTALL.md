@@ -83,7 +83,7 @@ This will automatically handle everything related to the ISO, the drivers and yo
 ```ps1
 $PSDefaultParameterValues['Invoke-WebRequest:UseBasicParsing'] = $true
 Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
-irm https://raw.githubusercontent.com/tinodin/AutoOS/master/deploy/deploy.ps1 | iex
+irm https://raw.githubusercontent.com/Kryztofr/AutoOS/master/deploy/deploy.ps1 | iex
 ```
 Select the `25H2.iso` you downloaded in Step 2 and your **drivers folder** you created in Step 3.<br/>
 If you get any errors during the script, please leave a message on my [Discord Server](https://discord.gg/bZU4dMMWpg).
