@@ -1,7 +1,7 @@
 ![AutoOS Hero Image](https://github.com/user-attachments/assets/65a294c9-603d-40ad-8fb2-20af203478e1)
 
 <h1 align="center">
-    AutoOS
+    AutoOS but on any windows version
 </h1>
 
 <div align="center">
