@@ -76,7 +76,6 @@ public sealed partial class ApplicationsPage : Page
 			new() { Text = "Prism Launcher", ImageSource = "ms-appx:///Assets/Fluent/PrismLauncher.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs", "PrismLauncher", "prismlauncher.exe")) },
 			new() { Text = "Bloxstrap", ImageSource = "ms-appx:///Assets/Fluent/Bloxstrap.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Bloxstrap", "Bloxstrap.exe")) },
 			new() { Text = "Froststrap", ImageSource = "ms-appx:///Assets/Fluent/Froststrap.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Froststrap", "Froststrap.exe")) },
-			new() { Text = "Fishstrap", ImageSource = "ms-appx:///Assets/Fluent/Fishstrap.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Fishstrap", "Fishstrap.exe")) },
 			new() { Text = "Rockstar Games Launcher", ImageSource = "ms-appx:///Assets/Fluent/RockstarGamesLauncher.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Rockstar Games", "Launcher", "Launcher.exe")) },
 			new() { Text = "FiveM", ImageSource = "ms-appx:///Assets/Fluent/FiveM.jpg", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "FiveM", "FiveM.exe")) },
 			new() { Text = "FACEIT", ImageSource = "ms-appx:///Assets/Fluent/FACEIT.png", IsInstalled = File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "FACEIT", "FACEIT.exe")) },
@@ -286,7 +285,6 @@ public sealed partial class ApplicationsPage : Page
 		selection.PrismLauncher = selectedLaunchers.Contains("Prism Launcher");
 		selection.Bloxstrap = selectedLaunchers.Contains("Bloxstrap");
 		selection.Froststrap = selectedLaunchers.Contains("Froststrap");
-		selection.Fishstrap = selectedLaunchers.Contains("Fishstrap");
 		selection.RockstarGamesLauncher = selectedLaunchers.Contains("Rockstar Games Launcher");
 		selection.FiveM = selectedLaunchers.Contains("FiveM");
 		selection.FACEIT = selectedLaunchers.Contains("FACEIT");

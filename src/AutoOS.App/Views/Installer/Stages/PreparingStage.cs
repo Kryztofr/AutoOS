@@ -83,7 +83,6 @@ public static partial class PreparingStage
 	public static bool PrismLauncher;
 	public static bool Bloxstrap;
 	public static bool Froststrap;
-	public static bool Fishstrap;
 	public static bool RockstarGamesLauncher;
 	public static bool FiveM;
 	public static bool FACEIT;
@@ -487,7 +486,6 @@ public static partial class PreparingStage
 			PrismLauncher = (localSettings.Values["Launchers"]?.ToString().Contains("Prism Launcher") ?? false);
 			Bloxstrap = (localSettings.Values["Launchers"]?.ToString().Contains("Bloxstrap") ?? false);
 			Froststrap = (localSettings.Values["Launchers"]?.ToString().Contains("Froststrap") ?? false);
-			Fishstrap = (localSettings.Values["Launchers"]?.ToString().Contains("Fishstrap") ?? false);
 			RockstarGamesLauncher = (localSettings.Values["Launchers"]?.ToString().Contains("Rockstar Games Launcher") ?? false);
 			FiveM = (localSettings.Values["Launchers"]?.ToString().Contains("FiveM") ?? false);
 			FACEIT = (localSettings.Values["Launchers"]?.ToString().Contains("FACEIT") ?? false);
