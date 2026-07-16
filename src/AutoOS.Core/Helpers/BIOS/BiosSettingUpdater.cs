@@ -1,11 +1,11 @@
-﻿using System.Text.RegularExpressions;
+using System.Text.RegularExpressions;
+using AutoOS.Core.Helpers.Logging;
+using DevWinUI;
 
-namespace AutoOS.Views.Settings.BIOS;
+namespace AutoOS.Core.Helpers.BIOS;
 
 public static class BiosSettingUpdater
 {
-	public static bool IsBatchUpdating { get; set; }
-
 	public static void SaveSingleSetting(BiosSettingModel setting)
 	{
 		// get lines from nvram

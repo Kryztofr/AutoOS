@@ -1,48 +1,52 @@
+using System.Collections;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
-namespace AutoOS.Views.Settings.BIOS;
+namespace AutoOS.Core.Helpers.BIOS;
 
-public partial class BiosSettingModel : INotifyPropertyChanged
+public partial class BiosSettingModel : INotifyPropertyChanged, INotifyDataErrorInfo
 {
 	private bool _isLoaded = false;
 	private string _value;
 	private Option _selectedOption;
+	private readonly Dictionary<string, List<string>> _warnings = new();
+	private static bool _isBatchMode;
+
+	public static bool IsBatchMode
+	{
+		get => _isBatchMode;
+		set => _isBatchMode = value;
+	}
 
 	public event PropertyChangedEventHandler PropertyChanged;
+	public event EventHandler<DataErrorsChangedEventArgs> ErrorsChanged;
+
 	protected void OnPropertyChanged([CallerMemberName] string propertyName = null) =>
 		PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 
-	public void MarkLoaded() => _isLoaded = true;
+	private void RaiseErrorsChanged(string propertyName) =>
+		ErrorsChanged?.Invoke(this, new DataErrorsChangedEventArgs(propertyName));
+
+	public void MarkLoaded()
+	{
+		_isLoaded = true;
+		ValidateValue();
+	}
 
 	public int Line { get; set; }
-
-	// ------- State Tracking -------
 	public List<string> OriginalLines { get; set; }
 	public string OriginalValue { get; set; }
 	public Option OriginalSelectedOption { get; set; }
-
-	// ------- Display Helpers -------
-	public string DisplayBiosDefault => $"Default: {BiosDefault}";
-	public string DisplayCurrent =>
-		OriginalSelectedOption?.Label ?? OriginalValue ?? SelectedOption?.Label ?? Value;
-	public string DisplayRecommended =>
-		RecommendedOption?.Label ?? RecommendedValue;
-
-	// ------- Metadata -------
 	public string SetupQuestion { get; set; }
 	public string HelpString { get; set; }
 	public string Token { get; set; }
 	public string Offset { get; set; }
 	public string Width { get; set; }
 	public string BiosDefault { get; set; }
-
-	// ------- Recommendation Info -------
 	public bool IsRecommended { get; set; }
 	public string RecommendedValue { get; set; }
 	public Option RecommendedOption { get; set; }
 
-	// ------- Value / Options -------
 	public string Value
 	{
 		get => _value;
@@ -53,11 +57,11 @@ public partial class BiosSettingModel : INotifyPropertyChanged
 				_value = value;
 				OnPropertyChanged();
 
-				if (_isLoaded)
+				ValidateValue();
+
+				if (_isLoaded && !_isBatchMode)
 				{
 					RaiseModifiedChanged();
-					if (!BiosSettingUpdater.IsBatchUpdating)
-						BiosSettingUpdater.SaveSingleSetting(this);
 				}
 			}
 		}
@@ -78,15 +82,14 @@ public partial class BiosSettingModel : INotifyPropertyChanged
 				foreach (var opt in Options)
 					opt.IsSelected = opt == value;
 
-				if (_isLoaded)
+				ValidateValue();
+
+				if (_isLoaded && !_isBatchMode)
 					RaiseModifiedChanged();
 			}
 		}
 	}
-
-	// ------- UI Conditions -------
-	public bool HasHelpString => !string.IsNullOrEmpty(HelpString);
-	public bool HasDefault => !string.IsNullOrEmpty(BiosDefault);
+	
 	public bool HasOptions => Options.Count > 0;
 	public bool HasValueField => Value != null && !HasOptions;
 
@@ -105,6 +108,50 @@ public partial class BiosSettingModel : INotifyPropertyChanged
 	{
 		ModifiedChanged?.Invoke(this, EventArgs.Empty);
 	}
+
+	public IEnumerable GetErrors(string propertyName)
+	{
+		if (string.IsNullOrEmpty(propertyName))
+			return _warnings.Values.SelectMany(v => v);
+
+		return _warnings.TryGetValue(propertyName, out var warnings) ? warnings : null;
+	}
+
+	public bool HasErrors => _warnings.Count > 0;
+
+	private void ValidateValue()
+	{
+		const string propertyName = nameof(Value);
+
+		if (!HasOptions)
+		{
+			if (string.IsNullOrWhiteSpace(_value))
+			{
+				_warnings[propertyName] = new List<string> { "Value is empty" };
+				RaiseErrorsChanged(propertyName);
+			}
+			else if (_warnings.ContainsKey(propertyName))
+			{
+				_warnings.Remove(propertyName);
+				RaiseErrorsChanged(propertyName);
+			}
+		}
+
+		if (HasOptions)
+		{
+			const string optionPropertyName = nameof(SelectedOption);
+			if (_selectedOption == null)
+			{
+				_warnings[optionPropertyName] = new List<string> { "No option selected" };
+				RaiseErrorsChanged(optionPropertyName);
+			}
+			else if (_warnings.ContainsKey(optionPropertyName))
+			{
+				_warnings.Remove(optionPropertyName);
+				RaiseErrorsChanged(optionPropertyName);
+			}
+		}
+	}
 }
 
 public partial class Option : INotifyPropertyChanged
@@ -115,13 +162,11 @@ public partial class Option : INotifyPropertyChanged
 	protected void OnPropertyChanged([CallerMemberName] string propertyName = null) =>
 		PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 
-	// ------- Option Info -------
 	public string Index { get; set; }
 	public string Label { get; set; }
 
 	public BiosSettingModel Parent { get; set; }
 
-	// ------- Flags -------
 	public bool IsSelected
 	{
 		get => _isSelected;
@@ -141,11 +186,6 @@ public partial class Option : INotifyPropertyChanged
 					}
 
 					Parent.SelectedOption = this;
-
-					if (!BiosSettingUpdater.IsBatchUpdating)
-					{
-						BiosSettingUpdater.SaveSingleSetting(Parent);
-					}
 				}
 			}
 		}

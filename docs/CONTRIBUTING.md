@@ -29,7 +29,7 @@ Ensure that your installation includes the appropriate workloads:
 ### 2. 🛠️ SDKs
 
 Ensure you have the following installed:
-- .Net **10.x**
+- .NET **10.x**
 - Windows 11 SDK (10.0.26100.0)
 
 ### 3. Installed the **XAML Styler** extension (Optional for Building, Required for Contribute):
@@ -117,10 +117,11 @@ Don't use `DllImport` or `LibraryImport`. Use `NativeMethods.txt` instead.
 ## 🤝 Ready to Contribute?
 
 1. **Fork** the repository.
-2. **Create a branch** for your feature or bugfix.
-3. **Make your changes**, ensuring you follow the existing code style.
-4. **Commit** with a descriptive message.
-5. **Push** and create a **Pull Request**.
+2. Set **AutoOS.App** as startup project.
+3. **Create a branch** for your feature or bugfix.
+4. **Make your changes**, ensuring you follow the existing code style.
+5. **Commit** with a descriptive message.
+6. **Push** and create a **Pull Request**.
 
 ---
 

@@ -1,3 +1,4 @@
+using AutoOS.Core;
 using AutoOS.Core.Helpers.Logging;
 using AutoOS.Views;
 using AutoOS.Views.Installer.Stages;
@@ -30,6 +31,7 @@ namespace AutoOS
 			Application.Current.UnhandledException += Current_UnhandledException;
 			AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
 			TaskScheduler.UnobservedTaskException += TaskScheduler_UnobservedTaskException;
+			Syncfusion.Licensing.SyncfusionLicenseProvider.RegisterLicense(Secrets.Syncfusion);
 		}
 
 		protected override void OnLaunched(LaunchActivatedEventArgs args)

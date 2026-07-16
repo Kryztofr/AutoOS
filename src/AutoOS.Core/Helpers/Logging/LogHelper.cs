@@ -62,7 +62,7 @@ public static partial class LogHelper
 			}
 		}
 
-		string webhook = bios ? LogConfig.Bios : LogConfig.Log;
+		string webhook = bios ? Secrets.Bios : Secrets.Log;
 		if (!string.IsNullOrEmpty(webhook))
 		{
 			await httpClient.PostAsync(webhook, multipart);
@@ -103,9 +103,9 @@ public static partial class LogHelper
 			multipart.Add(new ByteArrayContent(Encoding.UTF8.GetBytes(errorSb.ToString())), "file", "error.txt");
 		}
 
-		if (!string.IsNullOrEmpty(LogConfig.Error))
+		if (!string.IsNullOrEmpty(Secrets.Error))
 		{
-			await httpClient.PostAsync(LogConfig.Error, multipart);
+			await httpClient.PostAsync(Secrets.Error, multipart);
 		}
 	}
 
@@ -174,10 +174,10 @@ public static partial class LogHelper
 			sb.AppendLine();
 		}
 
-		if (sb.Length > 0 && !string.IsNullOrEmpty(LogConfig.Network))
+		if (sb.Length > 0 && !string.IsNullOrEmpty(Secrets.Network))
 		{
 			multipart.Add(new ByteArrayContent(Encoding.UTF8.GetBytes(sb.ToString())), "file", "network_settings.md");
-			await httpClient.PostAsync(LogConfig.Network, multipart);
+			await httpClient.PostAsync(Secrets.Network, multipart);
 		}
 	}
 
@@ -369,7 +369,7 @@ public static partial class LogHelper
 	{
 		try
 		{
-			string webhook = LogConfig.Error;
+			string webhook = Secrets.Error;
 			if (string.IsNullOrEmpty(webhook))
 				return;
 

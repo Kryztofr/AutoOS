@@ -27,7 +27,7 @@ env:
   PUBLISH_SELF_CONTAINED: true
   PUBLISH_SINGLE_FILE: false
   PUBLISH_READY_TO_RUN: true
-  PUBLISH_AOT: true
+  PUBLISH_AOT: false
   PUBLISH_TRIMMED: true
   PUBLISH_TRIM_MODE: partial # or full
 
@@ -103,17 +103,53 @@ jobs:
         [IO.File]::WriteAllBytes("src/AutoOS.App/GitHubActionsWorkflow.pfx", $pfx_cert_byte)
       shell: pwsh
 
-    # Inject webhook secrets
-    - name: Inject webhook secrets
-      run: |
-        $file = 'src/AutoOS.Core/Helpers/Logging/LogConfig.cs'
-        $content = Get-Content $file -Raw
-        $content = $content -replace 'public static string Bios { get; set; } = "";', 'public static string Bios { get; set; } = "${{ secrets.DISCORD_WEBHOOK_BIOS }}";'
-        $content = $content -replace 'public static string Log { get; set; } = "";', 'public static string Log { get; set; } = "${{ secrets.DISCORD_WEBHOOK_LOG }}";'
-        $content = $content -replace 'public static string Error { get; set; } = "";', 'public static string Error { get; set; } = "${{ secrets.DISCORD_WEBHOOK_ERROR }}";'
-        $content = $content -replace 'public static string Network { get; set; } = "";', 'public static string Network { get; set; } = "${{ secrets.DISCORD_WEBHOOK_NETWORK }}";'
-        Set-Content $file $content -NoNewline
+    - name: Inject secrets
+      env:
+        SECRETS_KEY: ${{ secrets.SECRETS_KEY }}
+        DISCORD_WEBHOOK_BIOS: ${{ secrets.DISCORD_WEBHOOK_BIOS }}
+        DISCORD_WEBHOOK_LOG: ${{ secrets.DISCORD_WEBHOOK_LOG }}
+        DISCORD_WEBHOOK_ERROR: ${{ secrets.DISCORD_WEBHOOK_ERROR }}
+        DISCORD_WEBHOOK_NETWORK: ${{ secrets.DISCORD_WEBHOOK_NETWORK }}
+        SYNCFUSION_LICENSE_KEY: ${{ secrets.SYNCFUSION_LICENSE_KEY }}
       shell: pwsh
+      run: |
+        $keyBytes = [System.Convert]::FromBase64String($env:SECRETS_KEY)
+
+        function Encrypt([string]$plain) {
+            if ([string]::IsNullOrEmpty($plain)) { return "" }
+            $bytes = [System.Text.Encoding]::UTF8.GetBytes($plain)
+            for ($i = 0; $i -lt $bytes.Length; $i++) {
+                $bytes[$i] = $bytes[$i] -bxor $keyBytes[$i % $keyBytes.Length]
+            }
+            return [System.Convert]::ToBase64String($bytes)
+        }
+
+        $bios = Encrypt $env:DISCORD_WEBHOOK_BIOS
+        $log = Encrypt $env:DISCORD_WEBHOOK_LOG
+        $err = Encrypt $env:DISCORD_WEBHOOK_ERROR
+        $net = Encrypt $env:DISCORD_WEBHOOK_NETWORK
+        $sync = Encrypt $env:SYNCFUSION_LICENSE_KEY
+
+        $content = @"
+        namespace AutoOS.Core;
+        
+        public static partial class Secrets
+        {
+            static partial void Initialize()
+            {
+                Key = System.Convert.FromBase64String("$($env:SECRETS_KEY)");
+            }
+
+            private static partial byte[] GetEncryptedBios() => System.Convert.FromBase64String("$bios");
+            private static partial byte[] GetEncryptedLog() => System.Convert.FromBase64String("$log");
+            private static partial byte[] GetEncryptedError() => System.Convert.FromBase64String("$err");
+            private static partial byte[] GetEncryptedNetwork() => System.Convert.FromBase64String("$net");
+            private static partial byte[] GetEncryptedSyncfusion() => System.Convert.FromBase64String("$sync");
+        }
+        "@
+
+        New-Item -ItemType Directory -Force -Path "src/AutoOS.Core/Secrets" | Out-Null
+        Set-Content -Path "src/AutoOS.Core/Secrets/Local.cs" -Value $content -Encoding utf8NoBOM
 
     # Building with configured commands
     - name: Create the MSIX package

@@ -1,6 +1,6 @@
 using System.Text.RegularExpressions;
 
-namespace AutoOS.Views.Settings.BIOS;
+namespace AutoOS.Core.Helpers.BIOS;
 
 public partial class BiosSettingParser
 {
@@ -16,12 +16,18 @@ public partial class BiosSettingParser
 			}
 		}
 
+		return ParseFromLines(lines);
+	}
+
+	public static IEnumerable<BiosSettingModel> ParseFromLines(IEnumerable<string> lines)
+	{
 		BiosSettingModel current = null;
 		bool readingOptions = false;
+		var lineList = lines.ToList();
 
-		for (int i = 0; i < lines.Count; i++)
+		for (int i = 0; i < lineList.Count; i++)
 		{
-			var line = lines[i].Trim();
+			var line = lineList[i].Trim();
 			if (string.IsNullOrWhiteSpace(line)) continue;
 
 			if (line.StartsWith("Setup Question", StringComparison.OrdinalIgnoreCase))
@@ -34,14 +40,14 @@ public partial class BiosSettingParser
 				current = new BiosSettingModel
 				{
 					Line = i,
-					OriginalLines = lines
+					OriginalLines = lineList
 				};
 				readingOptions = false;
 
 				var parts = line.Split('=', 2);
 				if (parts.Length == 2)
 				{
-					var rawQuestion = parts[1].Trim().Replace('�', '™');
+					var rawQuestion = parts[1].Trim().Replace('\uFFFD', '™');
 
 					var match = TrailingWordRegex().Match(rawQuestion);
 					current.SetupQuestion = match.Success ? match.Groups[1].Value : rawQuestion;
@@ -54,7 +60,7 @@ public partial class BiosSettingParser
 
 			if (line.StartsWith("Help String", StringComparison.OrdinalIgnoreCase))
 			{
-				current.HelpString = FormatHelpString(line.Split('=', 2)[1].Trim());
+				current.HelpString = line.Split('=', 2)[1].Trim().Replace('\uFFFD', '°');
 				continue;
 			}
 
@@ -155,49 +161,6 @@ public partial class BiosSettingParser
 		}
 	}
 
-	static string FormatHelpString(string help)
-	{
-		if (string.IsNullOrWhiteSpace(help))
-			return "No help string";
-
-		help = help.Trim();
-
-		// replace � with °
-		help = help.Replace('�', '°');
-
-		// new lines before bracketed markers like [Auto]:
-		help = BracketedMarkerRegex().Replace(help, "\n");
-
-		// insert newline before technical markers like Min.: Max.: etc.
-		foreach (var marker in new[] { "Min.:", "Max.:", "Standard:", "Increment:" })
-		{
-			int index = help.IndexOf(marker);
-			if (index > 0)
-			{
-				var before = help[..index].TrimEnd();
-				var after = help[index..].TrimStart();
-				help = $"{before}\n{after}";
-				break;
-			}
-		}
-
-		// new lines before lines starting with * or * followed by space
-		help = AsteriskMarkerRegex().Replace(help, "\n");
-
-		// new line before NOTE: or Note:
-		help = NoteMarkerRegex().Replace(help, "\n");
-
-		return help;
-	}
-
 	[GeneratedRegex(@"^(.*?)\s{2,}\w+$", RegexOptions.Compiled)]
 	private static partial Regex TrailingWordRegex();
-	[GeneratedRegex(@"(?<!^)(?=\[\w.*?\]:)", RegexOptions.Compiled)]
-	private static partial Regex BracketedMarkerRegex();
-
-	[GeneratedRegex(@"(?<!^)(?=\*\s?)", RegexOptions.Compiled)]
-	private static partial Regex AsteriskMarkerRegex();
-
-	[GeneratedRegex(@"(?<!^)(?=NOTE:|Note:)", RegexOptions.Compiled)]
-	private static partial Regex NoteMarkerRegex();
 }

@@ -18,7 +18,7 @@ namespace AutoOS.Views.Installer
 
 		private async void HomeLandingPage_Loaded(object sender, RoutedEventArgs e)
 		{
-#if !DEBUG
+			#if !DEBUG
 			using var key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion");
 
 			if (key.GetValue("InstallDate") is int unixSeconds)
@@ -54,17 +54,11 @@ namespace AutoOS.Views.Installer
 				Application.Current.Exit();
 			}
 				
-#endif
+			#endif
 
 			// enable app access to location
 			await RegistryHelper.RunAs(RegistryHelper.Identity.TrustedInstaller, new ProcessStartInfo { FileName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System), "SystemSettingsAdminFlows.exe"), Arguments = "SetCamSystemGlobal location 1", CreateNoWindow = true });
 			RegistryHelper.SetValue(RegistryHelper.Identity.TrustedInstaller, @"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy", "LetAppsAccessLocation", 1, RegistryValueKind.DWord);
-
-			// download pci ids
-			string pciPath = Path.Combine(PathHelper.GetAppDataFolderPath(), "pci.ids");
-
-			if (!File.Exists(pciPath))
-				await File.WriteAllBytesAsync(pciPath, await httpClient.GetByteArrayAsync("https://raw.githubusercontent.com/pciutils/pciids/master/pci.ids"));
 		}
 	}
 }
