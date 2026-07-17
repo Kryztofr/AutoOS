@@ -300,9 +300,14 @@ public static partial class RegistryHelper
 			{
 				if (sc.Status != ServiceControllerStatus.Running)
 				{
-					ServicesHelper.SetStartupType("TrustedInstaller", SERVICE_START_TYPE.SERVICE_DEMAND_START);
-					sc.Start();
-					sc.WaitForStatus(ServiceControllerStatus.Running, TimeSpan.FromSeconds(5));
+					try
+					{
+						ServicesHelper.SetStartupType("TrustedInstaller", SERVICE_START_TYPE.SERVICE_DEMAND_START);
+						sc.Start();
+						sc.WaitForStatus(ServiceControllerStatus.Running, TimeSpan.FromSeconds(5));
+					}
+					catch (InvalidOperationException ex) when (ex.InnerException is Win32Exception { NativeErrorCode: 1056 })
+					{ }
 				}
 			}
 

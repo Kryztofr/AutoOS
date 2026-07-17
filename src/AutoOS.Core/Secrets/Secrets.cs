@@ -27,6 +27,9 @@ public static partial class Secrets
 
 	private static string Decrypt(byte[] data)
 	{
+		if (data.Length == 0 || Key.Length == 0)
+			return string.Empty;
+		
 		var plain = new byte[data.Length];
 		for (var i = 0; i < data.Length; i++)
 			plain[i] = (byte)(data[i] ^ Key[i % Key.Length]);

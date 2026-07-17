@@ -129,27 +129,15 @@ jobs:
         $err = Encrypt $env:DISCORD_WEBHOOK_ERROR
         $net = Encrypt $env:DISCORD_WEBHOOK_NETWORK
         $sync = Encrypt $env:SYNCFUSION_LICENSE_KEY
-
-        $content = @"
-        namespace AutoOS.Core;
-        
-        public static partial class Secrets
-        {
-            static partial void Initialize()
-            {
-                Key = System.Convert.FromBase64String("$($env:SECRETS_KEY)");
-            }
-
-            private static partial byte[] GetEncryptedBios() => System.Convert.FromBase64String("$bios");
-            private static partial byte[] GetEncryptedLog() => System.Convert.FromBase64String("$log");
-            private static partial byte[] GetEncryptedError() => System.Convert.FromBase64String("$err");
-            private static partial byte[] GetEncryptedNetwork() => System.Convert.FromBase64String("$net");
-            private static partial byte[] GetEncryptedSyncfusion() => System.Convert.FromBase64String("$sync");
-        }
-        "@
-
-        New-Item -ItemType Directory -Force -Path "src/AutoOS.Core/Secrets" | Out-Null
-        Set-Content -Path "src/AutoOS.Core/Secrets/Local.cs" -Value $content -Encoding utf8NoBOM
+        $local = "src/AutoOS.Core/Secrets/Local.cs"
+        $content = Get-Content $local -Raw
+        $content = $content -replace 'Key = \[\]', "Key = System.Convert.FromBase64String(`"$($env:SECRETS_KEY)`")"
+        $content = $content -replace 'GetEncryptedBios\(\) => \[\]', "GetEncryptedBios() => System.Convert.FromBase64String(`"$bios`")"
+        $content = $content -replace 'GetEncryptedLog\(\) => \[\]', "GetEncryptedLog() => System.Convert.FromBase64String(`"$log`")"
+        $content = $content -replace 'GetEncryptedError\(\) => \[\]', "GetEncryptedError() => System.Convert.FromBase64String(`"$err`")"
+        $content = $content -replace 'GetEncryptedNetwork\(\) => \[\]', "GetEncryptedNetwork() => System.Convert.FromBase64String(`"$net`")"
+        $content = $content -replace 'GetEncryptedSyncfusion\(\) => \[\]', "GetEncryptedSyncfusion() => System.Convert.FromBase64String(`"$sync`")"
+        Set-Content -Path $local -Value $content -Encoding utf8NoBOM
 
     # Building with configured commands
     - name: Create the MSIX package

@@ -60,7 +60,17 @@
 	<None Include="..\AutoOS.Core\NativeMethods.txt" Link="NativeMethods.txt" />
 	<None Include="..\AutoOS.Core\NativeMethods.json" Link="NativeMethods.json" />
   </ItemGroup>
-  <!-- 
+
+	<ItemGroup>
+		<TrimmerRootAssembly Include="Syncfusion.Calendar.WinUI" />
+		<TrimmerRootAssembly Include="Syncfusion.Core.WinUI" />
+		<TrimmerRootAssembly Include="Syncfusion.Data.WinUI" />
+		<TrimmerRootAssembly Include="Syncfusion.Editors.WinUI" />
+		<TrimmerRootAssembly Include="Syncfusion.Grid.WinUI" />
+		<TrimmerRootAssembly Include="Syncfusion.Licensing" />
+	</ItemGroup>
+
+	<!-- 
 	Defining the "Msix" ProjectCapability here allows the Single-project MSIX Packaging
 	Tools extension to be activated for this project even if the Windows App SDK Nuget
 	package has not yet been restored.
