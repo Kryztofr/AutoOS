@@ -56,6 +56,7 @@ After Windows is installed you are greeted with the **AutoOS Installer**.
 Pressing **Install AutoOS** in the **AutoOS Installer** does the following:
 - Creates an optimized Power plan
 - Disables selected Security features
+- Adds some telemetry to Windows
 - Downloads strips, installs and optimizes your selected Graphic Card drivers
 - Imports the selected Custom Resolution Utility (CRU) profile
 - Imports the monitor layout from the old Windows Installation
