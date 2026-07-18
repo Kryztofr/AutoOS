@@ -5,6 +5,30 @@ using Windows.System;
 
 namespace AutoOS.Common;
 
+public static class TreeGridSelectionControllerHelper
+{
+	public static readonly DependencyProperty UseCustomSelectionControllerProperty =
+		DependencyProperty.RegisterAttached(
+			"UseCustomSelectionController",
+			typeof(bool),
+			typeof(TreeGridSelectionControllerHelper),
+			new PropertyMetadata(false, OnUseCustomSelectionControllerChanged));
+
+	public static bool GetUseCustomSelectionController(DependencyObject obj)
+		=> (bool)obj.GetValue(UseCustomSelectionControllerProperty);
+
+	public static void SetUseCustomSelectionController(DependencyObject obj, bool value)
+		=> obj.SetValue(UseCustomSelectionControllerProperty, value);
+
+	private static void OnUseCustomSelectionControllerChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+	{
+		if (d is SfTreeGrid treeGrid && e.NewValue is bool value && value)
+		{
+			treeGrid.SelectionController = new TreeGridSelectionController(treeGrid);
+		}
+	}
+}
+
 public sealed partial class TreeGridSelectionController : TreeGridRowSelectionController
 {
 	private readonly SfTreeGrid _treeGrid;
@@ -14,13 +38,12 @@ public sealed partial class TreeGridSelectionController : TreeGridRowSelectionCo
 		_treeGrid = treeGrid;
 		treeGrid.LostFocus += (_, _) =>
 		{
-			if (CurrentCellManager.CurrentCell?.IsEditing == true)
-				return;
-
 			var focused = FocusManager.GetFocusedElement(_treeGrid.XamlRoot) as DependencyObject;
 			if (focused == null)
 			{
 				ClearSelections(false);
+				if (CurrentCellManager.CurrentCell?.IsEditing == true)
+					CurrentCellManager.EndEdit();
 				return;
 			}
 
@@ -33,6 +56,8 @@ public sealed partial class TreeGridSelectionController : TreeGridRowSelectionCo
 			}
 
 			ClearSelections(false);
+			if (CurrentCellManager.CurrentCell?.IsEditing == true)
+				CurrentCellManager.EndEdit();
 		};
 	}
 

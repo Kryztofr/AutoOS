@@ -1,4 +1,3 @@
-using AutoOS.Common;
 using AutoOS.Core.Helpers.BIOS;
 using AutoOS.Core.Helpers.Logging;
 using AutoOS.Core.Helpers.Picker;
@@ -12,6 +11,7 @@ using Syncfusion.UI.Xaml.DataGrid;
 using Syncfusion.UI.Xaml.TreeGrid;
 using Syncfusion.UI.Xaml.Grids;
 using System.Diagnostics;
+using Windows.System;
 
 namespace AutoOS.Views.Settings;
 
@@ -24,13 +24,6 @@ public sealed partial class BiosSettingPage : Page
 	public BiosSettingPage()
 	{
 		InitializeComponent();
-
-		BiosTreeGrid.ColumnSizer = new TreeGridStarColumnSizer(BiosTreeGrid);
-		BiosDiffTreeGrid.ColumnSizer = new TreeGridStarColumnSizer(BiosDiffTreeGrid);
-		BiosTreeGrid.SelectionController = new TreeGridSelectionController(BiosTreeGrid);
-		BiosDiffTreeGrid.SelectionController = new TreeGridSelectionController(BiosDiffTreeGrid);
-		BiosTreeGrid.SizeChanged += BiosTreeGrid_SizeChanged;
-		BiosDiffTreeGrid.SizeChanged += BiosDiffTreeGrid_SizeChanged;
 		ViewModel.RefreshFilterAction = RefreshSearchFilter;
 		ViewModel.ExpandDiffNodesAction = () =>
 		{
@@ -464,6 +457,21 @@ public sealed partial class BiosSettingPage : Page
 		EnsureNodesExpanded();
 	}
 
+	private void MergeCountBox_Invoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
+	{
+		if (sender.Key == VirtualKey.Up)
+		{
+			if (ViewModel.MergeCount < ViewModel.RecommendedCount)
+				ViewModel.MergeCount++;
+		}
+		else if (sender.Key == VirtualKey.Down)
+		{
+			if (ViewModel.MergeCount > 0)
+				ViewModel.MergeCount--;
+		}
+		args.Handled = true;
+	}
+
 	private void Merge_Click(object sender, RoutedEventArgs e)
 	{
 		ViewModel.ApplyRecommendations(ViewModel.MergeCount);
@@ -475,6 +483,12 @@ public sealed partial class BiosSettingPage : Page
 	{
 		Search_TextChanged(Search, null);
 		EnsureNodesExpanded();
+		DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>
+		{
+			foreach (var col in BiosDiffTreeGrid.Columns)
+				col.Width = double.NaN;
+			BiosDiffTreeGrid.InvalidateMeasure();
+		});
 	}
 
 	private void ViewChanges_Unchecked(object sender, RoutedEventArgs e)

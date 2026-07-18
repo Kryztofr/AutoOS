@@ -11,8 +11,12 @@ public static class StarRatio
 	public static void SetColumnRatio(DependencyObject obj, int value) => obj.SetValue(ColumnRatioProperty, value);
 }
 
-public partial class TreeGridStarColumnSizer(SfTreeGrid treeGrid) : TreeGridColumnSizer(treeGrid)
+public partial class TreeGridStarColumnSizer : TreeGridColumnSizer
 {
+	public TreeGridStarColumnSizer() : base()
+	{
+	}
+
 	protected override void SetStarWidth(double remainingColumnWidth, IEnumerable<TreeGridColumn> remainingColumns)
 	{
 		var removedColumn = new List<TreeGridColumn>();
