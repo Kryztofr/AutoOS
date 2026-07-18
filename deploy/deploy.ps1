@@ -365,10 +365,32 @@ if ($physicalDisks.Count -gt 1) {
 
 Write-Host "`n===== Step 1: Check Partition Style =====`n" -ForegroundColor Yellow
 if ((Get-Disk -Number $DiskNumber).PartitionStyle -eq 'MBR') {
-	Write-Host "Partition style is MBR. Converting to GPT..."
-	mbr2gpt /convert /disk:$DiskNumber /allowFullOS
-	Write-Host "Please set Boot Mode to UEFI in BIOS after conversion, then rerun this script." -ForegroundColor Yellow
-	return
+	Write-Host "Partition style is MBR"
+	
+	$windows = $false
+	$partitions = Get-Partition -DiskNumber $DiskNumber -ErrorAction SilentlyContinue
+	foreach ($partition in $partitions) {
+		if ($partition.DriveLetter) {
+			$drivePath = "$($partition.DriveLetter):\"
+			if (Test-Path "$drivePath\Windows") {
+				$windows = $true
+				break
+			}
+		}
+	}
+	
+	if ($windows) {
+		Write-Host "Converting disk to GPT..."
+		mbr2gpt /validate /disk:$DiskNumber /allowFullOS
+		mbr2gpt /convert /disk:$DiskNumber /allowFullOS
+		Write-Host "Please set Boot Mode to UEFI in BIOS, then rerun this script." -ForegroundColor Yellow
+		return
+	} else {
+		Write-Host "Please follow this guide to convert the disk to GPT manually:" -ForegroundColor Red
+		Write-Host "https://www.diskgenius.com/resource/change-disk-format-from-mbr-to-gpt.html"
+		Write-Host "After converting the disk to GPT, rerun this script." -ForegroundColor Yellow
+		return
+	}
 } else {
 	Write-Host "Partition style is GPT"
 }
